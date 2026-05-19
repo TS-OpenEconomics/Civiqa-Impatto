@@ -1,0 +1,43 @@
+{
+  "id": "PROJ-001",
+  "cup": "I63C22000050127",
+  "nome": "Intervento efficientamento servizio idrico",
+  "descrizione": "L'obiettivo è valutare i benefici economici, sociali e ambientali derivanti dal rafforzamento del servizio idrico regionale, in particolare nella riduzione delle perdite, nella resilienza infrastrutturale e nella qualità delle acque. L'analisi considera l'intero ciclo idrico: interventi su reti, invasi, depuratori e potabilizzatori.",
+  "stato": "Approvato",
+  "creato_il": "12/05/2025",
+  "creato_da": "Comune di Palermo, Mario Rossi",
+  "ultima_modifica": "15/05/2025",
+  "configurazione": {
+    "settore": "Infrastrutture ambientali e risorse idriche",
+    "sotto_settore": "Risorse idriche e acque reflue",
+    "categoria_intervento": "Corpi idrici: Miglioramento della qualità",
+    "tipo_intervento": "Efficientamento",
+    "durata_progetto": "7 anni",
+    "localizzazione": "Via Messina Marine 592 - 90121, Palermo PA",
+    "anno_attualizzazione": 2025,
+    "capex": 334000000,
+    "opex": 187000040,
+    "dataset": "Matrice contabilità sociale",
+    "metodologia": "SAM EU-ITA 2019"
+  },
+  "analisi_disponibili": [
+    {
+      "id": "eia",
+      "tipo": "EIA",
+      "nome": "Analisi di Impatto",
+      "descrizione": "Per stimare gli effetti del progetto su economia locale, occupazione e sviluppo del territorio."
+    },
+    {
+      "id": "ecba",
+      "tipo": "ECBA",
+      "nome": "Analisi Costi-Benefici",
+      "descrizione": "Per valutare la convenienza complessiva del progetto pubblico nel medio-lungo periodo."
+    },
+    {
+      "id": "esg",
+      "tipo": "ESG",
+      "nome": "Analisi ESG",
+      "descrizione": "Per misurare il grado di allineamento del progetto ai criteri Environmental, Social e Governance."
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "anni": [2025, 2026, 2027, 2028, 2029, 2030, 2031],
+  "gruppi": [
+    {
+      "id": "perdite-idriche",
+      "nome": "Riduzione perdite idriche",
+      "kpi": [
+        {
+          "id": "k1",
+          "nome": "Volume dell'acqua immessa",
+          "udm_code": "M3",
+          "udm_label": "m³",
+          "stima_anno": 658546000,
+          "tipo": "input",
+          "fonte": "ISTAT — Censimento acque per uso civile 2022"
+        },
+        {
+          "id": "k2",
+          "nome": "Percentuale target perdite idriche",
+          "udm_code": "PCT",
+          "udm_label": "%",
+          "stima_anno": 34,
+          "tipo": "input",
+          "fonte": "ARERA — RQTI 2023"
+        },
+        {
+          "id": "k3",
+          "nome": "Consumo energia elettrica per acqua sollevata",
+          "udm_code": "KWH_M3",
+          "udm_label": "kWh/m³",
+          "stima_anno": 0.8015,
+          "tipo": "input",
+          "fonte": "Utilitalia — Blue Book 2023"
+        },
+        {
+          "id": "k4",
+          "nome": "Costo energia elettrica",
+          "udm_code": "EUR_KWH",
+          "udm_label": "€/kWh",
+          "stima_anno": 0.16,
+          "tipo": "fisso",
+          "readonly": true,
+          "fonte": "GME — PUN medio 2024"
+        }
+      ]
+    },
+    {
+      "id": "interruzioni-servizio",
+      "nome": "Riduzione delle interruzioni del servizio idrico",
+      "kpi": [
+        {
+          "id": "k5",
+          "nome": "Numero di nuovi paganti",
+          "udm_code": "NUM",
+          "udm_label": "unità",
+          "stima_anno": 204.7,
+          "tipo": "input",
+          "fonte": "Stima OE su dati comunali"
+        },
+        {
+          "id": "k6",
+          "nome": "Ore di interruzione media annua",
+          "udm_code": "ORE",
+          "udm_label": "ore",
+          "stima_anno": 8760,
+          "tipo": "input",
+          "fonte": "ARERA — M1 2023"
+        },
+        {
+          "id": "k7",
+          "nome": "Quota deadweight",
+          "udm_code": "PCT",
+          "udm_label": "%",
+          "stima_anno": 35,
+          "tipo": "input",
+          "fonte": "Linee Guida MIT 2017 — Tav. 5.2"
+        }
+      ]
+    },
+    {
+      "id": "qualita-acqua",
+      "nome": "Miglioramento qualità dell'acqua",
+      "kpi": [
+        {
+          "id": "k8",
+          "nome": "Conformità parametri chimici",
+          "udm_code": "PCT",
+          "udm_label": "%",
+          "stima_anno": 92.5,
+          "tipo": "input",
+          "fonte": "ISS — Monitoraggio acque potabili"
+        },
+        {
+          "id": "k9",
+          "nome": "Riduzione costi sanitari per gastroenteriti",
+          "udm_code": "EUR",
+          "udm_label": "€",
+          "stima_anno": 145000,
+          "tipo": "input",
+          "fonte": "OMS — Stima costi GBD 2021"
+        }
+      ]
+    }
+  ]
+}
