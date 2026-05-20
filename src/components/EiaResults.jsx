@@ -139,6 +139,32 @@ const DIM_META = {
   redditi:     { label: "Redditi delle famiglie",  key: "redditi",    unit: "M€",  fmtVal: fmtM, isMoney: true },
 };
 
+const IMPACT_TYPES = [
+  {
+    key: "diretto",
+    label: "Diretto",
+    color: C_DIR,
+    description: "Effetto iniziale generato dalle spese e dalle attivita direttamente collegate al progetto.",
+  },
+  {
+    key: "indiretto",
+    label: "Indiretto",
+    color: C_IND,
+    description: "Effetto che si propaga nella filiera di fornitori, subforniture e servizi collegati.",
+  },
+  {
+    key: "indotto",
+    label: "Indotto",
+    color: C_INDT,
+    description: "Effetto aggiuntivo prodotto dai consumi delle famiglie e dal reddito rimesso in circolo.",
+  },
+];
+
+function shareOf(total, value) {
+  if (!total) return 0;
+  return Math.round((value / total) * 100);
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function EiaResults({ project, eiaResults: rawResults, scenario, analysis, onBack }) {
@@ -169,8 +195,8 @@ export function EiaResults({ project, eiaResults: rawResults, scenario, analysis
   }
 
   return (
-    <div className="min-h-full">
-      <div className="bg-[radial-gradient(circle_at_top_right,_rgba(199,240,58,0.16),_transparent_28%),radial-gradient(circle_at_top_left,_rgba(124,58,237,0.18),_transparent_32%),linear-gradient(180deg,_#f6f3ff_0%,_#f0eef8_100%)] px-4 pt-8 pb-10 md:px-10">
+    <div className="min-h-full bg-[linear-gradient(180deg,_#f6f3ff_0%,_#f7f6fb_22%,_#f4f6fb_100%)]">
+      <div className="bg-[radial-gradient(circle_at_top_right,_rgba(199,240,58,0.16),_transparent_28%),radial-gradient(circle_at_top_left,_rgba(124,58,237,0.18),_transparent_32%)] px-4 pt-8 pb-20 md:px-10">
         <nav className="flex items-center gap-2 text-sm">
           <span className="text-brand-violet font-bold tracking-widest">...</span>
           <span className="text-ink-300">/</span>
@@ -186,13 +212,16 @@ export function EiaResults({ project, eiaResults: rawResults, scenario, analysis
         <div className="mt-5 overflow-hidden rounded-[32px] border border-white/70 bg-white shadow-[0_24px_70px_rgba(17,24,39,0.10)]">
           <div className="bg-[linear-gradient(135deg,_#100C1E_0%,_#24153F_55%,_#51358C_100%)] px-6 py-6 text-white md:px-8 flex items-start justify-between gap-6 flex-wrap">
             <div className="flex items-start gap-4">
-              <span className="flex h-16 w-16 items-center justify-center rounded-[22px] bg-white/10 p-3 ring-1 ring-white/10 shrink-0">
-                <img src="/icons/analysis-eia.png" alt="" aria-hidden="true" className="h-full w-full object-contain" />
+              <span className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-white p-2 shadow-[0_16px_40px_rgba(0,0,0,0.18)] shrink-0">
+                <img src="/icons/analysis-eia.png" alt="Logo analisi di impatto" className="h-full w-full object-contain" />
               </span>
               <div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <h1 className="text-2xl font-bold tracking-tight">Analisi di Impatto</h1>
                   <Badge type="EIA" />
+                  <span className="inline-flex rounded-full bg-white/10 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.18em] text-white/70">
+                    Diretti, indiretti, indotti
+                  </span>
                 </div>
                 <p className="mt-2 text-sm text-white/80">Del progetto <span className="font-medium text-white">{project.nome}</span></p>
                 <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/70">
@@ -217,21 +246,29 @@ export function EiaResults({ project, eiaResults: rawResults, scenario, analysis
         </div>
       </div>
 
-      <div className="bg-bg-page">
-        <div className="flex overflow-x-auto gap-2 border-b border-ink-100 px-4 py-3 md:px-10">
-          {TABS.map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)}
-              className={`rounded-full px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition-colors ${tab === t.id ? "bg-brand-violet text-white shadow-[0_10px_24px_rgba(91,33,247,0.24)]" : "bg-white text-ink-500 hover:text-ink-900"}`}>
-              {t.label}
-            </button>
-          ))}
-        </div>
-        <div className="px-4 py-8 md:px-10">
-          {tab === "riepilogo"   && <TabRiepilogo results={results} insights={insights} />}
-          {tab === "spese"       && <TabSpese results={results} />}
-          {(tab === "pil" || tab === "occupazione" || tab === "produzione" || tab === "redditi") && (
-            <TabDimension tab={tab} results={results} />
-          )}
+      <div className="-mt-10 px-4 pb-10 md:px-10">
+        <div className="overflow-hidden rounded-[30px] border border-white/80 bg-white/95 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur">
+          <div className="flex overflow-x-auto gap-2 border-b border-ink-100 px-4 py-4 md:px-6">
+            {TABS.map(t => (
+              <button key={t.id} onClick={() => setTab(t.id)}
+                className={`rounded-full px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition-colors ${tab === t.id ? "bg-brand-violet text-white shadow-[0_10px_24px_rgba(91,33,247,0.24)]" : "bg-bg-page text-ink-500 hover:bg-white hover:text-ink-900"}`}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div className="px-4 py-8 md:px-6">
+            <div className="mb-8 rounded-[26px] border border-ink-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.92)_0%,_rgba(246,243,255,0.92)_100%)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+              <p className="text-xs font-mono uppercase tracking-[0.18em] text-ink-500">Chiave di lettura</p>
+              <p className="mt-2 max-w-4xl text-sm leading-relaxed text-ink-700">
+                {staticResults.riepilogo.descrizione_2}
+              </p>
+            </div>
+            {tab === "riepilogo"   && <TabRiepilogo results={results} />}
+            {tab === "spese"       && <TabSpese results={results} />}
+            {(tab === "pil" || tab === "occupazione" || tab === "produzione" || tab === "redditi") && (
+              <TabDimension tab={tab} results={results} />
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -240,7 +277,7 @@ export function EiaResults({ project, eiaResults: rawResults, scenario, analysis
 
 // ── Tab Riepilogo ─────────────────────────────────────────────────────────────
 
-function TabRiepilogo({ results, insights }) {
+function TabRiepilogo({ results }) {
   const terr = results.per_territorio ?? [];
   const topRegion = terr[0]?.regione ?? "Territorio principale";
   const topRegionValue = terr[0]?.valore ?? 0;
@@ -249,7 +286,7 @@ function TabRiepilogo({ results, insights }) {
   const spesaData = useMemo(() => {
     if (!terr.length || !results.shock_totale || !results.produzione.totale) return terr;
     const r = results.shock_totale / results.produzione.totale;
-    return terr.map(t => ({ ...t, valore: Math.round(t.valore * r), hoverText: `${t.regione}<br><b>${fmtK(Math.round(t.valore * r))}</b>` }));
+    return terr.map(t => ({ ...t, valore: Math.round(t.valore * r), hoverText: `${t.regione}<br><b>${fmtM(Math.round(t.valore * r))}</b>` }));
   }, [terr, results]);
 
   const terrHover = useMemo(() =>
@@ -258,47 +295,26 @@ function TabRiepilogo({ results, insights }) {
 
   return (
     <div className="space-y-8">
-      <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1.4fr_0.9fr]">
-        <div className="eia-fade-up overflow-hidden rounded-[30px] bg-[linear-gradient(135deg,_#0f172a_0%,_#1e1b4b_48%,_#4c1d95_100%)] px-6 py-6 text-white shadow-[0_24px_70px_rgba(15,23,42,0.18)] md:px-8">
-          <p className="text-xs font-mono uppercase tracking-[0.18em] text-white/60">Executive Summary</p>
-          <h2 className="mt-3 text-2xl font-bold tracking-tight md:text-3xl">
+      <section>
+        <div className="eia-fade-up overflow-hidden rounded-[24px] bg-[linear-gradient(135deg,_#0f172a_0%,_#1e1b4b_48%,_#4c1d95_100%)] px-5 py-4 text-white shadow-[0_16px_40px_rgba(15,23,42,0.14)] md:px-6">
+          <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-white/50">Executive Summary</p>
+          <h2 className="mt-2 text-lg font-bold tracking-tight">
             L'investimento attiva una filiera ampia e concentra il primo impatto su {topRegion}.
           </h2>
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/75">
-            Il quadro sintetico mostra uno shock iniziale di {fmtM(results.shock_totale)} che si propaga
-            con un moltiplicatore di {results.moltiplicatore.toFixed(2)}, generando effetti economici
-            distribuiti tra PIL, produzione, occupazione e redditi.
-          </p>
-          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
             <SignalCard label="Shock iniziale" value={fmtM(results.shock_totale)} note="base di attivazione" />
             <SignalCard label="Regione trainante" value={topRegion} note={fmtM(topRegionValue)} />
             <SignalCard label="Quota diretta sul PIL" value={`${directShare}%`} note="impatto immediato" />
-          </div>
-        </div>
-        <div className="eia-fade-up eia-fade-up-delay overflow-hidden rounded-[30px] border border-white/70 bg-white p-6 shadow-[0_20px_55px_rgba(15,23,42,0.10)]">
-          <p className="text-xs font-mono uppercase tracking-[0.18em] text-ink-500">Lettura rapida</p>
-          <div className="mt-4 space-y-3">
-            {insights.slice(0, 3).map((insight, index) => (
-              <div key={insight.title} className="rounded-2xl border border-ink-100 bg-ink-50/70 px-4 py-4">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[11px] font-mono uppercase tracking-[0.16em] text-ink-500">Insight {index + 1}</span>
-                  <span className="h-2 w-2 rounded-full bg-accent-lime" />
-                </div>
-                <p className="mt-2 text-sm font-bold text-ink-900">{insight.title}</p>
-                <p className="mt-2 text-xl font-bold tracking-tight text-brand-violet">{insight.value}</p>
-                <p className="mt-2 text-sm leading-relaxed text-ink-700">{insight.text}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
       {/* 5 KPI cards */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <KpiCard label="Valore della Produzione" icon="/icons/produzione.png"  value={fmtM(results.produzione.totale)} unit="totale"  bd={results.produzione} />
-        <KpiCard label="PIL"                     icon="/icons/pil.png"         value={fmtM(results.gva.totale)}        unit="totale"  bd={results.gva} />
-        <KpiCard label="Occupazione"             icon="/icons/occupazione.png" value={fmtIT(results.fte.totale)}       unit="ETP"     bd={results.fte} />
-        <KpiCard label="Redditi"                 icon="/icons/redditi.png"     value={fmtM(results.redditi.totale)}    unit="totale"  bd={results.redditi} />
+        <KpiCard label="Valore della Produzione" icon="/icons/Produzione.png"  value={fmtM(results.produzione.totale)} unit="totale"  bd={results.produzione} />
+        <KpiCard label="PIL"                     icon="/icons/PIL.png"         value={fmtM(results.gva.totale)}        unit="totale"  bd={results.gva} />
+        <KpiCard label="Occupazione"             icon="/icons/Occupazione.png" value={fmtIT(results.fte.totale)}       unit="ETP"     bd={results.fte} />
+        <KpiCard label="Redditi"                 icon="/icons/Redditi.png"     value={fmtM(results.redditi.totale)}    unit="totale"  bd={results.redditi} />
         <KpiCard label="Gettito Fiscale"         icon="/icons/gettito.png"     value={fmtM(results.gettito.totale)}    unit="fiscale" bd={results.gettito} />
       </section>
 
@@ -309,36 +325,43 @@ function TabRiepilogo({ results, insights }) {
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_100px_1fr] gap-4 items-center">
           <div>
             <p className="text-xs font-mono uppercase tracking-[0.14em] text-ink-500 mb-2 text-center">Distribuzione della Spesa</p>
-            <ItalyMap data={spesaData} tone="teal" />
+            <ItalyMap data={spesaData} tone="teal" minHeight={360} />
             <p className="mt-2 text-center text-sm font-mono font-bold">{fmtM(results.shock_totale)}</p>
           </div>
-          <div className="flex flex-col items-center justify-center gap-2 py-6">
-            <div className="w-px h-10 bg-ink-200" />
-            <div className="w-full rounded-[22px] bg-[linear-gradient(180deg,_#7C3AED_0%,_#3D0070_100%)] px-3 py-3 text-center text-white shadow-[0_18px_36px_rgba(91,33,247,0.24)]">
-              <p className="text-[10px] font-mono uppercase tracking-wide">Moltip.</p>
-              <p className="text-xl font-bold font-mono">×{results.moltiplicatore.toFixed(2)}</p>
-              <p className="text-[10px]">PIL</p>
-            </div>
-            <IconArrowRight className="text-brand-violet w-5 h-5" />
-            <div className="w-px h-10 bg-ink-200" />
+          <div className="flex flex-col items-center justify-center gap-1 py-6">
+            <div className="w-px flex-1 bg-ink-200" />
+            <span className="text-xs font-mono font-bold text-brand-violet">×{results.moltiplicatore.toFixed(2)}</span>
+            <IconArrowRight className="text-ink-400 w-5 h-5" />
+            <div className="w-px flex-1 bg-ink-200" />
           </div>
           <div>
             <p className="text-xs font-mono uppercase tracking-[0.14em] text-ink-500 mb-2 text-center">Impatto PIL</p>
-            <ItalyMap data={terrHover} tone="violet" />
+            <ItalyMap data={terrHover} tone="violet" minHeight={360} />
             <p className="mt-2 text-center text-sm font-mono font-bold">{fmtM(results.gva.totale)}</p>
           </div>
         </div>
       </section>
 
       {/* Breakdown diretto/indiretto/indotto — CSS rows, no mixed units */}
-      <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-        <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Breakdown</p>
-        <h3 className="text-xl font-bold tracking-tight mb-5">Impatto diretto, indiretto e indotto</h3>
-        <div className="space-y-4">
-          <BreakdownRow label="Valore della Produzione" icon="/icons/produzione.png" bd={results.produzione} fmtVal={fmtM} />
-          <BreakdownRow label="PIL"                     icon="/icons/pil.png"        bd={results.gva}        fmtVal={fmtM} />
-          <BreakdownRow label="Occupazione"             icon="/icons/occupazione.png" bd={results.fte}       fmtVal={n => `${fmtIT(n)} ETP`} />
-          <BreakdownRow label="Redditi delle famiglie"  icon="/icons/redditi.png"    bd={results.redditi}    fmtVal={fmtM} />
+      <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+          <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Breakdown</p>
+          <h3 className="text-xl font-bold tracking-tight mb-5">Impatto diretto, indiretto e indotto</h3>
+          <div className="space-y-4">
+            <BreakdownRow label="Valore della Produzione" icon="/icons/Produzione.png" bd={results.produzione} fmtVal={fmtM} />
+            <BreakdownRow label="PIL"                     icon="/icons/PIL.png"        bd={results.gva}        fmtVal={fmtM} />
+            <BreakdownRow label="Occupazione"             icon="/icons/Occupazione.png" bd={results.fte}       fmtVal={n => `${fmtIT(n)} ETP`} />
+            <BreakdownRow label="Redditi delle famiglie"  icon="/icons/Redditi.png"    bd={results.redditi}    fmtVal={fmtM} />
+          </div>
+        </div>
+        <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+          <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Come leggere gli effetti</p>
+          <h3 className="text-xl font-bold tracking-tight mb-5">Tre canali di impatto</h3>
+          <div className="space-y-3">
+            {IMPACT_TYPES.map((impact) => (
+              <ImpactExplanationCard key={impact.key} impact={impact} value={results.gva?.[impact.key] ?? 0} total={results.gva?.totale ?? 0} fmtVal={fmtM} />
+            ))}
+          </div>
         </div>
       </section>
 
@@ -346,21 +369,17 @@ function TabRiepilogo({ results, insights }) {
       <section>
         <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-4">Glossario degli indicatori</p>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          <DefCard icon="/icons/pil.png"         title="PIL / Valore Aggiunto"
+          <DefCard icon="/icons/PIL.png"         title="PIL / Valore Aggiunto"
             text="Misura il valore aggiunto generato dall'investimento, ovvero la differenza tra il valore dei beni prodotti e i costi degli input intermedi. Include effetti diretti, indiretti e indotti." />
-          <DefCard icon="/icons/produzione.png"  title="Valore della Produzione"
+          <DefCard icon="/icons/Produzione.png"  title="Valore della Produzione"
             text="Valore complessivo della produzione attivata lungo tutta la filiera: beni e servizi prodotti dalle imprese coinvolte, dai fornitori e dalla catena di subappalto." />
-          <DefCard icon="/icons/occupazione.png" title="Occupazione (ETP)"
+          <DefCard icon="/icons/Occupazione.png" title="Occupazione (ETP)"
             text="Equivalenti a Tempo Pieno attivati: unità di lavoro standardizzate a tempo pieno. Include lavoratori diretti, indiretti (filiera) e indotti (effetto reddito-consumo)." />
-          <DefCard icon="/icons/redditi.png"     title="Redditi delle Famiglie"
+          <DefCard icon="/icons/Redditi.png"     title="Redditi delle Famiglie"
             text="Stima dei redditi da lavoro e da capitale trasferiti alle famiglie: salari, stipendi e redditi misti generati dall'intero ciclo economico attivato dall'investimento." />
         </div>
       </section>
 
-      {/* Insights */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {insights.map(ins => <InsightCard key={ins.title} title={ins.title} value={ins.value} text={ins.text} />)}
-      </section>
     </div>
   );
 }
@@ -388,7 +407,7 @@ function TabSpese({ results }) {
     if (!terr.length || !results.shock_totale || !results.produzione.totale) return terr;
     const r = results.shock_totale / results.produzione.totale;
     return [...terr]
-      .map(t => ({ ...t, valore: Math.round(t.valore * r), hoverText: `${t.regione}<br><b>${fmtK(Math.round(t.valore * r))}</b>` }))
+      .map(t => ({ ...t, valore: Math.round(t.valore * r), hoverText: `${t.regione}<br><b>${fmtM(Math.round(t.valore * r))}</b>` }))
       .sort((a, b) => b.valore - a.valore);
   }, [terr, results]);
 
@@ -402,7 +421,7 @@ function TabSpese({ results }) {
       <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <MetricPanel label="Spesa complessiva" value={fmtM(results.shock_totale ?? 0)} note="shock economico iniziale" />
         <MetricPanel label="Primo settore attivato" value={spesaPerSettore[0]?.settore ?? "—"} note={fmtM(spesaPerSettore[0]?.valore ?? 0)} />
-        <MetricPanel label="Prima regione attivata" value={terrSpesa[0]?.regione ?? "—"} note={fmtK(terrSpesa[0]?.valore ?? 0)} />
+        <MetricPanel label="Prima regione attivata" value={terrSpesa[0]?.regione ?? "—"} note={fmtM(terrSpesa[0]?.valore ?? 0)} />
       </section>
 
       {/* Timeline */}
@@ -447,7 +466,7 @@ function TabSpese({ results }) {
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5">
           <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
             <h3 className="text-xl font-bold tracking-tight mb-4">Spesa per regione</h3>
-            <ItalyMap data={terrSpesa} tone="teal" />
+            <ItalyMap data={terrSpesa} tone="teal" minHeight={420} />
           </div>
           <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
             <div className="bg-ink-900 text-white grid grid-cols-[auto_1fr_100px] px-5 py-3 text-xs font-bold gap-3">
@@ -459,7 +478,7 @@ function TabSpese({ results }) {
                 <div key={r.regione} className="grid grid-cols-[auto_1fr_100px] px-5 py-3 text-sm gap-3 items-center">
                   <span className="font-mono text-ink-400 w-5">{i + 1}</span>
                   <span>{r.regione}</span>
-                  <span className="text-right font-mono text-xs">{fmtK(r.valore)}</span>
+                  <span className="text-right font-mono text-xs">{fmtM(r.valore)}</span>
                 </div>
               ))}
             </div>
@@ -475,10 +494,12 @@ function TabSpese({ results }) {
 const FILTER_OPTS = ["Totale", "Diretto", "Indiretto", "Indotto"];
 
 function TabDimension({ tab, results }) {
-  const [selectedRegion, setSelectedRegion] = useState(null);
+  const defaultRegion = results.per_territorio?.[0]?.regione ?? null;
+  const [selectedRegion, setSelectedRegion] = useState(defaultRegion);
   const [filterEffect, setFilterEffect]     = useState("Totale");
 
   const meta = DIM_META[tab];
+  const copy = staticResults.dimensioni?.[tab];
   const bd   = results[meta.key];
   const terr = results.per_territorio ?? [];
   const perSettore = results.per_settore ?? [];
@@ -531,6 +552,25 @@ function TabDimension({ tab, results }) {
         <MetricPanel label="Settore principale" value={settoreScaled[0]?.settore ?? "—"} note={meta.fmtVal(settoreScaled[0]?.valore ?? 0)} />
       </section>
 
+      <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1.05fr_0.95fr]">
+        <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+          <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Contesto della dimensione</p>
+          <h3 className="text-xl font-bold tracking-tight mb-3">{copy?.titolo_dettaglio ?? meta.label}</h3>
+          <p className="max-w-3xl text-sm leading-relaxed text-ink-700">
+            {copy?.descrizione_dettaglio ?? copy?.narrativa_corta}
+          </p>
+        </div>
+        <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+          <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Lettura dei moltiplicatori</p>
+          <h3 className="text-xl font-bold tracking-tight mb-5">Effetti per canale</h3>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {(copy?.moltiplicatori ?? []).map((item) => (
+              <MultiplierCard key={item.tipo} item={item} />
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Map + ranking */}
       <section className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5 items-start">
         {/* Left: maps */}
@@ -538,30 +578,42 @@ function TabDimension({ tab, results }) {
           <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
             <div className="flex items-center justify-between mb-1">
               <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500">Distribuzione regionale</p>
-              {selectedRegion && (
-                <button onClick={() => setSelectedRegion(null)} className="text-xs text-brand-violet font-semibold">
-                  ← Tutte le regioni
-                </button>
-              )}
             </div>
             <h2 className="text-xl font-bold tracking-tight mb-4">{meta.label}</h2>
             <p className="mb-4 max-w-2xl text-sm leading-relaxed text-ink-600">
               La mappa evidenzia dove l'impatto si concentra maggiormente. Seleziona una regione per scendere al livello provinciale e leggere la distribuzione interna.
             </p>
-            <ItalyMap data={terrScaled} tone="violet" onRegionClick={setSelectedRegion} selectedRegion={selectedRegion} />
+            <ItalyMap data={terrScaled} tone="violet" onRegionClick={setSelectedRegion} selectedRegion={selectedRegion} minHeight={470} />
           </div>
-          {selectedRegion && nuts2 && (
-            <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-              <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Dettaglio provinciale</p>
-              <h3 className="text-lg font-bold tracking-tight mb-4">Province di {selectedRegion}</h3>
-              <ProvinceMap regionName={selectedRegion} nuts2Code={nuts2} data={provinceDist} />
+          <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+            <div className="flex items-center justify-between gap-3 mb-1">
+              <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500">Dettaglio provinciale</p>
+              {selectedRegion && (
+                <button onClick={() => setSelectedRegion(null)} className="text-xs text-brand-violet font-semibold">
+                  Tutte le regioni
+                </button>
+              )}
             </div>
-          )}
+            <h3 className="text-lg font-bold tracking-tight mb-3">
+              {selectedRegion ? `Province di ${selectedRegion}` : "Seleziona una regione per approfondire"}
+            </h3>
+            {selectedRegion && nuts2 ? (
+              <>
+                <p className="mb-4 text-sm leading-relaxed text-ink-600">
+                  La vista provinciale distribuisce l'impatto regionale all'interno del territorio e mette in evidenza i poli che assorbono la quota maggiore dell'effetto.
+                </p>
+                <ProvinceMap regionName={selectedRegion} nuts2Code={nuts2} data={provinceDist} minHeight={380} />
+              </>
+            ) : (
+              <EmptyDetailCard topRegions={terrScaled.slice(0, 3)} meta={meta} onSelect={setSelectedRegion} />
+            )}
+          </div>
         </div>
 
         {/* Right: stats + ranking */}
         <div className="space-y-4">
           <DimStatsCard meta={meta} bd={bd} />
+          <ImpactSplitCard meta={meta} bd={bd} />
           {!selectedRegion ? (
             <RankingTable
               rows={terrScaled.slice(0, 15)}
@@ -574,7 +626,7 @@ function TabDimension({ tab, results }) {
               rows={provinceDist}
               labelKey="provincia" valueKey="valore"
               meta={meta}
-              header={`Province · ${selectedRegion}`}
+              header={`Province - ${selectedRegion}`}
             />
           )}
         </div>
@@ -637,73 +689,57 @@ function TabDimension({ tab, results }) {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function KpiCard({ label, icon, value, unit, bd }) {
-  const tot = bd.totale || 1;
-  const pctD = Math.round(bd.diretto   / tot * 100);
-  const pctI = Math.round(bd.indiretto / tot * 100);
-  const pctInd = 100 - pctD - pctI;
+function KpiCard({ label, icon, value, unit }) {
   return (
     <div className="overflow-hidden rounded-[26px] border border-white/70 bg-white p-5 shadow-[0_16px_38px_rgba(15,23,42,0.08)]">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-violet-soft">
-            <img src={icon} alt={label} className="w-8 h-8 object-contain shrink-0" />
-          </span>
-          <span className="text-xs font-mono uppercase tracking-wide text-ink-500 leading-tight">{label}</span>
-        </div>
-        <span className="h-2.5 w-2.5 rounded-full bg-accent-lime" />
+      <div className="mb-4 flex items-center gap-3">
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-violet-soft">
+          <img src={icon} alt={label} className="w-8 h-8 object-contain shrink-0" />
+        </span>
+        <span className="text-xs font-mono uppercase tracking-wide text-ink-500 leading-tight">{label}</span>
       </div>
       <p className="text-3xl font-bold font-mono tracking-tight text-ink-900">{value}</p>
       <p className="mt-1 text-xs text-ink-500">{unit}</p>
-      <div className="mt-4 flex h-2 gap-px overflow-hidden rounded-full bg-ink-100 p-px">
-        <div className="bg-[#3D0070]" style={{ width: `${pctD}%` }} />
-        <div className="bg-brand-violet" style={{ width: `${pctI}%` }} />
-        <div className="bg-violet-200"  style={{ width: `${pctInd}%` }} />
-      </div>
-      <p className="text-[10px] text-ink-400 mt-1">{pctD}% dir · {pctI}% indir · {pctInd}% indotto</p>
     </div>
   );
 }
 
 function BreakdownRow({ label, icon, bd, fmtVal }) {
-  const tot = bd.totale || 1;
-  const pctD   = Math.round(bd.diretto   / tot * 100);
-  const pctI   = Math.round(bd.indiretto / tot * 100);
-  const pctInd = 100 - pctD - pctI;
+  const total = bd?.totale || 0;
   return (
     <div className="flex gap-4 items-start rounded-[24px] border border-ink-100 bg-[linear-gradient(180deg,_#ffffff_0%,_#fbfbfd_100%)] p-5">
       <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-bg-page shrink-0">
         <img src={icon} alt={label} className="w-8 h-8 object-contain mt-0.5 shrink-0" />
       </span>
       <div className="flex-1 min-w-0">
-        <div className="flex items-baseline justify-between gap-3 mb-2">
+        <div className="flex items-baseline justify-between gap-3">
           <span className="text-xs font-mono uppercase tracking-[0.14em] text-ink-500">{label}</span>
-          <span className="text-lg font-bold font-mono shrink-0">{fmtVal(tot)}</span>
+          <span className="text-lg font-bold font-mono shrink-0">{fmtVal(total)}</span>
         </div>
-        <div className="flex h-5 gap-px overflow-hidden rounded-full bg-ink-100 p-px">
-          <div className="bg-[#3D0070] flex items-center justify-center" style={{ width: `${pctD}%` }}>
-            {pctD >= 12 && <span className="text-[10px] text-white font-bold">{pctD}%</span>}
-          </div>
-          <div className="bg-brand-violet flex items-center justify-center" style={{ width: `${pctI}%` }}>
-            {pctI >= 12 && <span className="text-[10px] text-white font-bold">{pctI}%</span>}
-          </div>
-          <div className="bg-violet-200" style={{ width: `${pctInd}%` }} />
-        </div>
-        <div className="mt-2 flex gap-4 flex-wrap text-[11px]">
-          <span className="flex items-center gap-1 text-ink-500">
-            <span className="w-2.5 h-2.5 bg-[#3D0070] inline-block shrink-0" />
-            Diretto <strong className="text-ink-900 ml-0.5">{fmtVal(bd.diretto)}</strong>
-          </span>
-          <span className="flex items-center gap-1 text-ink-500">
-            <span className="w-2.5 h-2.5 bg-brand-violet inline-block shrink-0" />
-            Indiretto <strong className="text-ink-900 ml-0.5">{fmtVal(bd.indiretto)}</strong>
-          </span>
-          <span className="flex items-center gap-1 text-ink-500">
-            <span className="w-2.5 h-2.5 bg-violet-200 inline-block shrink-0" />
-            Indotto <strong className="text-ink-900 ml-0.5">{fmtVal(bd.indotto)}</strong>
-          </span>
+        <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+          {IMPACT_TYPES.map((impact) => (
+            <div key={impact.key} className="rounded-2xl bg-bg-page px-3 py-3">
+              <div className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: impact.color }} />
+                <span className="text-[11px] font-mono uppercase tracking-[0.14em] text-ink-500">{impact.label}</span>
+              </div>
+              <p className="mt-2 text-sm font-bold font-mono text-ink-900">{fmtVal(bd?.[impact.key] ?? 0)}</p>
+              <p className="mt-1 text-[11px] text-ink-500">{shareOf(total, bd?.[impact.key] ?? 0)}% del totale</p>
+            </div>
+          ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+function MultiplierCard({ item }) {
+  return (
+    <div className="rounded-[22px] border border-ink-100 bg-[linear-gradient(180deg,_#ffffff_0%,_#faf8ff_100%)] px-4 py-4">
+      <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-ink-500">{item.label}</p>
+      <p className="mt-2 text-2xl font-bold tracking-tight text-brand-violet">{fmtIT(item.valore, 2)}</p>
+      <p className="mt-2 text-xs text-ink-600">{item.sublabel}</p>
+      <p className="mt-3 text-[11px] font-mono text-ink-400">Range {item.range}</p>
     </div>
   );
 }
@@ -720,6 +756,38 @@ function DimStatsCard({ meta, bd }) {
           <div key={k}>
             <p className="text-[10px] text-ink-400 uppercase tracking-wide">{l}</p>
             <p className="mt-1 text-sm font-mono font-bold">{meta.fmtVal(bd?.[k] ?? 0)}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ImpactSplitCard({ meta, bd }) {
+  return (
+    <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+      <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Scomposizione dell'impatto</p>
+      <h4 className="font-bold mb-4">{meta.label}: quote diretto, indiretto, indotto</h4>
+      <div className="space-y-3">
+        {IMPACT_TYPES.map((impact) => (
+          <div key={impact.key} className="rounded-[22px] border border-ink-100 bg-bg-page px-4 py-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: impact.color }} />
+                <span className="text-sm font-semibold text-ink-900">{impact.label}</span>
+              </div>
+              <span className="text-sm font-mono font-bold text-ink-900">{meta.fmtVal(bd?.[impact.key] ?? 0)}</span>
+            </div>
+            <p className="mt-2 text-xs leading-relaxed text-ink-600">{impact.description}</p>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
+              <div
+                className="h-full rounded-full"
+                style={{ width: `${shareOf(bd?.totale ?? 0, bd?.[impact.key] ?? 0)}%`, backgroundColor: impact.color }}
+              />
+            </div>
+            <p className="mt-2 text-[11px] font-mono uppercase tracking-[0.12em] text-ink-500">
+              {shareOf(bd?.totale ?? 0, bd?.[impact.key] ?? 0)}% del totale
+            </p>
           </div>
         ))}
       </div>
@@ -754,6 +822,44 @@ function RankingTable({ rows, labelKey, valueKey, meta, onSelect, header, showMo
         })}
       </div>
       {showMore > 0 && <p className="px-5 py-3 text-xs text-ink-400">+{showMore} altre regioni</p>}
+    </div>
+  );
+}
+
+function EmptyDetailCard({ topRegions, meta, onSelect }) {
+  return (
+    <div className="rounded-[24px] border border-dashed border-ink-200 bg-[linear-gradient(180deg,_#faf8ff_0%,_#ffffff_100%)] p-5">
+      <p className="text-sm leading-relaxed text-ink-700">
+        Nessuna regione selezionata. Scegli una delle aree principali per vedere subito la distribuzione provinciale.
+      </p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {topRegions.map((region) => (
+          <button
+            key={region.regione}
+            type="button"
+            onClick={() => onSelect(region.regione)}
+            className="rounded-full border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-700 hover:border-brand-violet hover:text-brand-violet"
+          >
+            {region.regione} · {meta.fmtVal(region.valore)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ImpactExplanationCard({ impact, value, total, fmtVal }) {
+  return (
+    <div className="rounded-[22px] border border-ink-100 bg-[linear-gradient(180deg,_#ffffff_0%,_#faf8ff_100%)] px-4 py-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: impact.color }} />
+          <p className="text-sm font-semibold text-ink-900">{impact.label}</p>
+        </div>
+        <span className="text-sm font-mono font-bold text-ink-900">{fmtVal(value)}</span>
+      </div>
+      <p className="mt-2 text-xs leading-relaxed text-ink-600">{impact.description}</p>
+      <p className="mt-3 text-[11px] font-mono uppercase tracking-[0.12em] text-ink-500">{shareOf(total, value)}% del PIL attivato</p>
     </div>
   );
 }

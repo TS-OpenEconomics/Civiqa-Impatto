@@ -7,7 +7,7 @@ function norm(s) {
   return s.toLowerCase().replace(/[´`''']/g,"'").replace(/\s+/g," ").trim();
 }
 
-export function ProvinceMap({ regionName, nuts2Code, data }) {
+export function ProvinceMap({ nuts2Code, data, minHeight = 220, className = "" }) {
   const ref = useRef(null);
   const [geojson, setGeojson] = useState(null);
 
@@ -51,9 +51,9 @@ export function ProvinceMap({ regionName, nuts2Code, data }) {
   }, [geojson, nuts2Code, data]);
 
   if (!geojson) return (
-    <div className="flex items-center justify-center" style={{minHeight:180}}>
+    <div className="flex items-center justify-center" style={{ minHeight }}>
       <div className="w-6 h-6 rounded-full border-4 border-ink-200 border-t-brand-violet animate-spin" />
     </div>
   );
-  return <div ref={ref} style={{width:"100%", minHeight:220}} />;
+  return <div ref={ref} className={className} style={{ width:"100%", minHeight }} />;
 }

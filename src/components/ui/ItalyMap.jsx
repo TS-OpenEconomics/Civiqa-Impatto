@@ -14,7 +14,7 @@ Object.entries(REGION_TO_NUTS).forEach(([reg, ids]) => ids.forEach(id => { NUTS_
 
 let cachedGeojson = null;
 
-export function ItalyMap({ data, tone = "violet", onRegionClick, selectedRegion }) {
+export function ItalyMap({ data, tone = "violet", onRegionClick, selectedRegion, minHeight = 280, className = "" }) {
   const ref = useRef(null);
   const [geojson, setGeojson] = useState(cachedGeojson);
 
@@ -79,9 +79,9 @@ export function ItalyMap({ data, tone = "violet", onRegionClick, selectedRegion 
   }, [geojson, data, tone, onRegionClick, selectedRegion]);
 
   if (!geojson) return (
-    <div className="flex items-center justify-center" style={{minHeight:250}}>
+    <div className="flex items-center justify-center" style={{ minHeight }}>
       <div className="w-8 h-8 rounded-full border-4 border-ink-200 border-t-brand-violet animate-spin" />
     </div>
   );
-  return <div ref={ref} style={{width:"100%", minHeight:280}} />;
+  return <div ref={ref} className={className} style={{ width:"100%", minHeight }} />;
 }

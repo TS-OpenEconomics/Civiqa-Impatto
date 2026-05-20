@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import { useProjects } from "../contexts/ProjectContext";
 import { useToast } from "../hooks/useToast.jsx";
 import projectData from "../mocks/project.json";
 import { Badge } from "./ui/Badge";
 import { EmptyState } from "./ui/EmptyState";
-import { IconArrowRight, IconChevronDown } from "./ui/Icons";
+import { IconArrowRight, IconChevronDown, IconDownload, IconFile, IconGrid, IconList, IconTrash, IconUpload } from "./ui/Icons";
 import { Modal } from "./ui/Modal";
 import { Skeleton, SkeletonText } from "./ui/Skeleton";
 
@@ -25,6 +26,7 @@ export function ProjectDetail({
 }) {
   const navigate = useNavigate();
   const { clearAnalysisData, duplicateProject, deleteProject, setDraftProject } = useProjects();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [modal, setModal] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -191,6 +193,8 @@ export function ProjectDetail({
           }}
         />
       </div>
+
+      <DocumentiSection currentUser={user?.name ?? "Mario Rossi"} />
 
       {modal === "details" ? (
         <Modal title="Dettagli configurazione progetto" onClose={() => setModal(null)}>
@@ -418,4 +422,240 @@ function formatKpiValue(value, type) {
   if (value == null) return "—";
   if (type === "score") return `${Math.round(value)}/100`;
   return `${new Intl.NumberFormat("it-IT", { maximumFractionDigits: 0 }).format(Math.round(value))} €`;
+}
+
+const SORT_OPTIONS = ["Data di creazione", "Nome", "Proprietario"];
+
+const INITIAL_DOCS = [
+  { id: 1, nome: "Quadro economico finanziario.xls", data: "12/10/2025", proprietario: "Mario Rossi", tipo: "xls" },
+  { id: 2, nome: "Relazione tecnica.pdf", data: "14/10/2025", proprietario: "Mario Rossi", tipo: "pdf" },
+  { id: 3, nome: "Piano degli investimenti.xlsx", data: "15/11/2025", proprietario: "Guido di Toro Mammarella", tipo: "xls" },
+];
+
+function DocumentiSection({ currentUser }) {
+  const [activeTab, setActiveTab] = useState("caricati");
+  const [sortBy, setSortBy] = useState("Data di creazione");
+  const [viewMode, setViewMode] = useState("lista");
+  const [docs, setDocs] = useState(INITIAL_DOCS);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const fileInputRef = useRef(null);
+
+  function handleUpload(e) {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    const newDocs = files.map((f) => ({
+      id: Date.now() + Math.random(),
+      nome: f.name,
+      data: new Date().toLocaleDateString("it-IT"),
+      proprietario: currentUser,
+      tipo: f.name.split(".").pop().toLowerCase(),
+    }));
+    setDocs((prev) => [...newDocs, ...prev]);
+    e.target.value = "";
+  }
+
+  function handleDelete(id) {
+    setDocs((prev) => prev.filter((d) => d.id !== id));
+    setDeleteTarget(null);
+  }
+
+  const sorted = [...docs].sort((a, b) => {
+    if (sortBy === "Nome") return a.nome.localeCompare(b.nome);
+    if (sortBy === "Proprietario") return a.proprietario.localeCompare(b.proprietario);
+    return 0;
+  });
+
+  return (
+    <div className="mt-10">
+      <h2 className="text-xl font-bold">Documentazione di progetto</h2>
+
+      <div className="mt-4 bg-white border border-ink-100 shadow-[0_14px_34px_rgba(15,23,42,0.06)]">
+        <div className="flex border-b border-ink-100">
+          <TabBtn active={activeTab === "caricati"} onClick={() => setActiveTab("caricati")}>
+            Documenti caricati
+          </TabBtn>
+          <TabBtn active={activeTab === "prodotti"} onClick={() => setActiveTab("prodotti")}>
+            Documenti prodotti da OpenEconomics
+          </TabBtn>
+        </div>
+
+        {activeTab === "caricati" && (
+          <div className="p-5">
+            <div className="flex flex-wrap items-center gap-4 mb-5">
+              <div className="flex items-center gap-2 text-sm text-ink-700">
+                <span className="font-medium">Ordina per:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="border border-ink-200 px-3 py-1.5 text-sm bg-white rounded-sm"
+                >
+                  {SORT_OPTIONS.map((o) => <option key={o}>{o}</option>)}
+                </select>
+              </div>
+
+              <div className="flex border border-ink-200 overflow-hidden ml-auto">
+                <button
+                  onClick={() => setViewMode("lista")}
+                  className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-semibold transition-colors ${viewMode === "lista" ? "bg-brand-violet text-white" : "text-ink-700 hover:bg-ink-50"}`}
+                >
+                  <IconList className="w-4 h-4" />
+                  Lista
+                </button>
+                <button
+                  onClick={() => setViewMode("griglia")}
+                  className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-semibold transition-colors border-l border-ink-200 ${viewMode === "griglia" ? "bg-brand-violet text-white" : "text-ink-700 hover:bg-ink-50"}`}
+                >
+                  <IconGrid className="w-4 h-4" />
+                  Griglia
+                </button>
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".pdf,.xls,.xlsx,.docx,.jpeg,.jpg"
+                className="hidden"
+                onChange={handleUpload}
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-2 text-sm font-semibold text-brand-violet hover:underline"
+              >
+                Carica documento (pdf, xls, docx, jpeg)
+                <IconUpload className="w-4 h-4" />
+              </button>
+            </div>
+
+            {viewMode === "lista" ? (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-ink-100">
+                    <th className="text-left font-semibold text-ink-500 pb-2 pr-4 w-8" />
+                    <th className="text-left font-semibold text-ink-500 pb-2 pr-4">Nome del documento</th>
+                    <th className="text-left font-semibold text-ink-500 pb-2 pr-4">Data di creazione</th>
+                    <th className="text-left font-semibold text-ink-500 pb-2 pr-4">Proprietario</th>
+                    <th className="pb-2" />
+                    <th className="pb-2" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {sorted.map((doc) => {
+                    const isOwner = doc.proprietario === currentUser;
+                    return (
+                      <tr key={doc.id} className="border-b border-ink-50 hover:bg-ink-50/40">
+                        <td className="py-3 pr-4">
+                          <FileTypeBadge tipo={doc.tipo} />
+                        </td>
+                        <td className="py-3 pr-4 font-semibold">{doc.nome}</td>
+                        <td className="py-3 pr-4 text-ink-600">{doc.data}</td>
+                        <td className="py-3 pr-4 text-ink-600">{doc.proprietario}</td>
+                        <td className="py-3 pr-4 text-right">
+                          <button className="flex items-center gap-1.5 text-brand-violet font-semibold hover:underline whitespace-nowrap">
+                            Scarica <IconDownload className="w-4 h-4" />
+                          </button>
+                        </td>
+                        <td className="py-3 text-right">
+                          <button
+                            disabled={!isOwner}
+                            onClick={() => isOwner && setDeleteTarget(doc)}
+                            className={`flex items-center gap-1.5 font-semibold whitespace-nowrap ${isOwner ? "text-rose-600 hover:underline" : "text-ink-300 cursor-not-allowed"}`}
+                          >
+                            Elimina <IconTrash className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {sorted.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-sm text-ink-400">
+                        Nessun documento caricato.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {sorted.map((doc) => {
+                  const isOwner = doc.proprietario === currentUser;
+                  return (
+                    <div key={doc.id} className="border border-ink-100 p-4 flex flex-col items-center text-center gap-2">
+                      <FileTypeBadge tipo={doc.tipo} large />
+                      <p className="text-xs font-semibold break-all">{doc.nome}</p>
+                      <p className="text-xs text-ink-500">{doc.data}</p>
+                      <div className="flex gap-3 mt-1">
+                        <button className="text-xs text-brand-violet font-semibold hover:underline">Scarica</button>
+                        <button
+                          disabled={!isOwner}
+                          onClick={() => isOwner && setDeleteTarget(doc)}
+                          className={`text-xs font-semibold ${isOwner ? "text-rose-600 hover:underline" : "text-ink-300 cursor-not-allowed"}`}
+                        >
+                          Elimina
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+                {sorted.length === 0 && (
+                  <p className="col-span-4 py-8 text-center text-sm text-ink-400">Nessun documento caricato.</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "prodotti" && (
+          <div className="p-8 text-center text-sm text-ink-400">
+            I documenti prodotti da OpenEconomics saranno disponibili al completamento delle analisi.
+          </div>
+        )}
+      </div>
+
+      {deleteTarget && (
+        <Modal
+          title="Elimina documento"
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={() => handleDelete(deleteTarget.id)}
+          confirmLabel="Elimina"
+        >
+          <p className="text-sm leading-relaxed text-ink-700">
+            Confermi l'eliminazione di <strong>{deleteTarget.nome}</strong>? L'operazione non è reversibile.
+          </p>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+function TabBtn({ active, onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${active ? "border-brand-violet text-brand-violet" : "border-transparent text-ink-500 hover:text-ink-900"}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function FileTypeBadge({ tipo, large = false }) {
+  const colorMap = {
+    xls: "bg-emerald-100 text-emerald-700",
+    xlsx: "bg-emerald-100 text-emerald-700",
+    pdf: "bg-rose-100 text-rose-700",
+    docx: "bg-blue-100 text-blue-700",
+    doc: "bg-blue-100 text-blue-700",
+    jpeg: "bg-amber-100 text-amber-700",
+    jpg: "bg-amber-100 text-amber-700",
+  };
+  const color = colorMap[tipo] || "bg-ink-100 text-ink-600";
+  const size = large ? "w-12 h-14" : "w-8 h-9";
+  return (
+    <div className={`${size} ${color} flex flex-col items-center justify-center rounded-sm relative`}>
+      <IconFile className={large ? "w-6 h-6" : "w-4 h-4"} />
+      <span className="text-[8px] font-bold uppercase mt-0.5">{tipo}</span>
+    </div>
+  );
 }

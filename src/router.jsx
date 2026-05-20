@@ -21,6 +21,7 @@ const EsgResults = lazy(() =>
 );
 import { ConfigurationSummary } from "./components/ConfigurationSummary";
 import { ConfigurationComplete } from "./components/ConfigurationComplete";
+import { ValutazioneIntro } from "./components/ValutazioneIntro";
 import { AnalysisRunning } from "./components/AnalysisRunning";
 import { EiaRunning } from "./components/EiaRunning";
 import { computeEia } from "./lib/eiaEngine";
@@ -38,6 +39,7 @@ export function AppRouter() {
         <Route element={<LayoutRoute />}>
           <Route path="/" element={<Navigate to="/valutazioni" replace />} />
           <Route path="/valutazioni" element={<ValutazioniListRoute />} />
+          <Route path="/valutazioni/nuova/intro" element={<ValutazioneIntroRoute />} />
           <Route path="/valutazioni/nuova" element={<WizardRoute />} />
           <Route path="/valutazioni/nuova/riepilogo" element={<ConfigurationSummaryRoute />} />
           <Route path="/valutazioni/nuova/completata" element={<ConfigurationCompleteRoute />} />
@@ -94,7 +96,18 @@ function ValutazioniListRoute() {
   return (
     <ValutazioniList
       onOpenProject={(id) => navigate(`/valutazioni/${id}`)}
-      onNewEvaluation={() => navigate("/valutazioni/nuova")}
+      onNewEvaluation={() => navigate("/valutazioni/nuova/intro")}
+    />
+  );
+}
+
+function ValutazioneIntroRoute() {
+  const navigate = useNavigate();
+
+  return (
+    <ValutazioneIntro
+      onContinua={() => navigate("/valutazioni/nuova")}
+      onClose={() => navigate("/valutazioni")}
     />
   );
 }
