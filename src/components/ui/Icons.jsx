@@ -1,4 +1,4 @@
-// Icone SVG inline, scelta deliberata: nessuna libreria esterna per la POC
+// Icone SVG inline, scelta deliberata per evitare dipendenze esterne.
 
 export const IconSearch = ({ className = "w-5 h-5" }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

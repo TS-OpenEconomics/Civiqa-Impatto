@@ -18,4 +18,10 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    files: ['serve-dist.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ])

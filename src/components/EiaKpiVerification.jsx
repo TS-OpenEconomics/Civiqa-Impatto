@@ -17,7 +17,8 @@ function formatNumber(value, kpi) {
   return new Intl.NumberFormat("it-IT", { maximumFractionDigits: 4 }).format(num);
 }
 
-function buildInitialValues() {
+function buildInitialValues(savedValues) {
+  if (savedValues) return savedValues;
   // Per i KPI readonly (es. costi parametrici fissi) precompila con stima_anno
   const initial = {};
   kpiData.gruppi.forEach((g) => {
@@ -30,8 +31,8 @@ function buildInitialValues() {
   return initial;
 }
 
-export function EiaKpiVerification({ onClose, onRun }) {
-  const [values, setValues] = useState(buildInitialValues);
+export function EiaKpiVerification({ initialValues, onClose, onRun }) {
+  const [values, setValues] = useState(() => buildInitialValues(initialValues));
 
   const totals = useMemo(() => {
     let filled = 0;
@@ -100,19 +101,26 @@ export function EiaKpiVerification({ onClose, onRun }) {
       <div className="h-[3px] bg-accent-lime" />
 
       {/* Contenuto scrollabile */}
-      <div className="flex-1 overflow-y-auto px-12 py-10">
-        <h1 className="text-2xl font-bold tracking-tight">
+      <div className="flex-1 overflow-y-auto px-6 py-10 md:px-12">
+        <div className="overflow-hidden rounded-[32px] bg-[radial-gradient(circle_at_top_right,_rgba(199,240,58,0.14),_transparent_24%),linear-gradient(135deg,_#100C1E_0%,_#24153F_56%,_#51358C_100%)] px-6 py-7 text-white shadow-[0_24px_70px_rgba(17,24,39,0.14)] md:px-8">
+        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
           Verifica gli indicatori stimati per il progetto
         </h1>
-        <p className="mt-4 text-sm text-ink-700 leading-relaxed max-w-4xl">
+        <p className="mt-4 max-w-4xl text-sm leading-relaxed text-white/75">
           Ti presentiamo una stima dei KPI ambientali, economici e sociali associati
           al tuo progetto, elaborata a partire da open data e linee guida di settore.
           Il valore "Stima anno" è suggerito, non obbligatorio: se non ti soddisfacesse,
           puoi inserire tu un valore autonomamente.
         </p>
+        <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-3">
+          <StatPill label="Campi compilati" value={String(totals.filled)} />
+          <StatPill label="Campi da completare" value={String(totals.missing)} />
+          <StatPill label="Stato" value={allFilled ? "Pronto" : "In verifica"} />
+        </div>
+        </div>
 
         {/* Tabella */}
-        <div className="mt-8 bg-white overflow-hidden">
+        <div className="mt-8 overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
           <div className="overflow-x-auto">
             <table className="w-full text-sm" style={{ minWidth: "1200px" }}>
               <thead>
@@ -152,7 +160,7 @@ export function EiaKpiVerification({ onClose, onRun }) {
         <div className="mt-5 flex items-center justify-between">
           <button
             onClick={autoFillFromStima}
-            className="h-10 px-4 bg-brand-violet text-white text-sm font-semibold flex items-center gap-3 hover:bg-brand-violet-dark"
+            className="flex h-11 items-center gap-3 rounded-full bg-brand-violet px-5 text-sm font-semibold text-white hover:bg-brand-violet-dark"
           >
             Inserisci automaticamente sugli anni
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
@@ -192,7 +200,7 @@ export function EiaKpiVerification({ onClose, onRun }) {
 
       {/* Footer fisso */}
       <button
-        onClick={() => allFilled && onRun()}
+        onClick={() => allFilled && onRun(values)}
         disabled={!allFilled}
         className={`h-14 shrink-0 flex items-center justify-end px-10 gap-3 text-base font-semibold ${
           allFilled
@@ -254,7 +262,7 @@ function RenderGruppo({ gruppo, anni, values, onChange }) {
                         const raw = e.target.value.replace(/\./g, "").replace(",", ".");
                         onChange(k.id, a, raw === "" ? "" : raw);
                       }}
-                      className="w-full h-9 px-2 border border-ink-300 text-right font-mono text-sm focus:outline-none focus:border-brand-violet"
+                      className="h-10 w-full rounded-xl border border-ink-200 bg-ink-50 px-2 text-right font-mono text-sm focus:outline-none focus:border-brand-violet focus:bg-white"
                     />
                     <span className="w-8 text-xs text-ink-500">{k.udm_label}</span>
                   </>
@@ -265,5 +273,14 @@ function RenderGruppo({ gruppo, anni, values, onChange }) {
         </tr>
       ))}
     </>
+  );
+}
+
+function StatPill({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-white/12 bg-white/8 px-4 py-4 backdrop-blur">
+      <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-white/55">{label}</p>
+      <p className="mt-2 text-lg font-semibold text-white">{value}</p>
+    </div>
   );
 }

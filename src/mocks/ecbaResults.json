@@ -1,0 +1,44 @@
+{
+  "metadata": {
+    "dataset": "Quadro economico di progetto",
+    "metodologia": "Attualizzazione economica multi-periodo"
+  },
+  "indicators": [
+    {
+      "id": "benefits",
+      "label": "Benefici economici",
+      "value": "456.726.883,03 €",
+      "text": "Valore attualizzato degli impatti positivi generati dal progetto lungo l'orizzonte temporale considerato."
+    },
+    {
+      "id": "costs",
+      "label": "Costi economici",
+      "value": "446.680.228,98 €",
+      "text": "Costi di realizzazione e gestione dell'intervento, attualizzati sul periodo di analisi."
+    },
+    {
+      "id": "van",
+      "label": "VAN",
+      "value": "10.046.654,05 €",
+      "text": "Differenza tra benefici e costi economici attualizzati."
+    },
+    {
+      "id": "payback",
+      "label": "Payback period",
+      "value": "21 anni",
+      "text": "Periodo necessario per recuperare i costi iniziali attraverso i benefici cumulati."
+    },
+    {
+      "id": "bcr",
+      "label": "Rapporto benefici/costi",
+      "value": "1,02",
+      "text": "Indicatore sintetico della convenienza economica complessiva del progetto."
+    },
+    {
+      "id": "tir",
+      "label": "TIR",
+      "value": "6,34%",
+      "text": "Tasso interno di rendimento economico dello scenario analizzato."
+    }
+  ]
+}

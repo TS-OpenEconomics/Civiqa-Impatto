@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "dataset": "Questionario ESG di progetto",
+    "metodologia": "Scoring qualitativo ponderato"
+  },
+  "rating": {
+    "score": "74/100",
+    "label": "Parzialmente allineato",
+    "text": "Il progetto mostra una buona impostazione ambientale e di governance, ma richiede ancora consolidamento su alcuni aspetti sociali e di monitoraggio.",
+    "breakdown": [
+      { "label": "Environmental", "value": 79 },
+      { "label": "Social", "value": 68 },
+      { "label": "Governance", "value": 75 }
+    ]
+  },
+  "sections": {
+    "riepilogo": {
+      "title": "Lettura complessiva della performance ESG",
+      "description": "Il riepilogo aggrega le principali evidenze emerse dal questionario e le rende leggibili come rating sintetico di allineamento.",
+      "items": [
+        { "label": "Posizionamento complessivo", "text": "La struttura del progetto e gia coerente con un percorso di miglioramento ESG.", "badge": "Parzialmente allineato", "level": "parziale" },
+        { "label": "Aree di forza", "text": "Mitigazione degli impatti ambientali e presidio documentale.", "badge": "Allineato", "level": "allineato" },
+        { "label": "Aree da rinforzare", "text": "Metriche sociali e monitoraggio continuativo degli esiti.", "badge": "Da presidiare", "level": "non" }
+      ]
+    },
+    "environmental": {
+      "title": "Sezione Environmental",
+      "description": "Questa sezione valuta consumo di risorse, impatti ambientali, emissioni e misure di mitigazione previste dal progetto.",
+      "items": [
+        { "label": "Uso del suolo", "text": "La superficie coinvolta e descritta e contestualizzata.", "badge": "Allineato", "level": "allineato" },
+        { "label": "Riduzione impatti", "text": "Sono identificati impatti ambientali specifici che il progetto intende ridurre.", "badge": "Allineato", "level": "allineato" },
+        { "label": "Documentazione", "text": "La documentazione di supporto e prevista ma puo essere ampliata.", "badge": "Parziale", "level": "parziale" }
+      ]
+    },
+    "social": {
+      "title": "Sezione Social",
+      "description": "Questa sezione osserva beneficiari, accessibilita dei servizi e possibili effetti su comunita e lavoro.",
+      "items": [
+        { "label": "Benefici per la comunita", "text": "Il progetto dichiara una platea di beneficiari chiara.", "badge": "Allineato", "level": "allineato" },
+        { "label": "Accessibilita e servizi", "text": "Gli effetti sociali sono presenti ma ancora poco misurati con KPI dedicati.", "badge": "Parziale", "level": "parziale" },
+        { "label": "Occupazione e competenze", "text": "La direzione e positiva, ma servono metriche piu stabili.", "badge": "Parziale", "level": "parziale" }
+      ]
+    },
+    "governance": {
+      "title": "Sezione Governance",
+      "description": "Questa sezione considera presidio delle aree sensibili, sistemi di monitoraggio e disponibilita della documentazione.",
+      "items": [
+        { "label": "Aree naturali sensibili", "text": "La risposta fornita permette una valutazione iniziale del rischio territoriale.", "badge": "Allineato", "level": "allineato" },
+        { "label": "Monitoraggio", "text": "E presente un'impostazione di controllo, ma va resa piu strutturata.", "badge": "Parziale", "level": "parziale" },
+        { "label": "Presidio documentale", "text": "La disponibilita di evidenze a supporto e un punto favorevole del progetto.", "badge": "Allineato", "level": "allineato" }
+      ]
+    }
+  }
+}

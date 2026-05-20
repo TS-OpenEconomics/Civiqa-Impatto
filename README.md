@@ -2,6 +2,17 @@
 
 POC frontend del flusso di Analisi di Impatto (EIA) per Civiqa, basata sui mockup Figma forniti. Replica fedelmente: Login, Lista Valutazioni, Wizard di creazione, Dettaglio progetto, Verifica KPI, schermata di esecuzione e i 6 tab dei risultati EIA (Riepilogo, Spese, PIL, Occupazione, Produzione, Redditi) con distribuzione territoriale.
 
+## Portabilita
+
+La cartella e standalone: puo essere copiata o spostata in un altro percorso senza dipendere da `civiqa-demo` o da cartelle sorelle.
+
+Elementi necessari per eseguirla:
+
+- `src/`, `public/`, `dist/` e i file di configurazione del progetto
+- opzionalmente `.tools/node-v24.15.0-win-x64/` per l'avvio portable senza Node installato
+
+Gli script `start_poc_portable.ps1` e `start_poc_portable.bat` usano prima il runtime locale in `.tools/` se presente, altrimenti fanno fallback al comando `node` disponibile nel `PATH`.
+
 ## Setup
 
 ```bash
@@ -14,6 +25,18 @@ L'app gira su `http://localhost:5173`. Apri quella URL nel browser.
 ```bash
 npm run build      # build di produzione in dist/
 npm run preview    # serve la build di produzione
+```
+
+Per avviare la build gia generata su Windows:
+
+```powershell
+./start_poc_portable.ps1
+```
+
+oppure:
+
+```bat
+start_poc_portable.bat
 ```
 
 ## Navigazione dev

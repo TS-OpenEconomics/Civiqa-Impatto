@@ -45,6 +45,47 @@
     background-image: radial-gradient(circle, #c9b8f2 1.2px, transparent 1.2px);
     background-size: 12px 12px;
   }
+
+  .skeleton-block {
+    position: relative;
+    overflow: hidden;
+    background: #ececf0;
+  }
+
+  .skeleton-block::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+    animation: skeleton-shimmer 1.4s infinite;
+  }
+
+  .eia-fade-up {
+    animation: eia-fade-up 560ms ease-out both;
+  }
+
+  .eia-fade-up-delay {
+    animation-delay: 120ms;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes eia-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 ::-webkit-scrollbar {

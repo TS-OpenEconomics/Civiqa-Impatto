@@ -1,95 +1,87 @@
-// Mappa Italia stilizzata: SVG inline con path approssimativi delle regioni.
-// Per la POC è sufficiente, in produzione si userebbe topojson + d3-geo.
+import { useEffect, useRef, useState } from "react";
+import Plotly from "plotly.js-dist-min";
 
-const REGIONI = [
-  { id: "valdaosta", nome: "Valle d'Aosta", d: "M 80 60 L 95 55 L 100 70 L 88 75 Z" },
-  { id: "piemonte", nome: "Piemonte", d: "M 95 55 L 140 50 L 145 90 L 100 95 Z" },
-  { id: "liguria", nome: "Liguria", d: "M 100 95 L 145 90 L 165 110 L 110 115 Z" },
-  { id: "lombardia", nome: "Lombardia", d: "M 140 50 L 195 45 L 200 85 L 145 90 Z" },
-  { id: "trentino", nome: "Trentino-Alto Adige", d: "M 195 45 L 245 40 L 250 75 L 200 80 Z" },
-  { id: "veneto", nome: "Veneto", d: "M 200 80 L 250 75 L 270 110 L 215 115 Z" },
-  { id: "friuli", nome: "Friuli-Venezia Giulia", d: "M 250 75 L 290 70 L 300 95 L 270 110 Z" },
-  { id: "emilia", nome: "Emilia-Romagna", d: "M 145 90 L 215 115 L 220 135 L 155 140 Z" },
-  { id: "toscana", nome: "Toscana", d: "M 155 140 L 220 135 L 220 175 L 165 180 Z" },
-  { id: "marche", nome: "Marche", d: "M 220 135 L 250 140 L 250 175 L 220 175 Z" },
-  { id: "umbria", nome: "Umbria", d: "M 200 165 L 230 160 L 230 195 L 200 200 Z" },
-  { id: "lazio", nome: "Lazio", d: "M 180 195 L 230 195 L 235 240 L 185 245 Z" },
-  { id: "abruzzo", nome: "Abruzzo", d: "M 230 195 L 265 195 L 270 230 L 235 235 Z" },
-  { id: "molise", nome: "Molise", d: "M 265 220 L 285 215 L 290 240 L 270 245 Z" },
-  { id: "campania", nome: "Campania", d: "M 235 240 L 285 240 L 290 285 L 240 290 Z" },
-  { id: "puglia", nome: "Puglia", d: "M 285 240 L 340 250 L 360 305 L 295 300 Z" },
-  { id: "basilicata", nome: "Basilicata", d: "M 285 285 L 325 295 L 335 325 L 290 320 Z" },
-  { id: "calabria", nome: "Calabria", d: "M 290 320 L 325 325 L 330 380 L 305 385 Z" },
-  { id: "sicilia", nome: "Sicilia", d: "M 230 410 L 305 405 L 315 440 L 240 445 Z" },
-  { id: "sardegna", nome: "Sardegna", d: "M 90 270 L 130 260 L 140 340 L 100 350 Z" },
-];
+const REGION_TO_NUTS = {
+  "Piemonte":["ITC1"],"Valle d'Aosta":["ITC2"],"Liguria":["ITC3"],"Lombardia":["ITC4"],
+  "Trentino-Alto Adige":["ITH1","ITH2"],"Veneto":["ITH3"],"Friuli-Venezia Giulia":["ITH4"],
+  "Emilia-Romagna":["ITH5"],"Toscana":["ITI1"],"Umbria":["ITI2"],"Marche":["ITI3"],
+  "Lazio":["ITI4"],"Abruzzo":["ITF1"],"Molise":["ITF2"],"Campania":["ITF3"],
+  "Puglia":["ITF4"],"Basilicata":["ITF5"],"Calabria":["ITF6"],"Sicilia":["ITG1"],"Sardegna":["ITG2"],
+};
 
-function colorFromIntensity(t, tone = "violet") {
-  // t in [0, 1]
-  if (tone === "violet") {
-    // da #F3EEFE (chiaro) a #2E0B86 (scuro)
-    const r = Math.round(243 - (243 - 46) * t);
-    const g = Math.round(238 - (238 - 11) * t);
-    const b = Math.round(254 - (254 - 134) * t);
-    return `rgb(${r},${g},${b})`;
-  }
-  // tone teal/verde
-  const r = Math.round(232 - (232 - 16) * t);
-  const g = Math.round(244 - (244 - 80) * t);
-  const b = Math.round(242 - (242 - 95) * t);
-  return `rgb(${r},${g},${b})`;
-}
+const NUTS_TO_REGION = {};
+Object.entries(REGION_TO_NUTS).forEach(([reg, ids]) => ids.forEach(id => { NUTS_TO_REGION[id] = reg; }));
 
-function findIntensita(regioneId, dati) {
-  const match = dati.find((d) =>
-    d.regione.toLowerCase().includes(regioneId.toLowerCase()) ||
-    regioneId.toLowerCase().includes(d.regione.toLowerCase().split("-")[0].split(" ")[0].toLowerCase())
-  );
-  return match ? match.intensita : 0.1;
-}
+let cachedGeojson = null;
 
-export function ItalyMap({ data, tone = "violet" }) {
-  return (
-    <div className="w-full">
-      <svg viewBox="0 0 450 460" className="w-full h-auto">
-        {/* Background con pattern dot */}
-        <defs>
-          <pattern id="dotmap" width="6" height="6" patternUnits="userSpaceOnUse">
-            <circle cx="3" cy="3" r="0.5" fill="#A3A3AA" opacity="0.3" />
-          </pattern>
-        </defs>
-        <rect width="450" height="460" fill="url(#dotmap)" />
+export function ItalyMap({ data, tone = "violet", onRegionClick, selectedRegion }) {
+  const ref = useRef(null);
+  const [geojson, setGeojson] = useState(cachedGeojson);
 
-        {REGIONI.map((r) => {
-          const intensita = findIntensita(r.id, data);
-          return (
-            <path
-              key={r.id}
-              d={r.d}
-              fill={colorFromIntensity(intensita, tone)}
-              stroke="#FFFFFF"
-              strokeWidth="1"
-            >
-              <title>{r.nome}</title>
-            </path>
-          );
-        })}
-      </svg>
+  useEffect(() => {
+    if (cachedGeojson) return;
+    fetch("/nuts2_italy.geojson").then(r => r.json()).then(gj => { cachedGeojson = gj; setGeojson(gj); });
+  }, []);
 
-      {/* Legenda */}
-      <div className="mt-3 flex items-center gap-2 text-xs justify-center">
-        <span className="text-ink-500">0</span>
-        <div className="w-40 h-3 flex">
-          {[0, 0.2, 0.4, 0.6, 0.8, 1].map((t) => (
-            <div
-              key={t}
-              className="flex-1 h-full"
-              style={{ background: colorFromIntensity(t, tone) }}
-            />
-          ))}
-        </div>
-        <span className="text-ink-500 font-mono">999.9</span>
-      </div>
+  useEffect(() => {
+    if (!ref.current || !geojson) return;
+
+    const locations = [], z = [], text = [];
+    data.forEach(item => {
+      const ids = REGION_TO_NUTS[item.regione];
+      if (!ids) return;
+      ids.forEach(id => { locations.push(id); z.push(item.intensita ?? 0); text.push(item.hoverText ?? item.regione); });
+    });
+    geojson.features.forEach(f => {
+      const id = f.properties.NUTS_ID;
+      if (!locations.includes(id)) { locations.push(id); z.push(0); text.push(f.properties.NUTS_NAME); }
+    });
+
+    const colorscale = tone === "violet"
+      ? [[0,"#F3EEFE"],[0.5,"#7C3AED"],[1,"#2E0B86"]]
+      : [[0,"#E8F4F2"],[0.5,"#2DD4BF"],[1,"#0F766E"]];
+
+    const traces = [{
+      type:"choropleth", geojson, featureidkey:"properties.NUTS_ID",
+      locations, z, text, colorscale, zmin:0, zmax:1, showscale:false,
+      hovertemplate:"<b>%{text}</b><extra></extra>",
+      marker:{ line:{ color:"white", width:1.5 } },
+    }];
+
+    if (selectedRegion) {
+      const selIds = REGION_TO_NUTS[selectedRegion] ?? [];
+      traces.push({
+        type:"choropleth", geojson, featureidkey:"properties.NUTS_ID",
+        locations:selIds, z:selIds.map(()=>0.5),
+        colorscale:[[0,"rgba(0,0,0,0)"],[1,"rgba(0,0,0,0)"]],
+        showscale:false, hoverinfo:"skip",
+        marker:{ line:{ color:"#F59E0B", width:3 } },
+      });
+    }
+
+    Plotly.react(ref.current, traces, {
+      geo:{ fitbounds:"geojson", visible:false, projection:{type:"mercator"}, bgcolor:"white" },
+      paper_bgcolor:"white", plot_bgcolor:"white",
+      margin:{ t:0, b:0, l:0, r:0 },
+    }, { responsive:true, displayModeBar:false });
+
+    if (onRegionClick) {
+      ref.current.on("plotly_click", evtData => {
+        const loc = evtData.points?.[0]?.location;
+        if (loc) {
+          const reg = NUTS_TO_REGION[loc];
+          if (reg) onRegionClick(reg);
+        }
+      });
+    }
+
+    return () => { if (ref.current) Plotly.purge(ref.current); };
+  }, [geojson, data, tone, onRegionClick, selectedRegion]);
+
+  if (!geojson) return (
+    <div className="flex items-center justify-center" style={{minHeight:250}}>
+      <div className="w-8 h-8 rounded-full border-4 border-ink-200 border-t-brand-violet animate-spin" />
     </div>
   );
+  return <div ref={ref} style={{width:"100%", minHeight:280}} />;
 }
