@@ -18,6 +18,43 @@ function nowDate() {
   return new Intl.DateTimeFormat("it-IT").format(new Date());
 }
 
+export function createEmptyDraftProject() {
+  const base = clone(initialProject);
+  return {
+    ...base,
+    nome: "",
+    cup: "",
+    descrizione: "",
+    stato: "",
+    configurazione: {
+      ...base.configurazione,
+      settore: "",
+      sotto_settore: "",
+      categoria_intervento: "",
+      tipo_intervento: "",
+      durata_progetto: "",
+      localizzazione: "",
+      lat: null,
+      lon: null,
+      nuts_code: "",
+      nuts_label: "",
+      nace_code: "",
+      anno_attualizzazione: null,
+      tasso_attualizzazione: null,
+      capex: null,
+      opex: null,
+      vita_utile: null,
+      capex_distribuzione_attiva: false,
+      capex_distribuzione: {},
+      opex_tasso: null,
+      opex_distribuzione_attiva: false,
+      opex_distribuzione: {},
+      benefici_kpi: null,
+      benefici_extra: [],
+    },
+  };
+}
+
 export function createWorkspace(project) {
   return {
     id: project.id,

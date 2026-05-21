@@ -1,8 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import initialProject from "../mocks/project.json";
 import {
   buildSeedProjects,
+  createEmptyDraftProject,
   createWorkspace,
   duplicateProjectWorkspace,
   nowLabel,
@@ -17,7 +17,7 @@ const ProjectContext = createContext(null);
 
 export function ProjectProvider({ children }) {
   const [projects, setProjects] = useState(readProjectsState);
-  const [draftProject, setDraftProject] = useState(initialProject);
+  const [draftProject, setDraftProject] = useState(createEmptyDraftProject);
   const [uiState, setUiState] = useState(readUiState);
 
   useEffect(() => {

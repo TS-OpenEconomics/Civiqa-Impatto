@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Back coin (upper right) -->
+  <circle cx="64" cy="34" r="20" stroke="#5B21F7" stroke-width="7.5"/>
+  <!-- White disc to mask back coin behind front coin -->
+  <circle cx="37" cy="64" r="26" fill="white"/>
+  <!-- Front coin ring -->
+  <circle cx="37" cy="64" r="26" stroke="#5B21F7" stroke-width="7.5"/>
+  <!-- Euro sign: C-arc opening right, centered in front coin -->
+  <path d="M44.7,57.6 A10,10 0 1,0 44.7,70.4" stroke="#5B21F7" stroke-width="5.5" stroke-linecap="round"/>
+  <!-- Euro sign: two horizontal bars -->
+  <line x1="22" y1="61" x2="44" y2="61" stroke="#5B21F7" stroke-width="5.5" stroke-linecap="round"/>
+  <line x1="22" y1="67" x2="44" y2="67" stroke="#5B21F7" stroke-width="5.5" stroke-linecap="round"/>
+</svg>

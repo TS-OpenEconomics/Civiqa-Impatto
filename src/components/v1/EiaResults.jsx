@@ -4,6 +4,7 @@ import { Badge } from "../ui/Badge";
 import { ItalyMap } from "../ui/ItalyMap";
 import { ProvinceMap } from "../ui/ProvinceMap";
 import { IconDownload, IconArrowRight } from "../ui/Icons";
+import { ImpactIcon } from "../ui/ImpactIcon";
 import { PlotlyChart } from "../charts/PlotlyChart";
 import { buildInsights, computeProvinceDistribution, REGION_NAME_TO_NUTS2 } from "../../lib/eiaEngine";
 import { useToast } from "../../hooks/useToast";
@@ -133,10 +134,10 @@ function stackedBarLayout(nItems, leftMargin = 200, xTitle = "mln €") {
 // ── DIM_META ──────────────────────────────────────────────────────────────────
 
 const DIM_META = {
-  pil:         { label: "PIL",                     key: "gva",        unit: "M€",  fmtVal: fmtM, isMoney: true },
-  occupazione: { label: "Occupazione",             key: "fte",        unit: "ETP", fmtVal: n => fmtIT(n), isMoney: false },
-  produzione:  { label: "Valore della Produzione", key: "produzione", unit: "M€",  fmtVal: fmtM, isMoney: true },
-  redditi:     { label: "Redditi delle famiglie",  key: "redditi",    unit: "M€",  fmtVal: fmtM, isMoney: true },
+  pil:         { label: "PIL",                     key: "gva",        icon: "pil",         unit: "M€",  fmtVal: fmtM, isMoney: true },
+  occupazione: { label: "Occupazione",             key: "fte",        icon: "occupazione", unit: "ETP", fmtVal: n => fmtIT(n), isMoney: false },
+  produzione:  { label: "Valore della Produzione", key: "produzione", icon: "produzione",  unit: "M€",  fmtVal: fmtM, isMoney: true },
+  redditi:     { label: "Redditi delle famiglie",  key: "redditi",    icon: "redditi",     unit: "M€",  fmtVal: fmtM, isMoney: true },
 };
 
 const IMPACT_TYPES = [
@@ -312,11 +313,11 @@ function TabRiepilogo({ results }) {
 
       {/* 5 KPI cards */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <KpiCard label="Valore della Produzione" icon="/icons/Produzione.png"  value={fmtM(results.produzione.totale)} unit="totale"  bd={results.produzione} />
-        <KpiCard label="PIL"                     icon="/icons/PIL.png"         value={fmtM(results.gva.totale)}        unit="totale"  bd={results.gva} />
-        <KpiCard label="Occupazione"             icon="/icons/Occupazione.png" value={fmtIT(results.fte.totale)}       unit="ETP"     bd={results.fte} />
-        <KpiCard label="Redditi"                 icon="/icons/Redditi.png"     value={fmtM(results.redditi.totale)}    unit="totale"  bd={results.redditi} />
-        <KpiCard label="Gettito Fiscale"         icon="/icons/gettito.png"     value={fmtM(results.gettito.totale)}    unit="fiscale" bd={results.gettito} />
+        <KpiCard label="Valore della Produzione" icon="produzione"  value={fmtM(results.produzione.totale)} unit="valore attuale" bd={results.produzione} />
+        <KpiCard label="PIL"                     icon="pil"         value={fmtM(results.gva.totale)}        unit="valore attuale" bd={results.gva} />
+        <KpiCard label="Occupazione"             icon="occupazione" value={fmtIT(results.fte.totale)}       unit="valore attuale" bd={results.fte} />
+        <KpiCard label="Redditi"                 icon="redditi"     value={fmtM(results.redditi.totale)}    unit="valore attuale" bd={results.redditi} />
+        <KpiCard label="Gettito Fiscale"         icon="gettito"     value={fmtM(results.gettito.totale)}    unit="valore attuale" bd={results.gettito} />
       </section>
 
       {/* Spesa → Moltiplicatore → PIL */}
@@ -352,10 +353,10 @@ function TabRiepilogo({ results }) {
           <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Breakdown</p>
           <h3 className="text-xl font-bold tracking-tight mb-5">Impatto diretto, indiretto e indotto</h3>
           <div className="space-y-4">
-            <BreakdownRow label="Valore della Produzione" icon="/icons/Produzione.png" bd={results.produzione} fmtVal={fmtM} />
-            <BreakdownRow label="PIL"                     icon="/icons/PIL.png"        bd={results.gva}        fmtVal={fmtM} />
-            <BreakdownRow label="Occupazione"             icon="/icons/Occupazione.png" bd={results.fte}       fmtVal={n => `${fmtIT(n)} ETP`} />
-            <BreakdownRow label="Redditi delle famiglie"  icon="/icons/Redditi.png"    bd={results.redditi}    fmtVal={fmtM} />
+            <BreakdownRow label="Valore della Produzione" icon="produzione"  bd={results.produzione} fmtVal={fmtM} />
+            <BreakdownRow label="PIL"                     icon="pil"         bd={results.gva}        fmtVal={fmtM} />
+            <BreakdownRow label="Occupazione"             icon="occupazione" bd={results.fte}        fmtVal={n => `${fmtIT(n)} ETP`} />
+            <BreakdownRow label="Redditi delle famiglie"  icon="redditi"     bd={results.redditi}    fmtVal={fmtM} />
           </div>
         </div>
         <div className="overflow-hidden bg-white border border-ink-100 p-6">
@@ -373,13 +374,13 @@ function TabRiepilogo({ results }) {
       <section>
         <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-4">Glossario degli indicatori</p>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          <DefCard icon="/icons/PIL.png"         title="PIL / Valore Aggiunto"
+          <DefCard icon="pil"         title="PIL / Valore Aggiunto"
             text="Misura il valore aggiunto generato dall'investimento, ovvero la differenza tra il valore dei beni prodotti e i costi degli input intermedi. Include effetti diretti, indiretti e indotti." />
-          <DefCard icon="/icons/Produzione.png"  title="Valore della Produzione"
+          <DefCard icon="produzione"  title="Valore della Produzione"
             text="Valore complessivo della produzione attivata lungo tutta la filiera: beni e servizi prodotti dalle imprese coinvolte, dai fornitori e dalla catena di subappalto." />
-          <DefCard icon="/icons/Occupazione.png" title="Occupazione (ETP)"
+          <DefCard icon="occupazione" title="Occupazione (ETP)"
             text="Equivalenti a Tempo Pieno attivati: unità di lavoro standardizzate a tempo pieno. Include lavoratori diretti, indiretti (filiera) e indotti (effetto reddito-consumo)." />
-          <DefCard icon="/icons/Redditi.png"     title="Redditi delle Famiglie"
+          <DefCard icon="redditi"     title="Redditi delle Famiglie"
             text="Stima dei redditi da lavoro e da capitale trasferiti alle famiglie: salari, stipendi e redditi misti generati dall'intero ciclo economico attivato dall'investimento." />
         </div>
       </section>
@@ -702,9 +703,7 @@ function KpiCard({ label, icon, value, unit }) {
   return (
     <div className="overflow-hidden border border-ink-100 bg-white p-5">
       <div className="mb-4 flex items-center gap-3">
-        <span className="flex h-12 w-12 items-center justify-center bg-brand-violet-soft">
-          <img src={icon} alt={label} className="w-8 h-8 object-contain shrink-0" />
-        </span>
+        <ImpactIcon type={icon} label={label} wrapperClassName="flex h-12 w-12 shrink-0 items-center justify-center text-brand-violet" />
         <span className="text-xs font-mono uppercase tracking-wide text-ink-500 leading-tight">{label}</span>
       </div>
       <p className="text-3xl font-bold font-mono tracking-tight text-ink-900">{value}</p>
@@ -717,9 +716,7 @@ function BreakdownRow({ label, icon, bd, fmtVal }) {
   const total = bd?.totale || 0;
   return (
     <div className="flex gap-4 items-start border border-ink-100 bg-white p-5">
-      <span className="flex h-12 w-12 items-center justify-center bg-bg-page shrink-0">
-        <img src={icon} alt={label} className="w-8 h-8 object-contain mt-0.5 shrink-0" />
-      </span>
+      <ImpactIcon type={icon} label={label} wrapperClassName="flex h-12 w-12 shrink-0 items-center justify-center text-brand-violet" />
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-3">
           <span className="text-xs font-mono uppercase tracking-[0.14em] text-ink-500">{label}</span>
@@ -745,9 +742,19 @@ function BreakdownRow({ label, icon, bd, fmtVal }) {
 function DimStatsCard({ meta, bd, moltiplicatore }) {
   return (
     <div className="overflow-hidden bg-ink-900 p-6 text-white">
-      <p className="text-xs font-mono uppercase tracking-[0.14em] text-ink-300">{meta.label} — Totale attivato</p>
-      <p className="mt-3 font-mono text-4xl font-bold tracking-tight">{meta.fmtVal(bd?.totale ?? 0)}</p>
-      <p className="mt-1 text-sm text-ink-300">{meta.unit}</p>
+      <div className="flex items-start gap-3">
+        <ImpactIcon
+          type={meta.icon}
+          label={meta.label}
+          className="h-11 w-11"
+          wrapperClassName="flex h-12 w-12 shrink-0 items-center justify-center text-accent-lime"
+        />
+        <div>
+          <p className="text-xs font-mono uppercase tracking-[0.14em] text-ink-300">{meta.label} — Totale attivato</p>
+          <p className="mt-3 font-mono text-4xl font-bold tracking-tight">{meta.fmtVal(bd?.totale ?? 0)}</p>
+          <p className="mt-1 text-sm text-ink-300">{meta.unit}</p>
+        </div>
+      </div>
       <div className="mt-5 h-px bg-white/10" />
       <div className="mt-4 grid grid-cols-3 gap-2 text-center">
         {[["Diretto", "diretto"], ["Indiretto", "indiretto"], ["Indotto", "indotto"]].map(([l, k]) => (
@@ -787,9 +794,7 @@ function DefCard({ icon, title, text }) {
   return (
     <div className="border border-ink-100 bg-white p-5">
       <div className="flex items-center gap-3 mb-3">
-        <span className="flex h-12 w-12 items-center justify-center bg-bg-page">
-          <img src={icon} alt={title} className="w-8 h-8 object-contain" />
-        </span>
+        <ImpactIcon type={icon} label={title} wrapperClassName="flex h-12 w-12 shrink-0 items-center justify-center text-brand-violet" />
         <p className="font-bold text-sm leading-tight">{title}</p>
       </div>
       <p className="text-xs text-ink-600 leading-relaxed">{text}</p>

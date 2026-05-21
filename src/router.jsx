@@ -29,6 +29,7 @@ import { EsgRunning } from "./components/EsgRunning";
 import { computeEia } from "./lib/eiaEngine";
 import { computeEcba } from "./lib/ecbaEngine";
 import { computeEsg } from "./lib/esgEngine";
+import { createEmptyDraftProject } from "./lib/projectState";
 import { EsgQuestionnaire } from "./components/EsgQuestionnaire";
 import { EcbaSetup } from "./components/EcbaSetup";
 import { Skeleton, SkeletonText } from "./components/ui/Skeleton";
@@ -95,11 +96,15 @@ function LoginScreen() {
 
 function ValutazioniListRoute() {
   const navigate = useNavigate();
+  const { setDraftProject } = useProjects();
 
   return (
     <ValutazioniList
       onOpenProject={(id) => navigate(`/valutazioni/${id}`)}
-      onNewEvaluation={() => navigate("/valutazioni/nuova/intro")}
+      onNewEvaluation={() => {
+        setDraftProject(createEmptyDraftProject());
+        navigate("/valutazioni/nuova/intro");
+      }}
     />
   );
 }

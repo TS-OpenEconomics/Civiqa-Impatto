@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { Skeleton, SkeletonText } from "../ui/Skeleton";
+import { Badge } from "../ui/Badge";
+import { ImpactIcon } from "../ui/ImpactIcon";
 
 // ── Formatters ────────────────────────────────────────────────────────────────
 
@@ -15,6 +17,11 @@ function fmtK(n) {
 
 function fmtIT(n, dec = 0) {
   return new Intl.NumberFormat("it-IT", { minimumFractionDigits: dec, maximumFractionDigits: dec }).format(n);
+}
+
+function fmtM(n) {
+  if (n == null || n === 0) return "—";
+  return `${new Intl.NumberFormat("it-IT", { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(n / 1_000_000)} M€`;
 }
 
 // ── Status helpers ────────────────────────────────────────────────────────────
@@ -38,41 +45,6 @@ function analysisStatusLabel(status) {
 }
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
-
-function IconTarget({ className = "w-5 h-5" }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" />
-      <circle cx="12" cy="12" r="5" />
-      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-function IconScales({ className = "w-5 h-5" }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="12" y1="3" x2="12" y2="21" />
-      <line x1="5" y1="21" x2="19" y2="21" />
-      <path d="M5.5 8.5L3 13.5h5l-2.5-5z" />
-      <path d="M18.5 8.5L16 13.5h5l-2.5-5z" />
-      <line x1="8" y1="3" x2="16" y2="3" />
-    </svg>
-  );
-}
-
-function IconNetwork({ className = "w-5 h-5" }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="5" r="2.5" />
-      <circle cx="4.5" cy="18" r="2.5" />
-      <circle cx="19.5" cy="18" r="2.5" />
-      <line x1="11.1" y1="7.2" x2="5.4" y2="15.8" />
-      <line x1="12.9" y1="7.2" x2="18.6" y2="15.8" />
-      <line x1="7" y1="18" x2="17" y2="18" />
-    </svg>
-  );
-}
 
 function IconChevronDown({ className = "w-4 h-4" }) {
   return (
@@ -125,7 +97,7 @@ function RatingBadge({ rating }) {
 
 const ANALYSIS_META = {
   eia: {
-    Icon: IconTarget,
+    iconSrc: "/icons/analysis-eia.png",
     title: "Analisi di Impatto Economico",
     tag: "EIA",
     tagCls: "bg-[#F8A8E2] text-[#7B1F5E]",
@@ -133,7 +105,7 @@ const ANALYSIS_META = {
     expandDesc: "Effetti economici stimati sul sistema locale durante la fase di investimento e gestione.",
   },
   ecba: {
-    Icon: IconScales,
+    iconSrc: "/icons/analysis-ecba.png",
     title: "Analisi Costi-Benefici",
     tag: "ECBA",
     tagCls: "bg-[#A8D8F8] text-[#1A4F7A]",
@@ -141,7 +113,7 @@ const ANALYSIS_META = {
     expandDesc: "Indicatori chiave di convenienza economica e sostenibilità finanziaria del progetto.",
   },
   esg: {
-    Icon: IconNetwork,
+    iconSrc: "/icons/analysis-esg.png",
     title: "Analisi ESG",
     tag: "ESG",
     tagCls: "bg-[#86E8DC] text-[#0D5C54]",
@@ -155,21 +127,54 @@ const ANALYSIS_META = {
 function EiaKpiCards({ eia }) {
   const r = eia ?? {};
   const kpis = [
-    { label: "Spese",             value: fmtK(r.shock_totale) },
-    { label: "PIL",               value: fmtK(r.gva?.totale) },
-    { label: "Occupati",          value: r.fte?.totale ? `${fmtIT(r.fte.totale, 0)} ETP` : "—" },
-    { label: "Valore produzione", value: fmtK(r.produzione?.totale) },
-    { label: "Redditi",           value: fmtK(r.redditi?.totale) },
+    { label: "Spese attivate",          icon: "spese",       value: fmtM(r.shock_totale),       sub: "valore attuale" },
+    { label: "Valore della produzione", icon: "produzione",  value: fmtM(r.produzione?.totale), sub: "valore attuale" },
+    { label: "PIL",                     icon: "pil",         value: fmtM(r.gva?.totale),        sub: "valore attuale" },
+    { label: "Occupazione",             icon: "occupazione", value: r.fte?.totale ? `${fmtIT(r.fte.totale, 0)} ETP` : "—", sub: "valore attuale" },
+    { label: "Redditi",                 icon: "redditi",     value: fmtM(r.redditi?.totale),    sub: "valore attuale" },
+    { label: "Gettito fiscale",         icon: "gettito",     value: fmtM(r.gettito?.totale),    sub: "valore attuale" },
   ];
+
+  const topSettore = r.per_settore?.[0]?.settore ?? null;
+  const topRegione = r.per_territorio?.[0]?.regione ?? null;
+  const molt = r.moltiplicatore != null ? `${fmtIT(r.moltiplicatore, 2)}×` : null;
+
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
-      {kpis.map((k) => (
-        <div key={k.label} className="flex flex-col items-center justify-center rounded bg-ink-900 px-3 py-4 text-center text-white">
-          <p className="text-[11px] text-white/50">{k.label}</p>
-          <p className="mt-1 font-mono text-[13px] font-bold">{k.value}</p>
-          <p className="mt-0.5 text-[10px] text-white/40">valore attuale</p>
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+        {kpis.map((k) => (
+          <div key={k.label} className="rounded border border-ink-100 bg-white p-4 shadow-sm">
+            <div className="mb-3 flex items-center gap-3">
+              <ImpactIcon type={k.icon} label={k.label} />
+              <p className="text-[13px] font-bold uppercase leading-tight tracking-wide text-ink-700">{k.label}</p>
+            </div>
+            <p className="text-[22px] font-bold leading-tight text-ink-900">{k.value}</p>
+            <p className="mt-1 text-[11px] text-ink-400">{k.sub}</p>
+          </div>
+        ))}
+      </div>
+      {(molt || topSettore || topRegione) && (
+        <div className="flex flex-wrap gap-2 pt-1">
+          {molt && (
+            <span className="flex items-center gap-1.5 rounded-full border border-ink-100 bg-white px-3 py-1 text-[12px]">
+              <span className="font-bold text-brand-violet">{molt}</span>
+              <span className="text-ink-400">moltiplicatore PIL</span>
+            </span>
+          )}
+          {topSettore && (
+            <span className="flex items-center gap-1.5 rounded-full border border-ink-100 bg-white px-3 py-1 text-[12px]">
+              <span className="text-ink-400">Settore principale:</span>
+              <span className="font-semibold text-ink-800">{topSettore}</span>
+            </span>
+          )}
+          {topRegione && (
+            <span className="flex items-center gap-1.5 rounded-full border border-ink-100 bg-white px-3 py-1 text-[12px]">
+              <span className="text-ink-400">Regione maggiormente impattata:</span>
+              <span className="font-semibold text-ink-800">{topRegione}</span>
+            </span>
+          )}
         </div>
-      ))}
+      )}
     </div>
   );
 }
@@ -180,19 +185,23 @@ function EcbaRows({ ecba }) {
   const r = ecba ?? {};
   const bcr = r.bcr ?? (r.benefici_totali && r.costi_totali ? r.benefici_totali / r.costi_totali : null);
   const rows = [
-    { label: "Benefici economici", value: r.benefici_totali ? `€ ${fmtIT(r.benefici_totali)}` : "—" },
-    { label: "Costi economici",    value: r.costi_totali    ? `€ ${fmtIT(r.costi_totali)}`    : "—" },
-    { label: "VANE",               value: r.van != null     ? `€ ${fmtIT(r.van)}`             : "—" },
-    { label: "Payback period",     value: r.payback_period  ? `${r.payback_period} anni`       : "—" },
-    { label: "Rapporto B/C",       value: bcr               ? fmtIT(bcr, 2)                   : "—" },
-    { label: "TIRE",               value: r.irr != null     ? `${fmtIT(r.irr, 2)}%`           : "—" },
+    { label: "Benefici economici", value: r.benefici_totali ? `€ ${fmtIT(r.benefici_totali)}` : "—", tone: "green" },
+    { label: "Costi economici",    value: r.costi_totali    ? `€ ${fmtIT(r.costi_totali)}`    : "—", tone: "red" },
+    { label: "VANE",               value: r.van != null     ? `€ ${fmtIT(r.van)}`             : "—", tone: r.van != null ? (r.van >= 0 ? "green" : "red") : null },
+    { label: "Payback period",     value: r.payback_period  ? `${r.payback_period} anni`       : "—", tone: null },
+    { label: "Rapporto B/C",       value: bcr               ? fmtIT(bcr, 2)                   : "—", tone: bcr != null ? (bcr >= 1 ? "green" : "red") : null },
+    { label: "TIRE",               value: r.irr != null     ? `${fmtIT(r.irr, 2)}%`           : "—", tone: null },
   ];
   return (
-    <div className="space-y-2.5">
+    <div className="ml-auto w-full max-w-sm space-y-2">
       {rows.map((row) => (
-        <div key={row.label} className="flex items-center justify-between gap-4">
+        <div key={row.label} className="flex items-center justify-between gap-3">
           <span className="text-[13px] text-ink-700">{row.label}</span>
-          <span className="shrink-0 rounded bg-accent-lime px-3 py-1 font-mono text-[12px] font-bold text-ink-900">{row.value}</span>
+          <span className={`shrink-0 rounded px-3 py-1 font-mono text-[12px] font-bold ${
+            row.tone === "green" ? "bg-green-100 text-green-800" :
+            row.tone === "red"   ? "bg-red-100 text-red-700" :
+                                   "bg-accent-lime text-ink-900"
+          }`}>{row.value}</span>
         </div>
       ))}
     </div>
@@ -286,50 +295,41 @@ function EsgSummaryPanel({ esg }) {
 // ── Analysis card ─────────────────────────────────────────────────────────────
 
 function AnalysisCard({ id, analysis, results, onOpen }) {
-  const [open, setOpen] = useState(false);
   const meta       = ANALYSIS_META[id];
-  const { Icon }   = meta;
   const st         = analysisStatusLabel(analysis?.status);
   const hasResults = analysis?.status === "completed" && results;
 
   return (
     <div className="overflow-hidden rounded border border-ink-100 bg-white">
-      <div className="flex items-center justify-between px-5 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-ink-100 text-brand-violet">
-            <Icon className="h-5 w-5" />
-          </div>
+      <div className="flex items-center justify-between gap-6 px-5 py-5">
+        {/* Left: icon + title + download link */}
+        <div className="flex items-center gap-4">
+          <img src={meta.iconSrc} alt={meta.title} className="h-20 w-20 shrink-0 object-contain" />
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[14px] font-bold text-ink-900">{meta.title}</span>
-              <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${meta.tagCls}`}>
-                {meta.tag}
-              </span>
+            <div className="flex items-center gap-2.5">
+              <span className="text-[20px] font-bold text-ink-900">{meta.title}</span>
+              <Badge type={meta.tag} />
             </div>
-            <p className="mt-0.5 text-[12px] text-ink-500">{meta.desc}</p>
+            <div className="mt-1.5 flex items-center gap-1.5">
+              <button type="button" className="text-[12px] font-medium text-brand-violet hover:underline">
+                Scarica Report, Metodologia e Fonti
+              </button>
+              <svg className="h-3.5 w-3.5 text-brand-violet" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </div>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-3 pl-4">
-          <span className={`hidden text-[12px] font-medium sm:block ${st.cls}`}>{st.label}</span>
-          <button
-            type="button"
-            onClick={onOpen}
-            className="rounded border border-brand-violet px-4 py-1.5 text-[12px] font-semibold text-brand-violet transition-colors hover:bg-brand-violet hover:text-white"
-          >
-            {analysis?.status === "completed" ? "Vai al dettaglio" : "Avvia"}
-          </button>
-          {hasResults && (
-            <button
-              type="button"
-              onClick={() => setOpen((o) => !o)}
-              className="flex h-8 w-8 items-center justify-center rounded border border-ink-100 text-ink-400 transition-colors hover:bg-ink-100/50 hover:text-ink-700"
-            >
-              <IconChevronDown className={`h-4 w-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
-            </button>
-          )}
-        </div>
+        {/* Right: action button */}
+        <button
+          type="button"
+          onClick={onOpen}
+          className="shrink-0 rounded bg-brand-violet px-5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-violet-dark"
+        >
+          {hasResults ? "Vai al dettaglio dell'analisi →" : "Avvia analisi →"}
+        </button>
       </div>
-      {open && hasResults && (
+      {hasResults && (
         <div className="border-t border-ink-100 bg-ink-100/30 px-5 py-5">
           <div className="flex flex-col gap-6 lg:flex-row">
             <div className="shrink-0 lg:w-44">
@@ -582,7 +582,7 @@ export function ProjectDetail({ workspaceId, project, analyses, results, onBack,
           )}
           <div className="mt-4 flex items-center gap-2">
             <span className="text-[13px] text-ink-500">Stato del progetto:</span>
-            <span className={`rounded-full px-3 py-1 text-[12px] font-semibold ${stato.cls}`}>{stato.label}</span>
+            <span className={`px-3 py-1 text-[12px] font-semibold ${stato.cls}`}>{stato.label}</span>
           </div>
         </div>
 
@@ -656,7 +656,7 @@ export function ProjectDetail({ workspaceId, project, analyses, results, onBack,
       <div className="mt-10">
         <div className="mb-5 flex items-end justify-between">
           <div>
-            <h2 className="text-[16px] font-bold text-ink-900">Le analisi del progetto</h2>
+            <h2 className="text-[20px] font-bold text-ink-900">Le analisi del progetto</h2>
             <p className="mt-0.5 text-[12px] text-ink-500">Espandi una card per visualizzare il riepilogo dei risultati.</p>
           </div>
         </div>

@@ -60,6 +60,31 @@ const SETTORI = Object.keys(SETTORI_DATA);
 const TIPI = ["Nuova realizzazione", "Ristrutturazione", "Recupero", "Manutenzione", "Efficientamento"];
 const ANNI = ["2025", "2026", "2027", "2028", "2029", "2030", "2031"];
 const TASSO_DEFAULT = "3,5";
+const STEP_AUTOFILL_LABEL = "Autoriempi questa pagina";
+const DEMO_AUTOFILL = {
+  nome: "Intervento efficientamento servizio idrico",
+  cup: "I63C22000050127",
+  descrizione:
+    "L'obiettivo e valutare i benefici economici, sociali e ambientali derivanti dal rafforzamento del servizio idrico regionale, in particolare nella riduzione delle perdite, nella resilienza infrastrutturale e nella qualita delle acque.",
+  stato: "Approvato",
+  settore: "Infrastrutture ambientali e risorse idriche",
+  sotto_settore: "Risorse idriche e acque reflue",
+  categoria_intervento: "Corpi idrici: Miglioramento della qualita",
+  tipo_intervento: "Efficientamento",
+  data_inizio: "2025-09-15",
+  data_fine: "2032-09-15",
+  localizzazione: "Via Messina Marine 592 - 90121, Palermo PA",
+  location_lat: 38.1157,
+  location_lon: 13.3615,
+  nuts_code: "ITG12",
+  nuts_label: "Palermo",
+  nace_code: "E36.00",
+  anno_attualizzazione: "2025",
+  tasso_attualizzazione: "3,5",
+  capex: "334000000",
+  vita_utile: 20,
+  opex_tasso: "2,8",
+};
 
 const OPEX_BENCHMARKS = {
   "Infrastrutture sociali":                         { min: 1.5, avg: 2.5, max: 3.5 },
@@ -325,31 +350,31 @@ function buildDraft(project) {
     nome: project.nome ?? "",
     cup: project.cup ?? "",
     descrizione: project.descrizione ?? "",
-    stato: project.stato || STATI[0],
+    stato: project.stato || "",
     settore,
     nace_code: conf.nace_code || SETTORI_DATA[settore]?.nace || "",
     sotto_settore: sotto,
     categoria_intervento: categoria,
-    tipo_intervento: TIPI.includes(conf.tipo_intervento) ? conf.tipo_intervento : TIPI[0],
-    data_inizio: conf.data_inizio || "2025-09-15",
-    data_fine: conf.data_fine || "2032-09-15",
+    tipo_intervento: TIPI.includes(conf.tipo_intervento) ? conf.tipo_intervento : "",
+    data_inizio: conf.data_inizio || "",
+    data_fine: conf.data_fine || "",
     localizzazione: conf.localizzazione ?? "",
     location_lat: conf.lat ?? null,
     location_lon: conf.lon ?? null,
     nuts_code: conf.nuts_code ?? "",
     nuts_label: conf.nuts_label ?? "",
-    anno_attualizzazione: String(conf.anno_attualizzazione ?? 2025),
-    tasso_attualizzazione: String(conf.tasso_attualizzazione ?? TASSO_DEFAULT),
+    anno_attualizzazione: conf.anno_attualizzazione != null ? String(conf.anno_attualizzazione) : "",
+    tasso_attualizzazione: conf.tasso_attualizzazione != null ? String(conf.tasso_attualizzazione) : "",
     capex_distribuzione_attiva: Boolean(conf.capex_distribuzione_attiva),
     capex_distribuzione: conf.capex_distribuzione ?? {},
     opex_tasso: conf.opex_tasso
       ? String(conf.opex_tasso).replace(".", ",")
-      : String((OPEX_BENCHMARKS[settore] ?? OPEX_BENCHMARK_DEFAULT).avg).replace(".", ","),
+      : "",
     opex_distribuzione_attiva: Boolean(conf.opex_distribuzione_attiva),
     opex_distribuzione: conf.opex_distribuzione ?? {},
     capex: String(conf.capex ?? ""),
     opex: String(conf.opex ?? ""),
-    vita_utile: conf.vita_utile ?? (VITA_UTILE_BENCHMARKS[settore] ?? VITA_UTILE_DEFAULT).avg,
+    vita_utile: conf.vita_utile ?? "",
     benefici_kpi: conf.benefici_kpi ?? null,
     benefici_extra: conf.benefici_extra ?? [],
   };
@@ -917,6 +942,80 @@ export function Wizard({ initialProject, onClose, onComplete }) {
     }));
   }
 
+  function autoFillCurrentStep() {
+    switch (step.id) {
+      case "nome":
+        setDraft((prev) => ({ ...prev, nome: DEMO_AUTOFILL.nome, cup: DEMO_AUTOFILL.cup }));
+        break;
+      case "descrizione":
+        update("descrizione", DEMO_AUTOFILL.descrizione);
+        break;
+      case "stato":
+        update("stato", DEMO_AUTOFILL.stato);
+        break;
+      case "classificazione":
+        setClassificationMode("guided");
+        setClassificationRevealLevel(4);
+        setDraft((prev) => ({
+          ...prev,
+          settore: DEMO_AUTOFILL.settore,
+          nace_code: DEMO_AUTOFILL.nace_code,
+          sotto_settore: DEMO_AUTOFILL.sotto_settore,
+          categoria_intervento: DEMO_AUTOFILL.categoria_intervento,
+          tipo_intervento: DEMO_AUTOFILL.tipo_intervento,
+        }));
+        break;
+      case "durata":
+        setDraft((prev) => ({
+          ...prev,
+          data_inizio: DEMO_AUTOFILL.data_inizio,
+          data_fine: DEMO_AUTOFILL.data_fine,
+        }));
+        break;
+      case "localizzazione":
+        setDraft((prev) => ({
+          ...prev,
+          localizzazione: DEMO_AUTOFILL.localizzazione,
+          location_lat: DEMO_AUTOFILL.location_lat,
+          location_lon: DEMO_AUTOFILL.location_lon,
+          nuts_code: DEMO_AUTOFILL.nuts_code,
+          nuts_label: DEMO_AUTOFILL.nuts_label,
+        }));
+        break;
+      case "anno":
+        setAnnoRevealLevel(1);
+        setDraft((prev) => ({
+          ...prev,
+          anno_attualizzazione: DEMO_AUTOFILL.anno_attualizzazione,
+          tasso_attualizzazione: DEMO_AUTOFILL.tasso_attualizzazione,
+        }));
+        break;
+      case "capex":
+        setDraft((prev) => ({
+          ...prev,
+          capex: DEMO_AUTOFILL.capex,
+          capex_distribuzione_attiva: false,
+          capex_distribuzione: {},
+        }));
+        break;
+      case "opex":
+        setOpexRevealLevel(1);
+        setDraft((prev) => ({
+          ...prev,
+          vita_utile: DEMO_AUTOFILL.vita_utile,
+          opex_tasso: DEMO_AUTOFILL.opex_tasso,
+          opex_distribuzione_attiva: false,
+          opex_distribuzione: {},
+        }));
+        break;
+      case "benefici":
+        autoFillBenefici();
+        break;
+      default:
+        break;
+    }
+  }
+
   function handleNext() {
     if (!canProceed) return;
     if (stepIdx === STEPS.length - 1) {
@@ -975,7 +1074,10 @@ export function Wizard({ initialProject, onClose, onComplete }) {
     if (!draft.data_fine) return null;
     return new Date(draft.data_fine + "T00:00:00").getFullYear() + 1;
   }, [draft.data_fine]);
-  const opexEndYear = useMemo(() => opexStartYear ? opexStartYear + Number(draft.vita_utile) - 1 : null, [opexStartYear, draft.vita_utile]);
+  const opexEndYear = useMemo(() => {
+    if (!opexStartYear || !draft.vita_utile) return null;
+    return opexStartYear + Number(draft.vita_utile) - 1;
+  }, [opexStartYear, draft.vita_utile]);
   const opexTotale = useMemo(() => opexAnnualAmount * Number(draft.vita_utile), [opexAnnualAmount, draft.vita_utile]);
 
   const beneficiTemplates = useMemo(() => ECBA_KPI_TEMPLATES[draft.settore] ?? [], [draft.settore]);
@@ -1007,7 +1109,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
       case "capex":
         return draft.capex.trim().length > 0 && (!draft.capex_distribuzione_attiva || Math.abs(capexDistributionTotal - 100) < 0.001);
       case "opex":
-        return draft.opex_tasso.trim().length > 0;
+        return !!draft.vita_utile && draft.opex_tasso.trim().length > 0;
       case "benefici":
         return draft.benefici_kpi !== null;
       default:
@@ -1041,6 +1143,15 @@ export function Wizard({ initialProject, onClose, onComplete }) {
 
         <div className="flex-1 overflow-y-auto bg-[#f3f3f3]">
           <div className="px-8 py-8">
+            <div className="mb-5 flex justify-end">
+              <button
+                type="button"
+                onClick={autoFillCurrentStep}
+                className="border border-brand-violet bg-white px-4 py-2 text-[13px] font-semibold text-brand-violet transition-colors hover:bg-brand-violet-soft"
+              >
+                {STEP_AUTOFILL_LABEL}
+              </button>
+            </div>
             {step.id === "nome" ? (
               <>
                 <QuestionHeader
@@ -1511,8 +1622,16 @@ export function Wizard({ initialProject, onClose, onComplete }) {
 
                       <button
                         type="button"
-                        onClick={() => setOpexRevealLevel(1)}
-                        className="mt-5 flex items-center gap-2 bg-brand-violet px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-brand-violet-dark transition-colors"
+                        disabled={!draft.vita_utile}
+                        onClick={() => {
+                          if (!draft.vita_utile) return;
+                          setOpexRevealLevel(1);
+                        }}
+                        className={`mt-5 flex items-center gap-2 px-5 py-2.5 text-[13px] font-semibold transition-colors ${
+                          draft.vita_utile
+                            ? "bg-brand-violet text-white hover:bg-brand-violet-dark"
+                            : "cursor-not-allowed bg-ink-100 text-ink-300"
+                        }`}
                       >
                         Conferma vita utile del progetto
                         <span className="text-[16px] leading-none">→</span>
