@@ -1,7 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 
-const AUTH_STORAGE_KEY = "civiqa.auth.v1";
 const DEMO_USER = {
   email: "demo@civiqa.it",
   name: "Mario Rossi",
@@ -11,27 +10,8 @@ const DEMO_USER = {
 
 const AuthContext = createContext(null);
 
-function readAuthState() {
-  if (typeof window === "undefined") {
-    return { user: null, token: null };
-  }
-
-  try {
-    const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
-    if (!raw) return { user: null, token: null };
-    return JSON.parse(raw);
-  } catch {
-    return { user: null, token: null };
-  }
-}
-
 export function AuthProvider({ children }) {
-  const [authState, setAuthState] = useState(readAuthState);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authState));
-  }, [authState]);
+  const [authState, setAuthState] = useState({ user: null, token: null });
 
   const value = useMemo(
     () => ({

@@ -322,12 +322,24 @@ function InfoBlock({ label, value }) {
 
 function buildDisplayProject(workspace, index) {
   const preset = LIST_PRESETS[index] || {};
-  const analyses = Object.entries(workspace.analyses || {})
-    .filter(([, meta]) => meta?.status && meta.status !== "needs_input")
-    .map(([key]) => key.toUpperCase());
-  const availableAnalyses = ANALYSIS_ORDER.filter((analysis) =>
-    (preset.analyses || (analyses.length > 0 ? analyses : workspace.project.analisi_disponibili?.map((item) => item.tipo) || [])).includes(analysis),
-  );
+
+  let availableAnalyses;
+  if (preset.analyses) {
+    availableAnalyses = ANALYSIS_ORDER.filter((a) => preset.analyses.includes(a));
+  } else {
+    const ws = workspace.analyses || {};
+    const eiaActive  = ws.eia?.status  && ws.eia.status  !== "needs_input";
+    const ecbaActive = ws.ecba?.status && ws.ecba.status !== "needs_input";
+    const esgActive  = ws.esg?.status  && ws.esg.status  !== "needs_input";
+    // EIA and ECBA always together — either both or neither
+    const showEiaEcba = eiaActive && ecbaActive;
+    // ESG only when both EIA and ECBA are fully completed
+    const showEsg = esgActive && ws.eia?.status === "completed" && ws.ecba?.status === "completed";
+    availableAnalyses = [
+      ...(showEiaEcba ? ["EIA", "ECBA"] : []),
+      ...(showEsg     ? ["ESG"]          : []),
+    ];
+  }
 
   return {
     id: workspace.id,
@@ -346,7 +358,7 @@ function buildDisplayProject(workspace, index) {
   };
 }
 
-export function ValutazioniListV1({ onOpenProject, onNewEvaluation }) {
+export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
   const [isLoading, setIsLoading] = useState(true);
   const [showDraftsOnly, setShowDraftsOnly] = useState(false);
   const [showWithoutAnalysisOnly, setShowWithoutAnalysisOnly] = useState(false);

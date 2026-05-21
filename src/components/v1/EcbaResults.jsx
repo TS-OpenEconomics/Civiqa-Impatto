@@ -50,7 +50,7 @@ function KpiHighlight({ label, value, cls, note }) {
   );
 }
 
-export function EcbaResultsV1({ project, ecbaResults, assumptions, analysis, onBack }) {
+export function EcbaResults({ project, ecbaResults, assumptions, analysis, onBack }) {
   const { toast } = useToast();
   const r = useMemo(() => ecbaResults || buildFallback(assumptions), [ecbaResults, assumptions]);
   const p = project || {};

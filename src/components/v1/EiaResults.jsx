@@ -167,7 +167,7 @@ function shareOf(total, value) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function EiaResultsV1({ project, eiaResults: rawResults, scenario, analysis, onBack }) {
+export function EiaResults({ project, eiaResults: rawResults, scenario, analysis, onBack }) {
   const [tab, setTab] = useState("riepilogo");
   const { showToast } = useToast();
   const results  = useMemo(() => adaptResults(rawResults), [rawResults]);

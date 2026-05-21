@@ -39,7 +39,7 @@ function CheckCircle() {
   );
 }
 
-export function ValutazioneIntroV1({ onContinua, onClose }) {
+export function ValutazioneIntro({ onContinua, onClose }) {
   return (
     <div className="fixed inset-0 bg-bg-page z-50 flex flex-col">
       {/* Green accent line */}

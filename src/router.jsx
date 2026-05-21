@@ -3,27 +3,29 @@ import { Navigate, Outlet, Route, Routes, useLocation, useNavigate, useParams } 
 import { useAuth } from "./contexts/AuthContext";
 import { useProjects } from "./contexts/ProjectContext";
 import { Layout } from "./components/Layout";
-import { LoginV1 } from "./components/v1/LoginV1";
-import { ValutazioniListV1 } from "./components/v1/ValutazioniListV1";
-import { WizardV1 } from "./components/v1/WizardV1";
-import { ProjectDetailV1 } from "./components/v1/ProjectDetailV1";
+import { Login } from "./components/v1/Login";
+import { ValutazioniList } from "./components/v1/ValutazioniList";
+import { Wizard } from "./components/v1/Wizard";
+import { ProjectDetail } from "./components/v1/ProjectDetail";
 import { EiaScenario } from "./components/EiaScenario";
 
 // Lazy-loaded per escludere Plotly dal bundle principale
-const EiaResultsV1 = lazy(() =>
-  import("./components/v1/EiaResultsV1").then((m) => ({ default: m.EiaResultsV1 })),
+const EiaResults = lazy(() =>
+  import("./components/v1/EiaResults").then((m) => ({ default: m.EiaResults })),
 );
-const EcbaResultsV1 = lazy(() =>
-  import("./components/v1/EcbaResultsV1").then((m) => ({ default: m.EcbaResultsV1 })),
+const EcbaResults = lazy(() =>
+  import("./components/v1/EcbaResults").then((m) => ({ default: m.EcbaResults })),
 );
-const EsgResultsV1 = lazy(() =>
-  import("./components/v1/EsgResultsV1").then((m) => ({ default: m.EsgResultsV1 })),
+const EsgResults = lazy(() =>
+  import("./components/v1/EsgResults").then((m) => ({ default: m.EsgResults })),
 );
 import { ConfigurationSummary } from "./components/ConfigurationSummary";
 import { ConfigurationComplete } from "./components/ConfigurationComplete";
-import { ValutazioneIntroV1 } from "./components/v1/ValutazioneIntroV1";
+import { ValutazioneIntro } from "./components/v1/ValutazioneIntro";
 import { AnalysisRunning } from "./components/AnalysisRunning";
+import { AnalysisRunningBoth } from "./components/AnalysisRunningBoth";
 import { EiaRunning } from "./components/EiaRunning";
+import { EsgRunning } from "./components/EsgRunning";
 import { computeEia } from "./lib/eiaEngine";
 import { computeEcba } from "./lib/ecbaEngine";
 import { computeEsg } from "./lib/esgEngine";
@@ -43,6 +45,7 @@ export function AppRouter() {
           <Route path="/valutazioni/nuova" element={<WizardRoute />} />
           <Route path="/valutazioni/nuova/riepilogo" element={<ConfigurationSummaryRoute />} />
           <Route path="/valutazioni/nuova/completata" element={<ConfigurationCompleteRoute />} />
+          <Route path="/valutazioni/:id/running-both" element={<RunningBothRoute />} />
           <Route path="/valutazioni/:id" element={<ProjectDetailRoute />} />
           <Route path="/valutazioni/:id/eia" element={<EiaInputRoute />} />
           <Route path="/valutazioni/:id/eia/running" element={<EiaRunningRoute />} />
@@ -87,14 +90,14 @@ function LoginScreen() {
     return <Navigate to={location.state?.from || "/valutazioni"} replace />;
   }
 
-  return <LoginV1 />;
+  return <Login />;
 }
 
 function ValutazioniListRoute() {
   const navigate = useNavigate();
 
   return (
-    <ValutazioniListV1
+    <ValutazioniList
       onOpenProject={(id) => navigate(`/valutazioni/${id}`)}
       onNewEvaluation={() => navigate("/valutazioni/nuova/intro")}
     />
@@ -105,7 +108,7 @@ function ValutazioneIntroRoute() {
   const navigate = useNavigate();
 
   return (
-    <ValutazioneIntroV1
+    <ValutazioneIntro
       onContinua={() => navigate("/valutazioni/nuova")}
       onClose={() => navigate("/valutazioni")}
     />
@@ -118,7 +121,7 @@ function WizardRoute() {
   const editId = new URLSearchParams(window.location.search).get("editId");
 
   return (
-    <WizardV1
+    <Wizard
       initialProject={draftProject}
       onClose={() => navigate("/valutazioni")}
       onComplete={(nextProject) => {
@@ -129,9 +132,41 @@ function WizardRoute() {
   );
 }
 
+function buildEiaScenario(project) {
+  const c = project.configurazione ?? {};
+  const anno_inizio = c.data_fine
+    ? new Date(c.data_fine + "T00:00:00").getFullYear() + 1
+    : (c.anno_attualizzazione ?? 2025);
+  const vita_utile = c.vita_utile ?? 20;
+  return {
+    settore: c.settore || "",
+    nuts_code: c.nuts_code || "",
+    nuts_label: c.nuts_label || c.localizzazione || "",
+    capex: c.capex ?? 0,
+    opex_annuo: c.opex ?? 0,
+    vita_utile,
+    anno_inizio,
+    anno_fine: anno_inizio + vita_utile - 1,
+    capex_distribuzione: c.capex_distribuzione ?? null,
+    spese_aggiuntive: [],
+    granularita: "regionale",
+    tipo: "completa",
+  };
+}
+
+function buildEcbaInputs(project) {
+  const c = project.configurazione ?? {};
+  return {
+    horizon: c.vita_utile ?? 25,
+    discountRate: 3.5,
+    residualValue: c.capex ? Math.round(c.capex * 0.1) : 0,
+    benefitItems: { gva: true, gettito: true, redditi: false, intangibili: false, intangibiliValue: "" },
+  };
+}
+
 function ConfigurationSummaryRoute() {
   const navigate = useNavigate();
-  const { draftProject, setDraftProject, addProject, saveProjectConfig } = useProjects();
+  const { draftProject, setDraftProject, addProject, saveProjectConfig, saveAnalysisInputs, updateAnalysis } = useProjects();
   const editId = new URLSearchParams(window.location.search).get("editId");
 
   return (
@@ -144,7 +179,40 @@ function ConfigurationSummaryRoute() {
         const projectId = editId
           ? saveProjectConfig(editId, nextProject)
           : addProject(nextProject).id;
-        navigate(`/valutazioni/nuova/completata?projectId=${projectId}`);
+
+        // Auto-start EIA + ECBA
+        const eiaScenario = buildEiaScenario(nextProject);
+        const ecbaInputs = buildEcbaInputs(nextProject);
+        saveAnalysisInputs(projectId, "eiaInputs", eiaScenario);
+        saveAnalysisInputs(projectId, "ecbaInputs", ecbaInputs);
+        updateAnalysis(projectId, "eia", { status: "running" });
+        updateAnalysis(projectId, "ecba", { status: "running" });
+
+        navigate(`/valutazioni/${projectId}/running-both`);
+      }}
+    />
+  );
+}
+
+function RunningBothRoute() {
+  const navigate = useNavigate();
+  const { saveAnalysisInputs, updateAnalysis } = useProjects();
+  const workspace = useWorkspace();
+  if (!workspace) return <Navigate to="/valutazioni" replace />;
+
+  return (
+    <AnalysisRunningBoth
+      project={workspace.project}
+      onBackToProject={() => navigate(`/valutazioni/${workspace.id}`)}
+      onOpenEsg={() => navigate(`/valutazioni/${workspace.id}/esg`)}
+      onComplete={() => {
+        const eiaResults = computeEia(workspace.project, workspace.eiaInputs);
+        saveAnalysisInputs(workspace.id, "eiaResults", eiaResults);
+        updateAnalysis(workspace.id, "eia", { status: "completed" });
+
+        const ecbaResults = computeEcba(workspace.project, eiaResults, workspace.ecbaInputs);
+        saveAnalysisInputs(workspace.id, "ecbaResults", ecbaResults);
+        updateAnalysis(workspace.id, "ecba", { status: "completed" });
       }}
     />
   );
@@ -174,7 +242,7 @@ function ProjectDetailRoute() {
   if (!workspace) return <Navigate to="/valutazioni" replace />;
 
   return (
-    <ProjectDetailV1
+    <ProjectDetail
       project={workspace.project}
       analyses={workspace.analyses}
       results={{
@@ -239,7 +307,7 @@ function EiaResultsRoute() {
 
   return (
     <Suspense fallback={<ResultsPageFallback />}>
-      <EiaResultsV1
+      <EiaResults
         project={workspace.project}
         eiaResults={workspace.eiaResults ?? null}
         scenario={workspace.eiaInputs}
@@ -298,7 +366,7 @@ function EcbaResultsRoute() {
 
   return (
     <Suspense fallback={<ResultsPageFallback />}>
-      <EcbaResultsV1
+      <EcbaResults
         project={workspace.project}
         ecbaResults={workspace.ecbaResults ?? null}
         assumptions={workspace.ecbaInputs}
@@ -337,15 +405,13 @@ function EsgRunningRoute() {
   if (!workspace) return <Navigate to="/valutazioni" replace />;
 
   return (
-    <AnalysisRunning
-      title="Analisi ESG"
-      onBack={() => navigate(`/valutazioni/${workspace.id}`)}
+    <EsgRunning
+      onBackToProject={() => navigate(`/valutazioni/${workspace.id}`)}
       onComplete={() => {
         const settore = workspace.project?.configurazione?.settore ?? "";
         const results = computeEsg(workspace.esgAnswers ?? {}, settore, workspace.eiaResults ?? null);
         saveAnalysisInputs(workspace.id, "esgResults", results);
         updateAnalysis(workspace.id, "esg", { status: "completed" });
-        navigate(`/valutazioni/${workspace.id}/esg/results`);
       }}
     />
   );
@@ -358,7 +424,7 @@ function EsgResultsRoute() {
 
   return (
     <Suspense fallback={<ResultsPageFallback />}>
-      <EsgResultsV1
+      <EsgResults
         project={workspace.project}
         esgResults={workspace.esgResults ?? null}
         answers={workspace.esgAnswers}

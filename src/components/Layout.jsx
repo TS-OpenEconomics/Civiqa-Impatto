@@ -119,7 +119,7 @@ function Header({
         <div className="flex shrink-0 items-center gap-2 md:w-64">
           <IconLogo className="w-4 h-4" />
           <span className="text-[30px] md:text-[24px] font-bold tracking-tight leading-none">
-            Externalytics
+            Civiqa
           </span>
         </div>
 
