@@ -3,25 +3,25 @@ import { Navigate, Outlet, Route, Routes, useLocation, useNavigate, useParams } 
 import { useAuth } from "./contexts/AuthContext";
 import { useProjects } from "./contexts/ProjectContext";
 import { Layout } from "./components/Layout";
-import { Login } from "./components/Login";
-import { ValutazioniList } from "./components/ValutazioniList";
-import { Wizard } from "./components/Wizard";
-import { ProjectDetail } from "./components/ProjectDetail";
+import { LoginV1 } from "./components/v1/LoginV1";
+import { ValutazioniListV1 } from "./components/v1/ValutazioniListV1";
+import { WizardV1 } from "./components/v1/WizardV1";
+import { ProjectDetailV1 } from "./components/v1/ProjectDetailV1";
 import { EiaScenario } from "./components/EiaScenario";
 
 // Lazy-loaded per escludere Plotly dal bundle principale
-const EiaResults = lazy(() =>
-  import("./components/EiaResults").then((m) => ({ default: m.EiaResults })),
+const EiaResultsV1 = lazy(() =>
+  import("./components/v1/EiaResultsV1").then((m) => ({ default: m.EiaResultsV1 })),
 );
-const EcbaResults = lazy(() =>
-  import("./components/EcbaResults").then((m) => ({ default: m.EcbaResults })),
+const EcbaResultsV1 = lazy(() =>
+  import("./components/v1/EcbaResultsV1").then((m) => ({ default: m.EcbaResultsV1 })),
 );
-const EsgResults = lazy(() =>
-  import("./components/EsgResults").then((m) => ({ default: m.EsgResults })),
+const EsgResultsV1 = lazy(() =>
+  import("./components/v1/EsgResultsV1").then((m) => ({ default: m.EsgResultsV1 })),
 );
 import { ConfigurationSummary } from "./components/ConfigurationSummary";
 import { ConfigurationComplete } from "./components/ConfigurationComplete";
-import { ValutazioneIntro } from "./components/ValutazioneIntro";
+import { ValutazioneIntroV1 } from "./components/v1/ValutazioneIntroV1";
 import { AnalysisRunning } from "./components/AnalysisRunning";
 import { EiaRunning } from "./components/EiaRunning";
 import { computeEia } from "./lib/eiaEngine";
@@ -87,14 +87,14 @@ function LoginScreen() {
     return <Navigate to={location.state?.from || "/valutazioni"} replace />;
   }
 
-  return <Login />;
+  return <LoginV1 />;
 }
 
 function ValutazioniListRoute() {
   const navigate = useNavigate();
 
   return (
-    <ValutazioniList
+    <ValutazioniListV1
       onOpenProject={(id) => navigate(`/valutazioni/${id}`)}
       onNewEvaluation={() => navigate("/valutazioni/nuova/intro")}
     />
@@ -105,7 +105,7 @@ function ValutazioneIntroRoute() {
   const navigate = useNavigate();
 
   return (
-    <ValutazioneIntro
+    <ValutazioneIntroV1
       onContinua={() => navigate("/valutazioni/nuova")}
       onClose={() => navigate("/valutazioni")}
     />
@@ -118,7 +118,7 @@ function WizardRoute() {
   const editId = new URLSearchParams(window.location.search).get("editId");
 
   return (
-    <Wizard
+    <WizardV1
       initialProject={draftProject}
       onClose={() => navigate("/valutazioni")}
       onComplete={(nextProject) => {
@@ -174,7 +174,7 @@ function ProjectDetailRoute() {
   if (!workspace) return <Navigate to="/valutazioni" replace />;
 
   return (
-    <ProjectDetail
+    <ProjectDetailV1
       project={workspace.project}
       analyses={workspace.analyses}
       results={{
@@ -239,7 +239,7 @@ function EiaResultsRoute() {
 
   return (
     <Suspense fallback={<ResultsPageFallback />}>
-      <EiaResults
+      <EiaResultsV1
         project={workspace.project}
         eiaResults={workspace.eiaResults ?? null}
         scenario={workspace.eiaInputs}
@@ -298,7 +298,7 @@ function EcbaResultsRoute() {
 
   return (
     <Suspense fallback={<ResultsPageFallback />}>
-      <EcbaResults
+      <EcbaResultsV1
         project={workspace.project}
         ecbaResults={workspace.ecbaResults ?? null}
         assumptions={workspace.ecbaInputs}
@@ -358,7 +358,7 @@ function EsgResultsRoute() {
 
   return (
     <Suspense fallback={<ResultsPageFallback />}>
-      <EsgResults
+      <EsgResultsV1
         project={workspace.project}
         esgResults={workspace.esgResults ?? null}
         answers={workspace.esgAnswers}

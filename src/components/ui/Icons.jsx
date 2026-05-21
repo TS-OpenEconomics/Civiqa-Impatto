@@ -175,6 +175,30 @@ export const IconLogo = ({ className = "w-7 h-7" }) => (
   </svg>
 );
 
+// Logo mark OpenEconomics: cerchio pieno con foro quadrato (evenodd) — versione nera
+export const IconOEBlack = ({ className = "w-10 h-10" }) => (
+  <svg className={className} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M2 50 A48 48 0 1 0 98 50 A48 48 0 1 0 2 50 Z M25 25 H75 V75 H25 Z"
+      fill="#0E0E10"
+    />
+  </svg>
+);
+
+// Logo mark OpenEconomics: cerchio pieno con foro quadrato (evenodd) — versione bianca
+export const IconOEWhite = ({ className = "w-10 h-10" }) => (
+  <svg className={className} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M2 50 A48 48 0 1 0 98 50 A48 48 0 1 0 2 50 Z M25 25 H75 V75 H25 Z"
+      fill="white"
+    />
+  </svg>
+);
+
 export const IconUpload = ({ className = "w-4 h-4" }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />

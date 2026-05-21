@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
-import staticResults from "../mocks/eiaResults.json";
-import { Badge } from "./ui/Badge";
-import { ItalyMap } from "./ui/ItalyMap";
-import { ProvinceMap } from "./ui/ProvinceMap";
-import { IconDownload, IconArrowRight } from "./ui/Icons";
-import { PlotlyChart } from "./charts/PlotlyChart";
-import { buildInsights, computeProvinceDistribution, REGION_NAME_TO_NUTS2 } from "../lib/eiaEngine";
-import { useToast } from "../hooks/useToast";
+import staticResults from "../../mocks/eiaResults.json";
+import { Badge } from "../ui/Badge";
+import { ItalyMap } from "../ui/ItalyMap";
+import { ProvinceMap } from "../ui/ProvinceMap";
+import { IconDownload, IconArrowRight } from "../ui/Icons";
+import { PlotlyChart } from "../charts/PlotlyChart";
+import { buildInsights, computeProvinceDistribution, REGION_NAME_TO_NUTS2 } from "../../lib/eiaEngine";
+import { useToast } from "../../hooks/useToast";
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 
@@ -167,7 +167,7 @@ function shareOf(total, value) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function EiaResults({ project, eiaResults: rawResults, scenario, analysis, onBack }) {
+export function EiaResultsV1({ project, eiaResults: rawResults, scenario, analysis, onBack }) {
   const [tab, setTab] = useState("riepilogo");
   const { showToast } = useToast();
   const results  = useMemo(() => adaptResults(rawResults), [rawResults]);
@@ -195,50 +195,48 @@ export function EiaResults({ project, eiaResults: rawResults, scenario, analysis
   }
 
   return (
-    <div className="min-h-full bg-[linear-gradient(180deg,_#f6f3ff_0%,_#f7f6fb_22%,_#f4f6fb_100%)]">
-      <div className="bg-[radial-gradient(circle_at_top_right,_rgba(199,240,58,0.16),_transparent_28%),radial-gradient(circle_at_top_left,_rgba(124,58,237,0.18),_transparent_32%)] px-4 pt-8 pb-20 md:px-10">
-        <nav className="flex items-center gap-2 text-sm">
-          <span className="text-brand-violet font-bold tracking-widest">...</span>
-          <span className="text-ink-300">/</span>
-          <button onClick={onBack} className="underline text-ink-900">Dettaglio del progetto</button>
-          <span className="text-ink-300">/</span>
-          <span className="font-bold">Analisi di Impatto</span>
+    <div className="min-h-full bg-[#f5f5f5]">
+      <div className="px-4 pt-8 pb-6 md:px-10">
+        <nav className="flex items-center gap-1.5 text-xs text-ink-400">
+          <button onClick={onBack} className="hover:text-brand-violet transition-colors">Dettaglio del progetto</button>
+          <span>›</span>
+          <span className="font-semibold text-ink-700">Analisi di Impatto</span>
         </nav>
-        <p className="mt-5 text-xs text-ink-700">
+        <p className="mt-3 text-xs text-ink-700">
           Creato il <span className="font-mono font-semibold">{meta.creato_il}</span> da{" "}
           <strong>{meta.creato_da}</strong> — Ultima modifica{" "}
           <span className="font-mono font-semibold">{analysis?.updatedAt ?? meta.ultima_modifica}</span>
         </p>
-        <div className="mt-5 overflow-hidden rounded-[32px] border border-white/70 bg-white shadow-[0_24px_70px_rgba(17,24,39,0.10)]">
-          <div className="bg-[linear-gradient(135deg,_#100C1E_0%,_#24153F_55%,_#51358C_100%)] px-6 py-6 text-white md:px-8 flex items-start justify-between gap-6 flex-wrap">
+        <div className="mt-5 overflow-hidden bg-white border border-ink-100">
+          <div className="bg-ink-900 px-6 py-6 text-white md:px-8 flex items-start justify-between gap-6 flex-wrap">
             <div className="flex items-start gap-4">
-              <span className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-white p-2 shadow-[0_16px_40px_rgba(0,0,0,0.18)] shrink-0">
+              <span className="flex h-16 w-16 items-center justify-center bg-white p-2 shrink-0">
                 <img src="/icons/analysis-eia.png" alt="Logo analisi di impatto" className="h-full w-full object-contain" />
               </span>
               <div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <h1 className="text-2xl font-bold tracking-tight">Analisi di Impatto</h1>
+                  <h1 className="text-[22px] font-bold">Analisi di Impatto</h1>
                   <Badge type="EIA" />
-                  <span className="inline-flex rounded-full bg-white/10 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.18em] text-white/70">
+                  <span className="inline-flex bg-white/10 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.18em] text-white/70">
                     Diretti, indiretti, indotti
                   </span>
                 </div>
                 <p className="mt-2 text-sm text-white/80">Del progetto <span className="font-medium text-white">{project.nome}</span></p>
-                <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/70">
+                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/70">
                   Vista sintetica dei risultati economici, territoriali e occupazionali generati dall'investimento, con lettura per impatto diretto, indiretto e indotto.
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-sm shrink-0">
-              <button onClick={() => showToast("Export PDF disponibile nella versione completa.", "info")} className="flex h-11 items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 font-semibold text-white backdrop-blur hover:bg-white/15">
+              <button onClick={() => showToast("Export PDF disponibile nella versione completa.", "info")} className="flex h-10 items-center gap-2 border border-white/20 bg-white/10 px-4 font-semibold text-white hover:bg-white/20">
                 Scarica report <IconDownload />
               </button>
-              <button onClick={handleDownloadExcel} className="flex h-11 items-center gap-2 rounded-full bg-white px-4 font-semibold text-brand-violet shadow-[0_10px_30px_rgba(255,255,255,0.16)] hover:bg-brand-violet-soft">
+              <button onClick={handleDownloadExcel} className="flex h-10 items-center gap-2 bg-accent-lime px-4 font-semibold text-ink-900 hover:opacity-90">
                 Scarica Excel <IconDownload />
               </button>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-4 border-t border-ink-100 bg-white px-6 py-5 text-sm md:grid-cols-3 md:px-8">
+          <div className="grid grid-cols-1 gap-0 border-t border-ink-100 bg-white px-6 py-5 text-sm md:grid-cols-3 md:px-8 divide-x divide-ink-100">
             <MetaField label="Settore"      value={project.configurazione?.settore ?? meta.settore} />
             <MetaField label="Dataset"      value={meta.dataset} />
             <MetaField label="Metodologia"  value={meta.metodologia} />
@@ -246,23 +244,26 @@ export function EiaResults({ project, eiaResults: rawResults, scenario, analysis
         </div>
       </div>
 
-      <div className="-mt-10 px-4 pb-10 md:px-10">
-        <div className="overflow-hidden rounded-[30px] border border-white/80 bg-white/95 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur">
-          <div className="flex overflow-x-auto gap-2 border-b border-ink-100 px-4 py-4 md:px-6">
+      <div className="px-4 pb-10 md:px-10">
+        <div className="overflow-hidden bg-white border border-ink-100">
+          <div className="flex overflow-x-auto border-b border-ink-100 px-4 md:px-6">
             {TABS.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
-                className={`rounded-full px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition-colors ${tab === t.id ? "bg-brand-violet text-white shadow-[0_10px_24px_rgba(91,33,247,0.24)]" : "bg-bg-page text-ink-500 hover:bg-white hover:text-ink-900"}`}>
+                className={`px-4 py-3.5 text-sm font-semibold whitespace-nowrap transition-colors relative ${tab === t.id ? "text-brand-violet" : "text-ink-500 hover:text-ink-900"}`}>
                 {t.label}
+                {tab === t.id && <span className="absolute left-0 right-0 -bottom-px h-[3px] bg-brand-violet" />}
               </button>
             ))}
           </div>
           <div className="px-4 py-8 md:px-6">
-            <div className="mb-8 rounded-[26px] border border-ink-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.92)_0%,_rgba(246,243,255,0.92)_100%)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
-              <p className="text-xs font-mono uppercase tracking-[0.18em] text-ink-500">Chiave di lettura</p>
-              <p className="mt-2 max-w-4xl text-sm leading-relaxed text-ink-700">
-                {staticResults.riepilogo.descrizione_2}
-              </p>
-            </div>
+            {(tab === "riepilogo" || tab === "spese") && (
+              <div className="mb-8 border border-ink-100 bg-ink-50/70 px-5 py-5">
+                <p className="text-xs font-mono uppercase tracking-[0.18em] text-ink-500">Chiave di lettura</p>
+                <p className="mt-2 max-w-4xl text-sm leading-relaxed text-ink-700">
+                  {staticResults.riepilogo.descrizione_2}
+                </p>
+              </div>
+            )}
             {tab === "riepilogo"   && <TabRiepilogo results={results} />}
             {tab === "spese"       && <TabSpese results={results} />}
             {(tab === "pil" || tab === "occupazione" || tab === "produzione" || tab === "redditi") && (
@@ -296,7 +297,7 @@ function TabRiepilogo({ results }) {
   return (
     <div className="space-y-8">
       <section>
-        <div className="eia-fade-up overflow-hidden rounded-[24px] bg-[linear-gradient(135deg,_#0f172a_0%,_#1e1b4b_48%,_#4c1d95_100%)] px-5 py-4 text-white shadow-[0_16px_40px_rgba(15,23,42,0.14)] md:px-6">
+        <div className="eia-fade-up overflow-hidden bg-ink-900 px-5 py-4 text-white md:px-6">
           <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-white/50">Executive Summary</p>
           <h2 className="mt-2 text-lg font-bold tracking-tight">
             L'investimento attiva una filiera ampia e concentra il primo impatto su {topRegion}.
@@ -319,7 +320,7 @@ function TabRiepilogo({ results }) {
       </section>
 
       {/* Spesa → Moltiplicatore → PIL */}
-      <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+      <section className="overflow-hidden bg-white border border-ink-100 p-6">
         <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Meccanismo di trasmissione</p>
         <h3 className="text-xl font-bold tracking-tight mb-6">Dall'investimento all'impatto sul PIL</h3>
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_100px_1fr] gap-4 items-center">
@@ -328,11 +329,14 @@ function TabRiepilogo({ results }) {
             <ItalyMap data={spesaData} tone="teal" minHeight={360} />
             <p className="mt-2 text-center text-sm font-mono font-bold">{fmtM(results.shock_totale)}</p>
           </div>
-          <div className="flex flex-col items-center justify-center gap-1 py-6">
-            <div className="w-px flex-1 bg-ink-200" />
-            <span className="text-xs font-mono font-bold text-brand-violet">×{results.moltiplicatore.toFixed(2)}</span>
-            <IconArrowRight className="text-ink-400 w-5 h-5" />
-            <div className="w-px flex-1 bg-ink-200" />
+          <div className="flex flex-col items-center justify-center gap-2 py-6">
+            <div className="w-px flex-1 bg-ink-100" />
+            <div className="flex flex-col items-center gap-1.5 border border-brand-violet/20 bg-white px-4 py-3">
+              <span className="text-[9px] font-mono uppercase tracking-widest text-ink-400">Moltip.</span>
+              <span className="text-lg font-bold font-mono text-brand-violet">×{results.moltiplicatore.toFixed(2)}</span>
+              <IconArrowRight className="text-brand-violet/50 w-4 h-4" />
+            </div>
+            <div className="w-px flex-1 bg-ink-100" />
           </div>
           <div>
             <p className="text-xs font-mono uppercase tracking-[0.14em] text-ink-500 mb-2 text-center">Impatto PIL</p>
@@ -342,9 +346,9 @@ function TabRiepilogo({ results }) {
         </div>
       </section>
 
-      {/* Breakdown diretto/indiretto/indotto — CSS rows, no mixed units */}
+      {/* Breakdown diretto/indiretto/indotto */}
       <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <div className="overflow-hidden bg-white border border-ink-100 p-6">
           <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Breakdown</p>
           <h3 className="text-xl font-bold tracking-tight mb-5">Impatto diretto, indiretto e indotto</h3>
           <div className="space-y-4">
@@ -354,7 +358,7 @@ function TabRiepilogo({ results }) {
             <BreakdownRow label="Redditi delle famiglie"  icon="/icons/Redditi.png"    bd={results.redditi}    fmtVal={fmtM} />
           </div>
         </div>
-        <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <div className="overflow-hidden bg-white border border-ink-100 p-6">
           <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Come leggere gli effetti</p>
           <h3 className="text-xl font-bold tracking-tight mb-5">Tre canali di impatto</h3>
           <div className="space-y-3">
@@ -426,7 +430,7 @@ function TabSpese({ results }) {
 
       {/* Timeline */}
       {perAnno.length > 0 && (
-        <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <section className="overflow-hidden bg-white border border-ink-100 p-6">
           <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Distribuzione temporale</p>
           <h3 className="text-xl font-bold tracking-tight mb-4">Spesa CAPEX / OPEX per anno</h3>
           <PlotlyChart data={annoBar} layout={{ barmode: "stack", xaxis: { type: "category" }, yaxis: { title: "€" } }} style={{ minHeight: 280 }} />
@@ -450,7 +454,7 @@ function TabSpese({ results }) {
       )}
 
       {/* Spese per settore */}
-      <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+      <section className="overflow-hidden bg-white border border-ink-100 p-6">
         <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Distribuzione settoriale</p>
         <h3 className="text-xl font-bold tracking-tight mb-4">Spesa attivata per settore produttivo</h3>
         <PlotlyChart
@@ -464,11 +468,11 @@ function TabSpese({ results }) {
       <section>
         <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-4">Distribuzione territoriale</p>
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5">
-          <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+          <div className="overflow-hidden bg-white border border-ink-100 p-6">
             <h3 className="text-xl font-bold tracking-tight mb-4">Spesa per regione</h3>
             <ItalyMap data={terrSpesa} tone="teal" minHeight={420} />
           </div>
-          <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+          <div className="overflow-hidden bg-white border border-ink-100">
             <div className="bg-ink-900 text-white grid grid-cols-[auto_1fr_100px] px-5 py-3 text-xs font-bold gap-3">
               <span>#</span><span>Regione</span><span className="text-right">Spesa</span>
             </div>
@@ -494,9 +498,11 @@ function TabSpese({ results }) {
 const FILTER_OPTS = ["Totale", "Diretto", "Indiretto", "Indotto"];
 
 function TabDimension({ tab, results }) {
-  const defaultRegion = results.per_territorio?.[0]?.regione ?? null;
-  const [selectedRegion, setSelectedRegion] = useState(defaultRegion);
-  const [filterEffect, setFilterEffect]     = useState("Totale");
+  const [selectedRegion,   setSelectedRegion]   = useState(null);
+  const [selectedProvince, setSelectedProvince] = useState(null);
+  const [filterEffect,     setFilterEffect]     = useState("Totale");
+
+  const level = selectedRegion ? (selectedProvince ? "provincia" : "regione") : "nazionale";
 
   const meta = DIM_META[tab];
   const copy = staticResults.dimensioni?.[tab];
@@ -507,13 +513,11 @@ function TabDimension({ tab, results }) {
   const bdFraction = bd?.totale && results.produzione.totale
     ? bd.totale / results.produzione.totale : 1;
 
-  // Scale territorial data to current dimension
   const terrScaled = useMemo(() => terr.map(r => {
     const v = Math.round(r.valore * bdFraction);
     return { ...r, valore: v, hoverText: `${r.regione}<br><b>${meta.fmtVal(v)}</b>` };
   }), [terr, bdFraction, meta]);
 
-  // Scale sector data to current dimension
   const settoreScaled = useMemo(() => perSettore.map(s => ({
     ...s, valore: Math.round(s.valore * bdFraction),
   })), [perSettore, bdFraction]);
@@ -526,17 +530,20 @@ function TabDimension({ tab, results }) {
     return row ? computeProvinceDistribution(selectedRegion, row.valore) : [];
   }, [selectedRegion, terrScaled]);
 
-  // Regional stacked bar (top 10)
+  function goNazionale() { setSelectedRegion(null); setSelectedProvince(null); }
+  function goRegione()   { setSelectedProvince(null); }
+
+  const rankingRows     = level === "nazionale" ? terrScaled.slice(0, 15) : provinceDist;
+  const rankingLabelKey = level === "nazionale" ? "regione" : "provincia";
+
   const regBar = useMemo(() =>
     buildStackedBar(terrScaled.slice(0, 10), "regione", "valore", bd, meta.isMoney, filterEffect),
     [terrScaled, bd, meta, filterEffect]);
 
-  // Sector stacked bar (all sectors)
   const secBar = useMemo(() =>
     buildStackedBar(settoreScaled, "settore", "valore", bd, meta.isMoney, filterEffect),
     [settoreScaled, bd, meta, filterEffect]);
 
-  // Bubble scatter: sector × region
   const bubble = useMemo(() =>
     buildBubble(terrScaled, settoreScaled, meta),
     [terrScaled, settoreScaled, meta]);
@@ -546,89 +553,95 @@ function TabDimension({ tab, results }) {
 
   return (
     <div className="space-y-8">
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <MetricPanel label="Dimensione osservata" value={meta.label} note={meta.unit} />
-        <MetricPanel label="Regione principale" value={terrScaled[0]?.regione ?? "—"} note={meta.fmtVal(terrScaled[0]?.valore ?? 0)} />
-        <MetricPanel label="Settore principale" value={settoreScaled[0]?.settore ?? "—"} note={meta.fmtVal(settoreScaled[0]?.valore ?? 0)} />
-      </section>
-
-      <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1.05fr_0.95fr]">
-        <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+      {/* Top: Contesto + dark KPI card */}
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_320px]">
+        <div className="overflow-hidden bg-white border border-ink-100 p-6">
           <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Contesto della dimensione</p>
           <h3 className="text-xl font-bold tracking-tight mb-3">{copy?.titolo_dettaglio ?? meta.label}</h3>
           <p className="max-w-3xl text-sm leading-relaxed text-ink-700">
             {copy?.descrizione_dettaglio ?? copy?.narrativa_corta}
           </p>
         </div>
-        <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-          <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Lettura dei moltiplicatori</p>
-          <h3 className="text-xl font-bold tracking-tight mb-5">Effetti per canale</h3>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {(copy?.moltiplicatori ?? []).map((item) => (
-              <MultiplierCard key={item.tipo} item={item} />
-            ))}
-          </div>
-        </div>
+        <DimStatsCard meta={meta} bd={bd} moltiplicatore={results.moltiplicatore} />
       </section>
 
-      {/* Map + ranking */}
-      <section className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5 items-start">
-        {/* Left: maps */}
-        <div className="space-y-4">
-          <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500">Distribuzione regionale</p>
-            </div>
-            <h2 className="text-xl font-bold tracking-tight mb-4">{meta.label}</h2>
-            <p className="mb-4 max-w-2xl text-sm leading-relaxed text-ink-600">
-              La mappa evidenzia dove l'impatto si concentra maggiormente. Seleziona una regione per scendere al livello provinciale e leggere la distribuzione interna.
-            </p>
-            <ItalyMap data={terrScaled} tone="violet" onRegionClick={setSelectedRegion} selectedRegion={selectedRegion} minHeight={470} />
-          </div>
-          <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-            <div className="flex items-center justify-between gap-3 mb-1">
-              <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500">Dettaglio provinciale</p>
-              {selectedRegion && (
-                <button onClick={() => setSelectedRegion(null)} className="text-xs text-brand-violet font-semibold">
-                  Tutte le regioni
-                </button>
-              )}
-            </div>
-            <h3 className="text-lg font-bold tracking-tight mb-3">
-              {selectedRegion ? `Province di ${selectedRegion}` : "Seleziona una regione per approfondire"}
-            </h3>
-            {selectedRegion && nuts2 ? (
-              <>
-                <p className="mb-4 text-sm leading-relaxed text-ink-600">
-                  La vista provinciale distribuisce l'impatto regionale all'interno del territorio e mette in evidenza i poli che assorbono la quota maggiore dell'effetto.
-                </p>
-                <ProvinceMap regionName={selectedRegion} nuts2Code={nuts2} data={provinceDist} minHeight={380} />
-              </>
-            ) : (
-              <EmptyDetailCard topRegions={terrScaled.slice(0, 3)} meta={meta} onSelect={setSelectedRegion} />
-            )}
-          </div>
+      {/* Unified map + ranking with breadcrumb */}
+      <section className="overflow-hidden bg-white border border-ink-100">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-1.5 px-6 py-4 border-b border-ink-100">
+          <button
+            onClick={goNazionale}
+            className={`text-sm font-semibold transition-colors ${level === "nazionale" ? "text-ink-900 cursor-default" : "text-brand-violet hover:underline"}`}
+          >
+            Nazionale
+          </button>
+          {selectedRegion && (
+            <>
+              <span className="text-ink-300 text-sm">›</span>
+              <button
+                onClick={goRegione}
+                className={`text-sm font-semibold transition-colors ${level === "regione" ? "text-ink-900 cursor-default" : "text-brand-violet hover:underline"}`}
+              >
+                {selectedRegion}
+              </button>
+            </>
+          )}
+          {selectedProvince && (
+            <>
+              <span className="text-ink-300 text-sm">›</span>
+              <span className="text-sm font-semibold text-ink-900">{selectedProvince}</span>
+            </>
+          )}
         </div>
 
-        {/* Right: stats + ranking */}
-        <div className="space-y-4">
-          <DimStatsCard meta={meta} bd={bd} />
-          <ImpactSplitCard meta={meta} bd={bd} />
-          {!selectedRegion ? (
-            <RankingTable
-              rows={terrScaled.slice(0, 15)}
-              labelKey="regione" valueKey="valore"
-              meta={meta} onSelect={setSelectedRegion}
-              showMore={terrScaled.length > 15 ? terrScaled.length - 15 : 0}
-            />
-          ) : (
-            <RankingTable
-              rows={provinceDist}
-              labelKey="provincia" valueKey="valore"
-              meta={meta}
-              header={`Province - ${selectedRegion}`}
-            />
-          )}
+        {/* Map + ranking grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px]">
+          <div className="p-6 xl:border-r border-ink-100">
+            {level === "nazionale" ? (
+              <ItalyMap
+                data={terrScaled} tone="violet"
+                onRegionClick={r => { setSelectedRegion(r); setSelectedProvince(null); }}
+                selectedRegion={selectedRegion} minHeight={470}
+              />
+            ) : (
+              nuts2 && <ProvinceMap regionName={selectedRegion} nuts2Code={nuts2} data={provinceDist} minHeight={420} />
+            )}
+          </div>
+
+          {/* Ranking panel */}
+          <div className="p-4">
+            <div className="overflow-hidden border border-ink-100">
+              <div className="bg-ink-900 text-white grid grid-cols-[24px_1fr_80px] px-4 py-3 text-xs font-bold gap-2">
+                <span>#</span>
+                <span>{level === "nazionale" ? "Regione" : "Provincia"}</span>
+                <span className="text-right">Valore</span>
+              </div>
+              <div className="h-1 bg-accent-lime" />
+              <div className="divide-y divide-ink-100 max-h-[430px] overflow-y-auto">
+                {rankingRows.map((r, i) => {
+                  const label    = r[rankingLabelKey];
+                  const isActive = level === "regione" && label === selectedProvince;
+                  return (
+                    <button
+                      key={label}
+                      onClick={() => {
+                        if (level === "nazionale") { setSelectedRegion(label); setSelectedProvince(null); }
+                        else { setSelectedProvince(label); }
+                      }}
+                      className={`w-full grid grid-cols-[24px_1fr_80px] px-4 py-3 text-sm gap-2 items-center text-left transition-colors ${isActive ? "bg-ink-100" : "hover:bg-ink-50"}`}
+                    >
+                      <span className="font-mono text-ink-400 text-xs">{i + 1}</span>
+                      <span className={`font-medium truncate ${isActive ? "text-brand-violet font-bold" : ""}`}>{label}</span>
+                      <span className={`text-right font-mono text-xs ${isActive ? "text-brand-violet" : ""}`}>{meta.fmtVal(r.valore)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {level === "nazionale" && terrScaled.length > 15 && (
+                <p className="px-4 py-3 text-xs text-ink-400">+{terrScaled.length - 15} altre regioni</p>
+              )}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -639,10 +652,10 @@ function TabDimension({ tab, results }) {
             <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Analisi di dettaglio</p>
             <h3 className="text-xl font-bold tracking-tight">Breakdown per regione e settore</h3>
           </div>
-          <div className="flex gap-1 rounded-full border border-ink-200 bg-white p-1 shadow-[0_8px_20px_rgba(15,23,42,0.05)]">
+          <div className="flex gap-1 border border-ink-200 bg-white p-1">
             {FILTER_OPTS.map(f => (
               <button key={f} onClick={() => setFilterEffect(f)}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${filterEffect === f ? "bg-brand-violet text-white" : "text-ink-500 hover:text-ink-900"}`}>
+                className={`px-3 py-1.5 text-xs font-semibold transition-colors ${filterEffect === f ? "bg-brand-violet text-white" : "text-ink-500 hover:text-ink-900"}`}>
                 {f}
               </button>
             ))}
@@ -650,23 +663,19 @@ function TabDimension({ tab, results }) {
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-          {/* Regional bar */}
-          <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+          <div className="overflow-hidden bg-white border border-ink-100 p-6">
             <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Top 10 regioni</p>
             <h4 className="font-bold mb-4">{meta.label} per regione</h4>
             <PlotlyChart data={regBar} layout={regBarLayout} style={{ minHeight: regBarLayout.height }} />
           </div>
-
-          {/* Sector bar */}
-          <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+          <div className="overflow-hidden bg-white border border-ink-100 p-6">
             <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Settori produttivi</p>
             <h4 className="font-bold mb-4">{meta.label} per settore</h4>
             <PlotlyChart data={secBar} layout={secBarLayout} style={{ minHeight: secBarLayout.height }} />
           </div>
         </div>
 
-        {/* Bubble scatter */}
-        <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <div className="overflow-hidden bg-white border border-ink-100 p-6">
           <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Incrocio settore × regione</p>
           <h4 className="font-bold mb-4">{meta.label}: distribuzione settoriale per regione</h4>
           <PlotlyChart
@@ -691,9 +700,9 @@ function TabDimension({ tab, results }) {
 
 function KpiCard({ label, icon, value, unit }) {
   return (
-    <div className="overflow-hidden rounded-[26px] border border-white/70 bg-white p-5 shadow-[0_16px_38px_rgba(15,23,42,0.08)]">
+    <div className="overflow-hidden border border-ink-100 bg-white p-5">
       <div className="mb-4 flex items-center gap-3">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-violet-soft">
+        <span className="flex h-12 w-12 items-center justify-center bg-brand-violet-soft">
           <img src={icon} alt={label} className="w-8 h-8 object-contain shrink-0" />
         </span>
         <span className="text-xs font-mono uppercase tracking-wide text-ink-500 leading-tight">{label}</span>
@@ -707,8 +716,8 @@ function KpiCard({ label, icon, value, unit }) {
 function BreakdownRow({ label, icon, bd, fmtVal }) {
   const total = bd?.totale || 0;
   return (
-    <div className="flex gap-4 items-start rounded-[24px] border border-ink-100 bg-[linear-gradient(180deg,_#ffffff_0%,_#fbfbfd_100%)] p-5">
-      <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-bg-page shrink-0">
+    <div className="flex gap-4 items-start border border-ink-100 bg-white p-5">
+      <span className="flex h-12 w-12 items-center justify-center bg-bg-page shrink-0">
         <img src={icon} alt={label} className="w-8 h-8 object-contain mt-0.5 shrink-0" />
       </span>
       <div className="flex-1 min-w-0">
@@ -718,7 +727,7 @@ function BreakdownRow({ label, icon, bd, fmtVal }) {
         </div>
         <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
           {IMPACT_TYPES.map((impact) => (
-            <div key={impact.key} className="rounded-2xl bg-bg-page px-3 py-3">
+            <div key={impact.key} className="bg-bg-page px-3 py-3">
               <div className="flex items-center gap-2">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: impact.color }} />
                 <span className="text-[11px] font-mono uppercase tracking-[0.14em] text-ink-500">{impact.label}</span>
@@ -733,21 +742,10 @@ function BreakdownRow({ label, icon, bd, fmtVal }) {
   );
 }
 
-function MultiplierCard({ item }) {
+function DimStatsCard({ meta, bd, moltiplicatore }) {
   return (
-    <div className="rounded-[22px] border border-ink-100 bg-[linear-gradient(180deg,_#ffffff_0%,_#faf8ff_100%)] px-4 py-4">
-      <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-ink-500">{item.label}</p>
-      <p className="mt-2 text-2xl font-bold tracking-tight text-brand-violet">{fmtIT(item.valore, 2)}</p>
-      <p className="mt-2 text-xs text-ink-600">{item.sublabel}</p>
-      <p className="mt-3 text-[11px] font-mono text-ink-400">Range {item.range}</p>
-    </div>
-  );
-}
-
-function DimStatsCard({ meta, bd }) {
-  return (
-    <div className="overflow-hidden rounded-[28px] bg-[linear-gradient(145deg,_#100C1E_0%,_#1C1636_55%,_#241B47_100%)] p-6 text-white shadow-[0_22px_60px_rgba(15,23,42,0.18)]">
-      <p className="text-xs font-mono uppercase tracking-[0.14em] text-ink-300">{meta.label} — Totale</p>
+    <div className="overflow-hidden bg-ink-900 p-6 text-white">
+      <p className="text-xs font-mono uppercase tracking-[0.14em] text-ink-300">{meta.label} — Totale attivato</p>
       <p className="mt-3 font-mono text-4xl font-bold tracking-tight">{meta.fmtVal(bd?.totale ?? 0)}</p>
       <p className="mt-1 text-sm text-ink-300">{meta.unit}</p>
       <div className="mt-5 h-px bg-white/10" />
@@ -759,98 +757,19 @@ function DimStatsCard({ meta, bd }) {
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-function ImpactSplitCard({ meta, bd }) {
-  return (
-    <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-      <p className="text-xs font-mono font-semibold tracking-[0.18em] uppercase text-ink-500 mb-1">Scomposizione dell'impatto</p>
-      <h4 className="font-bold mb-4">{meta.label}: quote diretto, indiretto, indotto</h4>
-      <div className="space-y-3">
-        {IMPACT_TYPES.map((impact) => (
-          <div key={impact.key} className="rounded-[22px] border border-ink-100 bg-bg-page px-4 py-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: impact.color }} />
-                <span className="text-sm font-semibold text-ink-900">{impact.label}</span>
-              </div>
-              <span className="text-sm font-mono font-bold text-ink-900">{meta.fmtVal(bd?.[impact.key] ?? 0)}</span>
-            </div>
-            <p className="mt-2 text-xs leading-relaxed text-ink-600">{impact.description}</p>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
-              <div
-                className="h-full rounded-full"
-                style={{ width: `${shareOf(bd?.totale ?? 0, bd?.[impact.key] ?? 0)}%`, backgroundColor: impact.color }}
-              />
-            </div>
-            <p className="mt-2 text-[11px] font-mono uppercase tracking-[0.12em] text-ink-500">
-              {shareOf(bd?.totale ?? 0, bd?.[impact.key] ?? 0)}% del totale
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function RankingTable({ rows, labelKey, valueKey, meta, onSelect, header, showMore = 0 }) {
-  return (
-    <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-      {header && (
-        <div className="px-5 py-3 border-b border-ink-100">
-          <p className="text-xs font-mono uppercase tracking-[0.14em] text-ink-500">{header}</p>
+      {moltiplicatore != null && (
+        <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
+          <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-ink-400">Moltiplicatore</p>
+          <p className="text-lg font-bold font-mono text-accent-lime">×{moltiplicatore.toFixed(2)}</p>
         </div>
       )}
-      <div className="bg-ink-900 text-white grid grid-cols-[24px_1fr_90px] px-5 py-3 text-xs font-bold gap-2">
-        <span>#</span><span>{labelKey === "regione" ? "Regione" : "Provincia"}</span><span className="text-right">Valore</span>
-      </div>
-      <div className="h-1 bg-accent-lime" />
-      <div className="divide-y divide-ink-100">
-        {rows.map((r, i) => {
-          const row = (
-            <div key={r[labelKey]} className="grid grid-cols-[24px_1fr_90px] px-5 py-3 text-sm gap-2 items-center">
-              <span className="font-mono text-ink-400 text-xs">{i + 1}</span>
-              <span className="font-medium truncate">{r[labelKey]}</span>
-              <span className="text-right font-mono text-xs">{meta.fmtVal(r[valueKey])}</span>
-            </div>
-          );
-          return onSelect
-            ? <button key={r[labelKey]} onClick={() => onSelect(r[labelKey])} className="w-full hover:bg-ink-50 text-left">{row}</button>
-            : row;
-        })}
-      </div>
-      {showMore > 0 && <p className="px-5 py-3 text-xs text-ink-400">+{showMore} altre regioni</p>}
-    </div>
-  );
-}
-
-function EmptyDetailCard({ topRegions, meta, onSelect }) {
-  return (
-    <div className="rounded-[24px] border border-dashed border-ink-200 bg-[linear-gradient(180deg,_#faf8ff_0%,_#ffffff_100%)] p-5">
-      <p className="text-sm leading-relaxed text-ink-700">
-        Nessuna regione selezionata. Scegli una delle aree principali per vedere subito la distribuzione provinciale.
-      </p>
-      <div className="mt-4 flex flex-wrap gap-2">
-        {topRegions.map((region) => (
-          <button
-            key={region.regione}
-            type="button"
-            onClick={() => onSelect(region.regione)}
-            className="rounded-full border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-700 hover:border-brand-violet hover:text-brand-violet"
-          >
-            {region.regione} · {meta.fmtVal(region.valore)}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }
 
 function ImpactExplanationCard({ impact, value, total, fmtVal }) {
   return (
-    <div className="rounded-[22px] border border-ink-100 bg-[linear-gradient(180deg,_#ffffff_0%,_#faf8ff_100%)] px-4 py-4">
+    <div className="border border-ink-100 bg-white px-4 py-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: impact.color }} />
@@ -866,9 +785,9 @@ function ImpactExplanationCard({ impact, value, total, fmtVal }) {
 
 function DefCard({ icon, title, text }) {
   return (
-    <div className="rounded-[24px] border border-white/70 bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.06)]">
+    <div className="border border-ink-100 bg-white p-5">
       <div className="flex items-center gap-3 mb-3">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-bg-page">
+        <span className="flex h-12 w-12 items-center justify-center bg-bg-page">
           <img src={icon} alt={title} className="w-8 h-8 object-contain" />
         </span>
         <p className="font-bold text-sm leading-tight">{title}</p>
@@ -878,19 +797,9 @@ function DefCard({ icon, title, text }) {
   );
 }
 
-function InsightCard({ title, value, text }) {
-  return (
-    <div className="rounded-[24px] border border-white/70 bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.06)]">
-      <p className="text-xs font-mono uppercase tracking-[0.14em] text-ink-500">{title}</p>
-      <p className="mt-2 text-xl font-bold tracking-tight">{value}</p>
-      <p className="mt-2 text-sm text-ink-700 leading-relaxed">{text}</p>
-    </div>
-  );
-}
-
 function MetaField({ label, value }) {
   return (
-    <div className="rounded-2xl border border-ink-100 bg-ink-50/70 px-4 py-4">
+    <div className="border border-ink-100 bg-ink-50/70 px-4 py-4">
       <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-ink-500">{label}</p>
       <p className="mt-2 text-sm font-medium text-ink-900">{value}</p>
     </div>
@@ -899,7 +808,7 @@ function MetaField({ label, value }) {
 
 function SignalCard({ label, value, note }) {
   return (
-    <div className="rounded-2xl border border-white/12 bg-white/8 px-4 py-4 backdrop-blur">
+    <div className="border border-white/12 bg-white/8 px-4 py-4 backdrop-blur">
       <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-white/55">{label}</p>
       <p className="mt-2 text-lg font-bold text-white">{value}</p>
       <p className="mt-1 text-xs text-white/60">{note}</p>
@@ -909,7 +818,7 @@ function SignalCard({ label, value, note }) {
 
 function MetricPanel({ label, value, note }) {
   return (
-    <div className="eia-fade-up overflow-hidden rounded-[24px] border border-white/70 bg-white px-5 py-5 shadow-[0_14px_34px_rgba(15,23,42,0.06)]">
+    <div className="eia-fade-up overflow-hidden border border-ink-100 bg-white px-5 py-5">
       <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-ink-500">{label}</p>
       <p className="mt-2 text-xl font-bold tracking-tight text-ink-900">{value}</p>
       <p className="mt-1 text-sm text-ink-600">{note}</p>

@@ -116,31 +116,33 @@ function Header({
   return (
     <header className="relative">
       <div className="flex h-auto flex-wrap items-center gap-4 border-b border-ink-100 bg-white px-4 py-3 md:h-16 md:flex-nowrap md:px-6 md:py-0 md:gap-6">
-        <div className="flex shrink-0 items-center gap-2 md:w-56">
+        <div className="flex shrink-0 items-center gap-2 md:w-64">
           <IconLogo className="w-4 h-4" />
-          <span className="font-bold tracking-tight text-lg">Externalytics</span>
+          <span className="text-[30px] md:text-[24px] font-bold tracking-tight leading-none">
+            Externalytics
+          </span>
         </div>
 
-        <div className="order-3 w-full md:order-none md:max-w-2xl md:flex-1">
+        <div className="order-3 w-full md:order-none md:flex-1 md:max-w-[820px]">
           <div className="relative">
             <input
               type="text"
               value={searchDraft}
               onChange={(event) => setSearchDraft(event.target.value)}
               placeholder="Cerca documenti, progetti, pianificazioni..."
-              className="w-full h-11 pl-5 pr-12 rounded-md border border-ink-100 bg-white text-sm placeholder:text-ink-300 focus:outline-none focus:border-brand-violet"
+              className="w-full h-[48px] rounded-none border border-ink-300 pl-5 pr-12 bg-white text-[14px] placeholder:text-ink-300 focus:outline-none focus:border-brand-violet"
             />
             <button
               type="button"
               onClick={() => navigate("/valutazioni")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-700"
+              className="absolute right-6 top-1/2 -translate-y-1/2 text-ink-700"
             >
               <IconSearch className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <div className="ml-auto flex items-center gap-4">
+        <div className="ml-auto flex items-center gap-5">
           <button type="button" onClick={onHelp} className="text-ink-700 hover:text-ink-900" aria-label="Aiuto">
             <IconHelp className="w-5 h-5" />
           </button>
@@ -165,11 +167,11 @@ function Header({
             <IconSettings className="w-5 h-5" />
           </button>
           <div className="relative">
-            <button type="button" onClick={onUserMenuToggle} className="flex items-center gap-2 ml-2">
+            <button type="button" onClick={onUserMenuToggle} className="ml-4 flex items-center gap-2">
               <span className="w-9 h-9 rounded-full bg-brand-violet text-white flex items-center justify-center text-xs font-semibold">
                 {user?.initials || "MR"}
               </span>
-              <span className="hidden text-sm font-medium sm:inline">{user?.name || "Mario Rossi"}</span>
+              <span className="hidden text-[14px] font-medium sm:inline">{user?.name || "Mario Rossi"}</span>
               <IconChevronDown className="w-4 h-4" />
             </button>
             {isUserMenuOpen ? (
@@ -196,38 +198,43 @@ function Header({
 
 function Sidebar({ isCollapsed, onToggle }) {
   return (
-    <aside className={`${isCollapsed ? "w-20" : "w-60"} shrink-0 border-r border-ink-100 bg-white py-6 flex flex-col transition-all`}>
-      <nav className="px-3 flex flex-col gap-1">
+    <aside className={`${isCollapsed ? "w-16" : "w-[228px]"} shrink-0 border-r border-ink-100 bg-white flex flex-col transition-all`}>
+      <nav className="flex flex-col border-t border-ink-100">
         <SidebarItem
-          icon={<IconDashboard />}
+          icon={<IconDashboard className="w-5 h-5" />}
           label="Dashboard"
           to="/valutazioni"
           collapsed={isCollapsed}
         />
         <SidebarItem
-          icon={<IconCompass />}
+          icon={<IconCompass className="w-5 h-5" />}
           label="Osservatorio strategico"
           collapsed={isCollapsed}
           disabled
         />
       </nav>
 
-      <div className={`mt-6 ${isCollapsed ? "px-3" : "px-6"}`}>
-        <p className="text-xs font-semibold text-ink-300 tracking-widest uppercase">
-          {isCollapsed ? "Val" : "Valutazioni"}
-        </p>
+      <div className={`${isCollapsed ? "px-2" : "px-4"} py-5 border-t border-ink-100`}>
+        <p className="text-[11px] uppercase tracking-tight text-ink-500">Valutazioni</p>
       </div>
-      <nav className="mt-2 px-3 flex flex-col gap-1">
+
+      <nav className="flex flex-col">
         <SidebarItem
-          icon={<IconChart />}
+          icon={<IconChart className="w-5 h-5" />}
           label="Valutazione"
           to="/valutazioni"
           collapsed={isCollapsed}
+          emphasize
         />
       </nav>
 
-      <div className="mt-auto px-3 pb-2">
-        <button type="button" onClick={onToggle} className="w-9 h-9 flex items-center justify-center text-ink-700 hover:text-ink-900" aria-label="Comprimi sidebar">
+      <div className="mt-auto px-4 pb-5">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="w-8 h-8 flex items-center justify-center text-ink-700 hover:text-ink-900 border border-ink-300"
+          aria-label="Comprimi sidebar"
+        >
           <IconCollapse />
         </button>
       </div>
@@ -235,15 +242,15 @@ function Sidebar({ isCollapsed, onToggle }) {
   );
 }
 
-function SidebarItem({ icon, label, to, collapsed, disabled = false }) {
+function SidebarItem({ icon, label, to, collapsed, disabled = false, emphasize = false }) {
   if (disabled) {
     return (
       <button
         type="button"
         title="In arrivo nella versione completa"
-        className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-left text-ink-300 cursor-not-allowed"
+        className="flex items-center gap-3 text-left cursor-not-allowed px-4 py-4 text-[12px] font-medium text-ink-900 border-b border-ink-100"
       >
-        <span className="text-ink-300">{icon}</span>
+        <span className="text-ink-900">{icon}</span>
         {!collapsed ? <span>{label}</span> : null}
       </button>
     );
@@ -253,15 +260,19 @@ function SidebarItem({ icon, label, to, collapsed, disabled = false }) {
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-left transition-colors ${
-          isActive ? "bg-brand-violet-soft text-brand-violet" : "text-ink-900 hover:bg-ink-100/40"
+        `flex items-center gap-4 text-left transition-colors ${
+          collapsed ? "justify-center px-2 py-4" : "px-4 py-4"
+        } ${
+          isActive
+            ? `${emphasize ? "bg-[#e7ddff] text-brand-violet border-l-[6px] border-brand-violet" : "text-ink-900"}`
+            : "text-ink-900 hover:bg-ink-100/40"
         }`
       }
     >
       {({ isActive }) => (
         <>
           <span className={isActive ? "text-brand-violet" : "text-ink-700"}>{icon}</span>
-          {!collapsed ? <span>{label}</span> : null}
+          {!collapsed ? <span className="text-[13px]">{label}</span> : null}
         </>
       )}
     </NavLink>
