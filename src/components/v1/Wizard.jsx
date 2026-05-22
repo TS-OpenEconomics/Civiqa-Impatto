@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { LeafletMap } from "../map/LeafletMap";
 import { findNearest, geocodeAddress } from "../../lib/geocoding";
 
@@ -59,7 +59,7 @@ const STATO_DESCRIPTIONS = {
 const SETTORI = Object.keys(SETTORI_DATA);
 const TIPI = ["Nuova realizzazione", "Ristrutturazione", "Recupero", "Manutenzione", "Efficientamento"];
 const ANNI = ["2025", "2026", "2027", "2028", "2029", "2030", "2031"];
-const TASSO_DEFAULT = "3,5";
+const TASSO_DEFAULT = "3";
 const STEP_AUTOFILL_LABEL = "Autoriempi questa pagina";
 const DEMO_AUTOFILL = {
   nome: "Intervento efficientamento servizio idrico",
@@ -103,6 +103,15 @@ const VITA_UTILE_BENCHMARKS = {
   "Telecomunicazioni e tecnologie informatiche":    { min:  5, avg: 10, max: 20 },
 };
 const VITA_UTILE_DEFAULT = { min: 15, avg: 25, max: 40 };
+
+const CAPEX_DEFAULTS = {
+  "Infrastrutture sociali":                         5_000_000,
+  "Infrastrutture di trasporto":                   20_000_000,
+  "Infrastrutture ambientali e risorse idriche":   15_000_000,
+  "Attivita produttive, ricerca e impresa sociale": 3_000_000,
+  "Telecomunicazioni e tecnologie informatiche":    8_000_000,
+};
+const CAPEX_DEFAULT_FALLBACK = 10_000_000;
 
 const STEPS = [
   { id: "nome", group: 0, sublabel: "Anagrafica" },
@@ -306,11 +315,21 @@ function yearRangeFromDates(startDate, endDate) {
 
 function buildCapexDistribution(years, existing = {}) {
   if (!years.length) return {};
-  const evenShare = (100 / years.length).toFixed(1).replace(".0", "");
-  return years.reduce((acc, year) => {
-    acc[year] = existing[year] ?? evenShare;
-    return acc;
-  }, {});
+  const evenShare = parseFloat((100 / years.length).toFixed(1));
+  const result = {};
+  years.forEach((year) => {
+    result[year] = existing[year] ?? String(evenShare).replace(".0", "");
+  });
+  // Last auto-generated year absorbs rounding remainder so total = exactly 100%
+  const lastNew = [...years].reverse().find((y) => existing[y] == null);
+  if (lastNew) {
+    const othersTotal = years
+      .filter((y) => y !== lastNew)
+      .reduce((sum, y) => sum + (parseFloat(String(result[y]).replace(",", ".")) || 0), 0);
+    const remainder = parseFloat((100 - othersTotal).toFixed(1));
+    result[lastNew] = String(remainder).replace(".0", "");
+  }
+  return result;
 }
 
 function sumPercentageValues(distribution, years) {
@@ -353,7 +372,7 @@ function buildDraft(project) {
     nuts_code: conf.nuts_code ?? "",
     nuts_label: conf.nuts_label ?? "",
     anno_attualizzazione: conf.anno_attualizzazione != null ? String(conf.anno_attualizzazione) : "",
-    tasso_attualizzazione: conf.tasso_attualizzazione != null ? String(conf.tasso_attualizzazione) : "",
+    tasso_attualizzazione: conf.tasso_attualizzazione != null ? String(conf.tasso_attualizzazione) : TASSO_DEFAULT,
     capex_distribuzione_attiva: Boolean(conf.capex_distribuzione_attiva),
     capex_distribuzione: conf.capex_distribuzione ?? {},
     opex_tasso: conf.opex_tasso
@@ -639,10 +658,22 @@ function buildCalendarGrid(year, month) {
   return days;
 }
 
-function DatePickerField({ label, hint, value, onChange }) {
+function DatePickerField({ label, hint, value, onChange, minDate = null }) {
   const parsed = value ? new Date(value + "T00:00:00") : null;
-  const [viewYear, setViewYear] = useState(() => parsed?.getFullYear() ?? 2025);
-  const [viewMonth, setViewMonth] = useState(() => parsed?.getMonth() ?? 8);
+  const min = minDate ? new Date(minDate + "T00:00:00") : null;
+
+  const [viewYear, setViewYear] = useState(() => parsed?.getFullYear() ?? min?.getFullYear() ?? 2025);
+  const [viewMonth, setViewMonth] = useState(() => parsed?.getMonth() ?? min?.getMonth() ?? 8);
+
+  // When minDate advances past the current view, jump to it
+  useEffect(() => {
+    if (!min) return;
+    if (viewYear < min.getFullYear() || (viewYear === min.getFullYear() && viewMonth < min.getMonth())) {
+      setViewYear(min.getFullYear());
+      setViewMonth(min.getMonth());
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [minDate]);
 
   const grid = buildCalendarGrid(viewYear, viewMonth);
 
@@ -653,11 +684,19 @@ function DatePickerField({ label, hint, value, onChange }) {
       date.getDate() === parsed.getDate();
   }
 
+  function isDisabled(date) {
+    if (!min) return false;
+    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const m = new Date(min.getFullYear(), min.getMonth(), min.getDate());
+    return d <= m;
+  }
+
   function handleDayClick(date) {
+    if (isDisabled(date)) return;
     const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const mo = String(date.getMonth() + 1).padStart(2, "0");
     const d = String(date.getDate()).padStart(2, "0");
-    onChange(`${y}-${m}-${d}`);
+    onChange(`${y}-${mo}-${d}`);
     setViewMonth(date.getMonth());
     setViewYear(date.getFullYear());
   }
@@ -665,6 +704,10 @@ function DatePickerField({ label, hint, value, onChange }) {
   const displayValue = parsed
     ? `${String(parsed.getDate()).padStart(2, "0")} / ${String(parsed.getMonth() + 1).padStart(2, "0")} / ${parsed.getFullYear()}`
     : "";
+
+  const allowedYears = min
+    ? PICKER_YEARS.filter((y) => y >= min.getFullYear())
+    : PICKER_YEARS;
 
   return (
     <div className="border border-ink-100 bg-white p-5">
@@ -686,7 +729,7 @@ function DatePickerField({ label, hint, value, onChange }) {
           onChange={(e) => setViewYear(Number(e.target.value))}
           className="w-[80px] border border-ink-200 bg-white px-2 py-1.5 text-[13px] font-semibold text-ink-900 focus:border-brand-violet focus:outline-none"
         >
-          {PICKER_YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+          {allowedYears.map((y) => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
       <div className="mt-3 grid grid-cols-7">
@@ -697,13 +740,17 @@ function DatePickerField({ label, hint, value, onChange }) {
       <div className="grid grid-cols-7">
         {grid.map(({ date, current }, i) => {
           const selected = isSame(date);
+          const disabled = isDisabled(date);
           return (
             <button
               key={i}
               type="button"
+              disabled={disabled}
               onClick={() => handleDayClick(date)}
               className={`flex h-9 w-full items-center justify-center text-[13px] transition-colors ${
-                selected
+                disabled
+                  ? "cursor-not-allowed text-ink-200"
+                  : selected
                   ? "rounded-full bg-brand-violet font-semibold text-white"
                   : current
                   ? "text-ink-900 hover:rounded-full hover:bg-brand-violet-soft"
@@ -1035,11 +1082,24 @@ export function Wizard({ initialProject, onClose, onComplete }) {
   const sottosettori = getSottosettori(draft.settore);
   const categorie = getCategorie(draft.settore, draft.sotto_settore);
   const projectYears = useMemo(() => yearRangeFromDates(draft.data_inizio, draft.data_fine), [draft.data_fine, draft.data_inizio]);
+  const opexStartYear = useMemo(() => {
+    if (!draft.data_fine) return null;
+    return new Date(draft.data_fine + "T00:00:00").getFullYear() + 1;
+  }, [draft.data_fine]);
+  const opexEndYear = useMemo(() => {
+    if (!opexStartYear || !draft.vita_utile) return null;
+    return opexStartYear + Number(draft.vita_utile) - 1;
+  }, [opexStartYear, draft.vita_utile]);
+  const opexYears = useMemo(() => {
+    if (!opexStartYear || !opexEndYear) return [];
+    return Array.from({ length: opexEndYear - opexStartYear + 1 }, (_, i) => String(opexStartYear + i));
+  }, [opexStartYear, opexEndYear]);
+
   const capexDistribution = buildCapexDistribution(projectYears, draft.capex_distribuzione);
-  const opexDistribution = projectYears.reduce((acc, year) => { acc[year] = draft.opex_distribuzione[year] ?? draft.opex_tasso ?? ""; return acc; }, {});
+  const opexDistribution = opexYears.reduce((acc, year) => { acc[year] = draft.opex_distribuzione[year] ?? draft.opex_tasso ?? ""; return acc; }, {});
   const capexDistributionTotal = sumPercentageValues(capexDistribution, projectYears);
   const capexYearlyAmounts = projectYears.reduce((acc, year) => { acc[year] = percentageToAmount(draft.capex, capexDistribution[year]); return acc; }, {});
-  const opexYearlyAmounts = projectYears.reduce((acc, year) => {
+  const opexYearlyAmounts = opexYears.reduce((acc, year) => {
     const rate = draft.opex_distribuzione_attiva && draft.opex_distribuzione[year]
       ? Number(String(draft.opex_distribuzione[year]).replace(",", "."))
       : Number(String(draft.opex_tasso ?? "0").replace(",", "."));
@@ -1059,14 +1119,32 @@ export function Wizard({ initialProject, onClose, onComplete }) {
   }, [allCategorie, categorySearch]);
   const opexBenchmark = useMemo(() => OPEX_BENCHMARKS[draft.settore] ?? OPEX_BENCHMARK_DEFAULT, [draft.settore]);
   const vitaUtileBenchmark = useMemo(() => VITA_UTILE_BENCHMARKS[draft.settore] ?? VITA_UTILE_DEFAULT, [draft.settore]);
-  const opexStartYear = useMemo(() => {
-    if (!draft.data_fine) return null;
-    return new Date(draft.data_fine + "T00:00:00").getFullYear() + 1;
-  }, [draft.data_fine]);
-  const opexEndYear = useMemo(() => {
-    if (!opexStartYear || !draft.vita_utile) return null;
-    return opexStartYear + Number(draft.vita_utile) - 1;
-  }, [opexStartYear, draft.vita_utile]);
+
+  useEffect(() => {
+    if (step.id === "anno" && !draft.anno_attualizzazione && draft.data_inizio) {
+      const year = String(new Date(draft.data_inizio + "T00:00:00").getFullYear());
+      if (ANNI.includes(year)) update("anno_attualizzazione", year);
+    }
+    if (step.id === "capex" && !draft.capex) {
+      const defaultCapex = CAPEX_DEFAULTS[draft.settore] ?? CAPEX_DEFAULT_FALLBACK;
+      update("capex", String(defaultCapex));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step.id]);
+
+  useEffect(() => {
+    if (step.id === "opex" && (draft.vita_utile === "" || draft.vita_utile == null)) {
+      update("vita_utile", vitaUtileBenchmark.avg);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step.id]);
+
+  useEffect(() => {
+    if (opexRevealLevel >= 1 && !draft.opex_tasso) {
+      update("opex_tasso", String(opexBenchmark.avg).replace(".", ","));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opexRevealLevel]);
   const opexTotale = useMemo(() => opexAnnualAmount * Number(draft.vita_utile), [opexAnnualAmount, draft.vita_utile]);
 
   const beneficiTemplates = useMemo(() => ECBA_KPI_TEMPLATES[draft.settore] ?? [], [draft.settore]);
@@ -1302,12 +1380,19 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                     label="Data di inizio"
                     hint="Formato data gg/mm/aaaa"
                     value={draft.data_inizio}
-                    onChange={(value) => update("data_inizio", value)}
+                    onChange={(value) => {
+                      setDraft((prev) => ({
+                        ...prev,
+                        data_inizio: value,
+                        ...(prev.data_fine && value >= prev.data_fine ? { data_fine: "" } : {}),
+                      }));
+                    }}
                   />
                   <DatePickerField
                     label="Data di fine"
                     hint="Formato data gg/mm/aaaa"
                     value={draft.data_fine}
+                    minDate={draft.data_inizio || null}
                     onChange={(value) => update("data_fine", value)}
                   />
                 </div>
@@ -1395,25 +1480,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                           <p className="mb-3 text-[13px] leading-[1.5] text-ink-600">
                             Il tasso di sconto sociale misura quanto la collettività preferisce i benefici presenti rispetto a quelli futuri. Valori più bassi danno maggiore peso alle generazioni future.
                           </p>
-                          <div className="mb-5 flex gap-2">
-                            {[
-                              { label: "Prudente", value: "5,0" },
-                              { label: "Standard UE", value: "3,5" },
-                              { label: "Lungo periodo", value: "2,0" },
-                            ].map(({ label, value }) => {
-                              const isActive = draft.tasso_attualizzazione === value;
-                              return (
-                                <button key={label} type="button"
-                                  onClick={() => update("tasso_attualizzazione", value)}
-                                  className={`flex-1 border px-3 py-2.5 text-center transition-colors ${isActive ? "border-brand-violet bg-brand-violet text-white" : "border-ink-200 bg-white text-ink-700 hover:border-ink-400"}`}
-                                >
-                                  <p className="text-[10px] font-semibold uppercase tracking-wide opacity-80">{label}</p>
-                                  <p className="mt-0.5 text-[17px] font-bold">{value}%</p>
-                                </button>
-                              );
-                            })}
-                          </div>
-                          <p className="mb-2 text-[13px] font-semibold text-ink-900">Oppure inserisci manualmente</p>
+                          <p className="mb-2 text-[13px] font-semibold text-ink-900">Tasso di sconto (%)</p>
                           <div className="relative max-w-[200px]">
                             <input
                               value={draft.tasso_attualizzazione}
@@ -1428,11 +1495,11 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                           <p className="text-[13px] font-semibold text-ink-900">Guida al tasso</p>
                           <div className="mt-3 space-y-2 text-[13px] text-ink-800">
                             <p><strong>2,0%</strong> — scenari di lungo periodo, forte rilevanza pubblica o ambientale</p>
-                            <p><strong>3,5%</strong> — valore di riferimento standard UE (raccomandato)</p>
+                            <p><strong>3,0%</strong> — valore di riferimento standard UE (raccomandato)</p>
                             <p><strong>5,0%</strong> — ipotesi prudente, condizioni finanziarie restrittive</p>
                           </div>
                           <div className="mt-4 rounded-sm bg-white px-3 py-2.5 text-[11px] leading-[1.55] text-ink-600">
-                            Un tasso più alto riduce il peso dei benefici lontani nel tempo. Usa il 3,5% come punto di partenza per analisi standard in linea con le linee guida della Commissione Europea.
+                            Un tasso più alto riduce il peso dei benefici lontani nel tempo. Usa il 3% come punto di partenza per analisi standard in linea con le linee guida della Commissione Europea.
                           </div>
                         </aside>
                       </div>
@@ -1455,16 +1522,14 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                         placeholder="es. 10.000.000"
                         className="h-11 flex-1 border border-ink-200 bg-white px-3 text-[14px] text-ink-900 placeholder:text-ink-300 focus:border-brand-violet focus:outline-none"
                       />
-                      {draft.capex ? (
-                        <div className="flex items-start gap-2 rounded border border-[#e8e8ed] bg-[#f7f7fa] px-4 py-2.5 sm:max-w-[280px]">
-                          <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-violet" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                            <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" d="M12 8v4m0 4h.01" />
-                          </svg>
-                          <p className="text-[11px] leading-[1.5] text-ink-600">
-                            Il valore preimpostato è basato sulle informazioni disponibili per la <strong>categoria di intervento</strong> selezionata e la dimensione tipica degli interventi di questo tipo.
-                          </p>
-                        </div>
-                      ) : null}
+                      <div className="flex items-start gap-2 rounded border border-[#e8e8ed] bg-[#f7f7fa] px-4 py-2.5 sm:max-w-[280px]">
+                        <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-violet" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                          <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" d="M12 8v4m0 4h.01" />
+                        </svg>
+                        <p className="text-[11px] leading-[1.5] text-ink-600">
+                          Il valore suggerito è basato sulla <strong>categoria di intervento</strong> selezionata e sulla dimensione tipica degli interventi di questo tipo. Puoi modificarlo liberamente.
+                        </p>
+                      </div>
                     </div>
 
                     <div className="mt-6 border-t border-[#ececf1] pt-5">
@@ -1479,6 +1544,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                       </label>
                       <p className="mt-2 text-[12px] leading-[1.5] text-ink-500">
                         Se attivi questa opzione, puoi specificare la quota percentuale del CAPEX da imputare a ciascun anno del progetto.
+                        Se non personalizzi la distribuzione, il CAPEX verrà suddiviso <strong>equamente</strong> tra gli anni di intervento.
                       </p>
 
                       {draft.capex_distribuzione_attiva ? (
@@ -1550,27 +1616,8 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                         I valori di riferimento sono calcolati per <strong>{draft.settore || "il settore selezionato"}</strong>.
                       </p>
 
-                      {/* Quick-select */}
-                      <div className="mb-5 flex gap-2">
-                        {[
-                          { label: "Minima", value: vitaUtileBenchmark.min },
-                          { label: "Media", value: vitaUtileBenchmark.avg },
-                          { label: "Massima", value: vitaUtileBenchmark.max },
-                        ].map(({ label, value }) => {
-                          const isActive = Number(draft.vita_utile) === value;
-                          return (
-                            <button key={label} type="button" onClick={() => update("vita_utile", value)}
-                              className={`flex-1 border px-3 py-2.5 text-center transition-colors ${isActive ? "border-brand-violet bg-brand-violet text-white" : "border-ink-200 bg-white text-ink-700 hover:border-ink-400"}`}
-                            >
-                              <p className="text-[10px] font-semibold uppercase tracking-wide opacity-80">{label}</p>
-                              <p className="mt-0.5 text-[17px] font-bold">{value} anni</p>
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      {/* Manual input */}
-                      <p className="mb-2 text-[13px] font-semibold text-ink-900">Oppure inserisci manualmente</p>
+                      {/* Input */}
+                      <p className="mb-2 text-[13px] font-semibold text-ink-900">Anni di vita utile</p>
                       <div className="flex items-center gap-2">
                         <button type="button" onClick={() => adjustVitaUtile(-5)}
                           className="flex h-10 w-10 shrink-0 items-center justify-center border border-ink-200 bg-white text-[20px] font-bold text-ink-600 hover:border-ink-400 hover:bg-[#fafafa]">−</button>
@@ -1624,29 +1671,8 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                           <p className="text-[14px] font-semibold">Tasso OPEX annuale</p>
                         </div>
                         <div className="p-5">
-                          {/* Quick-select */}
-                          <p className="mb-3 text-[13px] font-semibold text-ink-900">Seleziona un valore di riferimento</p>
-                          <div className="mb-5 flex gap-2">
-                            {[
-                              { label: "Minimo", value: opexBenchmark.min },
-                              { label: "Media", value: opexBenchmark.avg },
-                              { label: "Massimo", value: opexBenchmark.max },
-                            ].map(({ label, value }) => {
-                              const strVal = String(value).replace(".", ",");
-                              const isActive = draft.opex_tasso === strVal;
-                              return (
-                                <button key={label} type="button" onClick={() => updateOpexTasso(strVal)}
-                                  className={`flex-1 border px-3 py-2.5 text-center transition-colors ${isActive ? "border-brand-violet bg-brand-violet text-white" : "border-ink-200 bg-white text-ink-700 hover:border-ink-400"}`}
-                                >
-                                  <p className="text-[10px] font-semibold uppercase tracking-wide opacity-80">{label}</p>
-                                  <p className="mt-0.5 text-[17px] font-bold">{value}%</p>
-                                </button>
-                              );
-                            })}
-                          </div>
-
-                          {/* Manual input */}
-                          <p className="mb-2 text-[13px] font-semibold text-ink-900">Oppure inserisci manualmente</p>
+                          {/* Input */}
+                          <p className="mb-2 text-[13px] font-semibold text-ink-900">Tasso OPEX (% del CAPEX / anno)</p>
                           <div className="flex items-center gap-2">
                             <button type="button" onClick={() => adjustOpexTasso(-0.1)}
                               className="flex h-10 w-10 shrink-0 items-center justify-center border border-ink-200 bg-white text-[20px] font-bold text-ink-600 hover:border-ink-400 hover:bg-[#fafafa]">−</button>
@@ -1660,7 +1686,6 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                             </div>
                             <button type="button" onClick={() => adjustOpexTasso(0.1)}
                               className="flex h-10 w-10 shrink-0 items-center justify-center border border-brand-violet bg-white text-[20px] font-bold text-brand-violet hover:bg-brand-violet-soft">+</button>
-                            <span className="text-[13px] text-ink-600">del CAPEX / anno</span>
                           </div>
 
                           {opexAnnualAmount > 0 ? (
@@ -1682,7 +1707,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                                     setDraft((prev) => ({
                                       ...prev,
                                       opex_distribuzione_attiva: true,
-                                      opex_distribuzione: projectYears.reduce((acc, y) => {
+                                      opex_distribuzione: opexYears.reduce((acc, y) => {
                                         acc[y] = prev.opex_distribuzione[y] ?? prev.opex_tasso ?? "";
                                         return acc;
                                       }, {}),
@@ -1705,7 +1730,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                                   <span>Anno</span><span>Tasso %</span><span>Costo annuale</span>
                                 </div>
                                 <div className="divide-y divide-[#ececf1] bg-white">
-                                  {projectYears.map((year) => (
+                                  {opexYears.map((year) => (
                                     <div key={year} className="grid items-center md:grid-cols-[80px_minmax(0,160px)_minmax(0,1fr)]">
                                       <span className="px-4 py-3 text-[14px] font-semibold text-ink-900">{year}</span>
                                       <div className="flex items-center gap-1 px-4 py-3">

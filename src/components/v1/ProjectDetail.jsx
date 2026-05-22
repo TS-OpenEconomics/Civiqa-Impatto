@@ -131,9 +131,9 @@ function EiaKpiCards({ eia }) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
         {kpis.map((k) => (
           <div key={k.label} className="rounded border border-ink-100 bg-white p-4 shadow-sm">
-            <div className="mb-3 flex items-center gap-3">
-              <ImpactIcon type={k.icon} label={k.label} />
-              <p className="text-[13px] font-bold uppercase leading-tight tracking-wide text-ink-700">{k.label}</p>
+            <div className="mb-3 flex items-start gap-2">
+              <ImpactIcon type={k.icon} label={k.label} className="h-6 w-6" wrapperClassName="flex h-6 w-6 shrink-0 items-center justify-center text-brand-violet" />
+              <p className="min-w-0 text-[11px] font-bold uppercase leading-tight tracking-wide text-ink-700">{k.label}</p>
             </div>
             <p className="text-[22px] font-bold leading-tight text-ink-900">{k.value}</p>
             <p className="mt-1 text-[11px] text-ink-400">{k.sub}</p>
