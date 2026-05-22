@@ -28,7 +28,7 @@ function IconNetwork({ className = "w-10 h-10" }) {
   );
 }
 
-export function AnalysisRunningBoth({ project, onBackToProject, onOpenEsg, onComplete }) {
+export function AnalysisRunningBoth({ onBackToProject, onOpenEsg, onComplete }) {
   const [progress, setProgress] = useState(0);
   const completedRef = useRef(false);
 

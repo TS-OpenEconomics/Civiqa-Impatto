@@ -207,7 +207,6 @@ function RunningBothRoute() {
 
   return (
     <AnalysisRunningBoth
-      project={workspace.project}
       onBackToProject={() => navigate(`/valutazioni/${workspace.id}`)}
       onOpenEsg={() => navigate(`/valutazioni/${workspace.id}/esg`)}
       onComplete={() => {
@@ -231,8 +230,6 @@ function ConfigurationCompleteRoute() {
 
   return (
     <ConfigurationComplete
-      project={workspace.project}
-      analyses={workspace.analyses}
       onOpenProject={() => navigate(`/valutazioni/${workspace.id}`)}
       onOpenEia={() => navigate(`/valutazioni/${workspace.id}/eia`)}
       onOpenEcba={() => navigate(`/valutazioni/${workspace.id}/ecba`)}
@@ -255,7 +252,6 @@ function ProjectDetailRoute() {
         ecba: workspace.ecbaResults ?? null,
         esg: workspace.esgResults ?? null,
       }}
-      workspaceId={workspace.id}
       onBack={() => navigate("/valutazioni")}
       onOpenEia={() => navigateToAnalysis(workspace, "eia", navigate)}
       onOpenEcba={() => navigateToAnalysis(workspace, "ecba", navigate)}
@@ -315,7 +311,6 @@ function EiaResultsRoute() {
       <EiaResults
         project={workspace.project}
         eiaResults={workspace.eiaResults ?? null}
-        scenario={workspace.eiaInputs}
         analysis={workspace.analyses.eia}
         onBack={() => navigate(`/valutazioni/${workspace.id}`)}
       />
@@ -375,7 +370,6 @@ function EcbaResultsRoute() {
         project={workspace.project}
         ecbaResults={workspace.ecbaResults ?? null}
         assumptions={workspace.ecbaInputs}
-        analysis={workspace.analyses.ecba}
         onBack={() => navigate(`/valutazioni/${workspace.id}`)}
       />
     </Suspense>
@@ -390,7 +384,6 @@ function EsgFormRoute() {
 
   return (
     <EsgQuestionnaire
-      project={workspace.project}
       eiaResults={workspace.eiaResults ?? null}
       initialAnswers={workspace.esgAnswers}
       onClose={() => navigate(`/valutazioni/${workspace.id}`)}
@@ -432,8 +425,6 @@ function EsgResultsRoute() {
       <EsgResults
         project={workspace.project}
         esgResults={workspace.esgResults ?? null}
-        answers={workspace.esgAnswers}
-        analysis={workspace.analyses.esg}
         onBack={() => navigate(`/valutazioni/${workspace.id}`)}
       />
     </Suspense>

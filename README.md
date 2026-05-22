@@ -85,7 +85,6 @@ src/
 │   ├── ValutazioniList.jsx          ← lista + card "In evidenza"
 │   ├── Wizard.jsx                   ← wizard nuova valutazione (Contesto operativo/Localizzazione)
 │   ├── ProjectDetail.jsx            ← dettaglio progetto + analisi disponibili
-│   ├── EiaKpiVerification.jsx       ← tabella KPI × Anni con verifica
 │   ├── EiaRunning.jsx               ← transizione "Analisi in corso"
 │   ├── EiaResults.jsx               ← 6 tab risultati + mappa
 │   └── ui/
@@ -94,13 +93,11 @@ src/
 │       └── ItalyMap.jsx             ← mappa Italia stilizzata
 └── mocks/
     ├── project.json                 ← progetto di esempio
-    ├── eiaKpi.json                  ← KPI con stima anno per la verifica
     └── eiaResults.json              ← risultati EIA: dimensioni, moltiplicatori, regioni
 ```
 
 ## Punti di estensione
 
-**Modello dati KPI.** Ogni KPI nel mock `eiaKpi.json` ha:
 - `id`, `nome`, `udm_code`, `udm_label`, `stima_anno`
 - `tipo` (`input` editabile, `fisso` readonly)
 - `fonte` (citazione obbligatoria per la metodologia MIT 2017)

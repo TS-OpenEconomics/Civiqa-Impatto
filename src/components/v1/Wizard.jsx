@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { LeafletMap } from "../map/LeafletMap";
 import { findNearest, geocodeAddress } from "../../lib/geocoding";
 
@@ -313,13 +313,6 @@ function buildCapexDistribution(years, existing = {}) {
   }, {});
 }
 
-function buildOpexDistribution(years, existing = {}) {
-  return years.reduce((acc, year) => {
-    acc[year] = existing[year] ?? "";
-    return acc;
-  }, {});
-}
-
 function sumPercentageValues(distribution, years) {
   return years.reduce((total, year) => total + (Number(String(distribution?.[year] ?? "").replace(",", ".")) || 0), 0);
 }
@@ -328,10 +321,6 @@ function percentageToAmount(baseAmount, percentValue) {
   const base = Number(String(baseAmount ?? "").replace(/\./g, "").replace(",", ".")) || 0;
   const percent = Number(String(percentValue ?? "").replace(",", ".")) || 0;
   return (base * percent) / 100;
-}
-
-function sumOpexDistribution(distribution, years) {
-  return years.reduce((total, year) => total + (Number(String(distribution?.[year] ?? "").replace(",", ".")) || 0), 0);
 }
 
 function isDirty(a, b) {
@@ -1022,6 +1011,15 @@ export function Wizard({ initialProject, onClose, onComplete }) {
       onComplete(toProject(draft, initialProject));
       return;
     }
+    const nextStep = STEPS[stepIdx + 1];
+    if (nextStep?.id === "benefici" && draft.benefici_kpi === null) {
+      setDraft((prev) => {
+        const capex = Number(prev.capex) || 0;
+        const endYear = prev.data_fine ? new Date(prev.data_fine + "T00:00:00").getFullYear() + 1 : null;
+        const years = endYear ? Array.from({ length: Number(prev.vita_utile) || 20 }, (_, i) => String(endYear + i)) : [];
+        return { ...prev, benefici_kpi: buildDefaultKpi(prev.settore, capex, years) };
+      });
+    }
     setStepIdx((value) => value + 1);
   }
 
@@ -1037,26 +1035,17 @@ export function Wizard({ initialProject, onClose, onComplete }) {
   const sottosettori = getSottosettori(draft.settore);
   const categorie = getCategorie(draft.settore, draft.sotto_settore);
   const projectYears = useMemo(() => yearRangeFromDates(draft.data_inizio, draft.data_fine), [draft.data_fine, draft.data_inizio]);
-  const capexDistribution = useMemo(() => buildCapexDistribution(projectYears, draft.capex_distribuzione), [draft.capex_distribuzione, projectYears]);
-  const opexDistribution = useMemo(
-    () => projectYears.reduce((acc, year) => { acc[year] = draft.opex_distribuzione[year] ?? draft.opex_tasso ?? ""; return acc; }, {}),
-    [draft.opex_distribuzione, draft.opex_tasso, projectYears],
-  );
-  const capexDistributionTotal = useMemo(() => sumPercentageValues(capexDistribution, projectYears), [capexDistribution, projectYears]);
-  const capexYearlyAmounts = useMemo(
-    () => projectYears.reduce((acc, year) => { acc[year] = percentageToAmount(draft.capex, capexDistribution[year]); return acc; }, {}),
-    [capexDistribution, draft.capex, projectYears],
-  );
-  const opexYearlyAmounts = useMemo(
-    () => projectYears.reduce((acc, year) => {
-      const rate = draft.opex_distribuzione_attiva && draft.opex_distribuzione[year]
-        ? Number(String(draft.opex_distribuzione[year]).replace(",", "."))
-        : Number(String(draft.opex_tasso ?? "0").replace(",", "."));
-      acc[year] = percentageToAmount(draft.capex, rate);
-      return acc;
-    }, {}),
-    [draft.capex, draft.opex_tasso, draft.opex_distribuzione, draft.opex_distribuzione_attiva, projectYears],
-  );
+  const capexDistribution = buildCapexDistribution(projectYears, draft.capex_distribuzione);
+  const opexDistribution = projectYears.reduce((acc, year) => { acc[year] = draft.opex_distribuzione[year] ?? draft.opex_tasso ?? ""; return acc; }, {});
+  const capexDistributionTotal = sumPercentageValues(capexDistribution, projectYears);
+  const capexYearlyAmounts = projectYears.reduce((acc, year) => { acc[year] = percentageToAmount(draft.capex, capexDistribution[year]); return acc; }, {});
+  const opexYearlyAmounts = projectYears.reduce((acc, year) => {
+    const rate = draft.opex_distribuzione_attiva && draft.opex_distribuzione[year]
+      ? Number(String(draft.opex_distribuzione[year]).replace(",", "."))
+      : Number(String(draft.opex_tasso ?? "0").replace(",", "."));
+    acc[year] = percentageToAmount(draft.capex, rate);
+    return acc;
+  }, {});
   const opexAnnualAmount = useMemo(
     () => percentageToAmount(draft.capex, Number(String(draft.opex_tasso ?? "0").replace(",", "."))),
     [draft.capex, draft.opex_tasso],
@@ -1090,7 +1079,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
     }).length, 0);
   }, [beneficiTemplates, draft.benefici_kpi]);
 
-  const canProceed = useMemo(() => {
+  const canProceed = (() => {
     switch (step.id) {
       case "nome":
         return draft.nome.trim().length > 0;
@@ -1115,18 +1104,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
       default:
         return false;
     }
-  }, [draft, step.id, classificationRevealLevel, capexDistributionTotal]);
-
-  useEffect(() => {
-    if (step.id !== "benefici") return;
-    setDraft((prev) => {
-      if (prev.benefici_kpi !== null) return prev;
-      const capex = Number(prev.capex) || 0;
-      const endYear = prev.data_fine ? new Date(prev.data_fine + "T00:00:00").getFullYear() + 1 : null;
-      const years = endYear ? Array.from({ length: Number(prev.vita_utile) || 20 }, (_, i) => String(endYear + i)) : [];
-      return { ...prev, benefici_kpi: buildDefaultKpi(prev.settore, capex, years) };
-    });
-  }, [step.id]);
+  })();
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-bg-page">

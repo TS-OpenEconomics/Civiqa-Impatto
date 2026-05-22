@@ -87,7 +87,7 @@ const TABS = [
 
 const PILLAR_LETTERS = { environmental: "E", social: "S", governance: "G" };
 
-export function EsgResults({ project, esgResults, answers, analysis, onBack }) {
+export function EsgResults({ project, esgResults, onBack }) {
   const [tab, setTab] = useState("riepilogo");
   const [ratingView, setRatingView] = useState("grafico");
   const { toast } = useToast();

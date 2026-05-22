@@ -10,10 +10,6 @@ function fmtCurrency(n) {
   return `${new Intl.NumberFormat("it-IT").format(n)} €`;
 }
 
-function fmtK(n) {
-  if (n == null || n === 0) return "—";
-  return `${new Intl.NumberFormat("it-IT").format(Math.round(n / 1000))} K€`;
-}
 
 function fmtIT(n, dec = 0) {
   return new Intl.NumberFormat("it-IT", { minimumFractionDigits: dec, maximumFractionDigits: dec }).format(n);
@@ -33,15 +29,6 @@ function statusLabel(stato) {
     Approvato: { label: "Approvato", cls: "bg-green-50 text-green-700 border border-green-200" },
   };
   return map[stato] || { label: stato || "—", cls: "bg-ink-100 text-ink-500" };
-}
-
-function analysisStatusLabel(status) {
-  const map = {
-    needs_input: { label: "Non avviata", cls: "text-ink-300" },
-    running:     { label: "In corso…",   cls: "text-amber-600" },
-    completed:   { label: "Completata",  cls: "text-green-600" },
-  };
-  return map[status] || { label: "—", cls: "text-ink-300" };
 }
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
@@ -296,7 +283,6 @@ function EsgSummaryPanel({ esg }) {
 
 function AnalysisCard({ id, analysis, results, onOpen }) {
   const meta       = ANALYSIS_META[id];
-  const st         = analysisStatusLabel(analysis?.status);
   const hasResults = analysis?.status === "completed" && results;
 
   return (
@@ -523,7 +509,7 @@ function DocumentationSection() {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function ProjectDetail({ workspaceId, project, analyses, results, onBack, onOpenEia, onOpenEcba, onOpenEsg }) {
+export function ProjectDetail({ project, analyses, results, onBack, onOpenEia, onOpenEcba, onOpenEsg }) {
   const [isLoading, setIsLoading] = useState(true);
   const [showOptions, setShowOptions] = useState(false);
   const p   = project || {};

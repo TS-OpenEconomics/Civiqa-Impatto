@@ -9,15 +9,16 @@ function norm(s) {
 
 export function ProvinceMap({ nuts2Code, data, minHeight = 220, className = "" }) {
   const ref = useRef(null);
-  const [geojson, setGeojson] = useState(null);
+  const [geojson, setGeojson] = useState(cachedNuts3);
 
   useEffect(() => {
-    if (cachedNuts3) { setGeojson(cachedNuts3); return; }
+    if (cachedNuts3) return;
     fetch("/nuts3_italy.geojson").then(r => r.json()).then(gj => { cachedNuts3 = gj; setGeojson(gj); });
   }, []);
 
   useEffect(() => {
-    if (!ref.current || !geojson || !nuts2Code) return;
+    const element = ref.current;
+    if (!element || !geojson || !nuts2Code) return;
 
     const prefixes = nuts2Code === "ITH1" ? ["ITH1","ITH2"] : [nuts2Code];
     const features = geojson.features.filter(f => prefixes.some(p => f.properties.NUTS_ID.startsWith(p)));
@@ -34,7 +35,7 @@ export function ProvinceMap({ nuts2Code, data, minHeight = 220, className = "" }
       text.push(nutsName);
     });
 
-    Plotly.react(ref.current, [{
+    Plotly.react(element, [{
       type:"choropleth", geojson:filteredGj, featureidkey:"properties.NUTS_ID",
       locations, z, text,
       colorscale:[[0,"#F3EEFE"],[0.5,"#7C3AED"],[1,"#2E0B86"]],
@@ -47,7 +48,7 @@ export function ProvinceMap({ nuts2Code, data, minHeight = 220, className = "" }
       margin:{ t:0, b:0, l:0, r:0 },
     }, { responsive:true, displayModeBar:false });
 
-    return () => { if (ref.current) Plotly.purge(ref.current); };
+    return () => { Plotly.purge(element); };
   }, [geojson, nuts2Code, data]);
 
   if (!geojson) return (

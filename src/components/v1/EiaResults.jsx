@@ -6,7 +6,7 @@ import { ProvinceMap } from "../ui/ProvinceMap";
 import { IconDownload, IconArrowRight } from "../ui/Icons";
 import { ImpactIcon } from "../ui/ImpactIcon";
 import { PlotlyChart } from "../charts/PlotlyChart";
-import { buildInsights, computeProvinceDistribution, REGION_NAME_TO_NUTS2 } from "../../lib/eiaEngine";
+import { computeProvinceDistribution, REGION_NAME_TO_NUTS2 } from "../../lib/eiaEngine";
 import { useToast } from "../../hooks/useToast";
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
@@ -168,11 +168,10 @@ function shareOf(total, value) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function EiaResults({ project, eiaResults: rawResults, scenario, analysis, onBack }) {
+export function EiaResults({ project, eiaResults: rawResults, analysis, onBack }) {
   const [tab, setTab] = useState("riepilogo");
   const { showToast } = useToast();
   const results  = useMemo(() => adaptResults(rawResults), [rawResults]);
-  const insights = useMemo(() => buildInsights(results, scenario ?? results.scenario), [results, scenario]);
   const meta     = staticResults.metadata;
 
   async function handleDownloadExcel() {
@@ -280,7 +279,7 @@ export function EiaResults({ project, eiaResults: rawResults, scenario, analysis
 // ── Tab Riepilogo ─────────────────────────────────────────────────────────────
 
 function TabRiepilogo({ results }) {
-  const terr = results.per_territorio ?? [];
+  const terr = useMemo(() => results.per_territorio ?? [], [results.per_territorio]);
   const topRegion = terr[0]?.regione ?? "Territorio principale";
   const topRegionValue = terr[0]?.valore ?? 0;
   const directShare = Math.round(((results.gva?.diretto ?? 0) / Math.max(results.gva?.totale ?? 1, 1)) * 100);
@@ -289,7 +288,7 @@ function TabRiepilogo({ results }) {
     if (!terr.length || !results.shock_totale || !results.produzione.totale) return terr;
     const r = results.shock_totale / results.produzione.totale;
     return terr.map(t => ({ ...t, valore: Math.round(t.valore * r), hoverText: `${t.regione}<br><b>${fmtM(Math.round(t.valore * r))}</b>` }));
-  }, [terr, results]);
+  }, [terr, results.shock_totale, results.produzione.totale]);
 
   const terrHover = useMemo(() =>
     terr.map(t => ({ ...t, hoverText: `${t.regione}<br><b>${fmtM(t.valore)}</b> PIL` })),
@@ -392,8 +391,8 @@ function TabRiepilogo({ results }) {
 // ── Tab Spese ─────────────────────────────────────────────────────────────────
 
 function TabSpese({ results }) {
-  const perAnno = results.per_anno ?? [];
-  const terr    = results.per_territorio ?? [];
+  const perAnno = useMemo(() => results.per_anno ?? [], [results.per_anno]);
+  const terr    = useMemo(() => results.per_territorio ?? [], [results.per_territorio]);
 
   const spesaPerSettore = useMemo(() => SECTOR_SHARES
     .map(([settore, share]) => ({ settore, valore: Math.round((results.shock_totale ?? 0) * share) }))
@@ -414,7 +413,7 @@ function TabSpese({ results }) {
     return [...terr]
       .map(t => ({ ...t, valore: Math.round(t.valore * r), hoverText: `${t.regione}<br><b>${fmtM(Math.round(t.valore * r))}</b>` }))
       .sort((a, b) => b.valore - a.valore);
-  }, [terr, results]);
+  }, [terr, results.shock_totale, results.produzione.totale]);
 
   const annoBar = useMemo(() => [
     { name: "CAPEX", type: "bar", x: perAnno.map(r => String(r.anno)), y: perAnno.map(r => r.capex), marker: { color: C_DIR } },
@@ -508,8 +507,8 @@ function TabDimension({ tab, results }) {
   const meta = DIM_META[tab];
   const copy = staticResults.dimensioni?.[tab];
   const bd   = results[meta.key];
-  const terr = results.per_territorio ?? [];
-  const perSettore = results.per_settore ?? [];
+  const terr = useMemo(() => results.per_territorio ?? [], [results.per_territorio]);
+  const perSettore = useMemo(() => results.per_settore ?? [], [results.per_settore]);
 
   const bdFraction = bd?.totale && results.produzione.totale
     ? bd.totale / results.produzione.totale : 1;
@@ -702,7 +701,7 @@ function TabDimension({ tab, results }) {
 function KpiCard({ label, icon, value, unit }) {
   return (
     <div className="overflow-hidden border border-ink-100 bg-white p-5">
-      <div className="mb-4 flex items-center gap-3">
+      <div className="mb-4 flex flex-col gap-2">
         <ImpactIcon type={icon} label={label} wrapperClassName="flex h-12 w-12 shrink-0 items-center justify-center text-brand-violet" />
         <span className="text-xs font-mono uppercase tracking-wide text-ink-500 leading-tight">{label}</span>
       </div>

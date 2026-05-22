@@ -24,7 +24,8 @@ export function ItalyMap({ data, tone = "violet", onRegionClick, selectedRegion,
   }, []);
 
   useEffect(() => {
-    if (!ref.current || !geojson) return;
+    const element = ref.current;
+    if (!element || !geojson) return;
 
     const locations = [], z = [], text = [];
     data.forEach(item => {
@@ -59,14 +60,14 @@ export function ItalyMap({ data, tone = "violet", onRegionClick, selectedRegion,
       });
     }
 
-    Plotly.react(ref.current, traces, {
+    Plotly.react(element, traces, {
       geo:{ fitbounds:"geojson", visible:false, projection:{type:"mercator"}, bgcolor:"white" },
       paper_bgcolor:"white", plot_bgcolor:"white",
       margin:{ t:0, b:0, l:0, r:0 },
     }, { responsive:true, displayModeBar:false });
 
     if (onRegionClick) {
-      ref.current.on("plotly_click", evtData => {
+      element.on("plotly_click", evtData => {
         const loc = evtData.points?.[0]?.location;
         if (loc) {
           const reg = NUTS_TO_REGION[loc];
@@ -75,7 +76,7 @@ export function ItalyMap({ data, tone = "violet", onRegionClick, selectedRegion,
       });
     }
 
-    return () => { if (ref.current) Plotly.purge(ref.current); };
+    return () => { Plotly.purge(element); };
   }, [geojson, data, tone, onRegionClick, selectedRegion]);
 
   if (!geojson) return (

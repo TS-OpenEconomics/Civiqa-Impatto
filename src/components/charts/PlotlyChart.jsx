@@ -24,9 +24,10 @@ export function PlotlyChart({ data, layout = {}, config = {}, style }) {
   const ref = useRef(null);
 
   useEffect(() => {
-    if (!ref.current) return;
+    const element = ref.current;
+    if (!element) return;
     Plotly.react(
-      ref.current,
+      element,
       data,
       { ...BASE_LAYOUT, ...layout },
       { ...BASE_CONFIG, ...config },
@@ -34,8 +35,9 @@ export function PlotlyChart({ data, layout = {}, config = {}, style }) {
   }, [data, layout, config]);
 
   useEffect(() => {
+    const element = ref.current;
     return () => {
-      if (ref.current) Plotly.purge(ref.current);
+      if (element) Plotly.purge(element);
     };
   }, []);
 

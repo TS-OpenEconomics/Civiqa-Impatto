@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Badge } from "../ui/Badge";
 import { PlotlyChart } from "../charts/PlotlyChart";
 import { useToast } from "../../hooks/useToast";
@@ -50,7 +50,7 @@ function KpiHighlight({ label, value, cls, note }) {
   );
 }
 
-export function EcbaResults({ project, ecbaResults, assumptions, analysis, onBack }) {
+export function EcbaResults({ project, ecbaResults, assumptions, onBack }) {
   const { toast } = useToast();
   const r = useMemo(() => ecbaResults || buildFallback(assumptions), [ecbaResults, assumptions]);
   const p = project || {};

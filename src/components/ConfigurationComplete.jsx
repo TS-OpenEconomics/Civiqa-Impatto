@@ -49,7 +49,7 @@ const CONFETTI = [
   { top: "28px",  left: "118px", w: "6px",  h: "8px",  color: "#34d399" },
 ];
 
-export function ConfigurationComplete({ project, analyses, onOpenProject, onOpenEia, onOpenEcba, onOpenEsg }) {
+export function ConfigurationComplete({ onOpenProject, onOpenEia, onOpenEcba, onOpenEsg }) {
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-white">
       {/* Top white section */}

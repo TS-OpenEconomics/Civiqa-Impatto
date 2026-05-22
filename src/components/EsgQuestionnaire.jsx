@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 // ── Question definitions ─────────────────────────────────────────────────────
 
@@ -559,7 +559,7 @@ function QuestionView({ question, answers, carouselOffset, setCarouselOffset, on
 
 // ── Main component ───────────────────────────────────────────────────────────
 
-export function EsgQuestionnaire({ project, eiaResults, initialAnswers, onClose, onComplete }) {
+export function EsgQuestionnaire({ eiaResults, initialAnswers, onClose, onComplete }) {
   const [questionIdx, setQuestionIdx] = useState(0);
   const [answers, setAnswers] = useState(() => initialAnswers ?? buildDefaultAnswers(eiaResults));
   const [carouselOffset, setCarouselOffset] = useState(0);
