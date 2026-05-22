@@ -283,7 +283,7 @@ function EsgSummaryPanel({ esg }) {
 
 function AnalysisCard({ id, analysis, results, onOpen }) {
   const meta       = ANALYSIS_META[id];
-  const hasResults = analysis?.status === "completed" && results;
+  const hasResults = analysis?.status === "completed";
 
   return (
     <div className="overflow-hidden rounded border border-ink-100 bg-white">

@@ -113,22 +113,286 @@ const CAPEX_DEFAULTS = {
 };
 const CAPEX_DEFAULT_FALLBACK = 10_000_000;
 
+function profiloNum(val, fallback = 0) {
+  return parseFloat(String(val ?? "").replace(",", ".")) || fallback;
+}
+
+function buildProfiloFormula(template, profiloDati) {
+  if (!template || !profiloDati) return null;
+  const parts = template.campi.map((campo) => {
+    const val = profiloNum(profiloDati[campo.id], campo.default ?? 0);
+    return val ? `${new Intl.NumberFormat("it-IT").format(val)} ${campo.unit}` : null;
+  }).filter(Boolean);
+  return parts.length > 1 ? parts.join(" × ") : null;
+}
+
+function getProfiloInputValue(profiloKey, template, profiloDati) {
+  if (!profiloKey || !profiloDati) return null;
+  if (profiloKey === "_primary") {
+    const primaryField = template?.campi?.find((c) => c.default == null);
+    if (!primaryField) return null;
+    return profiloDati[primaryField.id] ?? null;
+  }
+  return profiloDati[profiloKey] ?? null;
+}
+
+const PROFILO_TEMPLATES = {
+  // ── Istruzione e formazione ──────────────────────────────────────────────────
+  "Scuole e asili": {
+    titolo: "Struttura scolastica / nido",
+    campi: [
+      { id: "num_alunni",  label: "Numero di alunni",        unit: "alunni",    placeholder: "es. 300" },
+      { id: "mq_alunno",   label: "Superficie per alunno",   unit: "m²/alunno", default: 20,      hint: "Standard ministeriale: 20 m²/alunno" },
+      { id: "costo_mq",    label: "Costo di costruzione",    unit: "€/m²",      default: 1600,    hint: "Tipico: €1.600/m² per edifici scolastici" },
+    ],
+    stimaCapex: (p) => profiloNum(p.num_alunni) * profiloNum(p.mq_alunno, 20) * profiloNum(p.costo_mq, 1600),
+  },
+  "Universita e ricerca": {
+    titolo: "Università e ricerca",
+    campi: [
+      { id: "num_studenti", label: "Numero di studenti",      unit: "studenti",  placeholder: "es. 2.000" },
+      { id: "mq_studente",  label: "Superficie per studente", unit: "m²/stud.",  default: 25,      hint: "Standard: 25 m²/studente" },
+      { id: "costo_mq",     label: "Costo di costruzione",    unit: "€/m²",      default: 2000,    hint: "Tipico: €2.000/m² per atenei" },
+    ],
+    stimaCapex: (p) => profiloNum(p.num_studenti) * profiloNum(p.mq_studente, 25) * profiloNum(p.costo_mq, 2000),
+  },
+  "Formazione professionale": {
+    titolo: "Centro di formazione professionale",
+    campi: [
+      { id: "num_aule",    label: "Numero di aule",           unit: "aule",      placeholder: "es. 20" },
+      { id: "mq_aula",     label: "Superficie per aula",      unit: "m²/aula",   default: 60,      hint: "Standard: 60 m²/aula" },
+      { id: "costo_mq",    label: "Costo di costruzione",     unit: "€/m²",      default: 1400,    hint: "Tipico: €1.400/m² per centri formativi" },
+    ],
+    stimaCapex: (p) => profiloNum(p.num_aule) * profiloNum(p.mq_aula, 60) * profiloNum(p.costo_mq, 1400),
+  },
+  // ── Sanità e assistenza ──────────────────────────────────────────────────────
+  "Ospedali e cliniche": {
+    titolo: "Struttura ospedaliera",
+    campi: [
+      { id: "num_letti",   label: "Posti letto",              unit: "letti",     placeholder: "es. 200" },
+      { id: "mq_letto",    label: "Superficie per posto letto", unit: "m²/letto", default: 80,     hint: "Standard: 80 m²/posto letto" },
+      { id: "costo_mq",    label: "Costo di costruzione",     unit: "€/m²",      default: 3500,    hint: "Tipico: €3.500/m² per ospedali" },
+    ],
+    stimaCapex: (p) => profiloNum(p.num_letti) * profiloNum(p.mq_letto, 80) * profiloNum(p.costo_mq, 3500),
+  },
+  "Strutture per anziani": {
+    titolo: "Struttura per anziani (RSA)",
+    campi: [
+      { id: "num_posti",   label: "Posti residenziali",       unit: "posti",     placeholder: "es. 80" },
+      { id: "mq_posto",    label: "Superficie per posto",     unit: "m²/posto",  default: 45,      hint: "Standard: 45 m²/posto" },
+      { id: "costo_mq",    label: "Costo di costruzione",     unit: "€/m²",      default: 2200,    hint: "Tipico: €2.200/m² per RSA" },
+    ],
+    stimaCapex: (p) => profiloNum(p.num_posti) * profiloNum(p.mq_posto, 45) * profiloNum(p.costo_mq, 2200),
+  },
+  "Centri di salute": {
+    titolo: "Centro di salute / poliambulatorio",
+    campi: [
+      { id: "superficie_mq", label: "Superficie totale",      unit: "m²",        placeholder: "es. 1.500" },
+      { id: "costo_mq",      label: "Costo di costruzione",   unit: "€/m²",      default: 2500,    hint: "Tipico: €2.500/m² per strutture sanitarie" },
+    ],
+    stimaCapex: (p) => profiloNum(p.superficie_mq) * profiloNum(p.costo_mq, 2500),
+  },
+  // ── Cultura e sport ──────────────────────────────────────────────────────────
+  "Biblioteche e musei": {
+    titolo: "Biblioteca / museo",
+    campi: [
+      { id: "superficie_mq", label: "Superficie totale",      unit: "m²",        placeholder: "es. 2.000" },
+      { id: "costo_mq",      label: "Costo di costruzione",   unit: "€/m²",      default: 1800,    hint: "Tipico: €1.800/m² per biblioteche e musei" },
+    ],
+    stimaCapex: (p) => profiloNum(p.superficie_mq) * profiloNum(p.costo_mq, 1800),
+  },
+  "Impianti sportivi": {
+    titolo: "Impianto sportivo",
+    campi: [
+      { id: "superficie_mq", label: "Superficie coperta",     unit: "m²",        placeholder: "es. 5.000" },
+      { id: "costo_mq",      label: "Costo di costruzione",   unit: "€/m²",      default: 1200,    hint: "Tipico: €1.200/m² per impianti sportivi coperti" },
+    ],
+    stimaCapex: (p) => profiloNum(p.superficie_mq) * profiloNum(p.costo_mq, 1200),
+  },
+  "Spazi culturali": {
+    titolo: "Spazio culturale / centro civico",
+    campi: [
+      { id: "superficie_mq", label: "Superficie totale",      unit: "m²",        placeholder: "es. 1.200" },
+      { id: "costo_mq",      label: "Costo di costruzione",   unit: "€/m²",      default: 1800,    hint: "Tipico: €1.800/m² per spazi culturali" },
+    ],
+    stimaCapex: (p) => profiloNum(p.superficie_mq) * profiloNum(p.costo_mq, 1800),
+  },
+  "Teatri e auditorium": {
+    titolo: "Teatro / auditorium",
+    campi: [
+      { id: "num_posti",     label: "Posti in sala",          unit: "posti",     placeholder: "es. 600" },
+      { id: "mq_posto",      label: "Superficie per posto",   unit: "m²/posto",  default: 2.5,     hint: "Standard: 2,5 m²/posto (inclusi spazi di servizio)" },
+      { id: "costo_mq",      label: "Costo di costruzione",   unit: "€/m²",      default: 3000,    hint: "Tipico: €3.000/m² per teatri" },
+    ],
+    stimaCapex: (p) => profiloNum(p.num_posti) * profiloNum(p.mq_posto, 2.5) * profiloNum(p.costo_mq, 3000),
+  },
+  // ── Edilizia residenziale pubblica ───────────────────────────────────────────
+  "Riqualificazione alloggi": {
+    titolo: "Riqualificazione alloggi ERP",
+    campi: [
+      { id: "num_alloggi",   label: "Numero di alloggi",      unit: "alloggi",   placeholder: "es. 60" },
+      { id: "mq_alloggio",   label: "Superficie media",       unit: "m²/alloggio", default: 75,   hint: "Tipico: 75 m²/alloggio per ERP" },
+      { id: "costo_mq",      label: "Costo di ristrutturazione", unit: "€/m²",  default: 900,     hint: "Tipico: €900/m² per riqualificazione" },
+    ],
+    stimaCapex: (p) => profiloNum(p.num_alloggi) * profiloNum(p.mq_alloggio, 75) * profiloNum(p.costo_mq, 900),
+  },
+  "Nuova costruzione ERP": {
+    titolo: "Nuova costruzione ERP",
+    campi: [
+      { id: "num_alloggi",   label: "Numero di alloggi",      unit: "alloggi",   placeholder: "es. 50" },
+      { id: "mq_alloggio",   label: "Superficie media",       unit: "m²/alloggio", default: 80,   hint: "Tipico: 80 m²/alloggio" },
+      { id: "costo_mq",      label: "Costo di costruzione",   unit: "€/m²",      default: 1400,    hint: "Tipico: €1.400/m² per nuova costruzione ERP" },
+    ],
+    stimaCapex: (p) => profiloNum(p.num_alloggi) * profiloNum(p.mq_alloggio, 80) * profiloNum(p.costo_mq, 1400),
+  },
+  // ── Strade e trasporto ───────────────────────────────────────────────────────
+  "Nuova viabilita": {
+    titolo: "Nuova viabilità stradale",
+    campi: [
+      { id: "km",            label: "Lunghezza strada",       unit: "km",        placeholder: "es. 10" },
+      { id: "costo_km",      label: "Costo per km",           unit: "€/km",      default: 2500000, hint: "Tipico: €2.500.000/km per viabilità extraurbana" },
+    ],
+    stimaCapex: (p) => profiloNum(p.km) * profiloNum(p.costo_km, 2500000),
+  },
+  "Adeguamento e manutenzione": {
+    titolo: "Adeguamento / manutenzione stradale",
+    campi: [
+      { id: "km",            label: "Lunghezza interessata",  unit: "km",        placeholder: "es. 25" },
+      { id: "costo_km",      label: "Costo per km",           unit: "€/km",      default: 800000,  hint: "Tipico: €800.000/km per adeguamento" },
+    ],
+    stimaCapex: (p) => profiloNum(p.km) * profiloNum(p.costo_km, 800000),
+  },
+  "Gallerie e ponti": {
+    titolo: "Galleria / ponte",
+    campi: [
+      { id: "lunghezza_m",   label: "Lunghezza opera",        unit: "m",         placeholder: "es. 500" },
+      { id: "larghezza_m",   label: "Larghezza",              unit: "m",         default: 12,      hint: "Standard: 12 m per doppio senso di marcia" },
+      { id: "costo_mq",      label: "Costo per m²",           unit: "€/m²",      default: 15000,   hint: "Tipico: €15.000/m² per opere d'arte stradali" },
+    ],
+    stimaCapex: (p) => profiloNum(p.lunghezza_m) * profiloNum(p.larghezza_m, 12) * profiloNum(p.costo_mq, 15000),
+  },
+  "Piste ciclabili": {
+    titolo: "Pista ciclabile",
+    campi: [
+      { id: "km",            label: "Lunghezza percorso",     unit: "km",        placeholder: "es. 8" },
+      { id: "costo_km",      label: "Costo per km",           unit: "€/km",      default: 300000,  hint: "Tipico: €300.000/km per piste ciclabili urbane" },
+    ],
+    stimaCapex: (p) => profiloNum(p.km) * profiloNum(p.costo_km, 300000),
+  },
+  "Linee ferroviarie": {
+    titolo: "Linea ferroviaria",
+    campi: [
+      { id: "km",            label: "Lunghezza linea",        unit: "km",        placeholder: "es. 40" },
+      { id: "costo_km",      label: "Costo per km",           unit: "€/km",      default: 10000000, hint: "Tipico: €10.000.000/km per linee regionali" },
+    ],
+    stimaCapex: (p) => profiloNum(p.km) * profiloNum(p.costo_km, 10000000),
+  },
+  "Metropolitane e tram": {
+    titolo: "Metropolitana / tranvia",
+    campi: [
+      { id: "km",            label: "Lunghezza linea",        unit: "km",        placeholder: "es. 15" },
+      { id: "num_fermate",   label: "Numero di fermate",      unit: "fermate",   placeholder: "es. 20" },
+      { id: "costo_km",      label: "Costo per km",           unit: "€/km",      default: 50000000, hint: "Tipico: €50.000.000/km per metro urbana" },
+    ],
+    stimaCapex: (p) => profiloNum(p.km) * profiloNum(p.costo_km, 50000000),
+  },
+  // ── Infrastrutture idriche / ambientali ──────────────────────────────────────
+  "Reti idriche urbane": {
+    titolo: "Rete idrica urbana",
+    campi: [
+      { id: "km_rete",       label: "Lunghezza rete",         unit: "km",        placeholder: "es. 80" },
+      { id: "costo_km",      label: "Costo per km",           unit: "€/km",      default: 800000,  hint: "Tipico: €800.000/km per rete idrica urbana" },
+    ],
+    stimaCapex: (p) => profiloNum(p.km_rete) * profiloNum(p.costo_km, 800000),
+  },
+  "Reti fognarie": {
+    titolo: "Rete fognaria",
+    campi: [
+      { id: "km_rete",       label: "Lunghezza rete",         unit: "km",        placeholder: "es. 60" },
+      { id: "costo_km",      label: "Costo per km",           unit: "€/km",      default: 600000,  hint: "Tipico: €600.000/km per fognatura" },
+    ],
+    stimaCapex: (p) => profiloNum(p.km_rete) * profiloNum(p.costo_km, 600000),
+  },
+  "Impianti depurazione acque": {
+    titolo: "Impianto di depurazione",
+    campi: [
+      { id: "ae",            label: "Abitanti equivalenti",   unit: "AE",        placeholder: "es. 50.000" },
+      { id: "costo_ae",      label: "Costo per AE",           unit: "€/AE",      default: 350,     hint: "Tipico: €350/AE per depuratore biologico" },
+    ],
+    stimaCapex: (p) => profiloNum(p.ae) * profiloNum(p.costo_ae, 350),
+  },
+  "Corpi idrici: Miglioramento della qualita": {
+    titolo: "Intervento su corpi idrici",
+    campi: [
+      { id: "km_rete",       label: "Km di rete/canali interessati", unit: "km", placeholder: "es. 120" },
+      { id: "costo_km",      label: "Costo per km",           unit: "€/km",      default: 1000000, hint: "Tipico: €1.000.000/km per interventi su corpi idrici" },
+    ],
+    stimaCapex: (p) => profiloNum(p.km_rete) * profiloNum(p.costo_km, 1000000),
+  },
+  // ── Telecomunicazioni ────────────────────────────────────────────────────────
+  "Fibra ottica FTTH": {
+    titolo: "Fibra ottica FTTH",
+    campi: [
+      { id: "km_fibra",      label: "Km di fibra da posare",  unit: "km",        placeholder: "es. 200" },
+      { id: "unita_conn",    label: "Unità immobiliari",      unit: "UI",        placeholder: "es. 5.000" },
+      { id: "costo_km",      label: "Costo per km",           unit: "€/km",      default: 30000,   hint: "Tipico: €30.000/km per fibra FTTH" },
+    ],
+    stimaCapex: (p) => profiloNum(p.km_fibra) * profiloNum(p.costo_km, 30000),
+  },
+  "Fibra ottica FTTC": {
+    titolo: "Fibra ottica FTTC",
+    campi: [
+      { id: "km_fibra",      label: "Km di fibra da posare",  unit: "km",        placeholder: "es. 100" },
+      { id: "costo_km",      label: "Costo per km",           unit: "€/km",      default: 15000,   hint: "Tipico: €15.000/km per fibra FTTC" },
+    ],
+    stimaCapex: (p) => profiloNum(p.km_fibra) * profiloNum(p.costo_km, 15000),
+  },
+  // ── Attività produttive e ricerca ────────────────────────────────────────────
+  "Laboratori e centri di ricerca": {
+    titolo: "Laboratorio / centro ricerca",
+    campi: [
+      { id: "superficie_mq", label: "Superficie laboratori",  unit: "m²",        placeholder: "es. 3.000" },
+      { id: "costo_mq",      label: "Costo per m²",           unit: "€/m²",      default: 2500,    hint: "Tipico: €2.500/m² per laboratori attrezzati" },
+    ],
+    stimaCapex: (p) => profiloNum(p.superficie_mq) * profiloNum(p.costo_mq, 2500),
+  },
+  "Incubatori di imprese": {
+    titolo: "Incubatore / hub di innovazione",
+    campi: [
+      { id: "superficie_mq", label: "Superficie totale",      unit: "m²",        placeholder: "es. 2.000" },
+      { id: "num_startup",   label: "Imprese ospitate (stima)", unit: "n.",      placeholder: "es. 30" },
+      { id: "costo_mq",      label: "Costo per m²",           unit: "€/m²",      default: 2000,    hint: "Tipico: €2.000/m² per hub innovazione" },
+    ],
+    stimaCapex: (p) => profiloNum(p.superficie_mq) * profiloNum(p.costo_mq, 2000),
+  },
+  "Aree industriali": {
+    titolo: "Area industriale / polo produttivo",
+    campi: [
+      { id: "superficie_mq", label: "Superficie totale",      unit: "m²",        placeholder: "es. 50.000" },
+      { id: "costo_mq",      label: "Costo per m²",           unit: "€/m²",      default: 500,     hint: "Tipico: €500/m² per aree industriali" },
+    ],
+    stimaCapex: (p) => profiloNum(p.superficie_mq) * profiloNum(p.costo_mq, 500),
+  },
+};
+
 const STEPS = [
-  { id: "nome", group: 0, sublabel: "Anagrafica" },
-  { id: "descrizione", group: 0, sublabel: "Anagrafica" },
-  { id: "stato", group: 0, sublabel: "Stato" },
+  { id: "nome",            group: 0, sublabel: "Anagrafica" },
+  { id: "descrizione",     group: 0, sublabel: "Anagrafica" },
+  { id: "stato",           group: 0, sublabel: "Stato" },
   { id: "classificazione", group: 0, sublabel: "Classificazione intervento" },
-  { id: "durata", group: 1, sublabel: "Durata del progetto" },
-  { id: "localizzazione", group: 1, sublabel: "Localizzazione" },
-  { id: "anno", group: 2, sublabel: "Anno di attualizzazione" },
-  { id: "capex", group: 2, sublabel: "Capex" },
-  { id: "opex", group: 2, sublabel: "Opex" },
-  { id: "benefici", group: 2, sublabel: "Benefici ECBA" },
+  { id: "profilo",         group: 1, sublabel: "Caratteristiche fisiche" },
+  { id: "durata",          group: 2, sublabel: "Durata del progetto" },
+  { id: "localizzazione",  group: 2, sublabel: "Localizzazione" },
+  { id: "anno",            group: 3, sublabel: "Anno di attualizzazione" },
+  { id: "capex",           group: 3, sublabel: "Capex" },
+  { id: "opex",            group: 3, sublabel: "Opex" },
+  { id: "benefici",        group: 3, sublabel: "Benefici ECBA" },
 ];
 
 const GROUPS = [
-  { label: "Profilazione", sublabels: ["Anagrafica", "Stato", "Classificazione intervento"] },
-  { label: "Contesto operativo", sublabels: ["Durata del progetto", "Localizzazione"] },
+  { label: "Profilazione",        sublabels: ["Anagrafica", "Stato", "Classificazione intervento"] },
+  { label: "Profilo progetto",    sublabels: ["Caratteristiche fisiche"] },
+  { label: "Contesto operativo",  sublabels: ["Durata del progetto", "Localizzazione"] },
   { label: "Parametri economici", sublabels: ["Anno di attualizzazione", "Capex", "Opex", "Benefici ECBA"] },
 ];
 
@@ -137,24 +401,12 @@ const ECBA_KPI_TEMPLATES = {
     {
       group: "Accesso ai servizi",
       kpis: [
-        { id: "utenti_diretti",   label: "Utenti diretti",                        unit: "n.",      estimateFn: (c) => Math.round(c.capex / 5000) },
-        { id: "utenti_indiretti", label: "Utenti indiretti",                      unit: "n.",      estimateFn: (c) => Math.round(c.capex / 2000) },
-        { id: "superficie",       label: "Superficie destinata ai servizi",       unit: "mq",      estimateFn: (c) => Math.round(c.capex / 1500) },
-        { id: "posti",            label: "Posti disponibili",                     unit: "n.",      estimateFn: (c) => Math.round(c.capex / 8000) },
-      ],
-    },
-    {
-      group: "Impatto occupazionale",
-      kpis: [
-        { id: "fte_costruzione",  label: "FTE in fase di costruzione",            unit: "FTE",     estimateFn: (c) => Math.round(c.capex / 120000) },
-        { id: "fte_operativi",    label: "FTE operativi (fase esercizio)",        unit: "FTE",     estimateFn: (c) => Math.round(c.capex / 400000) },
-      ],
-    },
-    {
-      group: "Valore sociale",
-      kpis: [
-        { id: "risp_costo",       label: "Riduzione costo servizi per utente",   unit: "€/anno",  estimateFn: () => 120 },
-        { id: "ore_risparmio",    label: "Ore risparmiate per utente",           unit: "ore/anno", estimateFn: () => 24 },
+        { id: "utenti_diretti",    label: "Utenti diretti",                        unit: "n.",            tipo: "input",          profiloKey: "_primary", estimateFn: (c) => Math.round(c.capex / 5000) },
+        { id: "mq_utente",         label: "Superficie per utente",                 unit: "m²/utente",     tipo: "tecnico",        estimateFn: () => 25 },
+        { id: "famiglie",          label: "Famiglie potenzialmente beneficiarie",   unit: "n.",            tipo: "georef",         estimateFn: (c) => Math.round(c.capex / 2000) },
+        { id: "risp_costo",        label: "Riduzione costo servizi per utente",     unit: "€/utente/anno", tipo: "monetizzazione", estimateFn: () => 120 },
+        { id: "ore_risparmio",     label: "Beneficio da risparmio di tempo",        unit: "€/ora",         tipo: "monetizzazione", estimateFn: () => 12.5 },
+        { id: "benessere_sociale", label: "Valore di benessere per utente",         unit: "€/utente/anno", tipo: "monetizzazione", estimateFn: () => 200 },
       ],
     },
   ],
@@ -162,23 +414,20 @@ const ECBA_KPI_TEMPLATES = {
     {
       group: "Mobilità e traffico",
       kpis: [
-        { id: "veicoli_giorno",   label: "Veicoli/giorno stimati",               unit: "n.",      estimateFn: (c) => Math.round(c.capex / 30000) },
-        { id: "riduzione_tempi",  label: "Riduzione tempi di percorrenza",       unit: "min",     estimateFn: () => 12 },
-        { id: "km_migliorata",    label: "Km di viabilità migliorata",           unit: "km",      estimateFn: (c) => Math.round(c.capex / 1500000) },
+        { id: "km_migliorata",    label: "Km di viabilità migliorata",             unit: "km",       tipo: "input",          profiloKey: "km",       estimateFn: (c) => Math.round(c.capex / 1500000) },
+        { id: "riduzione_tempi",  label: "Riduzione tempi di percorrenza",         unit: "min",      tipo: "tecnico",        estimateFn: () => 12 },
+        { id: "veicoli_giorno",   label: "Veicoli/giorno stimati",                 unit: "n.",       tipo: "georef",         estimateFn: (c) => Math.round(c.capex / 30000) },
+        { id: "risp_carburante",  label: "Risparmio carburante per veicolo",       unit: "€/km",     tipo: "monetizzazione", estimateFn: () => 0.08 },
+        { id: "valore_tempo",     label: "Valore del tempo risparmiato",           unit: "€/ora",    tipo: "monetizzazione", estimateFn: () => 12.5 },
       ],
     },
     {
       group: "Sicurezza e ambiente",
       kpis: [
-        { id: "incidenti",        label: "Incidenti annui evitati",              unit: "n.",      estimateFn: (c) => Math.round(c.capex / 5000000) },
-        { id: "co2_trasporto",    label: "Riduzione emissioni CO2",              unit: "ton/anno", estimateFn: (c) => Math.round(c.capex / 200000) },
-      ],
-    },
-    {
-      group: "Impatto economico",
-      kpis: [
-        { id: "risp_carburante",  label: "Risparmio carburante per veicolo",    unit: "€/km",    estimateFn: () => 0.08 },
-        { id: "valore_tempo",     label: "Valore del tempo risparmiato",        unit: "€/ora",   estimateFn: () => 12.5 },
+        { id: "incidenti",        label: "Incidenti annui evitati",                unit: "n.",       tipo: "georef",         estimateFn: (c) => Math.round(c.capex / 5000000) },
+        { id: "co2_trasporto",    label: "Riduzione emissioni CO₂",                unit: "ton/anno", tipo: "tecnico",        estimateFn: (c) => Math.round(c.capex / 200000) },
+        { id: "costo_incidente",  label: "Costo sociale medio per incidente",      unit: "€/n.",     tipo: "monetizzazione", estimateFn: () => 350000 },
+        { id: "valore_co2_tr",    label: "Valore sociale della CO₂",              unit: "€/ton",    tipo: "monetizzazione", estimateFn: () => 120 },
       ],
     },
   ],
@@ -186,25 +435,26 @@ const ECBA_KPI_TEMPLATES = {
     {
       group: "Riduzione perdite idriche",
       kpis: [
-        { id: "vol_acqua",        label: "Volume dell'acqua immessa",            unit: "mq3",     estimateFn: (c) => Math.round(c.capex * 1.97) },
-        { id: "pct_perdite",      label: "Percentuale target perdite idriche",  unit: "%",       estimateFn: () => 34 },
-        { id: "energia_acqua",    label: "Consumo energia elettrica per acqua sollevata", unit: "kw", estimateFn: () => 0.8015 },
-        { id: "costo_energia",    label: "Costo energia elettrica",             unit: "€",       estimateFn: () => 0.16 },
+        { id: "vol_acqua",        label: "Volume dell'acqua immessa",              unit: "m³",       tipo: "input",          profiloKey: "km_rete",  estimateFn: (c) => Math.round(c.capex * 1.97) },
+        { id: "pct_perdite",      label: "Percentuale target perdite idriche",     unit: "%",        tipo: "tecnico",        estimateFn: () => 34 },
+        { id: "energia_acqua",    label: "Consumo energia per acqua sollevata",    unit: "kWh/m³",   tipo: "monetizzazione", estimateFn: () => 0.8015 },
+        { id: "costo_energia",    label: "Costo energia elettrica",                unit: "€/kWh",    tipo: "monetizzazione", estimateFn: () => 0.16 },
       ],
     },
     {
       group: "Riduzione delle interruzioni del servizio idrico",
       kpis: [
-        { id: "ore_interruzioni", label: "Ore di interruzione evitate",         unit: "ore",     estimateFn: () => 204.7 },
-        { id: "ore_anno",         label: "Ore anno servizio idrico",            unit: "ore",     estimateFn: () => 8760 },
-        { id: "pct_riduzione",    label: "Percentuale riduzione interruzioni",  unit: "%",       estimateFn: () => 35 },
+        { id: "ore_interruzioni", label: "Ore di interruzione evitate",            unit: "ore",      tipo: "georef",         estimateFn: () => 204.7 },
+        { id: "pct_riduzione",    label: "Percentuale riduzione interruzioni",     unit: "%",        tipo: "tecnico",        estimateFn: () => 35 },
+        { id: "ore_anno",         label: "Ore anno servizio idrico",               unit: "ore",      tipo: "monetizzazione", estimateFn: () => 8760 },
       ],
     },
     {
       group: "Qualità ambientale",
       kpis: [
-        { id: "co2_idrico",       label: "Riduzione emissioni CO2 per efficienza", unit: "ton/anno", estimateFn: (c) => Math.round(c.capex / 1000000) },
-        { id: "risp_idrico",      label: "Risparmio idrico annuo",              unit: "mc/anno", estimateFn: (c) => Math.round(c.capex / 500) },
+        { id: "risp_idrico",      label: "Risparmio idrico annuo",                 unit: "m³/anno",  tipo: "georef",         estimateFn: (c) => Math.round(c.capex / 500) },
+        { id: "co2_idrico",       label: "Riduzione emissioni CO₂",                unit: "ton/anno", tipo: "tecnico",        estimateFn: (c) => Math.round(c.capex / 1000000) },
+        { id: "valore_co2_idrico",label: "Valore sociale della CO₂",              unit: "€/ton",    tipo: "monetizzazione", estimateFn: () => 120 },
       ],
     },
   ],
@@ -212,16 +462,17 @@ const ECBA_KPI_TEMPLATES = {
     {
       group: "Impatto economico locale",
       kpis: [
-        { id: "imprese",          label: "Imprese insediate",                   unit: "n.",      estimateFn: (c) => Math.round(c.capex / 500000) },
-        { id: "nuovi_occupati",   label: "Nuovi occupati",                     unit: "FTE",     estimateFn: (c) => Math.round(c.capex / 80000) },
-        { id: "valore_aggiunto",  label: "Valore aggiunto generato",           unit: "€/anno",  estimateFn: (c) => Math.round(c.capex * 0.12) },
+        { id: "imprese",          label: "Imprese insediate",                      unit: "n.",       tipo: "input",          profiloKey: "_primary", estimateFn: (c) => Math.round(c.capex / 500000) },
+        { id: "nuovi_occupati",   label: "Nuovi occupati",                         unit: "FTE",      tipo: "tecnico",        estimateFn: (c) => Math.round(c.capex / 80000) },
+        { id: "valore_aggiunto",  label: "Valore aggiunto generato",               unit: "€/anno",   tipo: "monetizzazione", estimateFn: (c) => Math.round(c.capex * 0.12) },
       ],
     },
     {
       group: "Innovazione e ricerca",
       kpis: [
-        { id: "brevetti",         label: "Brevetti depositati (stima)",        unit: "n./anno", estimateFn: (c) => Math.round(c.capex / 2000000) },
-        { id: "spinoff",          label: "Spin-off e start-up attivate",       unit: "n.",      estimateFn: (c) => Math.round(c.capex / 1500000) },
+        { id: "brevetti",         label: "Brevetti depositati (stima)",            unit: "n./anno",  tipo: "tecnico",        estimateFn: (c) => Math.round(c.capex / 2000000) },
+        { id: "spinoff",          label: "Spin-off e start-up attivate",           unit: "n.",       tipo: "georef",         estimateFn: (c) => Math.round(c.capex / 1500000) },
+        { id: "valore_spinoff",   label: "Valore medio per spin-off",              unit: "€/n.",     tipo: "monetizzazione", estimateFn: () => 500000 },
       ],
     },
   ],
@@ -229,17 +480,10 @@ const ECBA_KPI_TEMPLATES = {
     {
       group: "Connettività",
       kpis: [
-        { id: "unita_connesse",   label: "Abitazioni/unità connesse",          unit: "n.",      estimateFn: (c) => Math.round(c.capex / 1500) },
-        { id: "speed_dl",         label: "Download speed media",               unit: "Mbps",    estimateFn: () => 1000 },
-        { id: "speed_ul",         label: "Upload speed media",                 unit: "Mbps",    estimateFn: () => 300 },
-      ],
-    },
-    {
-      group: "Impatto digitale",
-      kpis: [
-        { id: "digital_divide",   label: "Riduzione digital divide",           unit: "%",       estimateFn: (c) => Math.min(80, Math.round(c.capex / 3000000)) },
-        { id: "servizi_digitali", label: "Nuovi servizi digitali abilitati",   unit: "n.",      estimateFn: (c) => Math.round(c.capex / 1000000) },
-        { id: "risp_utente",      label: "Risparmio annuo per utente connesso", unit: "€/anno", estimateFn: () => 180 },
+        { id: "unita_connesse",   label: "Abitazioni/unità connesse",              unit: "n.",       tipo: "input",          profiloKey: "unita_conn", estimateFn: (c) => Math.round(c.capex / 1500) },
+        { id: "digital_divide",   label: "Riduzione digital divide",               unit: "%",        tipo: "tecnico",        estimateFn: (c) => Math.min(80, Math.round(c.capex / 3000000)) },
+        { id: "servizi_digitali", label: "Nuovi servizi digitali abilitati",      unit: "n.",       tipo: "tecnico",        estimateFn: (c) => Math.round(c.capex / 1000000) },
+        { id: "risp_utente",      label: "Risparmio annuo per utente connesso",   unit: "€/anno",   tipo: "monetizzazione", estimateFn: () => 180 },
       ],
     },
   ],
@@ -383,6 +627,7 @@ function buildDraft(project) {
     capex: String(conf.capex ?? ""),
     opex: String(conf.opex ?? ""),
     vita_utile: conf.vita_utile ?? "",
+    profilo_dati: conf.profilo_dati ?? {},
     benefici_kpi: conf.benefici_kpi ?? null,
     benefici_extra: conf.benefici_extra ?? [],
   };
@@ -422,6 +667,7 @@ function toProject(draft, base) {
       capex: Number(draft.capex),
       opex: Math.round((Number(draft.capex) * Number(String(draft.opex_tasso ?? "0").replace(",", "."))) / 100),
       vita_utile: Number(draft.vita_utile),
+      profilo_dati: draft.profilo_dati,
       benefici_kpi: draft.benefici_kpi,
       benefici_extra: draft.benefici_extra ?? [],
     },
@@ -798,6 +1044,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
     (initialProject?.configurazione?.anno_attualizzazione != null) ? 1 : 0
   );
   const [opexRevealLevel, setOpexRevealLevel] = useState(0);
+  const [beneficiModo, setBeneficiModo] = useState("anno-tipo");
   const geocodeTimerRef = useRef(null);
   const initialDraft = useMemo(() => buildDraft(initialProject), [initialProject]);
   const step = STEPS[stepIdx];
@@ -832,6 +1079,10 @@ export function Wizard({ initialProject, onClose, onComplete }) {
     updateOpexTasso(String(next).replace(".", ","));
   }
 
+  function updateProfiloDati(fieldId, value) {
+    setDraft((prev) => ({ ...prev, profilo_dati: { ...prev.profilo_dati, [fieldId]: value } }));
+  }
+
   function updateOpexDistribution(year, value) {
     setDraft((prev) => ({
       ...prev,
@@ -858,6 +1109,35 @@ export function Wizard({ initialProject, onClose, onComplete }) {
         [id]: { ...(prev.benefici_kpi?.[id] ?? {}), stima: value },
       },
     }));
+  }
+
+  function updateBeneficiKpiYear(id, year, value) {
+    setDraft((prev) => ({
+      ...prev,
+      benefici_kpi: {
+        ...prev.benefici_kpi,
+        [id]: {
+          ...(prev.benefici_kpi?.[id] ?? {}),
+          anni: { ...(prev.benefici_kpi?.[id]?.anni ?? {}), [year]: value },
+        },
+      },
+    }));
+  }
+
+  function propagateKpiFirstYear(id) {
+    if (!opexYears.length) return;
+    const firstValue = draft.benefici_kpi?.[id]?.anni?.[opexYears[0]] ?? "";
+    setDraft((prev) => {
+      const anni = { ...(prev.benefici_kpi?.[id]?.anni ?? {}) };
+      opexYears.forEach((y) => { anni[y] = firstValue; });
+      return {
+        ...prev,
+        benefici_kpi: {
+          ...prev.benefici_kpi,
+          [id]: { ...(prev.benefici_kpi?.[id] ?? {}), anni },
+        },
+      };
+    });
   }
 
   function autoFillBenefici() {
@@ -896,6 +1176,20 @@ export function Wizard({ initialProject, onClose, onComplete }) {
     setDraft((prev) => ({
       ...prev,
       benefici_extra: (prev.benefici_extra ?? []).filter((b) => b.id !== id),
+    }));
+  }
+
+  function setKpiAllYears(id, value) {
+    setDraft((prev) => ({
+      ...prev,
+      benefici_kpi: {
+        ...prev.benefici_kpi,
+        [id]: {
+          ...(prev.benefici_kpi?.[id] ?? {}),
+          stima: value,
+          anni: opexYears.reduce((acc, y) => { acc[y] = value; return acc; }, {}),
+        },
+      },
     }));
   }
 
@@ -1000,6 +1294,8 @@ export function Wizard({ initialProject, onClose, onComplete }) {
           categoria_intervento: DEMO_AUTOFILL.categoria_intervento,
           tipo_intervento: DEMO_AUTOFILL.tipo_intervento,
         }));
+        break;
+      case "profilo":
         break;
       case "durata":
         setDraft((prev) => ({
@@ -1119,16 +1415,56 @@ export function Wizard({ initialProject, onClose, onComplete }) {
   }, [allCategorie, categorySearch]);
   const opexBenchmark = useMemo(() => OPEX_BENCHMARKS[draft.settore] ?? OPEX_BENCHMARK_DEFAULT, [draft.settore]);
   const vitaUtileBenchmark = useMemo(() => VITA_UTILE_BENCHMARKS[draft.settore] ?? VITA_UTILE_DEFAULT, [draft.settore]);
+  const profiloTemplate = useMemo(
+    () => PROFILO_TEMPLATES[draft.categoria_intervento] ?? PROFILO_TEMPLATES[draft.sotto_settore] ?? null,
+    [draft.categoria_intervento, draft.sotto_settore],
+  );
+  const profiloCapexStima = useMemo(
+    () => profiloTemplate?.stimaCapex?.(draft.profilo_dati) ?? 0,
+    [profiloTemplate, draft.profilo_dati],
+  );
 
+  // Pre-fill anno from data_inizio
   useEffect(() => {
-    if (step.id === "anno" && !draft.anno_attualizzazione && draft.data_inizio) {
+    if (step.id !== "anno") return;
+    if (!draft.anno_attualizzazione && draft.data_inizio) {
       const year = String(new Date(draft.data_inizio + "T00:00:00").getFullYear());
       if (ANNI.includes(year)) update("anno_attualizzazione", year);
     }
-    if (step.id === "capex" && !draft.capex) {
-      const defaultCapex = CAPEX_DEFAULTS[draft.settore] ?? CAPEX_DEFAULT_FALLBACK;
-      update("capex", String(defaultCapex));
-    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step.id]);
+
+  // Pre-fill profilo field defaults when entering the step
+  useEffect(() => {
+    if (step.id !== "profilo") return;
+    setDraft((prev) => {
+      const tpl = PROFILO_TEMPLATES[prev.categoria_intervento] ?? PROFILO_TEMPLATES[prev.sotto_settore];
+      if (!tpl) return prev;
+      const dati = { ...prev.profilo_dati };
+      let changed = false;
+      tpl.campi.forEach((c) => {
+        if (c.default != null && (dati[c.id] == null || dati[c.id] === "")) {
+          dati[c.id] = String(c.default).replace(".", ",");
+          changed = true;
+        }
+      });
+      return changed ? { ...prev, profilo_dati: dati } : prev;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step.id]);
+
+  // Pre-fill capex: prefer profilo estimate, fall back to sector default
+  useEffect(() => {
+    if (step.id !== "capex") return;
+    setDraft((prev) => {
+      if (prev.capex) return prev;
+      const tpl = PROFILO_TEMPLATES[prev.categoria_intervento] ?? PROFILO_TEMPLATES[prev.sotto_settore];
+      const stima = tpl?.stimaCapex?.(prev.profilo_dati);
+      const capex = stima && stima > 0
+        ? String(Math.round(stima))
+        : String(CAPEX_DEFAULTS[prev.settore] ?? CAPEX_DEFAULT_FALLBACK);
+      return { ...prev, capex };
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step.id]);
 
@@ -1152,10 +1488,12 @@ export function Wizard({ initialProject, onClose, onComplete }) {
   const beneficiFilledCount = useMemo(() => {
     if (!draft.benefici_kpi) return 0;
     return beneficiTemplates.reduce((acc, { kpis }) => acc + kpis.filter(({ id }) => {
-      const v = draft.benefici_kpi[id]?.stima;
-      return v != null && v !== "";
+      const kpiData = draft.benefici_kpi[id];
+      if (!kpiData) return false;
+      if (opexYears.length > 0) return opexYears.some((y) => (kpiData.anni?.[y] ?? "") !== "");
+      return (kpiData.stima ?? "") !== "";
     }).length, 0);
-  }, [beneficiTemplates, draft.benefici_kpi]);
+  }, [beneficiTemplates, draft.benefici_kpi, opexYears]);
 
   const canProceed = (() => {
     switch (step.id) {
@@ -1167,6 +1505,8 @@ export function Wizard({ initialProject, onClose, onComplete }) {
         return !!draft.stato;
       case "classificazione":
         return classificationRevealLevel >= 4 && !!draft.settore && !!draft.sotto_settore && !!draft.categoria_intervento && !!draft.tipo_intervento;
+      case "profilo":
+        return true;
       case "durata":
         return !!draft.data_inizio && !!draft.data_fine;
       case "localizzazione":
@@ -1369,6 +1709,49 @@ export function Wizard({ initialProject, onClose, onComplete }) {
               </>
             ) : null}
 
+            {step.id === "profilo" ? (
+              <>
+                <QuestionHeader
+                  title="Caratteristiche fisiche del progetto"
+                  description="Indica le dimensioni principali del progetto. Questi dati saranno usati per stimare il CAPEX e alimentare i benefici attesi."
+                />
+                {profiloTemplate ? (
+                  <div className="max-w-3xl overflow-hidden border border-ink-100 bg-white">
+                    <div className="flex items-center gap-3 bg-[#2f2f2f] px-5 py-3 text-white">
+                      <p className="text-[14px] font-semibold">{profiloTemplate.titolo}</p>
+                      <span className="ml-auto text-[11px] text-ink-400">{draft.categoria_intervento}</span>
+                    </div>
+                    <div className="divide-y divide-[#ececf1]">
+                      {profiloTemplate.campi.filter((c) => c.default == null).map((campo) => (
+                        <div key={campo.id} className="flex flex-col gap-1.5 px-6 py-5 sm:flex-row sm:items-center sm:gap-6">
+                          <label className="w-[240px] shrink-0 text-[14px] font-semibold text-ink-900">
+                            {campo.label}
+                          </label>
+                          <div className="flex items-center gap-3">
+                            <input
+                              value={draft.profilo_dati[campo.id] ?? ""}
+                              onChange={(e) => updateProfiloDati(campo.id, e.target.value.replace(/[^\d.,]/g, ""))}
+                              placeholder={campo.placeholder ?? ""}
+                              className="h-10 w-[160px] border border-ink-200 bg-white px-3 text-[14px] text-ink-900 placeholder:text-ink-300 focus:border-brand-violet focus:outline-none"
+                            />
+                            <span className="text-[14px] font-semibold text-ink-500">{campo.unit}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="max-w-3xl border border-ink-100 bg-white p-6">
+                    <p className="text-[14px] text-ink-600">
+                      Nessun parametro specifico disponibile per{" "}
+                      <strong>{draft.categoria_intervento || "questa categoria"}</strong>.
+                      Potrai inserire il CAPEX direttamente nel passo successivo.
+                    </p>
+                  </div>
+                )}
+              </>
+            ) : null}
+
             {step.id === "durata" ? (
               <>
                 <QuestionHeader
@@ -1434,22 +1817,22 @@ export function Wizard({ initialProject, onClose, onComplete }) {
             {step.id === "anno" ? (
               <>
                 <QuestionHeader
-                  title="Anno di avvio e tasso di sconto sociale"
-                  description="Seleziona l'anno di inizio dei lavori: rappresenta il punto di riferimento temporale dell'analisi. Successivamente potrai confermare o modificare il tasso di sconto sociale."
+                  title="Anno di attualizzazione e tasso di sconto sociale"
+                  description="Seleziona l'anno di attualizzazione: rappresenta il punto di riferimento temporale dell'analisi. Successivamente potrai confermare o modificare il tasso di sconto sociale."
                   type="Risposta singola"
                 />
                 <div className="max-w-4xl space-y-3">
 
-                  {/* ── Section 1: Anno di inizio lavori ── */}
+                  {/* ── Section 1: Anno di attualizzazione ── */}
                   <ClassAccordion
                     number="1"
-                    title="Anno di inizio lavori"
+                    title="Anno di attualizzazione"
                     selectedLabel={annoRevealLevel > 0 ? `${draft.anno_attualizzazione}` : null}
                     isCompleted={annoRevealLevel > 0}
                     onEdit={() => setAnnoRevealLevel(0)}
                   >
                     <p className="mb-4 text-[13px] leading-[1.5] text-ink-600">
-                      L'anno di inizio lavori è il punto di partenza dell'analisi economica. Da questo momento costi e benefici futuri vengono riportati a un riferimento temporale coerente e confrontabile.
+                      L'anno di attualizzazione è il punto di partenza dell'analisi economica. Da questo momento costi e benefici futuri vengono riportati a un riferimento temporale coerente e confrontabile.
                     </p>
                     <CarouselCards
                       options={ANNI}
@@ -1463,7 +1846,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                       onClick={() => setAnnoRevealLevel(1)}
                       className={`mt-5 flex items-center gap-2 px-5 py-2.5 text-[13px] font-semibold transition-colors ${draft.anno_attualizzazione ? "bg-brand-violet text-white hover:bg-brand-violet-dark" : "cursor-not-allowed bg-ink-100 text-ink-300"}`}
                     >
-                      Conferma anno di inizio lavori
+                      Conferma anno di attualizzazione
                       <span className="text-[16px] leading-none">→</span>
                     </button>
                   </ClassAccordion>
@@ -1522,14 +1905,29 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                         placeholder="es. 10.000.000"
                         className="h-11 flex-1 border border-ink-200 bg-white px-3 text-[14px] text-ink-900 placeholder:text-ink-300 focus:border-brand-violet focus:outline-none"
                       />
-                      <div className="flex items-start gap-2 rounded border border-[#e8e8ed] bg-[#f7f7fa] px-4 py-2.5 sm:max-w-[280px]">
-                        <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-violet" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                          <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" d="M12 8v4m0 4h.01" />
-                        </svg>
-                        <p className="text-[11px] leading-[1.5] text-ink-600">
-                          Il valore suggerito è basato sulla <strong>categoria di intervento</strong> selezionata e sulla dimensione tipica degli interventi di questo tipo. Puoi modificarlo liberamente.
-                        </p>
-                      </div>
+                      {profiloTemplate && profiloCapexStima > 0 ? (
+                        <div className="flex items-start gap-2 rounded border border-brand-violet/25 bg-brand-violet-soft px-4 py-3 sm:max-w-[340px]">
+                          <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-violet" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                            <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" d="M12 8v4m0 4h.01" />
+                          </svg>
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-violet">Calcolo dal profilo progetto</p>
+                            <p className="mt-1 font-mono text-[12px] leading-[1.7] text-ink-800">
+                              {buildProfiloFormula(profiloTemplate, draft.profilo_dati)}
+                            </p>
+                            <p className="mt-1.5 text-[11px] text-ink-500">Puoi modificare il valore liberamente.</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-start gap-2 rounded border border-[#e8e8ed] bg-[#f7f7fa] px-4 py-2.5 sm:max-w-[280px]">
+                          <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-violet" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                            <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" d="M12 8v4m0 4h.01" />
+                          </svg>
+                          <p className="text-[11px] leading-[1.5] text-ink-600">
+                            Il valore suggerito è basato sulla <strong>categoria di intervento</strong> selezionata e sulla dimensione tipica degli interventi di questo tipo. Puoi modificarlo liberamente.
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="mt-6 border-t border-[#ececf1] pt-5">
@@ -1872,66 +2270,190 @@ export function Wizard({ initialProject, onClose, onComplete }) {
             {step.id === "benefici" ? (
               <>
                 <QuestionHeader
-                  title="Definisci i benefici attesi del progetto"
-                  description="Inserisci il valore annuo stimato per ciascun indicatore. I valori sono pre-compilati automaticamente sulla base del CAPEX e del settore di intervento."
+                  title="Benefici attesi del progetto"
+                  description="Verifica i parametri predefiniti e inserisci i valori per la vita utile del progetto."
                 />
 
-                <div className="mb-5 flex max-w-4xl flex-wrap items-center justify-between gap-3">
-                  <p className="text-[13px] text-ink-600">
-                    <span className="font-semibold text-ink-900">{beneficiFilledCount}</span> / {beneficiTotalCount} indicatori compilati
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={autoFillBenefici}
-                      className="border border-brand-violet bg-white px-4 py-2 text-[13px] font-semibold text-brand-violet hover:bg-brand-violet-soft"
-                    >
-                      Compila automaticamente
-                    </button>
-                    <button
-                      type="button"
-                      onClick={clearBenefici}
-                      className="border border-ink-200 bg-white px-4 py-2 text-[13px] text-ink-600 hover:bg-[#fafafa]"
-                    >
-                      Cancella tutto
-                    </button>
-                  </div>
-                </div>
+                <div className="max-w-5xl space-y-4">
 
-                <div className="max-w-4xl space-y-3">
-                  {beneficiTemplates.map(({ group, kpis }) => (
-                    <div key={group} className="overflow-hidden border border-ink-100 bg-white">
-                      <div className="bg-[#2f2f2f] px-5 py-3">
-                        <p className="text-[13px] font-semibold text-white">{group}</p>
-                      </div>
-                      <div className="grid bg-[#f7f7fa] px-5 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-500 md:grid-cols-[1fr_80px_160px]">
-                        <span>Indicatore</span>
-                        <span>Unità</span>
-                        <span className="text-right">Valore annuo</span>
-                      </div>
-                      <div className="divide-y divide-[#ececec]">
-                        {kpis.map(({ id, label, unit }) => (
-                          <div key={id} className="grid items-center gap-2 px-5 py-3 md:grid-cols-[1fr_80px_160px]">
-                            <p className="text-[14px] text-ink-900">{label}</p>
-                            <span className="font-mono text-[12px] text-ink-500">{unit}</span>
-                            <div className="flex justify-end">
-                              <input
-                                value={draft.benefici_kpi?.[id]?.stima ?? ""}
-                                onChange={(e) => updateBeneficiKpi(id, e.target.value)}
-                                className="h-9 w-full max-w-[150px] border border-ink-200 bg-white px-3 text-right text-[13px] font-semibold text-ink-900 focus:border-brand-violet focus:outline-none"
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                  {/* ── Toggle modalità inserimento ── */}
+                  <div className="flex items-center justify-between">
+                    <p className="text-[13px] font-semibold text-ink-700">Modalità inserimento valori</p>
+                    <div className="flex overflow-hidden border border-ink-200">
+                      <button
+                        type="button"
+                        onClick={() => setBeneficiModo("anno-tipo")}
+                        className={`px-5 py-2.5 text-[13px] font-semibold transition-colors ${beneficiModo === "anno-tipo" ? "bg-brand-violet text-white" : "bg-white text-ink-700 hover:bg-[#fafafa]"}`}
+                      >
+                        Anno tipo
+                      </button>
+                      <div className="w-px bg-ink-200" />
+                      <button
+                        type="button"
+                        onClick={() => setBeneficiModo("anni-singoli")}
+                        className={`px-5 py-2.5 text-[13px] font-semibold transition-colors ${beneficiModo === "anni-singoli" ? "bg-brand-violet text-white" : "bg-white text-ink-700 hover:bg-[#fafafa]"}`}
+                      >
+                        Per anno
+                      </button>
                     </div>
-                  ))}
+                  </div>
 
                   {beneficiTemplates.length === 0 ? (
-                    <div className="border border-ink-100 bg-white px-6 py-8 text-center">
-                      <p className="text-[14px] text-ink-500">Nessun modello disponibile per il settore selezionato.</p>
+                    <div className="border border-ink-100 bg-white px-5 py-6 text-[14px] text-ink-500">
+                      Nessun modello disponibile per il settore selezionato.
                     </div>
                   ) : null}
+
+                  {beneficiTemplates.map(({ group, kpis }) => {
+                    const inputKpis         = kpis.filter((k) => k.tipo === "input");
+                    const configurabiliKpis = kpis.filter((k) => k.tipo === "tecnico" || k.tipo === "georef");
+                    const monetKpis         = kpis.filter((k) => k.tipo === "monetizzazione");
+
+                    return (
+                      <div key={group} className="overflow-hidden border border-ink-100 bg-white">
+                        <div className="flex items-center gap-3 bg-[#2f2f2f] px-5 py-3">
+                          <p className="text-[14px] font-semibold text-white">{group}</p>
+                        </div>
+
+                        {/* ── Dati dal profilo (locked, blue) ── */}
+                        {inputKpis.length > 0 ? (
+                          <div className="border-b border-[#ececf1] px-5 py-4">
+                            <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-blue-500">Dati dal profilo del progetto</p>
+                            <div className="space-y-1.5">
+                              {inputKpis.map((kpi) => {
+                                const profiloVal = getProfiloInputValue(kpi.profiloKey, profiloTemplate, draft.profilo_dati);
+                                const displayVal = profiloVal != null ? profiloVal : (draft.benefici_kpi?.[kpi.id]?.stima ?? "—");
+                                return (
+                                  <div key={kpi.id} className="grid items-center gap-3 border border-blue-100 bg-blue-50 px-4 py-2.5 md:grid-cols-[1fr_200px]">
+                                    <span className="text-[13px] text-ink-900">{kpi.label}</span>
+                                    <div className="flex items-center gap-2">
+                                      <div className="flex h-8 w-full cursor-not-allowed select-none items-center justify-end border border-blue-200 bg-white pr-2 text-[13px] font-semibold text-blue-700">
+                                        {displayVal}
+                                      </div>
+                                      <span className="shrink-0 w-[44px] text-[12px] text-ink-500">{kpi.unit}</span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ) : null}
+
+                        {/* ── Parametri configurabili (tecnico = grigio, georef = verde) ── */}
+                        {configurabiliKpis.length > 0 ? (
+                          <div className="border-b border-[#ececf1] px-5 py-4">
+                            <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-ink-400">Parametri configurabili</p>
+
+                            {beneficiModo === "anno-tipo" ? (
+                              <div className="space-y-1.5">
+                                {configurabiliKpis.map((kpi) => {
+                                  const isTecnico = kpi.tipo === "tecnico";
+                                  return (
+                                    <div key={kpi.id} className={`grid items-center gap-3 border ${isTecnico ? "border-ink-100 bg-[#f7f7fa]" : "border-green-100 bg-green-50"} px-4 py-2.5 md:grid-cols-[160px_1fr_200px]`}>
+                                      <span className={`text-[11px] font-semibold uppercase tracking-wide ${isTecnico ? "text-ink-500" : "text-green-600"}`}>
+                                        {isTecnico ? "Valore consigliato" : "Dato statistico"}
+                                      </span>
+                                      <span className="text-[13px] text-ink-900">{kpi.label}</span>
+                                      <div className="flex items-center gap-2">
+                                        <input
+                                          value={draft.benefici_kpi?.[kpi.id]?.anni?.[opexYears[0]] ?? draft.benefici_kpi?.[kpi.id]?.stima ?? ""}
+                                          onChange={(e) => setKpiAllYears(kpi.id, e.target.value)}
+                                          placeholder="0"
+                                          className={`h-8 w-full border ${isTecnico ? "border-ink-200" : "border-green-200"} bg-white px-2 text-right text-[13px] font-semibold text-ink-900 focus:border-brand-violet focus:outline-none`}
+                                        />
+                                        <span className="shrink-0 w-[44px] text-[12px] text-ink-500">{kpi.unit}</span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                                {opexYears.length > 0 ? (
+                                  <p className="mt-2 text-[12px] text-ink-500">
+                                    Il valore sarà applicato a tutti i {opexYears.length} anni ({opexYears[0]}–{opexYears[opexYears.length - 1]}).
+                                  </p>
+                                ) : null}
+                              </div>
+                            ) : (
+                              <div className="overflow-x-auto">
+                                <table className="w-full border-collapse" style={{ minWidth: `${380 + opexYears.length * 76}px` }}>
+                                  <thead>
+                                    <tr className="bg-[#f7f7fa]">
+                                      <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-ink-500" style={{ width: 220 }}>Indicatore</th>
+                                      <th className="px-2 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-ink-500" style={{ width: 60 }}>Unità</th>
+                                      {opexYears.map((y) => (
+                                        <th key={y} className="px-1 py-2 text-right text-[11px] font-semibold uppercase tracking-wide text-ink-500" style={{ width: 76 }}>{y}</th>
+                                      ))}
+                                      <th className="px-2 py-2 text-center text-[11px] font-semibold uppercase tracking-wide text-ink-500" style={{ width: 72 }}>Propaga</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {configurabiliKpis.map(({ id, label, unit, tipo }) => {
+                                      const isGeoref = tipo === "georef";
+                                      return (
+                                        <tr key={id} className={`border-t border-[#ececec] ${isGeoref ? "bg-green-50/30" : ""}`}>
+                                          <td className="px-4 py-2.5">
+                                            <p className="text-[13px] leading-tight text-ink-900">{label}</p>
+                                            <p className={`text-[10px] ${isGeoref ? "text-green-600" : "text-ink-400"}`}>{isGeoref ? "Dato statistico" : "Valore consigliato"}</p>
+                                          </td>
+                                          <td className="px-2 py-2.5 font-mono text-[11px] text-ink-500">{unit}</td>
+                                          {opexYears.map((y) => (
+                                            <td key={y} className="px-1 py-2" style={{ width: 76 }}>
+                                              <input
+                                                value={draft.benefici_kpi?.[id]?.anni?.[y] ?? ""}
+                                                onChange={(e) => updateBeneficiKpiYear(id, y, e.target.value)}
+                                                className="h-7 w-[68px] border border-ink-200 bg-white px-1.5 text-right text-[12px] font-semibold text-ink-900 focus:border-brand-violet focus:outline-none"
+                                              />
+                                            </td>
+                                          ))}
+                                          <td className="px-2 py-2.5 text-center">
+                                            <button
+                                              type="button"
+                                              onClick={() => propagateKpiFirstYear(id)}
+                                              title={`Copia il valore di ${opexYears[0] ?? "anno 1"} a tutti gli anni`}
+                                              className="inline-flex items-center gap-1 border border-brand-violet px-2 py-0.5 text-[11px] font-semibold text-brand-violet hover:bg-brand-violet-soft"
+                                            >
+                                              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                              </svg>
+                                              tutti
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+                          </div>
+                        ) : null}
+
+                        {/* ── Fattori di monetizzazione (locked, amber) ── */}
+                        {monetKpis.length > 0 ? (
+                          <div className="px-5 py-4">
+                            <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-amber-600">Fattori di monetizzazione</p>
+                            <div className="space-y-1.5">
+                              {monetKpis.map((kpi) => (
+                                <div key={kpi.id} className="grid items-center gap-3 border border-amber-200 bg-amber-50 px-4 py-2.5 md:grid-cols-[1fr_200px]">
+                                  <div className="flex items-center gap-2">
+                                    <svg className="h-3 w-3 shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                    <span className="text-[13px] text-ink-900">{kpi.label}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex h-8 w-full cursor-not-allowed select-none items-center justify-end border border-amber-100 bg-[#fffbf0] pr-2 font-mono text-[13px] text-amber-800">
+                                      {draft.benefici_kpi?.[kpi.id]?.stima ?? "—"}
+                                    </div>
+                                    <span className="shrink-0 w-[44px] text-[12px] text-ink-500">{kpi.unit}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
 
                   {/* ── Benefici extra (inserimento manuale) ── */}
                   <div className="overflow-hidden border border-ink-100 bg-white">
@@ -1999,11 +2521,6 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                     </div>
                   </div>
 
-                  {opexStartYear && opexEndYear ? (
-                    <p className="mt-2 text-[12px] leading-[1.5] text-ink-500">
-                      Il valore annuo si applica a tutti gli anni di vita utile ({draft.vita_utile} anni, dal {opexStartYear} al {opexEndYear}).
-                    </p>
-                  ) : null}
                 </div>
               </>
             ) : null}

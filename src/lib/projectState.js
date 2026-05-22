@@ -7,7 +7,7 @@ const DEFAULT_ECBA_INPUTS = {
   benefitsMode: "Da impatti EIA e benefici idrici stimati",
 };
 
-export const PROJECT_STORAGE_KEY = "civiqa.projects.v1";
+export const PROJECT_STORAGE_KEY = "civiqa.projects.v2";
 export const UI_STORAGE_KEY = "civiqa.ui.v1";
 
 function clone(value) {
@@ -88,54 +88,69 @@ function buildProject(overrides) {
 }
 
 export function buildSeedProjects() {
+  const completedAt = (d) => ({ status: "completed", updatedAt: d });
   return [
     createWorkspace(clone(initialProject)),
-    createWorkspace(
-      buildProject({
-        id: "PROJ-002",
-        cup: "I63C22000050128",
-        nome: "Restauro Palazzo Reale",
-        descrizione:
-          "Intervento di recupero del complesso monumentale con rifunzionalizzazione degli spazi e piano di valorizzazione culturale.",
-        stato: "In valutazione",
-        creato_il: "10/05/2025",
-        ultima_modifica: "18/05/2025",
-        configurazione: {
-          settore: "Infrastrutture sociali",
-          sotto_settore: "Valorizzazione e fruizione dell'ambiente",
-          categoria_intervento: "Reti idriche urbane",
-          tipo_intervento: "Recupero",
-          durata_progetto: "4 anni",
-          localizzazione: "Piazza del Plebiscito 1 - Napoli NA",
-          anno_attualizzazione: 2026,
-          capex: 86000000,
-          opex: 4200000,
-        },
-      }),
-    ),
-    createWorkspace(
-      buildProject({
-        id: "PROJ-003",
-        cup: "I63C22000050129",
-        nome: "Riqualificazione Parco Urbano",
-        descrizione:
-          "Piano di riforestazione, drenaggio urbano sostenibile e messa in sicurezza dei percorsi ciclopedonali.",
-        stato: "Bozza",
-        creato_il: "08/05/2025",
-        ultima_modifica: "14/05/2025",
-        configurazione: {
-          settore: "Infrastrutture ambientali e risorse idriche",
-          sotto_settore: "Difesa del suolo e prevenzione",
-          categoria_intervento: "Corpi idrici: Miglioramento della qualita",
-          tipo_intervento: "Efficientamento",
-          durata_progetto: "3 anni",
-          localizzazione: "Via Roma 42 - Bari BA",
-          anno_attualizzazione: 2025,
-          capex: 24500000,
-          opex: 1450000,
-        },
-      }),
-    ),
+    {
+      ...createWorkspace(
+        buildProject({
+          id: "PROJ-002",
+          cup: "I63C22000050128",
+          nome: "Restauro Palazzo Reale",
+          descrizione:
+            "Intervento di recupero del complesso monumentale con rifunzionalizzazione degli spazi e piano di valorizzazione culturale.",
+          stato: "In valutazione",
+          creato_il: "10/05/2025",
+          ultima_modifica: "18/05/2025",
+          configurazione: {
+            settore: "Infrastrutture sociali",
+            sotto_settore: "Valorizzazione e fruizione dell'ambiente",
+            categoria_intervento: "Reti idriche urbane",
+            tipo_intervento: "Recupero",
+            durata_progetto: "4 anni",
+            localizzazione: "Piazza del Plebiscito 1 - Napoli NA",
+            anno_attualizzazione: 2026,
+            capex: 86000000,
+            opex: 4200000,
+          },
+        }),
+      ),
+      analyses: {
+        eia:  completedAt("18/05/2025"),
+        ecba: completedAt("18/05/2025"),
+        esg:  { status: "needs_input", updatedAt: null },
+      },
+    },
+    {
+      ...createWorkspace(
+        buildProject({
+          id: "PROJ-003",
+          cup: "I63C22000050129",
+          nome: "Riqualificazione Parco Urbano",
+          descrizione:
+            "Piano di riforestazione, drenaggio urbano sostenibile e messa in sicurezza dei percorsi ciclopedonali.",
+          stato: "Bozza",
+          creato_il: "08/05/2025",
+          ultima_modifica: "14/05/2025",
+          configurazione: {
+            settore: "Infrastrutture ambientali e risorse idriche",
+            sotto_settore: "Difesa del suolo e prevenzione",
+            categoria_intervento: "Corpi idrici: Miglioramento della qualita",
+            tipo_intervento: "Efficientamento",
+            durata_progetto: "3 anni",
+            localizzazione: "Via Roma 42 - Bari BA",
+            anno_attualizzazione: 2025,
+            capex: 24500000,
+            opex: 1450000,
+          },
+        }),
+      ),
+      analyses: {
+        eia:  completedAt("14/05/2025"),
+        ecba: completedAt("14/05/2025"),
+        esg:  completedAt("14/05/2025"),
+      },
+    },
   ];
 }
 

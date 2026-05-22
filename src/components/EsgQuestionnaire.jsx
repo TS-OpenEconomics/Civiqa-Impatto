@@ -292,6 +292,31 @@ function isAnswered(q, answers) {
   return answers[q.id] != null && answers[q.id] !== "";
 }
 
+const DEMO_AUTOFILL_ANSWERS = {
+  soil_area_changed: "0.5",
+  soil_area_total: "2.0",
+  water_consumption: "1200",
+  materials_local: "Si",
+  impact: ["Rumore (impatto acustico)", "Emissioni di polveri o particolato", "Effetti sul microclima urbano"],
+  energy_efficiency: "Si",
+  carbon_reduction: "Si",
+  waste_reduction: "Si",
+  lifecycle_assessment: "No",
+  climate_risk: "Si",
+  biodiversity: "Si",
+  users: "1500",
+  employment: "Si",
+  fte_generated: "45",
+  accessibility: "Si",
+  gender_equity: "Si",
+  vulnerable_groups: "Si",
+  monitoring: "Si",
+  transparency: "Si",
+  documents: "Si",
+  stakeholder_consult: "Si",
+  sensitive_area: "No",
+};
+
 function buildDefaultAnswers(eiaResults) {
   const fte = Math.round(eiaResults?.fte?.totale ?? 50);
   return {
@@ -569,6 +594,11 @@ export function EsgQuestionnaire({ eiaResults, initialAnswers, onClose, onComple
 
   const canProceed = isAnswered(question, answers);
 
+  function handleAutoFill() {
+    const fte = eiaResults ? String(Math.round(eiaResults.fte?.totale ?? 45)) : "45";
+    setAnswers({ ...DEMO_AUTOFILL_ANSWERS, fte_generated: fte });
+  }
+
   function setAnswer(id, value) {
     setAnswers((prev) => ({ ...prev, [id]: value }));
   }
@@ -602,7 +632,17 @@ export function EsgQuestionnaire({ eiaResults, initialAnswers, onClose, onComple
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-bg-page">
       <div className="h-[3px] flex-shrink-0 bg-accent-lime" />
-      <div className="flex h-16 flex-shrink-0 items-center justify-end border-b border-ink-100 bg-white px-8">
+      <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-ink-100 bg-white px-8">
+        <button
+          type="button"
+          onClick={handleAutoFill}
+          className="flex items-center gap-2 border border-ink-200 bg-white px-3 py-1.5 text-[12px] font-medium text-ink-600 transition-colors hover:bg-[#fafafa]"
+        >
+          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          Riempi automaticamente
+        </button>
         <button type="button" onClick={onClose} className="flex items-center gap-2 text-[14px] font-semibold text-brand-violet">
           Chiudi e torna al dettaglio progetto
           <span className="text-[20px] leading-none">&times;</span>

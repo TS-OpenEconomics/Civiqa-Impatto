@@ -78,8 +78,6 @@ const LIST_PRESETS = [
     inizioLavori: "11/08/2025",
     durataLavori: "2 anni, 7 mesi",
     statoProgetto: "Approvato",
-    analyses: ["EIA", "ECBA"],
-    analysesDisabled: ["ESG"],
     action: "menu",
   },
   {
@@ -92,7 +90,6 @@ const LIST_PRESETS = [
     inizioLavori: "20/09/2025",
     durataLavori: "5 anni",
     statoProgetto: "Approvato",
-    analyses: ["EIA", "ECBA", "ESG"],
     action: "menu",
   },
 ];
@@ -330,11 +327,10 @@ function buildDisplayProject(workspace, index) {
     const ws = workspace.analyses || {};
     const eiaActive  = ws.eia?.status  && ws.eia.status  !== "needs_input";
     const ecbaActive = ws.ecba?.status && ws.ecba.status !== "needs_input";
-    const esgActive  = ws.esg?.status  && ws.esg.status  !== "needs_input";
     // EIA and ECBA always together — either both or neither
     const showEiaEcba = eiaActive && ecbaActive;
-    // ESG only when both EIA and ECBA are fully completed
-    const showEsg = esgActive && ws.eia?.status === "completed" && ws.ecba?.status === "completed";
+    // ESG only when all three analyses are fully completed
+    const showEsg = ws.esg?.status === "completed" && ws.eia?.status === "completed" && ws.ecba?.status === "completed";
     availableAnalyses = [
       ...(showEiaEcba ? ["EIA", "ECBA"] : []),
       ...(showEsg     ? ["ESG"]          : []),
