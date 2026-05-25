@@ -51,10 +51,10 @@ const SETTORI_DATA = {
 const STATI = ["In preparazione", "In approvazione", "Approvato"];
 const STATO_DESCRIPTIONS = {
   "In preparazione":
-    "Il progetto e allo stadio iniziale: si raccolgono dati, si definiscono obiettivi e si impostano i primi elementi tecnici ed economici.",
+    "Il progetto è allo stadio iniziale: si raccolgono dati, si definiscono obiettivi e si impostano i primi elementi tecnici ed economici.",
   "In approvazione":
-    "Il progetto e stato predisposto e presentato agli organi competenti ed e in attesa di autorizzazione o parere.",
-  Approvato: "Il progetto ha ottenuto l'approvazione formale necessaria e puo procedere verso le fasi attuative ed esecutive.",
+    "Il progetto è stato predisposto e presentato agli organi competenti ed è in attesa di autorizzazione o parere.",
+  Approvato: "Il progetto ha ottenuto l'approvazione formale necessaria e può procedere verso le fasi attuative ed esecutive.",
 };
 const SETTORI = Object.keys(SETTORI_DATA);
 const TIPI = ["Nuova realizzazione", "Ristrutturazione", "Recupero", "Manutenzione", "Efficientamento"];
@@ -419,6 +419,7 @@ const POC_KPI_TEMPLATE = [
   {
     group: "Emissioni da cantiere e costruzione",
     esternalita: "negativa",
+    yearSource: "cantiere",
     kpis: [
       { id: "co2_cantiere",        label: "Emissioni CO₂ stimate da cantiere",      unit: "ton CO₂/anno",      tipo: "tecnico",                                 estimateFn: (c) => Math.round(c.capex * 0.00011) },
       { id: "valore_co2_cantiere", label: "Costo sociale della CO₂",               unit: "€/ton",             tipo: "monetizzazione",                          estimateFn: () => 120 },
@@ -426,12 +427,13 @@ const POC_KPI_TEMPLATE = [
   },
 ];
 
-function buildDefaultKpi(capex, projectYears) {
+function buildDefaultKpi(capex, opexYears, cantiereYears) {
   const kpi = {};
-  POC_KPI_TEMPLATE.forEach(({ kpis }) => {
+  POC_KPI_TEMPLATE.forEach(({ yearSource, kpis }) => {
+    const years = yearSource === "cantiere" ? cantiereYears : opexYears;
     kpis.forEach(({ id, estimateFn }) => {
       const stima = String(estimateFn({ capex }));
-      kpi[id] = { stima, anni: projectYears.reduce((acc, y) => { acc[y] = stima; return acc; }, {}) };
+      kpi[id] = { stima, anni: years.reduce((acc, y) => { acc[y] = stima; return acc; }, {}) };
     });
   });
   return kpi;
@@ -482,6 +484,26 @@ function normalizePercentInput(value) {
   const numeric = Number(normalized.replace(",", "."));
   if (Number.isNaN(numeric)) return normalized;
   return numeric > 100 ? "100" : normalized;
+}
+
+function parseLocaleNumber(value) {
+  const raw = String(value ?? "").trim().replace(/\s/g, "");
+  if (!raw) return null;
+  const normalized = raw.includes(",")
+    ? raw.replace(/\./g, "").replace(",", ".")
+    : raw.replace(/\.(?=\d{3}(\D|$))/g, "");
+  const numeric = Number(normalized);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function valuesEquivalent(a, b) {
+  const left = String(a ?? "").trim();
+  const right = String(b ?? "").trim();
+  if (left === right) return true;
+  const leftNumber = parseLocaleNumber(left);
+  const rightNumber = parseLocaleNumber(right);
+  if (leftNumber == null || rightNumber == null) return false;
+  return Math.abs(leftNumber - rightNumber) < 0.000001;
 }
 
 function yearRangeFromDates(startDate, endDate) {
@@ -974,6 +996,16 @@ function SearchResultCard({ item, selected, onSelect }) {
   );
 }
 
+function LockIcon({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M7 10V8a5 5 0 0110 0v2" />
+      <rect width="14" height="10" x="5" y="10" rx="1.5" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 14v2" />
+    </svg>
+  );
+}
+
 export function Wizard({ initialProject, onClose, onComplete }) {
   const [stepIdx, setStepIdx] = useState(0);
   const [draft, setDraft] = useState(() => buildDraft(initialProject));
@@ -991,6 +1023,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
     (initialProject?.configurazione?.anno_attualizzazione != null && initialProject?.configurazione?.tasso_attualizzazione != null) ? 2 : 0
   );
   const [opexRevealLevel, setOpexRevealLevel] = useState(0);
+  const [beneficiRevealLevel, setBeneficiRevealLevel] = useState(0);
   const [kpiDetailOpen, setKpiDetailOpen] = useState({});
   const [kpiPeriods, setKpiPeriods] = useState({});
   const geocodeTimerRef = useRef(null);
@@ -1049,16 +1082,6 @@ export function Wizard({ initialProject, onClose, onComplete }) {
     update("vita_utile", next);
   }
 
-  function updateBeneficiKpi(id, value) {
-    setDraft((prev) => ({
-      ...prev,
-      benefici_kpi: {
-        ...prev.benefici_kpi,
-        [id]: { ...(prev.benefici_kpi?.[id] ?? {}), stima: value },
-      },
-    }));
-  }
-
   function updateBeneficiKpiYear(id, year, value) {
     setDraft((prev) => ({
       ...prev,
@@ -1072,11 +1095,11 @@ export function Wizard({ initialProject, onClose, onComplete }) {
     }));
   }
 
-  function toggleKpiDetail(kpiId) {
+  function toggleKpiDetail(kpiId, activeYears) {
     setKpiDetailOpen((prev) => ({ ...prev, [kpiId]: !prev[kpiId] }));
     setKpiPeriods((prev) => {
       if (prev[kpiId]) return prev;
-      const total = opexYears.length || Number(draft.vita_utile) || 20;
+      const total = activeYears.length || Number(draft.vita_utile) || 20;
       const p1 = Math.min(5, total);
       const rest = total - p1;
       const periods = rest > 0
@@ -1112,17 +1135,17 @@ export function Wizard({ initialProject, onClose, onComplete }) {
     });
   }
 
-  function applyKpiPeriods(kpiId) {
+  function applyKpiPeriods(kpiId, activeYears) {
     const periods = kpiPeriods[kpiId] ?? [];
-    if (!periods.length || !opexYears.length) return;
+    if (!periods.length || !activeYears.length) return;
     const usedDur = periods.slice(0, -1).reduce((acc, p) => acc + Math.max(0, Number(p.dur) || 0), 0);
-    const lastDur = Math.max(0, opexYears.length - usedDur);
+    const lastDur = Math.max(0, activeYears.length - usedDur);
     const yearMap = {};
     let idx = 0;
     periods.forEach((p, i) => {
       const dur = i === periods.length - 1 ? lastDur : Math.max(0, Number(p.dur) || 0);
-      for (let j = 0; j < dur && idx < opexYears.length; j++, idx++) {
-        yearMap[opexYears[idx]] = p.val;
+      for (let j = 0; j < dur && idx < activeYears.length; j++, idx++) {
+        yearMap[activeYears[idx]] = p.val;
       }
     });
     setDraft((prev) => ({
@@ -1144,13 +1167,15 @@ export function Wizard({ initialProject, onClose, onComplete }) {
       const tmpl = PROFILO_TEMPLATES[prev.categoria_intervento];
       const endYear = prev.data_fine ? new Date(prev.data_fine + "T00:00:00").getFullYear() + 1 : null;
       const years = endYear ? Array.from({ length: Number(prev.vita_utile) || 20 }, (_, i) => String(endYear + i)) : [];
-      const kpi = buildDefaultKpi(capex, years);
-      POC_KPI_TEMPLATE.forEach(({ kpis }) => {
+      const cantiereYrs = yearRangeFromDates(prev.data_inizio, prev.data_fine);
+      const kpi = buildDefaultKpi(capex, years, cantiereYrs);
+      POC_KPI_TEMPLATE.forEach(({ yearSource, kpis }) => {
+        const activeYrs = yearSource === "cantiere" ? cantiereYrs : years;
         kpis.filter((k) => k.tipo === "input").forEach((k) => {
           const profiloVal = getProfiloInputValue(k.profiloKey, tmpl, prev.profilo_dati);
           if (profiloVal != null) {
             const val = String(profiloVal);
-            kpi[k.id] = { stima: val, anni: years.reduce((acc, y) => { acc[y] = val; return acc; }, {}) };
+            kpi[k.id] = { stima: val, anni: activeYrs.reduce((acc, y) => { acc[y] = val; return acc; }, {}) };
           }
         });
       });
@@ -1159,6 +1184,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
   }
 
   function clearBenefici() {
+    setBeneficiRevealLevel(0);
     setDraft((prev) => {
       const cleared = {};
       POC_KPI_TEMPLATE.forEach(({ kpis }) => kpis.forEach(({ id }) => { cleared[id] = { stima: "", anni: {} }; }));
@@ -1166,8 +1192,30 @@ export function Wizard({ initialProject, onClose, onComplete }) {
     });
   }
 
+  function getActiveYearsForKpi(kpiId) {
+    const group = POC_KPI_TEMPLATE.find(({ kpis }) => kpis.some((k) => k.id === kpiId));
+    return group?.yearSource === "cantiere" ? projectYears : opexYears;
+  }
 
-  function setKpiAllYears(id, value) {
+  function isBeneficiKpiFilled(id) {
+    const kpiData = draft.benefici_kpi?.[id];
+    if (!kpiData) return false;
+    const activeYears = getActiveYearsForKpi(id);
+    if (activeYears.length > 0) return activeYears.some((year) => String(kpiData.anni?.[year] ?? "").trim() !== "");
+    return String(kpiData.stima ?? "").trim() !== "";
+  }
+
+  function isBeneficiGroupReady(kpis) {
+    const editableKpis = kpis.filter((kpi) => kpi.tipo !== "monetizzazione");
+    return editableKpis.length > 0 && editableKpis.every((kpi) => isBeneficiKpiFilled(kpi.id));
+  }
+
+  function confirmBeneficiGroup(groupIndex) {
+    setBeneficiRevealLevel((current) => Math.max(current, groupIndex + 1));
+  }
+
+
+  function setKpiAllYears(id, value, activeYears) {
     setDraft((prev) => ({
       ...prev,
       benefici_kpi: {
@@ -1175,7 +1223,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
         [id]: {
           ...(prev.benefici_kpi?.[id] ?? {}),
           stima: value,
-          anni: opexYears.reduce((acc, y) => { acc[y] = value; return acc; }, {}),
+          anni: activeYears.reduce((acc, y) => { acc[y] = value; return acc; }, {}),
         },
       },
     }));
@@ -1348,7 +1396,8 @@ export function Wizard({ initialProject, onClose, onComplete }) {
         const capex = Number(prev.capex) || 0;
         const endYear = prev.data_fine ? new Date(prev.data_fine + "T00:00:00").getFullYear() + 1 : null;
         const years = endYear ? Array.from({ length: Number(prev.vita_utile) || 20 }, (_, i) => String(endYear + i)) : [];
-        return { ...prev, benefici_kpi: buildDefaultKpi(capex, years) };
+        const cantiereYrs = yearRangeFromDates(prev.data_inizio, prev.data_fine);
+        return { ...prev, benefici_kpi: buildDefaultKpi(capex, years, cantiereYrs) };
       });
     }
     setStepIdx((value) => value + 1);
@@ -1472,16 +1521,20 @@ export function Wizard({ initialProject, onClose, onComplete }) {
   const opexTotale = useMemo(() => opexAnnualAmount * Number(draft.vita_utile), [opexAnnualAmount, draft.vita_utile]);
 
   const beneficiTemplates = POC_KPI_TEMPLATE;
-  const beneficiTotalCount = POC_KPI_TEMPLATE.reduce((acc, { kpis }) => acc + kpis.length, 0);
-  const beneficiFilledCount = useMemo(() => {
-    if (!draft.benefici_kpi) return 0;
-    return POC_KPI_TEMPLATE.reduce((acc, { kpis }) => acc + kpis.filter(({ id }) => {
-      const kpiData = draft.benefici_kpi[id];
-      if (!kpiData) return false;
-      if (opexYears.length > 0) return opexYears.some((y) => (kpiData.anni?.[y] ?? "") !== "");
-      return (kpiData.stima ?? "") !== "";
-    }).length, 0);
-  }, [draft.benefici_kpi, opexYears]);
+  const beneficiFactorTotal = beneficiTemplates.length;
+  const beneficiConfiguredCount = Math.min(beneficiRevealLevel, beneficiFactorTotal);
+  const beneficiGroupStats = useMemo(() => {
+    return POC_KPI_TEMPLATE.map(({ group, esternalita, kpis, yearSource }) => {
+      const activeYears = yearSource === "cantiere" ? projectYears : opexYears;
+      const filled = kpis.filter(({ id }) => {
+        const kpiData = draft.benefici_kpi?.[id];
+        if (!kpiData) return false;
+        if (activeYears.length > 0) return activeYears.some((y) => (kpiData.anni?.[y] ?? "") !== "");
+        return (kpiData.stima ?? "") !== "";
+      }).length;
+      return { group, esternalita, filled, total: kpis.length };
+    });
+  }, [draft.benefici_kpi, opexYears, projectYears]);
 
   const canProceed = (() => {
     switch (step.id) {
@@ -1512,7 +1565,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
       case "opex":
         return !!draft.vita_utile && draft.opex_tasso.trim().length > 0;
       case "benefici":
-        return draft.benefici_kpi !== null;
+        return draft.benefici_kpi !== null && beneficiFactorTotal > 0 && beneficiRevealLevel >= beneficiFactorTotal;
       default:
         return false;
     }
@@ -1548,7 +1601,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
               <>
                 <QuestionHeader
                   title="Per prima cosa: che NOME vorresti dare al tuo progetto?"
-                  description="Ti consigliamo di dare al tuo progetto un nome semplice, riconoscibile, che sia di facile identificazione anche per i tuoi collaboratori. Se ne sei gia in possesso, ma non e obbligatorio integrarlo, indica il CUP."
+                  description="Ti consigliamo di dare al tuo progetto un nome semplice, riconoscibile, che sia di facile identificazione anche per i tuoi collaboratori. Se ne sei già in possesso, ma non è obbligatorio integrarlo, indica il CUP."
                 />
                 <div className="max-w-3xl border border-ink-100 bg-white p-6">
                   <TextInput label="Nome del progetto" hint="Lunghezza massima 70 caratteri" value={draft.nome} onChange={(value) => update("nome", value.slice(0, 70))} placeholder="Inserisci il nome del progetto" />
@@ -1561,7 +1614,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
               <>
                 <QuestionHeader
                   title="Fornisci ora una DESCRIZIONE del progetto"
-                  description="Inserisci in poche righe le finalita, gli ambiti di intervento e gli obiettivi del progetto. Queste informazioni sono utili per contestualizzare la proposta e attivare i percorsi di valutazione piu appropriati."
+                  description="Inserisci in poche righe le finalità, gli ambiti di intervento e gli obiettivi del progetto. Queste informazioni sono utili per contestualizzare la proposta e attivare i percorsi di valutazione più appropriati."
                 />
                 <div className="max-w-3xl border border-ink-100 bg-white p-6">
                   <div className="mb-2 flex items-baseline justify-between">
@@ -1582,7 +1635,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
 
             {step.id === "stato" ? (
               <>
-                <QuestionHeader title="Qual e lo STATO del progetto?" description="Indica la fase in cui si trova il tuo progetto." type="Risposta singola" />
+                <QuestionHeader title="Qual è lo STATO del progetto?" description="Indica la fase in cui si trova il tuo progetto." type="Risposta singola" />
                 <RadioCards options={STATI} value={draft.stato} onChange={(value) => update("stato", value)} descriptions={STATO_DESCRIPTIONS} />
               </>
             ) : null}
@@ -1751,8 +1804,8 @@ export function Wizard({ initialProject, onClose, onComplete }) {
             {step.id === "durata" ? (
               <>
                 <QuestionHeader
-                  title="Perfetto, quale sara la DURATA del progetto?"
-                  description="Indica il periodo previsto dalla fase di avvio lavori alla piena operativita. Questa informazione e importante per programmare correttamente le attivita, stimare i costi e valutare la sostenibilita nel tempo e i benefici nel progetto."
+                  title="Perfetto, quale sarà la DURATA del progetto?"
+                  description="Indica il periodo previsto dalla fase di avvio lavori alla piena operatività. Questa informazione è importante per programmare correttamente le attività, stimare i costi e valutare la sostenibilità nel tempo e i benefici nel progetto."
                 />
                 <div className="grid max-w-3xl grid-cols-1 gap-5 md:grid-cols-2">
                   <DatePickerField
@@ -1781,8 +1834,8 @@ export function Wizard({ initialProject, onClose, onComplete }) {
             {step.id === "localizzazione" ? (
               <>
                 <QuestionHeader
-                  title="Dove avra LUOGO il tuo progetto?"
-                  description="Inserisci l'area geografica in cui sara realizzato il progetto. Questa informazione consente di collegare il progetto al territorio, attivare dati socio-territoriali rilevanti e fornire analisi contestualizzate su impatti ambientali, sociali ed economici."
+                  title="Dove avrà LUOGO il tuo progetto?"
+                  description="Inserisci l'area geografica in cui sarà realizzato il progetto. Questa informazione consente di collegare il progetto al territorio, attivare dati socio-territoriali rilevanti e fornire analisi contestualizzate su impatti ambientali, sociali ed economici."
                 />
                 <p className="mb-4 text-[14px] font-semibold text-ink-900">Inserisci un indirizzo o una localita, coerentemente col territorio di riferimento.</p>
                 <div className="grid max-w-5xl grid-cols-1 gap-5 lg:grid-cols-[1fr_360px]">
@@ -1901,7 +1954,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
 
             {step.id === "capex" ? (
               <>
-                <QuestionHeader title="Qual e il CAPEX?" description="Inserisci l'importo complessivo degli investimenti previsti, spese in conto capitale, per la realizzazione del progetto." />
+                <QuestionHeader title="Qual è il CAPEX?" description="Inserisci l'importo complessivo degli investimenti previsti, spese in conto capitale, per la realizzazione del progetto." />
                 <div className="max-w-5xl overflow-hidden border border-ink-100 bg-white">
                   <div className="p-5">
                     <label className="mb-2 block text-[14px] font-semibold text-ink-900">CAPEX complessivo (EUR)</label>
@@ -2278,30 +2331,90 @@ export function Wizard({ initialProject, onClose, onComplete }) {
               <>
                 <QuestionHeader
                   title="Benefici attesi del progetto"
-                  description="Verifica i parametri predefiniti e inserisci i valori per la vita utile del progetto. Usa l'icona calendario per configurare valori differenziati per periodo."
+                  description="Verifica il modello ECBA proposto, completa i KPI principali e, quando serve, differenzia i valori lungo la vita utile del progetto."
                 />
 
-                <div className="max-w-4xl space-y-3">
+                <div className="grid max-w-6xl gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
+                  <div className="space-y-4">
+                    <div className="border border-ink-100 bg-white p-5">
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                          <p className="text-[14px] font-semibold text-ink-900">Modello ECBA per fattori di monetizzazione</p>
+                          <p className="mt-1 text-[12px] leading-[1.5] text-ink-500">
+                            Procedi un KPI alla volta: verifica i parametri, conferma il blocco e passa al successivo.
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={autoFillBenefici}
+                            className="border border-brand-violet bg-white px-4 py-2 text-[12px] font-semibold text-brand-violet hover:bg-brand-violet-soft"
+                          >
+                            Aggiorna valori suggeriti
+                          </button>
+                          <button
+                            type="button"
+                            onClick={clearBenefici}
+                            className="border border-ink-200 bg-white px-4 py-2 text-[12px] font-semibold text-ink-600 hover:border-ink-400 hover:bg-[#fafafa]"
+                          >
+                            Svuota valori
+                          </button>
+                        </div>
+                      </div>
+                      <div className="mt-4 grid gap-3 md:grid-cols-3">
+                        <div className="border border-[#ececf1] bg-[#f7f7fa] px-4 py-3">
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-400">KPI confermati</p>
+                          <p className="mt-1 text-[20px] font-bold text-ink-900">{beneficiConfiguredCount}/{beneficiFactorTotal}</p>
+                        </div>
+                        <div className="border border-[#ececf1] bg-[#f7f7fa] px-4 py-3">
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-400">Periodo benefici</p>
+                          <p className="mt-1 text-[14px] font-semibold text-ink-900">
+                            {opexYears.length > 0 ? `${opexYears[0]}-${opexYears[opexYears.length - 1]}` : "Non definito"}
+                          </p>
+                        </div>
+                        <div className="border border-[#ececf1] bg-[#f7f7fa] px-4 py-3">
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-400">Vita utile</p>
+                          <p className="mt-1 text-[14px] font-semibold text-ink-900">{draft.vita_utile || "-"} anni</p>
+                        </div>
+                      </div>
+                    </div>
                   {beneficiTemplates.length === 0 ? (
                     <div className="border border-ink-100 bg-white px-5 py-6 text-[14px] text-ink-500">
                       Nessun modello disponibile per il settore selezionato.
                     </div>
                   ) : null}
 
-                  {beneficiTemplates.map(({ group, esternalita, kpis }) => {
+                  {beneficiTemplates.map(({ group, esternalita, kpis, yearSource }, groupIndex) => {
+                    const activeYears  = yearSource === "cantiere" ? projectYears : opexYears;
                     const editableKpis = kpis.filter((k) => k.tipo !== "monetizzazione");
                     const monetKpis    = kpis.filter((k) => k.tipo === "monetizzazione");
                     const capexNum     = Number(draft.capex) || 0;
                     const isPositiva   = esternalita !== "negativa";
+                    const groupStat = beneficiGroupStats.find((item) => item.group === group);
+                    const groupReady = isBeneficiGroupReady(kpis);
+                    const isCompleted = groupIndex < beneficiRevealLevel;
+
+                    if (groupIndex > beneficiRevealLevel) return null;
 
                     return (
-                      <div key={group} className="overflow-hidden border border-ink-100 bg-white">
+                      <ClassAccordion
+                        key={group}
+                        number={String(groupIndex + 1)}
+                        title={group}
+                        selectedLabel={`${groupStat?.filled ?? 0}/${kpis.length} parametri verificati`}
+                        isCompleted={isCompleted}
+                        onEdit={() => setBeneficiRevealLevel(groupIndex)}
+                      >
+                        <div className="overflow-hidden border border-ink-100 bg-white">
                         {/* ── Header ── */}
-                        <div className="flex items-center gap-3 px-5 py-4">
-                          <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${isPositiva ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-500"}`}>
+                        <div className="flex flex-col gap-3 border-b border-[#ececf1] bg-[#f7f7fa] px-5 py-4 md:flex-row md:items-center">
+                          <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-bold ${isPositiva ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-500"}`}>
                             {isPositiva ? "+" : "−"}
                           </span>
-                          <p className="flex-1 text-[14px] font-semibold text-ink-900">{group}</p>
+                          <p className="min-w-0 flex-1 text-[14px] font-semibold text-ink-900">{group}</p>
+                          <span className="shrink-0 text-[12px] font-semibold text-ink-500">
+                            {beneficiGroupStats.find((item) => item.group === group)?.filled ?? 0}/{kpis.length} KPI
+                          </span>
                           <span className={`text-[12px] font-medium ${isPositiva ? "text-emerald-600" : "text-red-500"}`}>
                             {isPositiva ? "Esternalità positiva" : "Esternalità negativa"}
                           </span>
@@ -2315,8 +2428,18 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                           const refVal = profiloVal != null
                             ? String(profiloVal)
                             : String(kpi.estimateFn({ settore: draft.settore, capex: capexNum }));
-                          const currentVal = draft.benefici_kpi?.[kpi.id]?.anni?.[opexYears[0]] ?? draft.benefici_kpi?.[kpi.id]?.stima ?? "";
-                          const warningType = currentVal !== "" && currentVal !== refVal
+                          const kpiData = draft.benefici_kpi?.[kpi.id];
+                          const annualValues = activeYears.map((year) => String(kpiData?.anni?.[year] ?? "").trim());
+                          const nonEmptyAnnualValues = annualValues.filter(Boolean);
+                          const uniqueAnnualValues = [...new Set(nonEmptyAnnualValues)];
+                          const hasMixedYearValues = uniqueAnnualValues.length > 1;
+                          const currentVal = hasMixedYearValues
+                            ? ""
+                            : nonEmptyAnnualValues[0] ?? kpiData?.stima ?? "";
+                          const hasValueDifferentFromRef = hasMixedYearValues
+                            ? uniqueAnnualValues.some((value) => !valuesEquivalent(value, refVal))
+                            : currentVal !== "" && !valuesEquivalent(currentVal, refVal);
+                          const warningType = hasValueDifferentFromRef
                             ? (profiloVal != null ? "red" : "gray")
                             : null;
                           const inputBorderCls = warningType === "red"
@@ -2327,36 +2450,43 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                           const isOpen = !!kpiDetailOpen[kpi.id];
                           const periods = kpiPeriods[kpi.id] ?? [];
                           const usedDurTotal = periods.slice(0, -1).reduce((acc, p) => acc + Math.max(0, Number(p.dur) || 0), 0);
-                          const lastPeriodDur = Math.max(0, opexYears.length - usedDurTotal);
+                          const lastPeriodDur = Math.max(0, activeYears.length - usedDurTotal);
 
                           return (
                             <div key={kpi.id} className="border-t border-[#f0f0f3]">
                               {/* Main row */}
-                              <div className="flex items-center gap-4 px-5 py-3">
-                                <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${kpi.tipo === "input" ? "bg-brand-violet/60" : "bg-ink-300"}`} />
-                                <div className="min-w-0 flex-1">
-                                  <span className="text-[13px] text-ink-700">{kpi.label}</span>
+                              <div className="grid gap-4 px-5 py-4 md:grid-cols-[minmax(0,1fr)_260px] md:items-center">
+                                <div className="min-w-0">
+                                  <div className="flex items-start gap-3">
+                                    <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${kpi.tipo === "input" ? "bg-brand-violet" : "bg-ink-300"}`} />
+                                    <div className="min-w-0">
+                                      <p className="text-[13px] font-semibold leading-[1.35] text-ink-900">{kpi.label}</p>
                                   {kpi.tipo === "input" && profiloVal == null ? (
-                                    <span className="ml-2 text-[11px] text-ink-400">suggerito: {refVal}</span>
+                                        <p className="mt-1 text-[11px] leading-[1.4] text-ink-400">Suggerito: {refVal} {kpi.unit}</p>
+                                  ) : kpi.tipo === "input" && profiloVal != null ? (
+                                        <p className="mt-1 text-[11px] leading-[1.4] text-ink-400">Dal profilo progetto: {refVal} {kpi.unit}</p>
                                   ) : kpi.tipo === "tecnico" ? (
-                                    <span className="ml-2 text-[11px] text-ink-400">stimato: {refVal}</span>
+                                        <p className="mt-1 text-[11px] leading-[1.4] text-ink-400">Stima tecnica: {refVal} {kpi.unit}</p>
                                   ) : null}
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="flex shrink-0 items-center gap-2">
+                                <div className="flex items-center justify-start gap-2 md:justify-end">
                                   <input
                                     value={currentVal}
-                                    onChange={(e) => setKpiAllYears(kpi.id, e.target.value)}
-                                    placeholder={refVal}
-                                    className={`h-9 w-28 border ${inputBorderCls} px-2.5 text-right text-[13px] font-semibold text-ink-900 focus:border-brand-violet focus:outline-none`}
+                                    onChange={(e) => setKpiAllYears(kpi.id, e.target.value, activeYears)}
+                                    placeholder={hasMixedYearValues ? "Valori misti" : refVal}
+                                    className={`h-10 w-[132px] border ${inputBorderCls} px-3 text-right text-[13px] font-semibold text-ink-900 focus:border-brand-violet focus:outline-none`}
                                   />
-                                  <span className="w-[88px] shrink-0 whitespace-nowrap text-[12px] text-ink-400">{kpi.unit}</span>
+                                  <span className="w-[120px] shrink-0 whitespace-nowrap text-[12px] text-ink-400">{kpi.unit}</span>
                                   <button
                                     type="button"
-                                    onClick={() => toggleKpiDetail(kpi.id)}
+                                    onClick={() => toggleKpiDetail(kpi.id, activeYears)}
                                     title="Configura valori per anno"
-                                    className={`flex h-7 w-7 shrink-0 items-center justify-center transition-colors ${isOpen ? "bg-brand-violet text-white" : "text-ink-300 hover:text-brand-violet"}`}
+                                    aria-label="Configura valori per anno"
+                                    className={`flex h-9 w-9 shrink-0 items-center justify-center border transition-colors ${isOpen ? "border-brand-violet bg-brand-violet text-white" : "border-ink-200 bg-white text-ink-400 hover:border-brand-violet hover:text-brand-violet"}`}
                                   >
-                                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                   </button>
@@ -2370,6 +2500,11 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                               ) : warningType === "gray" ? (
                                 <p className="px-5 pb-2 text-[11px] text-ink-400">
                                   Valore diverso dal suggerito ({refVal} {kpi.unit})
+                                </p>
+                              ) : null}
+                              {hasMixedYearValues ? (
+                                <p className="px-5 pb-2 text-[11px] text-brand-violet">
+                                  Valori differenziati per anno. Inserisci un valore qui per applicarlo a tutto il periodo.
                                 </p>
                               ) : null}
                               {/* Per-year detail panel */}
@@ -2420,17 +2555,17 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                                     </div>
                                     <button
                                       type="button"
-                                      onClick={() => applyKpiPeriods(kpi.id)}
+                                      onClick={() => applyKpiPeriods(kpi.id, activeYears)}
                                       className="mt-2.5 bg-brand-violet px-3 py-1.5 text-[12px] font-semibold text-white hover:opacity-90"
                                     >
                                       Applica periodi →
                                     </button>
                                   </div>
-                                  {opexYears.length > 0 ? (
+                                  {activeYears.length > 0 ? (
                                     <div className="border-t border-[#e8e8ec] pt-3">
                                       <p className="mb-2 text-[12px] font-medium text-ink-500">Valori per anno</p>
                                       <div className="grid gap-1.5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(64px, 1fr))" }}>
-                                        {opexYears.map((y) => {
+                                        {activeYears.map((y) => {
                                           const val = draft.benefici_kpi?.[kpi.id]?.anni?.[y] ?? "";
                                           return (
                                             <div key={y} className="flex flex-col gap-0.5">
@@ -2454,31 +2589,118 @@ export function Wizard({ initialProject, onClose, onComplete }) {
 
                         {/* ── Fattore di monetizzazione ── */}
                         {monetKpis.map((kpi) => (
-                          <div key={kpi.id} className="border-t border-[#f0f0f3] bg-[#fdfcf8]">
-                            <div className="flex items-center gap-4 px-5 py-3">
-                              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
-                              <span className="flex-1 text-[13px] text-ink-600">{kpi.label}</span>
-                              <div className="flex shrink-0 items-center gap-2">
-                                <span className="font-mono text-[14px] font-bold text-ink-900">
+                          <div key={kpi.id} className="border-t border-[#f0f0f3] bg-[#fcfcfd]">
+                            <div className="grid gap-4 px-5 py-4 md:grid-cols-[minmax(0,1fr)_260px] md:items-center">
+                              <div className="min-w-0">
+                                <div className="flex items-start gap-3">
+                                  <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center text-ink-400">
+                                    <LockIcon />
+                                  </span>
+                                  <div className="min-w-0">
+                                    <p className="text-[13px] font-semibold leading-[1.35] text-ink-900">{kpi.label}</p>
+                                    <p className="mt-1 text-[11px] leading-[1.4] text-ink-400">Valore monetario fissato</p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center justify-start gap-2 md:justify-end">
+                                <div className="flex h-10 w-[132px] items-center justify-end gap-2 border border-ink-200 bg-[#f7f7fa] px-3 text-right text-[13px] font-semibold text-ink-900">
+                                  <LockIcon className="h-3.5 w-3.5 shrink-0 text-ink-400" />
+                                  <span className="font-mono">
                                   {draft.benefici_kpi?.[kpi.id]?.stima ?? "—"}
-                                </span>
-                                <span className="w-[88px] shrink-0 whitespace-nowrap text-[12px] text-ink-400">{kpi.unit}</span>
-                                <span className="w-7" />
+                                  </span>
+                                </div>
+                                <span className="w-[120px] shrink-0 whitespace-nowrap text-[12px] text-ink-400">{kpi.unit}</span>
+                                <span className="h-9 w-9 shrink-0" />
                               </div>
                             </div>
                           </div>
                         ))}
 
-                        {opexYears.length > 0 ? (
+                        {activeYears.length > 0 ? (
                           <div className="border-t border-[#f0f0f3] px-5 py-2.5">
                             <p className="text-[11px] text-ink-400">
-                              Il valore inserito verrà applicato a tutti i {opexYears.length} anni ({opexYears[0]}–{opexYears[opexYears.length - 1]}). Usa l'icona calendario per configurare valori differenziati per periodo.
+                              Il valore inserito verrà applicato a tutti i {activeYears.length} anni ({activeYears[0]}–{activeYears[activeYears.length - 1]}). Usa l'icona calendario per configurare valori differenziati per periodo.
                             </p>
                           </div>
                         ) : null}
-                      </div>
+                          <div className="border-t border-[#ececf1] bg-white px-5 py-4">
+                            <button
+                              type="button"
+                              disabled={!groupReady}
+                              onClick={() => confirmBeneficiGroup(groupIndex)}
+                              className={`flex items-center gap-2 px-5 py-2.5 text-[13px] font-semibold transition-colors ${
+                                groupReady
+                                  ? "bg-brand-violet text-white hover:bg-brand-violet-dark"
+                                  : "cursor-not-allowed bg-ink-100 text-ink-300"
+                              }`}
+                            >
+                              {groupIndex === beneficiFactorTotal - 1 ? "Conferma KPI ECBA" : "Conferma e passa al KPI successivo"}
+                              <span className="text-[16px] leading-none">&rarr;</span>
+                            </button>
+                          </div>
+                        </div>
+                      </ClassAccordion>
                     );
                   })}
+                  </div>
+
+                  <aside className="h-fit border border-[#e8e8ed] bg-white p-5">
+                    <p className="text-[14px] font-semibold text-ink-900">Stato ECBA</p>
+                    <p className="mt-1 text-[12px] leading-[1.5] text-ink-600">
+                      Controlla completezza, segno delle esternalità e periodo usato per la valutazione.
+                    </p>
+                    <div className="mt-5 border-t border-[#ececf1] pt-4">
+                      <div className="flex items-end justify-between">
+                        <span className="text-[12px] text-ink-500">KPI confermati</span>
+                        <span className="text-[22px] font-bold text-brand-violet">{beneficiConfiguredCount}/{beneficiFactorTotal}</span>
+                      </div>
+                      <div className="mt-2 h-[6px] overflow-hidden bg-[#e7e7ea]">
+                        <div
+                          className="h-full bg-brand-violet transition-[width] duration-300"
+                          style={{ width: `${beneficiFactorTotal ? (beneficiConfiguredCount / beneficiFactorTotal) * 100 : 0}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-5 space-y-3 border-t border-[#ececf1] pt-4">
+                      {beneficiGroupStats.map((stat, statIndex) => {
+                        const isPositiva = stat.esternalita !== "negativa";
+                        const statusLabel = statIndex < beneficiRevealLevel
+                          ? "Confermato"
+                          : statIndex === beneficiRevealLevel
+                            ? "In corso"
+                            : "Da verificare";
+                        return (
+                          <div key={stat.group} className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="truncate text-[12px] font-semibold text-ink-800">{stat.group}</p>
+                              <p className={`mt-0.5 text-[11px] ${isPositiva ? "text-emerald-600" : "text-red-500"}`}>
+                                {isPositiva ? "Positiva" : "Negativa"}
+                              </p>
+                            </div>
+                            <span className={`shrink-0 text-[11px] font-bold ${statIndex < beneficiRevealLevel ? "text-brand-violet" : "text-ink-400"}`}>
+                              {statusLabel}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="mt-5 space-y-3 border-t border-[#ececf1] pt-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[12px] text-ink-500">CAPEX</span>
+                        <span className="text-[13px] font-semibold text-ink-900">{draft.capex ? `${fmt(draft.capex)} EUR` : "-"}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[12px] text-ink-500">Tasso sconto</span>
+                        <span className="text-[13px] font-semibold text-ink-900">{draft.tasso_attualizzazione || "-"}%</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[12px] text-ink-500">Periodo</span>
+                        <span className="text-[13px] font-semibold text-ink-900">
+                          {opexYears.length > 0 ? `${opexYears[0]}-${opexYears[opexYears.length - 1]}` : "-"}
+                        </span>
+                      </div>
+                    </div>
+                  </aside>
                 </div>
               </>
             ) : null}

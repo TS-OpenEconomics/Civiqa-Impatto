@@ -4,6 +4,7 @@ import { Badge } from "../ui/Badge";
 import {
   IconArrowLeft,
   IconArrowRight,
+  IconChart,
   IconChevronDown,
   IconPin,
   IconSearch,
@@ -416,7 +417,7 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="max-w-4xl">
             <div className="flex items-center gap-3">
-              <SectionIcon />
+              <IconChart className="h-7 w-7 text-ink-900" />
               <h1 className="text-[22px] font-bold leading-none text-ink-900">Valutazione</h1>
             </div>
             <p className="mt-4 max-w-[900px] text-[14px] leading-[1.5] text-ink-900">
@@ -451,9 +452,8 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
             ))}
           </div>
         ) : (
-          <div className="relative mt-5 overflow-hidden bg-[#efefef] px-5 pb-12 pt-10">
-            <CarouselPattern />
-            <div ref={featuredRef} className="relative flex gap-4 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="relative mt-5 overflow-hidden px-0 pb-12 pt-0">
+            <div ref={featuredRef} className="flex gap-4 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {FEATURED.map((item, index) => (
                 <FeaturedCard key={item.tag} item={item} onOpen={() => projects[index] && onOpenProject(projects[index].id)} />
               ))}
