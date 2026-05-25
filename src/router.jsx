@@ -438,15 +438,15 @@ function useWorkspace() {
 }
 
 function navigateToAnalysis(workspace, analysisId, navigate) {
-  const analysis = workspace.analyses[analysisId];
+  const analysis = workspace.analyses?.[analysisId];
   const basePath = `/valutazioni/${workspace.id}/${analysisId}`;
 
-  if (analysis.status === "completed") {
+  if (analysis?.status === "completed") {
     navigate(`${basePath}/results`);
     return;
   }
 
-  if (analysis.status === "running") {
+  if (analysis?.status === "running") {
     navigate(`${basePath}/running`);
     return;
   }

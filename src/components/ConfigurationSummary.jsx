@@ -26,40 +26,44 @@ export function ConfigurationSummary({ project, onBack, onConfirm, onClose }) {
       <div className="h-[3px] bg-accent-lime" />
 
       <div className="flex-1 overflow-y-auto px-10 py-8">
-        <p className="text-xs font-mono uppercase tracking-[0.18em] text-ink-500">Riepilogo della configurazione</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight">Controlla i dati prima di procedere</h1>
-        <p className="mt-4 text-sm text-ink-700 max-w-4xl leading-relaxed">
-          In questa fase puoi modificare senza perdere dati nome progetto, CUP, descrizione e stato. Gli altri campi sono mostrati come riepilogo della configurazione su cui verranno eseguite le analisi.
+        <p className="text-xs font-mono uppercase tracking-[0.18em] text-ink-400">Riepilogo della configurazione</p>
+        <h1 className="mt-1.5 text-[28px] font-bold tracking-tight text-ink-900">Controlla i dati prima di procedere</h1>
+        <p className="mt-3 max-w-3xl text-[14px] leading-relaxed text-ink-500">
+          Puoi ancora modificare nome, CUP, descrizione e stato. Gli altri campi sono il riepilogo della configurazione su cui verranno eseguite le analisi.
         </p>
 
-        <div className="mt-8 grid grid-cols-1 xl:grid-cols-[0.95fr_1.05fr] gap-6">
-          <section className="bg-white p-6">
-            <h2 className="text-lg font-bold">Campi modificabili</h2>
-            <div className="mt-5 space-y-5">
+        <div className="mt-7 grid grid-cols-1 gap-5 xl:grid-cols-[1fr_1fr]">
+          {/* Left — editable fields */}
+          <section className="border border-ink-100 bg-white p-6">
+            <h2 className="mb-5 text-[13px] font-semibold uppercase tracking-wide text-ink-400">Campi modificabili</h2>
+            <div className="space-y-4">
               <EditableField label="Nome progetto" value={editable.nome} onChange={(value) => setEditable((prev) => ({ ...prev, nome: value }))} />
               <EditableField label="CUP" value={editable.cup} onChange={(value) => setEditable((prev) => ({ ...prev, cup: value }))} />
               <EditableField label="Stato del progetto" value={editable.stato} onChange={(value) => setEditable((prev) => ({ ...prev, stato: value }))} />
               <label className="block">
-                <span className="block text-sm font-semibold mb-2">Descrizione</span>
+                <span className="mb-1.5 block text-[13px] font-semibold text-ink-900">Descrizione</span>
                 <textarea
-                  rows={7}
+                  rows={6}
                   value={editable.descrizione}
                   onChange={(e) => setEditable((prev) => ({ ...prev, descrizione: e.target.value }))}
-                  className="w-full border border-ink-300 px-3 py-3 text-sm focus:outline-none focus:border-brand-violet"
+                  className="w-full border border-ink-200 px-3 py-2.5 text-[13px] text-ink-900 focus:border-brand-violet focus:outline-none"
                 />
               </label>
             </div>
           </section>
 
-          <section className="bg-white">
-            <div className="bg-ink-900 text-white px-5 py-3 text-sm font-bold">Dati della configurazione</div>
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 text-sm">
+          {/* Right — config data */}
+          <section className="overflow-hidden border border-ink-100 bg-white">
+            <div className="border-b border-ink-100 px-6 py-4">
+              <h2 className="text-[13px] font-semibold uppercase tracking-wide text-ink-400">Dati della configurazione</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-4 p-6 text-[13px]">
               <ConfigField label="Settore" value={project.configurazione.settore} />
               <div>
-                <p className="font-bold text-ink-900">Sotto-settore</p>
-                <p className="mt-1 text-ink-700">{project.configurazione.sotto_settore}</p>
+                <p className="mb-0.5 text-[12px] font-semibold uppercase tracking-wide text-ink-400">Sotto-settore</p>
+                <p className="text-ink-700">{project.configurazione.sotto_settore}</p>
                 {project.configurazione.nace_code && (
-                  <span className="mt-1 inline-block text-xs font-mono bg-ink-50 border border-ink-200 px-2 py-0.5 text-ink-600">
+                  <span className="mt-1 inline-block border border-ink-200 bg-ink-50 px-2 py-0.5 font-mono text-[11px] text-ink-600">
                     NACE {project.configurazione.nace_code}
                   </span>
                 )}
@@ -68,10 +72,10 @@ export function ConfigurationSummary({ project, onBack, onConfirm, onClose }) {
               <ConfigField label="Tipo intervento" value={project.configurazione.tipo_intervento} />
               <ConfigField label="Durata" value={project.configurazione.durata_progetto} />
               <div>
-                <p className="font-bold text-ink-900">Localizzazione</p>
-                <p className="mt-1 text-ink-700">{project.configurazione.localizzazione}</p>
+                <p className="mb-0.5 text-[12px] font-semibold uppercase tracking-wide text-ink-400">Localizzazione</p>
+                <p className="text-ink-700">{project.configurazione.localizzazione}</p>
                 {project.configurazione.nuts_code && (
-                  <span className="mt-1 inline-block text-xs font-mono bg-brand-violet-soft text-brand-violet border border-brand-violet/20 px-2 py-0.5">
+                  <span className="mt-1 inline-block border border-brand-violet/20 bg-brand-violet-soft px-2 py-0.5 font-mono text-[11px] text-brand-violet">
                     {project.configurazione.nuts_code} — {project.configurazione.nuts_label}
                   </span>
                 )}
@@ -84,13 +88,10 @@ export function ConfigurationSummary({ project, onBack, onConfirm, onClose }) {
               )}
             </div>
 
-            {/* P3.4 — Mappa read-only con marker */}
             {project.configurazione.lat != null && project.configurazione.lon != null && (
-              <div className="px-6 pb-6">
-                <div className="border-t border-ink-100 pt-5 mb-3 flex items-center gap-2">
-                  <p className="text-sm font-bold text-ink-900">Mappa localizzazione</p>
-                </div>
-                <div className="h-52">
+              <div className="border-t border-ink-100 px-6 pb-6 pt-4">
+                <p className="mb-3 text-[12px] font-semibold uppercase tracking-wide text-ink-400">Localizzazione sulla mappa</p>
+                <div className="h-48 overflow-hidden">
                   <LeafletMap
                     position={{ lat: project.configurazione.lat, lon: project.configurazione.lon }}
                     readOnly
@@ -102,14 +103,14 @@ export function ConfigurationSummary({ project, onBack, onConfirm, onClose }) {
         </div>
       </div>
 
-      <div className="h-16 shrink-0 grid grid-cols-2">
-        <button onClick={onBack} className="bg-ink-900 text-white text-sm font-semibold flex items-center justify-between px-8">
+      <div className="grid h-16 shrink-0 grid-cols-2">
+        <button onClick={onBack} className="flex items-center justify-between bg-[#5a5a5a] px-8 text-[14px] font-medium text-white">
           <span>Torna alla configurazione</span>
-          <IconArrowLeft className="w-5 h-5" />
+          <IconArrowLeft className="h-5 w-5" />
         </button>
-        <button onClick={() => onConfirm(mergedProject)} className="bg-brand-violet text-white text-sm font-semibold flex items-center justify-between px-8">
+        <button onClick={() => onConfirm(mergedProject)} className="flex items-center justify-between bg-brand-violet px-8 text-[14px] font-medium text-white">
           <span>Completa la configurazione</span>
-          <IconArrowRight className="w-5 h-5" />
+          <IconArrowRight className="h-5 w-5" />
         </button>
       </div>
     </div>
@@ -119,8 +120,8 @@ export function ConfigurationSummary({ project, onBack, onConfirm, onClose }) {
 function EditableField({ label, value, onChange }) {
   return (
     <label className="block">
-      <span className="block text-sm font-semibold mb-2">{label}</span>
-      <input value={value} onChange={(e) => onChange(e.target.value)} className="w-full h-11 px-3 border border-ink-300 text-sm focus:outline-none focus:border-brand-violet" />
+      <span className="mb-1.5 block text-[13px] font-semibold text-ink-900">{label}</span>
+      <input value={value} onChange={(e) => onChange(e.target.value)} className="h-10 w-full border border-ink-200 px-3 text-[13px] text-ink-900 focus:border-brand-violet focus:outline-none" />
     </label>
   );
 }
@@ -128,8 +129,8 @@ function EditableField({ label, value, onChange }) {
 function ConfigField({ label, value }) {
   return (
     <div>
-      <p className="font-bold text-ink-900">{label}</p>
-      <p className="mt-1 text-ink-700">{value}</p>
+      <p className="mb-0.5 text-[12px] font-semibold uppercase tracking-wide text-ink-400">{label}</p>
+      <p className="text-[13px] text-ink-700">{value}</p>
     </div>
   );
 }

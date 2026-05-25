@@ -62,28 +62,28 @@ const ANNI = ["2025", "2026", "2027", "2028", "2029", "2030", "2031"];
 const TASSO_DEFAULT = "3";
 const STEP_AUTOFILL_LABEL = "Autoriempi questa pagina";
 const DEMO_AUTOFILL = {
-  nome: "Intervento efficientamento servizio idrico",
-  cup: "I63C22000050127",
+  nome: "Nuovo asilo nido comunale",
+  cup: "I17C24000120005",
   descrizione:
-    "L'obiettivo e valutare i benefici economici, sociali e ambientali derivanti dal rafforzamento del servizio idrico regionale, in particolare nella riduzione delle perdite, nella resilienza infrastrutturale e nella qualita delle acque.",
-  stato: "Approvato",
-  settore: "Infrastrutture ambientali e risorse idriche",
-  sotto_settore: "Risorse idriche e acque reflue",
-  categoria_intervento: "Corpi idrici: Miglioramento della qualita",
-  tipo_intervento: "Efficientamento",
-  data_inizio: "2025-09-15",
-  data_fine: "2032-09-15",
-  localizzazione: "Via Messina Marine 592 - 90121, Palermo PA",
-  location_lat: 38.1157,
-  location_lon: 13.3615,
-  nuts_code: "ITG12",
-  nuts_label: "Palermo",
-  nace_code: "E36.00",
+    "Realizzazione di un nuovo asilo nido comunale per 100 bambini, con l'obiettivo di aumentare l'offerta di servizi educativi per la prima infanzia, ridurre il divario territoriale nell'accesso ai servizi e favorire la conciliazione lavoro-famiglia.",
+  stato: "In progettazione",
+  settore: "Infrastrutture sociali",
+  sotto_settore: "Istruzione e formazione",
+  categoria_intervento: "Scuole e asili",
+  tipo_intervento: "Nuova realizzazione",
+  data_inizio: "2025-09-01",
+  data_fine: "2027-09-01",
+  localizzazione: "Via della Repubblica 15 - 80131, Napoli NA",
+  location_lat: 40.8518,
+  location_lon: 14.2681,
+  nuts_code: "ITF33",
+  nuts_label: "Napoli",
+  nace_code: "F41.20",
   anno_attualizzazione: "2025",
-  tasso_attualizzazione: "3,5",
-  capex: "334000000",
-  vita_utile: 20,
-  opex_tasso: "2,8",
+  tasso_attualizzazione: "3",
+  capex: "3200000",
+  vita_utile: 30,
+  opex_tasso: "2,5",
 };
 
 const OPEX_BENCHMARKS = {
@@ -396,105 +396,41 @@ const GROUPS = [
   { label: "Parametri economici", sublabels: ["Anno di attualizzazione", "Capex", "Opex", "Benefici ECBA"] },
 ];
 
-const ECBA_KPI_TEMPLATES = {
-  "Infrastrutture sociali": [
-    {
-      group: "Accesso ai servizi",
-      kpis: [
-        { id: "utenti_diretti",    label: "Utenti diretti",                        unit: "n.",            tipo: "input",          profiloKey: "_primary", estimateFn: (c) => Math.round(c.capex / 5000) },
-        { id: "mq_utente",         label: "Superficie per utente",                 unit: "m²/utente",     tipo: "tecnico",        estimateFn: () => 25 },
-        { id: "famiglie",          label: "Famiglie potenzialmente beneficiarie",   unit: "n.",            tipo: "georef",         estimateFn: (c) => Math.round(c.capex / 2000) },
-        { id: "risp_costo",        label: "Riduzione costo servizi per utente",     unit: "€/utente/anno", tipo: "monetizzazione", estimateFn: () => 120 },
-        { id: "ore_risparmio",     label: "Beneficio da risparmio di tempo",        unit: "€/ora",         tipo: "monetizzazione", estimateFn: () => 12.5 },
-        { id: "benessere_sociale", label: "Valore di benessere per utente",         unit: "€/utente/anno", tipo: "monetizzazione", estimateFn: () => 200 },
-      ],
-    },
-  ],
-  "Infrastrutture di trasporto": [
-    {
-      group: "Mobilità e traffico",
-      kpis: [
-        { id: "km_migliorata",    label: "Km di viabilità migliorata",             unit: "km",       tipo: "input",          profiloKey: "km",       estimateFn: (c) => Math.round(c.capex / 1500000) },
-        { id: "riduzione_tempi",  label: "Riduzione tempi di percorrenza",         unit: "min",      tipo: "tecnico",        estimateFn: () => 12 },
-        { id: "veicoli_giorno",   label: "Veicoli/giorno stimati",                 unit: "n.",       tipo: "georef",         estimateFn: (c) => Math.round(c.capex / 30000) },
-        { id: "risp_carburante",  label: "Risparmio carburante per veicolo",       unit: "€/km",     tipo: "monetizzazione", estimateFn: () => 0.08 },
-        { id: "valore_tempo",     label: "Valore del tempo risparmiato",           unit: "€/ora",    tipo: "monetizzazione", estimateFn: () => 12.5 },
-      ],
-    },
-    {
-      group: "Sicurezza e ambiente",
-      kpis: [
-        { id: "incidenti",        label: "Incidenti annui evitati",                unit: "n.",       tipo: "georef",         estimateFn: (c) => Math.round(c.capex / 5000000) },
-        { id: "co2_trasporto",    label: "Riduzione emissioni CO₂",                unit: "ton/anno", tipo: "tecnico",        estimateFn: (c) => Math.round(c.capex / 200000) },
-        { id: "costo_incidente",  label: "Costo sociale medio per incidente",      unit: "€/n.",     tipo: "monetizzazione", estimateFn: () => 350000 },
-        { id: "valore_co2_tr",    label: "Valore sociale della CO₂",              unit: "€/ton",    tipo: "monetizzazione", estimateFn: () => 120 },
-      ],
-    },
-  ],
-  "Infrastrutture ambientali e risorse idriche": [
-    {
-      group: "Riduzione perdite idriche",
-      kpis: [
-        { id: "vol_acqua",        label: "Volume dell'acqua immessa",              unit: "m³",       tipo: "input",          profiloKey: "km_rete",  estimateFn: (c) => Math.round(c.capex * 1.97) },
-        { id: "pct_perdite",      label: "Percentuale target perdite idriche",     unit: "%",        tipo: "tecnico",        estimateFn: () => 34 },
-        { id: "energia_acqua",    label: "Consumo energia per acqua sollevata",    unit: "kWh/m³",   tipo: "monetizzazione", estimateFn: () => 0.8015 },
-        { id: "costo_energia",    label: "Costo energia elettrica",                unit: "€/kWh",    tipo: "monetizzazione", estimateFn: () => 0.16 },
-      ],
-    },
-    {
-      group: "Riduzione delle interruzioni del servizio idrico",
-      kpis: [
-        { id: "ore_interruzioni", label: "Ore di interruzione evitate",            unit: "ore",      tipo: "georef",         estimateFn: () => 204.7 },
-        { id: "pct_riduzione",    label: "Percentuale riduzione interruzioni",     unit: "%",        tipo: "tecnico",        estimateFn: () => 35 },
-        { id: "ore_anno",         label: "Ore anno servizio idrico",               unit: "ore",      tipo: "monetizzazione", estimateFn: () => 8760 },
-      ],
-    },
-    {
-      group: "Qualità ambientale",
-      kpis: [
-        { id: "risp_idrico",      label: "Risparmio idrico annuo",                 unit: "m³/anno",  tipo: "georef",         estimateFn: (c) => Math.round(c.capex / 500) },
-        { id: "co2_idrico",       label: "Riduzione emissioni CO₂",                unit: "ton/anno", tipo: "tecnico",        estimateFn: (c) => Math.round(c.capex / 1000000) },
-        { id: "valore_co2_idrico",label: "Valore sociale della CO₂",              unit: "€/ton",    tipo: "monetizzazione", estimateFn: () => 120 },
-      ],
-    },
-  ],
-  "Attivita produttive, ricerca e impresa sociale": [
-    {
-      group: "Impatto economico locale",
-      kpis: [
-        { id: "imprese",          label: "Imprese insediate",                      unit: "n.",       tipo: "input",          profiloKey: "_primary", estimateFn: (c) => Math.round(c.capex / 500000) },
-        { id: "nuovi_occupati",   label: "Nuovi occupati",                         unit: "FTE",      tipo: "tecnico",        estimateFn: (c) => Math.round(c.capex / 80000) },
-        { id: "valore_aggiunto",  label: "Valore aggiunto generato",               unit: "€/anno",   tipo: "monetizzazione", estimateFn: (c) => Math.round(c.capex * 0.12) },
-      ],
-    },
-    {
-      group: "Innovazione e ricerca",
-      kpis: [
-        { id: "brevetti",         label: "Brevetti depositati (stima)",            unit: "n./anno",  tipo: "tecnico",        estimateFn: (c) => Math.round(c.capex / 2000000) },
-        { id: "spinoff",          label: "Spin-off e start-up attivate",           unit: "n.",       tipo: "georef",         estimateFn: (c) => Math.round(c.capex / 1500000) },
-        { id: "valore_spinoff",   label: "Valore medio per spin-off",              unit: "€/n.",     tipo: "monetizzazione", estimateFn: () => 500000 },
-      ],
-    },
-  ],
-  "Telecomunicazioni e tecnologie informatiche": [
-    {
-      group: "Connettività",
-      kpis: [
-        { id: "unita_connesse",   label: "Abitazioni/unità connesse",              unit: "n.",       tipo: "input",          profiloKey: "unita_conn", estimateFn: (c) => Math.round(c.capex / 1500) },
-        { id: "digital_divide",   label: "Riduzione digital divide",               unit: "%",        tipo: "tecnico",        estimateFn: (c) => Math.min(80, Math.round(c.capex / 3000000)) },
-        { id: "servizi_digitali", label: "Nuovi servizi digitali abilitati",      unit: "n.",       tipo: "tecnico",        estimateFn: (c) => Math.round(c.capex / 1000000) },
-        { id: "risp_utente",      label: "Risparmio annuo per utente connesso",   unit: "€/anno",   tipo: "monetizzazione", estimateFn: () => 180 },
-      ],
-    },
-  ],
-};
+// POC: template fisso per asilo nido (indipendente dal settore selezionato)
+const POC_KPI_TEMPLATE = [
+  {
+    group: "Risparmio del tempo per le famiglie",
+    esternalita: "positiva",
+    kpis: [
+      { id: "famiglie",            label: "Famiglie beneficiarie",                  unit: "n.",                tipo: "input",          profiloKey: "_primary",  estimateFn: (c) => Math.round(c.capex / 32000) },
+      { id: "ore_risparmio_annue", label: "Risparmio di tempo per famiglia",        unit: "ore/famiglia/anno", tipo: "tecnico",                                 estimateFn: () => 250 },
+      { id: "valore_tempo",        label: "Valore del tempo (ISTAT)",               unit: "€/ora",             tipo: "monetizzazione",                          estimateFn: () => 12.5 },
+    ],
+  },
+  {
+    group: "Beneficio educativo e sociale",
+    esternalita: "positiva",
+    kpis: [
+      { id: "bambini_iscritti",    label: "Bambini iscritti",                       unit: "n.",                tipo: "input",          profiloKey: "_primary",  estimateFn: (c) => Math.round(c.capex / 32000) },
+      { id: "mq_per_bambino",      label: "Superficie per bambino",                 unit: "m²/bambino",        tipo: "input",          profiloKey: "mq_alunno", estimateFn: () => 20 },
+      { id: "valore_benessere",    label: "Valore sociale del servizio educativo",  unit: "€/bambino/anno",    tipo: "monetizzazione",                          estimateFn: () => 3500 },
+    ],
+  },
+  {
+    group: "Emissioni da cantiere e costruzione",
+    esternalita: "negativa",
+    kpis: [
+      { id: "co2_cantiere",        label: "Emissioni CO₂ stimate da cantiere",      unit: "ton CO₂/anno",      tipo: "tecnico",                                 estimateFn: (c) => Math.round(c.capex * 0.00011) },
+      { id: "valore_co2_cantiere", label: "Costo sociale della CO₂",               unit: "€/ton",             tipo: "monetizzazione",                          estimateFn: () => 120 },
+    ],
+  },
+];
 
-function buildDefaultKpi(settore, capex, projectYears) {
-  const templates = ECBA_KPI_TEMPLATES[settore] ?? [];
+function buildDefaultKpi(capex, projectYears) {
   const kpi = {};
-  templates.forEach(({ kpis }) => {
+  POC_KPI_TEMPLATE.forEach(({ kpis }) => {
     kpis.forEach(({ id, estimateFn }) => {
-      const stima = String(estimateFn({ settore, capex }));
+      const stima = String(estimateFn({ capex }));
       kpi[id] = { stima, anni: projectYears.reduce((acc, y) => { acc[y] = stima; return acc; }, {}) };
     });
   });
@@ -911,6 +847,17 @@ function DatePickerField({ label, hint, value, onChange, minDate = null }) {
   const [viewYear, setViewYear] = useState(() => parsed?.getFullYear() ?? min?.getFullYear() ?? 2025);
   const [viewMonth, setViewMonth] = useState(() => parsed?.getMonth() ?? min?.getMonth() ?? 8);
 
+  // When value is set externally (e.g. autofill), jump calendar view to that date
+  useEffect(() => {
+    if (!value) return;
+    const d = new Date(value + "T00:00:00");
+    if (!Number.isNaN(d.getTime())) {
+      setViewMonth(d.getMonth());
+      setViewYear(d.getFullYear());
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
   // When minDate advances past the current view, jump to it
   useEffect(() => {
     if (!min) return;
@@ -1041,10 +988,11 @@ export function Wizard({ initialProject, onClose, onComplete }) {
     return TIPI.includes(conf.tipo_intervento || "") ? 4 : 3;
   });
   const [annoRevealLevel, setAnnoRevealLevel] = useState(() =>
-    (initialProject?.configurazione?.anno_attualizzazione != null) ? 1 : 0
+    (initialProject?.configurazione?.anno_attualizzazione != null && initialProject?.configurazione?.tasso_attualizzazione != null) ? 2 : 0
   );
   const [opexRevealLevel, setOpexRevealLevel] = useState(0);
-  const [beneficiModo, setBeneficiModo] = useState("anno-tipo");
+  const [kpiDetailOpen, setKpiDetailOpen] = useState({});
+  const [kpiPeriods, setKpiPeriods] = useState({});
   const geocodeTimerRef = useRef(null);
   const initialDraft = useMemo(() => buildDraft(initialProject), [initialProject]);
   const step = STEPS[stepIdx];
@@ -1124,60 +1072,100 @@ export function Wizard({ initialProject, onClose, onComplete }) {
     }));
   }
 
-  function propagateKpiFirstYear(id) {
-    if (!opexYears.length) return;
-    const firstValue = draft.benefici_kpi?.[id]?.anni?.[opexYears[0]] ?? "";
-    setDraft((prev) => {
-      const anni = { ...(prev.benefici_kpi?.[id]?.anni ?? {}) };
-      opexYears.forEach((y) => { anni[y] = firstValue; });
-      return {
-        ...prev,
-        benefici_kpi: {
-          ...prev.benefici_kpi,
-          [id]: { ...(prev.benefici_kpi?.[id] ?? {}), anni },
-        },
-      };
+  function toggleKpiDetail(kpiId) {
+    setKpiDetailOpen((prev) => ({ ...prev, [kpiId]: !prev[kpiId] }));
+    setKpiPeriods((prev) => {
+      if (prev[kpiId]) return prev;
+      const total = opexYears.length || Number(draft.vita_utile) || 20;
+      const p1 = Math.min(5, total);
+      const rest = total - p1;
+      const periods = rest > 0
+        ? [{ dur: String(p1), val: "" }, { dur: "auto", val: "" }]
+        : [{ dur: "auto", val: "" }];
+      return { ...prev, [kpiId]: periods };
     });
+  }
+
+  function updateKpiPeriod(kpiId, idx, field, value) {
+    setKpiPeriods((prev) => {
+      const periods = [...(prev[kpiId] ?? [])];
+      periods[idx] = { ...periods[idx], [field]: value };
+      return { ...prev, [kpiId]: periods };
+    });
+  }
+
+  function addKpiPeriod(kpiId) {
+    setKpiPeriods((prev) => {
+      const periods = [...(prev[kpiId] ?? [])];
+      const last = periods.pop();
+      return { ...prev, [kpiId]: [...periods, { dur: "5", val: "" }, last] };
+    });
+  }
+
+  function removeKpiPeriod(kpiId) {
+    setKpiPeriods((prev) => {
+      const periods = [...(prev[kpiId] ?? [])];
+      if (periods.length <= 1) return prev;
+      const last = periods.pop();
+      periods.pop();
+      return { ...prev, [kpiId]: [...periods, last] };
+    });
+  }
+
+  function applyKpiPeriods(kpiId) {
+    const periods = kpiPeriods[kpiId] ?? [];
+    if (!periods.length || !opexYears.length) return;
+    const usedDur = periods.slice(0, -1).reduce((acc, p) => acc + Math.max(0, Number(p.dur) || 0), 0);
+    const lastDur = Math.max(0, opexYears.length - usedDur);
+    const yearMap = {};
+    let idx = 0;
+    periods.forEach((p, i) => {
+      const dur = i === periods.length - 1 ? lastDur : Math.max(0, Number(p.dur) || 0);
+      for (let j = 0; j < dur && idx < opexYears.length; j++, idx++) {
+        yearMap[opexYears[idx]] = p.val;
+      }
+    });
+    setDraft((prev) => ({
+      ...prev,
+      benefici_kpi: {
+        ...prev.benefici_kpi,
+        [kpiId]: {
+          ...(prev.benefici_kpi?.[kpiId] ?? {}),
+          anni: { ...(prev.benefici_kpi?.[kpiId]?.anni ?? {}), ...yearMap },
+          stima: periods[0]?.val ?? prev.benefici_kpi?.[kpiId]?.stima ?? "",
+        },
+      },
+    }));
   }
 
   function autoFillBenefici() {
     const capex = Number(draft.capex) || 0;
     setDraft((prev) => {
+      const tmpl = PROFILO_TEMPLATES[prev.categoria_intervento];
       const endYear = prev.data_fine ? new Date(prev.data_fine + "T00:00:00").getFullYear() + 1 : null;
       const years = endYear ? Array.from({ length: Number(prev.vita_utile) || 20 }, (_, i) => String(endYear + i)) : [];
-      return { ...prev, benefici_kpi: buildDefaultKpi(prev.settore, capex, years) };
+      const kpi = buildDefaultKpi(capex, years);
+      POC_KPI_TEMPLATE.forEach(({ kpis }) => {
+        kpis.filter((k) => k.tipo === "input").forEach((k) => {
+          const profiloVal = getProfiloInputValue(k.profiloKey, tmpl, prev.profilo_dati);
+          if (profiloVal != null) {
+            const val = String(profiloVal);
+            kpi[k.id] = { stima: val, anni: years.reduce((acc, y) => { acc[y] = val; return acc; }, {}) };
+          }
+        });
+      });
+      return { ...prev, benefici_kpi: kpi };
     });
   }
 
   function clearBenefici() {
     setDraft((prev) => {
-      const templates = ECBA_KPI_TEMPLATES[prev.settore] ?? [];
       const cleared = {};
-      templates.forEach(({ kpis }) => kpis.forEach(({ id }) => { cleared[id] = { stima: "", anni: {} }; }));
+      POC_KPI_TEMPLATE.forEach(({ kpis }) => kpis.forEach(({ id }) => { cleared[id] = { stima: "", anni: {} }; }));
       return { ...prev, benefici_kpi: cleared };
     });
   }
 
-  function addExtraBeneficio() {
-    setDraft((prev) => ({
-      ...prev,
-      benefici_extra: [...(prev.benefici_extra ?? []), { id: `extra_${Date.now()}`, label: "", unit: "", stima: "" }],
-    }));
-  }
-
-  function updateExtraBeneficio(id, field, value) {
-    setDraft((prev) => ({
-      ...prev,
-      benefici_extra: (prev.benefici_extra ?? []).map((b) => b.id === id ? { ...b, [field]: value } : b),
-    }));
-  }
-
-  function removeExtraBeneficio(id) {
-    setDraft((prev) => ({
-      ...prev,
-      benefici_extra: (prev.benefici_extra ?? []).filter((b) => b.id !== id),
-    }));
-  }
 
   function setKpiAllYears(id, value) {
     setDraft((prev) => ({
@@ -1315,7 +1303,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
         }));
         break;
       case "anno":
-        setAnnoRevealLevel(1);
+        setAnnoRevealLevel(2);
         setDraft((prev) => ({
           ...prev,
           anno_attualizzazione: DEMO_AUTOFILL.anno_attualizzazione,
@@ -1360,7 +1348,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
         const capex = Number(prev.capex) || 0;
         const endYear = prev.data_fine ? new Date(prev.data_fine + "T00:00:00").getFullYear() + 1 : null;
         const years = endYear ? Array.from({ length: Number(prev.vita_utile) || 20 }, (_, i) => String(endYear + i)) : [];
-        return { ...prev, benefici_kpi: buildDefaultKpi(prev.settore, capex, years) };
+        return { ...prev, benefici_kpi: buildDefaultKpi(capex, years) };
       });
     }
     setStepIdx((value) => value + 1);
@@ -1483,17 +1471,17 @@ export function Wizard({ initialProject, onClose, onComplete }) {
   }, [opexRevealLevel]);
   const opexTotale = useMemo(() => opexAnnualAmount * Number(draft.vita_utile), [opexAnnualAmount, draft.vita_utile]);
 
-  const beneficiTemplates = useMemo(() => ECBA_KPI_TEMPLATES[draft.settore] ?? [], [draft.settore]);
-  const beneficiTotalCount = useMemo(() => beneficiTemplates.reduce((acc, { kpis }) => acc + kpis.length, 0), [beneficiTemplates]);
+  const beneficiTemplates = POC_KPI_TEMPLATE;
+  const beneficiTotalCount = POC_KPI_TEMPLATE.reduce((acc, { kpis }) => acc + kpis.length, 0);
   const beneficiFilledCount = useMemo(() => {
     if (!draft.benefici_kpi) return 0;
-    return beneficiTemplates.reduce((acc, { kpis }) => acc + kpis.filter(({ id }) => {
+    return POC_KPI_TEMPLATE.reduce((acc, { kpis }) => acc + kpis.filter(({ id }) => {
       const kpiData = draft.benefici_kpi[id];
       if (!kpiData) return false;
       if (opexYears.length > 0) return opexYears.some((y) => (kpiData.anni?.[y] ?? "") !== "");
       return (kpiData.stima ?? "") !== "";
     }).length, 0);
-  }, [beneficiTemplates, draft.benefici_kpi, opexYears]);
+  }, [draft.benefici_kpi, opexYears]);
 
   const canProceed = (() => {
     switch (step.id) {
@@ -1505,14 +1493,20 @@ export function Wizard({ initialProject, onClose, onComplete }) {
         return !!draft.stato;
       case "classificazione":
         return classificationRevealLevel >= 4 && !!draft.settore && !!draft.sotto_settore && !!draft.categoria_intervento && !!draft.tipo_intervento;
-      case "profilo":
-        return true;
+      case "profilo": {
+        if (!profiloTemplate) return true;
+        const requiredFields = profiloTemplate.campi.filter((c) => c.default == null);
+        return requiredFields.every((f) => {
+          const v = draft.profilo_dati?.[f.id];
+          return v != null && String(v).trim() !== "";
+        });
+      }
       case "durata":
         return !!draft.data_inizio && !!draft.data_fine;
       case "localizzazione":
         return draft.localizzazione.trim().length > 2;
       case "anno":
-        return annoRevealLevel >= 1 && !!draft.anno_attualizzazione && !!draft.tasso_attualizzazione.trim();
+        return annoRevealLevel >= 2 && !!draft.anno_attualizzazione && !!draft.tasso_attualizzazione.trim();
       case "capex":
         return draft.capex.trim().length > 0 && (!draft.capex_distribuzione_attiva || Math.abs(capexDistributionTotal - 100) < 0.001);
       case "opex":
@@ -1539,15 +1533,17 @@ export function Wizard({ initialProject, onClose, onComplete }) {
 
         <div className="flex-1 overflow-y-auto bg-[#f3f3f3]">
           <div className="px-8 py-8">
-            <div className="mb-5 flex justify-end">
-              <button
-                type="button"
-                onClick={autoFillCurrentStep}
-                className="border border-brand-violet bg-white px-4 py-2 text-[13px] font-semibold text-brand-violet transition-colors hover:bg-brand-violet-soft"
-              >
-                {STEP_AUTOFILL_LABEL}
-              </button>
-            </div>
+            {["nome", "descrizione", "classificazione", "durata"].includes(step.id) && (
+              <div className="mb-5 flex justify-end">
+                <button
+                  type="button"
+                  onClick={autoFillCurrentStep}
+                  className="border border-brand-violet bg-white px-4 py-2 text-[13px] font-semibold text-brand-violet transition-colors hover:bg-brand-violet-soft"
+                >
+                  {STEP_AUTOFILL_LABEL}
+                </button>
+              </div>
+            )}
             {step.id === "nome" ? (
               <>
                 <QuestionHeader
@@ -1717,9 +1713,9 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                 />
                 {profiloTemplate ? (
                   <div className="max-w-3xl overflow-hidden border border-ink-100 bg-white">
-                    <div className="flex items-center gap-3 bg-[#2f2f2f] px-5 py-3 text-white">
-                      <p className="text-[14px] font-semibold">{profiloTemplate.titolo}</p>
-                      <span className="ml-auto text-[11px] text-ink-400">{draft.categoria_intervento}</span>
+                    <div className="flex items-center gap-3 border-b border-ink-100 bg-[#f7f7fa] px-5 py-3">
+                      <p className="text-[14px] font-semibold text-ink-900">{profiloTemplate.titolo}</p>
+                      <span className="ml-auto text-[11px] font-medium text-ink-400">{draft.categoria_intervento}</span>
                     </div>
                     <div className="divide-y divide-[#ececf1]">
                       {profiloTemplate.campi.filter((c) => c.default == null).map((campo) => (
@@ -1853,12 +1849,14 @@ export function Wizard({ initialProject, onClose, onComplete }) {
 
                   {/* ── Section 2: Tasso di sconto sociale ── */}
                   {annoRevealLevel >= 1 ? (
-                    <div className="overflow-hidden border border-ink-100 bg-white">
-                      <div className="flex items-center gap-3 bg-[#2f2f2f] px-5 py-3 text-white">
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-violet text-[12px] font-bold">2</span>
-                        <p className="text-[14px] font-semibold">Tasso di sconto sociale</p>
-                      </div>
-                      <div className="grid gap-6 p-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+                    <ClassAccordion
+                      number="2"
+                      title="Tasso di sconto sociale"
+                      selectedLabel={annoRevealLevel >= 2 ? `${draft.tasso_attualizzazione}%` : null}
+                      isCompleted={annoRevealLevel >= 2}
+                      onEdit={() => setAnnoRevealLevel(1)}
+                    >
+                      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
                         <div>
                           <p className="mb-3 text-[13px] leading-[1.5] text-ink-600">
                             Il tasso di sconto sociale misura quanto la collettività preferisce i benefici presenti rispetto a quelli futuri. Valori più bassi danno maggiore peso alle generazioni future.
@@ -1886,7 +1884,16 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                           </div>
                         </aside>
                       </div>
-                    </div>
+                      <button
+                        type="button"
+                        disabled={!draft.tasso_attualizzazione.trim()}
+                        onClick={() => setAnnoRevealLevel(2)}
+                        className={`mt-5 flex items-center gap-2 px-5 py-2.5 text-[13px] font-semibold transition-colors ${draft.tasso_attualizzazione.trim() ? "bg-brand-violet text-white hover:bg-brand-violet-dark" : "cursor-not-allowed bg-ink-100 text-ink-300"}`}
+                      >
+                        Conferma tasso di sconto
+                        <span className="text-[16px] leading-none">→</span>
+                      </button>
+                    </ClassAccordion>
                   ) : null}
                 </div>
               </>
@@ -2064,9 +2071,9 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                     {/* ── Section 2: Tasso OPEX (visible only after vita utile confirmed) ── */}
                     {opexRevealLevel >= 1 ? (
                       <div className="overflow-hidden border border-ink-100 bg-white">
-                        <div className="flex items-center gap-3 bg-[#2f2f2f] px-5 py-3 text-white">
-                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-violet text-[12px] font-bold">2</span>
-                          <p className="text-[14px] font-semibold">Tasso OPEX annuale</p>
+                        <div className="flex items-center gap-3 border-b border-[#ececf1] px-5 py-4">
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-violet text-[12px] font-bold text-white">2</span>
+                          <p className="text-[14px] font-semibold text-ink-900">Tasso OPEX annuale</p>
                         </div>
                         <div className="p-5">
                           {/* Input */}
@@ -2271,256 +2278,207 @@ export function Wizard({ initialProject, onClose, onComplete }) {
               <>
                 <QuestionHeader
                   title="Benefici attesi del progetto"
-                  description="Verifica i parametri predefiniti e inserisci i valori per la vita utile del progetto."
+                  description="Verifica i parametri predefiniti e inserisci i valori per la vita utile del progetto. Usa l'icona calendario per configurare valori differenziati per periodo."
                 />
 
-                <div className="max-w-5xl space-y-4">
-
-                  {/* ── Toggle modalità inserimento ── */}
-                  <div className="flex items-center justify-between">
-                    <p className="text-[13px] font-semibold text-ink-700">Modalità inserimento valori</p>
-                    <div className="flex overflow-hidden border border-ink-200">
-                      <button
-                        type="button"
-                        onClick={() => setBeneficiModo("anno-tipo")}
-                        className={`px-5 py-2.5 text-[13px] font-semibold transition-colors ${beneficiModo === "anno-tipo" ? "bg-brand-violet text-white" : "bg-white text-ink-700 hover:bg-[#fafafa]"}`}
-                      >
-                        Anno tipo
-                      </button>
-                      <div className="w-px bg-ink-200" />
-                      <button
-                        type="button"
-                        onClick={() => setBeneficiModo("anni-singoli")}
-                        className={`px-5 py-2.5 text-[13px] font-semibold transition-colors ${beneficiModo === "anni-singoli" ? "bg-brand-violet text-white" : "bg-white text-ink-700 hover:bg-[#fafafa]"}`}
-                      >
-                        Per anno
-                      </button>
-                    </div>
-                  </div>
-
+                <div className="max-w-4xl space-y-3">
                   {beneficiTemplates.length === 0 ? (
                     <div className="border border-ink-100 bg-white px-5 py-6 text-[14px] text-ink-500">
                       Nessun modello disponibile per il settore selezionato.
                     </div>
                   ) : null}
 
-                  {beneficiTemplates.map(({ group, kpis }) => {
-                    const inputKpis         = kpis.filter((k) => k.tipo === "input");
-                    const configurabiliKpis = kpis.filter((k) => k.tipo === "tecnico" || k.tipo === "georef");
-                    const monetKpis         = kpis.filter((k) => k.tipo === "monetizzazione");
+                  {beneficiTemplates.map(({ group, esternalita, kpis }) => {
+                    const editableKpis = kpis.filter((k) => k.tipo !== "monetizzazione");
+                    const monetKpis    = kpis.filter((k) => k.tipo === "monetizzazione");
+                    const capexNum     = Number(draft.capex) || 0;
+                    const isPositiva   = esternalita !== "negativa";
 
                     return (
                       <div key={group} className="overflow-hidden border border-ink-100 bg-white">
-                        <div className="flex items-center gap-3 bg-[#2f2f2f] px-5 py-3">
-                          <p className="text-[14px] font-semibold text-white">{group}</p>
+                        {/* ── Header ── */}
+                        <div className="flex items-center gap-3 px-5 py-4">
+                          <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${isPositiva ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-500"}`}>
+                            {isPositiva ? "+" : "−"}
+                          </span>
+                          <p className="flex-1 text-[14px] font-semibold text-ink-900">{group}</p>
+                          <span className={`text-[12px] font-medium ${isPositiva ? "text-emerald-600" : "text-red-500"}`}>
+                            {isPositiva ? "Esternalità positiva" : "Esternalità negativa"}
+                          </span>
                         </div>
 
-                        {/* ── Dati dal profilo (locked, blue) ── */}
-                        {inputKpis.length > 0 ? (
-                          <div className="border-b border-[#ececf1] px-5 py-4">
-                            <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-blue-500">Dati dal profilo del progetto</p>
-                            <div className="space-y-1.5">
-                              {inputKpis.map((kpi) => {
-                                const profiloVal = getProfiloInputValue(kpi.profiloKey, profiloTemplate, draft.profilo_dati);
-                                const displayVal = profiloVal != null ? profiloVal : (draft.benefici_kpi?.[kpi.id]?.stima ?? "—");
-                                return (
-                                  <div key={kpi.id} className="grid items-center gap-3 border border-blue-100 bg-blue-50 px-4 py-2.5 md:grid-cols-[1fr_200px]">
-                                    <span className="text-[13px] text-ink-900">{kpi.label}</span>
-                                    <div className="flex items-center gap-2">
-                                      <div className="flex h-8 w-full cursor-not-allowed select-none items-center justify-end border border-blue-200 bg-white pr-2 text-[13px] font-semibold text-blue-700">
-                                        {displayVal}
-                                      </div>
-                                      <span className="shrink-0 w-[44px] text-[12px] text-ink-500">{kpi.unit}</span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ) : null}
+                        {/* ── KPI rows ── */}
+                        {editableKpis.map((kpi) => {
+                          const profiloVal = kpi.tipo === "input"
+                            ? getProfiloInputValue(kpi.profiloKey, profiloTemplate, draft.profilo_dati)
+                            : null;
+                          const refVal = profiloVal != null
+                            ? String(profiloVal)
+                            : String(kpi.estimateFn({ settore: draft.settore, capex: capexNum }));
+                          const currentVal = draft.benefici_kpi?.[kpi.id]?.anni?.[opexYears[0]] ?? draft.benefici_kpi?.[kpi.id]?.stima ?? "";
+                          const warningType = currentVal !== "" && currentVal !== refVal
+                            ? (profiloVal != null ? "red" : "gray")
+                            : null;
+                          const inputBorderCls = warningType === "red"
+                            ? "border-red-400 bg-red-50"
+                            : warningType === "gray"
+                              ? "border-ink-300 bg-[#f7f7fa]"
+                              : "border-ink-200 bg-white";
+                          const isOpen = !!kpiDetailOpen[kpi.id];
+                          const periods = kpiPeriods[kpi.id] ?? [];
+                          const usedDurTotal = periods.slice(0, -1).reduce((acc, p) => acc + Math.max(0, Number(p.dur) || 0), 0);
+                          const lastPeriodDur = Math.max(0, opexYears.length - usedDurTotal);
 
-                        {/* ── Parametri configurabili (tecnico = grigio, georef = verde) ── */}
-                        {configurabiliKpis.length > 0 ? (
-                          <div className="border-b border-[#ececf1] px-5 py-4">
-                            <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-ink-400">Parametri configurabili</p>
-
-                            {beneficiModo === "anno-tipo" ? (
-                              <div className="space-y-1.5">
-                                {configurabiliKpis.map((kpi) => {
-                                  const isTecnico = kpi.tipo === "tecnico";
-                                  return (
-                                    <div key={kpi.id} className={`grid items-center gap-3 border ${isTecnico ? "border-ink-100 bg-[#f7f7fa]" : "border-green-100 bg-green-50"} px-4 py-2.5 md:grid-cols-[160px_1fr_200px]`}>
-                                      <span className={`text-[11px] font-semibold uppercase tracking-wide ${isTecnico ? "text-ink-500" : "text-green-600"}`}>
-                                        {isTecnico ? "Valore consigliato" : "Dato statistico"}
-                                      </span>
-                                      <span className="text-[13px] text-ink-900">{kpi.label}</span>
-                                      <div className="flex items-center gap-2">
-                                        <input
-                                          value={draft.benefici_kpi?.[kpi.id]?.anni?.[opexYears[0]] ?? draft.benefici_kpi?.[kpi.id]?.stima ?? ""}
-                                          onChange={(e) => setKpiAllYears(kpi.id, e.target.value)}
-                                          placeholder="0"
-                                          className={`h-8 w-full border ${isTecnico ? "border-ink-200" : "border-green-200"} bg-white px-2 text-right text-[13px] font-semibold text-ink-900 focus:border-brand-violet focus:outline-none`}
-                                        />
-                                        <span className="shrink-0 w-[44px] text-[12px] text-ink-500">{kpi.unit}</span>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                                {opexYears.length > 0 ? (
-                                  <p className="mt-2 text-[12px] text-ink-500">
-                                    Il valore sarà applicato a tutti i {opexYears.length} anni ({opexYears[0]}–{opexYears[opexYears.length - 1]}).
-                                  </p>
-                                ) : null}
-                              </div>
-                            ) : (
-                              <div className="overflow-x-auto">
-                                <table className="w-full border-collapse" style={{ minWidth: `${380 + opexYears.length * 76}px` }}>
-                                  <thead>
-                                    <tr className="bg-[#f7f7fa]">
-                                      <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-ink-500" style={{ width: 220 }}>Indicatore</th>
-                                      <th className="px-2 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-ink-500" style={{ width: 60 }}>Unità</th>
-                                      {opexYears.map((y) => (
-                                        <th key={y} className="px-1 py-2 text-right text-[11px] font-semibold uppercase tracking-wide text-ink-500" style={{ width: 76 }}>{y}</th>
-                                      ))}
-                                      <th className="px-2 py-2 text-center text-[11px] font-semibold uppercase tracking-wide text-ink-500" style={{ width: 72 }}>Propaga</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {configurabiliKpis.map(({ id, label, unit, tipo }) => {
-                                      const isGeoref = tipo === "georef";
-                                      return (
-                                        <tr key={id} className={`border-t border-[#ececec] ${isGeoref ? "bg-green-50/30" : ""}`}>
-                                          <td className="px-4 py-2.5">
-                                            <p className="text-[13px] leading-tight text-ink-900">{label}</p>
-                                            <p className={`text-[10px] ${isGeoref ? "text-green-600" : "text-ink-400"}`}>{isGeoref ? "Dato statistico" : "Valore consigliato"}</p>
-                                          </td>
-                                          <td className="px-2 py-2.5 font-mono text-[11px] text-ink-500">{unit}</td>
-                                          {opexYears.map((y) => (
-                                            <td key={y} className="px-1 py-2" style={{ width: 76 }}>
-                                              <input
-                                                value={draft.benefici_kpi?.[id]?.anni?.[y] ?? ""}
-                                                onChange={(e) => updateBeneficiKpiYear(id, y, e.target.value)}
-                                                className="h-7 w-[68px] border border-ink-200 bg-white px-1.5 text-right text-[12px] font-semibold text-ink-900 focus:border-brand-violet focus:outline-none"
-                                              />
-                                            </td>
-                                          ))}
-                                          <td className="px-2 py-2.5 text-center">
-                                            <button
-                                              type="button"
-                                              onClick={() => propagateKpiFirstYear(id)}
-                                              title={`Copia il valore di ${opexYears[0] ?? "anno 1"} a tutti gli anni`}
-                                              className="inline-flex items-center gap-1 border border-brand-violet px-2 py-0.5 text-[11px] font-semibold text-brand-violet hover:bg-brand-violet-soft"
-                                            >
-                                              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                              </svg>
-                                              tutti
-                                            </button>
-                                          </td>
-                                        </tr>
-                                      );
-                                    })}
-                                  </tbody>
-                                </table>
-                              </div>
-                            )}
-                          </div>
-                        ) : null}
-
-                        {/* ── Fattori di monetizzazione (locked, amber) ── */}
-                        {monetKpis.length > 0 ? (
-                          <div className="px-5 py-4">
-                            <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-amber-600">Fattori di monetizzazione</p>
-                            <div className="space-y-1.5">
-                              {monetKpis.map((kpi) => (
-                                <div key={kpi.id} className="grid items-center gap-3 border border-amber-200 bg-amber-50 px-4 py-2.5 md:grid-cols-[1fr_200px]">
-                                  <div className="flex items-center gap-2">
-                                    <svg className="h-3 w-3 shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                    </svg>
-                                    <span className="text-[13px] text-ink-900">{kpi.label}</span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <div className="flex h-8 w-full cursor-not-allowed select-none items-center justify-end border border-amber-100 bg-[#fffbf0] pr-2 font-mono text-[13px] text-amber-800">
-                                      {draft.benefici_kpi?.[kpi.id]?.stima ?? "—"}
-                                    </div>
-                                    <span className="shrink-0 w-[44px] text-[12px] text-ink-500">{kpi.unit}</span>
-                                  </div>
+                          return (
+                            <div key={kpi.id} className="border-t border-[#f0f0f3]">
+                              {/* Main row */}
+                              <div className="flex items-center gap-4 px-5 py-3">
+                                <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${kpi.tipo === "input" ? "bg-brand-violet/60" : "bg-ink-300"}`} />
+                                <div className="min-w-0 flex-1">
+                                  <span className="text-[13px] text-ink-700">{kpi.label}</span>
+                                  {kpi.tipo === "input" && profiloVal == null ? (
+                                    <span className="ml-2 text-[11px] text-ink-400">suggerito: {refVal}</span>
+                                  ) : kpi.tipo === "tecnico" ? (
+                                    <span className="ml-2 text-[11px] text-ink-400">stimato: {refVal}</span>
+                                  ) : null}
                                 </div>
-                              ))}
+                                <div className="flex shrink-0 items-center gap-2">
+                                  <input
+                                    value={currentVal}
+                                    onChange={(e) => setKpiAllYears(kpi.id, e.target.value)}
+                                    placeholder={refVal}
+                                    className={`h-9 w-28 border ${inputBorderCls} px-2.5 text-right text-[13px] font-semibold text-ink-900 focus:border-brand-violet focus:outline-none`}
+                                  />
+                                  <span className="w-[88px] shrink-0 whitespace-nowrap text-[12px] text-ink-400">{kpi.unit}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleKpiDetail(kpi.id)}
+                                    title="Configura valori per anno"
+                                    className={`flex h-7 w-7 shrink-0 items-center justify-center transition-colors ${isOpen ? "bg-brand-violet text-white" : "text-ink-300 hover:text-brand-violet"}`}
+                                  >
+                                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </div>
+                              {/* Warning */}
+                              {warningType === "red" ? (
+                                <p className="px-5 pb-2 text-[11px] text-red-600">
+                                  ⚠ Valore modificato rispetto al profilo — suggerito: {refVal} {kpi.unit}
+                                </p>
+                              ) : warningType === "gray" ? (
+                                <p className="px-5 pb-2 text-[11px] text-ink-400">
+                                  Valore diverso dal suggerito ({refVal} {kpi.unit})
+                                </p>
+                              ) : null}
+                              {/* Per-year detail panel */}
+                              {isOpen ? (
+                                <div className="border-t border-[#f0f0f3] bg-[#f7f7fa] px-5 pb-4 pt-3">
+                                  <div className="mb-3">
+                                    <div className="mb-2 flex items-center gap-2">
+                                      <p className="text-[12px] font-semibold text-ink-600">Per periodi</p>
+                                      {periods.length > 1 ? (
+                                        <button type="button" onClick={() => removeKpiPeriod(kpi.id)} className="border border-ink-200 bg-white px-2 py-0.5 text-[11px] font-medium text-ink-500 hover:border-ink-400">
+                                          − periodo
+                                        </button>
+                                      ) : null}
+                                      <button type="button" onClick={() => addKpiPeriod(kpi.id)} className="border border-ink-200 bg-white px-2 py-0.5 text-[11px] font-medium text-ink-500 hover:border-ink-400">
+                                        + periodo
+                                      </button>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                      {periods.map((period, periodIdx) => {
+                                        const isLast = periodIdx === periods.length - 1;
+                                        const effectiveDur = isLast ? lastPeriodDur : Math.max(0, Number(period.dur) || 0);
+                                        return (
+                                          <div key={periodIdx} className="flex items-center gap-2">
+                                            <span className="w-[70px] shrink-0 text-[12px] text-ink-500">{isLast ? "Rimanenti" : "Anni"}</span>
+                                            {isLast ? (
+                                              <span className="w-[44px] py-1 text-center text-[12px] font-bold text-ink-400">{effectiveDur}</span>
+                                            ) : (
+                                              <input
+                                                type="number"
+                                                min={1}
+                                                value={period.dur}
+                                                onChange={(e) => updateKpiPeriod(kpi.id, periodIdx, "dur", e.target.value)}
+                                                className="w-[44px] border border-ink-200 bg-white px-1 py-1 text-center text-[12px] font-semibold text-ink-900 focus:border-brand-violet focus:outline-none"
+                                              />
+                                            )}
+                                            <span className="text-[12px] text-ink-400">anni →</span>
+                                            <input
+                                              type="text"
+                                              value={period.val}
+                                              onChange={(e) => updateKpiPeriod(kpi.id, periodIdx, "val", e.target.value)}
+                                              placeholder="valore"
+                                              className="w-[72px] border border-ink-200 bg-white px-2 py-1 text-right text-[12px] font-semibold text-ink-900 focus:border-brand-violet focus:outline-none"
+                                            />
+                                            <span className="shrink-0 whitespace-nowrap text-[11px] text-ink-400">{kpi.unit}</span>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => applyKpiPeriods(kpi.id)}
+                                      className="mt-2.5 bg-brand-violet px-3 py-1.5 text-[12px] font-semibold text-white hover:opacity-90"
+                                    >
+                                      Applica periodi →
+                                    </button>
+                                  </div>
+                                  {opexYears.length > 0 ? (
+                                    <div className="border-t border-[#e8e8ec] pt-3">
+                                      <p className="mb-2 text-[12px] font-medium text-ink-500">Valori per anno</p>
+                                      <div className="grid gap-1.5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(64px, 1fr))" }}>
+                                        {opexYears.map((y) => {
+                                          const val = draft.benefici_kpi?.[kpi.id]?.anni?.[y] ?? "";
+                                          return (
+                                            <div key={y} className="flex flex-col gap-0.5">
+                                              <span className="text-center text-[10px] text-ink-400">{y}</span>
+                                              <input
+                                                value={val}
+                                                onChange={(e) => updateBeneficiKpiYear(kpi.id, y, e.target.value)}
+                                                className="h-7 w-full border border-ink-200 bg-white px-1 text-center text-[12px] font-semibold text-ink-900 focus:border-brand-violet focus:outline-none"
+                                              />
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  ) : null}
+                                </div>
+                              ) : null}
                             </div>
+                          );
+                        })}
+
+                        {/* ── Fattore di monetizzazione ── */}
+                        {monetKpis.map((kpi) => (
+                          <div key={kpi.id} className="border-t border-[#f0f0f3] bg-[#fdfcf8]">
+                            <div className="flex items-center gap-4 px-5 py-3">
+                              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+                              <span className="flex-1 text-[13px] text-ink-600">{kpi.label}</span>
+                              <div className="flex shrink-0 items-center gap-2">
+                                <span className="font-mono text-[14px] font-bold text-ink-900">
+                                  {draft.benefici_kpi?.[kpi.id]?.stima ?? "—"}
+                                </span>
+                                <span className="w-[88px] shrink-0 whitespace-nowrap text-[12px] text-ink-400">{kpi.unit}</span>
+                                <span className="w-7" />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+
+                        {opexYears.length > 0 ? (
+                          <div className="border-t border-[#f0f0f3] px-5 py-2.5">
+                            <p className="text-[11px] text-ink-400">
+                              Il valore inserito verrà applicato a tutti i {opexYears.length} anni ({opexYears[0]}–{opexYears[opexYears.length - 1]}). Usa l'icona calendario per configurare valori differenziati per periodo.
+                            </p>
                           </div>
                         ) : null}
                       </div>
                     );
                   })}
-
-                  {/* ── Benefici extra (inserimento manuale) ── */}
-                  <div className="overflow-hidden border border-ink-100 bg-white">
-                    <div className="bg-[#2f2f2f] px-5 py-3">
-                      <p className="text-[13px] font-semibold text-white">Benefici aggiuntivi (inserimento manuale)</p>
-                    </div>
-
-                    {(draft.benefici_extra ?? []).length > 0 && (
-                      <>
-                        <div className="grid bg-[#f7f7fa] px-5 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-500 md:grid-cols-[1fr_100px_150px_36px]">
-                          <span>Descrizione beneficio</span>
-                          <span>Unità</span>
-                          <span className="text-right">Valore annuo</span>
-                          <span />
-                        </div>
-                        <div className="divide-y divide-[#ececec]">
-                          {(draft.benefici_extra ?? []).map((b) => (
-                            <div key={b.id} className="grid items-center gap-2 px-5 py-3 md:grid-cols-[1fr_100px_150px_36px]">
-                              <input
-                                value={b.label}
-                                onChange={(e) => updateExtraBeneficio(b.id, "label", e.target.value)}
-                                placeholder="es. Riduzione costi sanitari"
-                                className="h-9 w-full border border-ink-200 bg-white px-3 text-[13px] text-ink-900 placeholder:text-ink-300 focus:border-brand-violet focus:outline-none"
-                              />
-                              <input
-                                value={b.unit}
-                                onChange={(e) => updateExtraBeneficio(b.id, "unit", e.target.value)}
-                                placeholder="es. €/anno"
-                                className="h-9 w-full border border-ink-200 bg-white px-3 text-[13px] text-ink-900 placeholder:text-ink-300 focus:border-brand-violet focus:outline-none"
-                              />
-                              <div className="flex justify-end">
-                                <input
-                                  value={b.stima}
-                                  onChange={(e) => updateExtraBeneficio(b.id, "stima", e.target.value)}
-                                  placeholder="0"
-                                  className="h-9 w-full max-w-[140px] border border-ink-200 bg-white px-3 text-right text-[13px] font-semibold text-ink-900 focus:border-brand-violet focus:outline-none"
-                                />
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => removeExtraBeneficio(b.id)}
-                                className="flex h-9 w-9 items-center justify-center text-ink-300 transition-colors hover:text-red-500"
-                              >
-                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
-
-                    <div className="px-5 py-4">
-                      <button
-                        type="button"
-                        onClick={addExtraBeneficio}
-                        className="flex items-center gap-2 border border-dashed border-brand-violet px-4 py-2 text-[13px] font-semibold text-brand-violet transition-colors hover:bg-brand-violet-soft"
-                      >
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        Aggiungi beneficio personalizzato
-                      </button>
-                    </div>
-                  </div>
-
                 </div>
               </>
             ) : null}
