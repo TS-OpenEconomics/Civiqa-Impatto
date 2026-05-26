@@ -1022,6 +1022,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
   const [annoRevealLevel, setAnnoRevealLevel] = useState(() =>
     (initialProject?.configurazione?.anno_attualizzazione != null && initialProject?.configurazione?.tasso_attualizzazione != null) ? 2 : 0
   );
+  const [capexConfirmed, setCapexConfirmed] = useState(false);
   const [opexRevealLevel, setOpexRevealLevel] = useState(0);
   const [beneficiRevealLevel, setBeneficiRevealLevel] = useState(0);
   const [kpiDetailOpen, setKpiDetailOpen] = useState({});
@@ -1561,9 +1562,9 @@ export function Wizard({ initialProject, onClose, onComplete }) {
       case "anno":
         return annoRevealLevel >= 2 && !!draft.anno_attualizzazione && !!draft.tasso_attualizzazione.trim();
       case "capex":
-        return draft.capex.trim().length > 0 && (!draft.capex_distribuzione_attiva || Math.abs(capexDistributionTotal - 100) < 0.001);
+        return capexConfirmed;
       case "opex":
-        return !!draft.vita_utile && draft.opex_tasso.trim().length > 0;
+        return opexRevealLevel >= 2;
       case "benefici":
         return draft.benefici_kpi !== null && beneficiFactorTotal > 0 && beneficiRevealLevel >= beneficiFactorTotal;
       default:
@@ -1955,8 +1956,14 @@ export function Wizard({ initialProject, onClose, onComplete }) {
             {step.id === "capex" ? (
               <>
                 <QuestionHeader title="Qual è il CAPEX?" description="Inserisci l'importo complessivo degli investimenti previsti, spese in conto capitale, per la realizzazione del progetto." />
-                <div className="max-w-5xl overflow-hidden border border-ink-100 bg-white">
-                  <div className="p-5">
+                <div className="max-w-5xl space-y-3">
+                  <ClassAccordion
+                    number="1"
+                    title="CAPEX complessivo"
+                    selectedLabel={capexConfirmed ? `${fmt(draft.capex)} EUR` : null}
+                    isCompleted={capexConfirmed}
+                    onEdit={() => setCapexConfirmed(false)}
+                  >
                     <label className="mb-2 block text-[14px] font-semibold text-ink-900">CAPEX complessivo (EUR)</label>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
                       <input
@@ -2046,7 +2053,26 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                         </div>
                       ) : null}
                     </div>
-                  </div>
+
+                    {(() => {
+                      const ready = draft.capex.trim().length > 0 && (!draft.capex_distribuzione_attiva || Math.abs(capexDistributionTotal - 100) < 0.001);
+                      return (
+                        <button
+                          type="button"
+                          disabled={!ready}
+                          onClick={() => setCapexConfirmed(true)}
+                          className={`mt-6 flex items-center gap-2 px-5 py-2.5 text-[13px] font-semibold transition-colors ${
+                            ready
+                              ? "bg-brand-violet text-white hover:bg-brand-violet-dark"
+                              : "cursor-not-allowed bg-ink-100 text-ink-300"
+                          }`}
+                        >
+                          Conferma CAPEX
+                          <span className="text-[16px] leading-none">→</span>
+                        </button>
+                      );
+                    })()}
+                  </ClassAccordion>
                 </div>
               </>
             ) : null}
@@ -2123,99 +2149,112 @@ export function Wizard({ initialProject, onClose, onComplete }) {
 
                     {/* ── Section 2: Tasso OPEX (visible only after vita utile confirmed) ── */}
                     {opexRevealLevel >= 1 ? (
-                      <div className="overflow-hidden border border-ink-100 bg-white">
-                        <div className="flex items-center gap-3 border-b border-[#ececf1] px-5 py-4">
-                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-violet text-[12px] font-bold text-white">2</span>
-                          <p className="text-[14px] font-semibold text-ink-900">Tasso OPEX annuale</p>
-                        </div>
-                        <div className="p-5">
-                          {/* Input */}
-                          <p className="mb-2 text-[13px] font-semibold text-ink-900">Tasso OPEX (% del CAPEX / anno)</p>
-                          <div className="flex items-center gap-2">
-                            <button type="button" onClick={() => adjustOpexTasso(-0.1)}
-                              className="flex h-10 w-10 shrink-0 items-center justify-center border border-ink-200 bg-white text-[20px] font-bold text-ink-600 hover:border-ink-400 hover:bg-[#fafafa]">−</button>
-                            <div className="relative w-[120px]">
-                              <input
-                                value={draft.opex_tasso}
-                                onChange={(e) => updateOpexTasso(e.target.value)}
-                                className="h-10 w-full border border-brand-violet px-3 pr-8 text-center text-[16px] font-bold text-ink-900 focus:outline-none"
-                              />
-                              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[13px] text-ink-500">%</span>
-                            </div>
-                            <button type="button" onClick={() => adjustOpexTasso(0.1)}
-                              className="flex h-10 w-10 shrink-0 items-center justify-center border border-brand-violet bg-white text-[20px] font-bold text-brand-violet hover:bg-brand-violet-soft">+</button>
+                      <ClassAccordion
+                        number="2"
+                        title="Tasso OPEX annuale"
+                        selectedLabel={opexRevealLevel >= 2 ? `${draft.opex_tasso}% del CAPEX / anno` : null}
+                        isCompleted={opexRevealLevel >= 2}
+                        onEdit={() => setOpexRevealLevel(1)}
+                      >
+                        <p className="mb-2 text-[13px] font-semibold text-ink-900">Tasso OPEX (% del CAPEX / anno)</p>
+                        <div className="flex items-center gap-2">
+                          <button type="button" onClick={() => adjustOpexTasso(-0.1)}
+                            className="flex h-10 w-10 shrink-0 items-center justify-center border border-ink-200 bg-white text-[20px] font-bold text-ink-600 hover:border-ink-400 hover:bg-[#fafafa]">−</button>
+                          <div className="relative w-[120px]">
+                            <input
+                              value={draft.opex_tasso}
+                              onChange={(e) => updateOpexTasso(e.target.value)}
+                              className="h-10 w-full border border-brand-violet px-3 pr-8 text-center text-[16px] font-bold text-ink-900 focus:outline-none"
+                            />
+                            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[13px] text-ink-500">%</span>
                           </div>
+                          <button type="button" onClick={() => adjustOpexTasso(0.1)}
+                            className="flex h-10 w-10 shrink-0 items-center justify-center border border-brand-violet bg-white text-[20px] font-bold text-brand-violet hover:bg-brand-violet-soft">+</button>
+                        </div>
 
-                          {opexAnnualAmount > 0 ? (
-                            <div className="mt-4 border-l-[3px] border-brand-violet bg-brand-violet-soft px-4 py-2.5">
-                              <p className="text-[11px] uppercase tracking-wide text-ink-500">Costo operativo annuale</p>
-                              <p className="mt-0.5 text-[18px] font-bold text-ink-900">{fmt(String(Math.round(opexAnnualAmount)))} €</p>
+                        {opexAnnualAmount > 0 ? (
+                          <div className="mt-4 border-l-[3px] border-brand-violet bg-brand-violet-soft px-4 py-2.5">
+                            <p className="text-[11px] uppercase tracking-wide text-ink-500">Costo operativo annuale</p>
+                            <p className="mt-0.5 text-[18px] font-bold text-ink-900">{fmt(String(Math.round(opexAnnualAmount)))} €</p>
+                          </div>
+                        ) : null}
+
+                        {/* Per-year override */}
+                        <div className="mt-6 border-t border-[#ececf1] pt-5">
+                          <label className="flex items-center gap-3 text-[14px] font-semibold text-ink-900">
+                            <input
+                              type="checkbox"
+                              checked={draft.opex_distribuzione_attiva}
+                              onChange={(event) => {
+                                const active = event.target.checked;
+                                if (active) {
+                                  setDraft((prev) => ({
+                                    ...prev,
+                                    opex_distribuzione_attiva: true,
+                                    opex_distribuzione: opexYears.reduce((acc, y) => {
+                                      acc[y] = prev.opex_distribuzione[y] ?? prev.opex_tasso ?? "";
+                                      return acc;
+                                    }, {}),
+                                  }));
+                                } else {
+                                  update("opex_distribuzione_attiva", false);
+                                }
+                              }}
+                              className="h-4 w-4 accent-[#5b19d6]"
+                            />
+                            Personalizza tasso per singolo anno
+                          </label>
+                          <p className="mt-1 text-[12px] leading-[1.5] text-ink-500">
+                            Imposta un tasso OPEX diverso per singoli anni del progetto.
+                          </p>
+
+                          {draft.opex_distribuzione_attiva ? (
+                            <div className="mt-4 overflow-hidden border border-[#e8e8ed]">
+                              <div className="grid bg-[#f7f7fa] px-4 py-2.5 text-[12px] font-semibold text-ink-600 md:grid-cols-[80px_minmax(0,160px)_minmax(0,1fr)]">
+                                <span>Anno</span><span>Tasso %</span><span>Costo annuale</span>
+                              </div>
+                              <div className="divide-y divide-[#ececf1] bg-white">
+                                {opexYears.map((year) => (
+                                  <div key={year} className="grid items-center md:grid-cols-[80px_minmax(0,160px)_minmax(0,1fr)]">
+                                    <span className="px-4 py-3 text-[14px] font-semibold text-ink-900">{year}</span>
+                                    <div className="flex items-center gap-1 px-4 py-3">
+                                      <button type="button" onClick={() => adjustOpexYear(year, -0.5)}
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center border border-ink-200 text-[16px] font-bold text-ink-600 hover:border-ink-400 hover:bg-[#f5f5f7]">−</button>
+                                      <div className="flex h-8 items-center gap-1 border border-ink-200 bg-white px-2 focus-within:border-brand-violet">
+                                        <input
+                                          value={opexDistribution[year] ?? ""}
+                                          onChange={(e) => updateOpexDistribution(year, e.target.value)}
+                                          className="w-[44px] bg-transparent text-right text-[13px] font-semibold text-ink-900 focus:outline-none"
+                                        />
+                                        <span className="text-[12px] text-ink-400">%</span>
+                                      </div>
+                                      <button type="button" onClick={() => adjustOpexYear(year, 0.5)}
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center border border-ink-200 text-[16px] font-bold text-brand-violet hover:border-brand-violet hover:bg-brand-violet-soft">+</button>
+                                    </div>
+                                    <div className="px-4 py-3 text-[13px] text-ink-700">
+                                      {fmt(String(Math.round(opexYearlyAmounts[year] || 0)))} €
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           ) : null}
-
-                          {/* Per-year override */}
-                          <div className="mt-6 border-t border-[#ececf1] pt-5">
-                            <label className="flex items-center gap-3 text-[14px] font-semibold text-ink-900">
-                              <input
-                                type="checkbox"
-                                checked={draft.opex_distribuzione_attiva}
-                                onChange={(event) => {
-                                  const active = event.target.checked;
-                                  if (active) {
-                                    setDraft((prev) => ({
-                                      ...prev,
-                                      opex_distribuzione_attiva: true,
-                                      opex_distribuzione: opexYears.reduce((acc, y) => {
-                                        acc[y] = prev.opex_distribuzione[y] ?? prev.opex_tasso ?? "";
-                                        return acc;
-                                      }, {}),
-                                    }));
-                                  } else {
-                                    update("opex_distribuzione_attiva", false);
-                                  }
-                                }}
-                                className="h-4 w-4 accent-[#5b19d6]"
-                              />
-                              Personalizza tasso per singolo anno
-                            </label>
-                            <p className="mt-1 text-[12px] leading-[1.5] text-ink-500">
-                              Imposta un tasso OPEX diverso per singoli anni del progetto.
-                            </p>
-
-                            {draft.opex_distribuzione_attiva ? (
-                              <div className="mt-4 overflow-hidden border border-[#e8e8ed]">
-                                <div className="grid bg-[#f7f7fa] px-4 py-2.5 text-[12px] font-semibold text-ink-600 md:grid-cols-[80px_minmax(0,160px)_minmax(0,1fr)]">
-                                  <span>Anno</span><span>Tasso %</span><span>Costo annuale</span>
-                                </div>
-                                <div className="divide-y divide-[#ececf1] bg-white">
-                                  {opexYears.map((year) => (
-                                    <div key={year} className="grid items-center md:grid-cols-[80px_minmax(0,160px)_minmax(0,1fr)]">
-                                      <span className="px-4 py-3 text-[14px] font-semibold text-ink-900">{year}</span>
-                                      <div className="flex items-center gap-1 px-4 py-3">
-                                        <button type="button" onClick={() => adjustOpexYear(year, -0.5)}
-                                          className="flex h-8 w-8 shrink-0 items-center justify-center border border-ink-200 text-[16px] font-bold text-ink-600 hover:border-ink-400 hover:bg-[#f5f5f7]">−</button>
-                                        <div className="flex h-8 items-center gap-1 border border-ink-200 bg-white px-2 focus-within:border-brand-violet">
-                                          <input
-                                            value={opexDistribution[year] ?? ""}
-                                            onChange={(e) => updateOpexDistribution(year, e.target.value)}
-                                            className="w-[44px] bg-transparent text-right text-[13px] font-semibold text-ink-900 focus:outline-none"
-                                          />
-                                          <span className="text-[12px] text-ink-400">%</span>
-                                        </div>
-                                        <button type="button" onClick={() => adjustOpexYear(year, 0.5)}
-                                          className="flex h-8 w-8 shrink-0 items-center justify-center border border-ink-200 text-[16px] font-bold text-brand-violet hover:border-brand-violet hover:bg-brand-violet-soft">+</button>
-                                      </div>
-                                      <div className="px-4 py-3 text-[13px] text-ink-700">
-                                        {fmt(String(Math.round(opexYearlyAmounts[year] || 0)))} €
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            ) : null}
-                          </div>
                         </div>
-                      </div>
+
+                        <button
+                          type="button"
+                          disabled={!draft.opex_tasso.trim()}
+                          onClick={() => setOpexRevealLevel(2)}
+                          className={`mt-6 flex items-center gap-2 px-5 py-2.5 text-[13px] font-semibold transition-colors ${
+                            draft.opex_tasso.trim()
+                              ? "bg-brand-violet text-white hover:bg-brand-violet-dark"
+                              : "cursor-not-allowed bg-ink-100 text-ink-300"
+                          }`}
+                        >
+                          Conferma tasso OPEX
+                          <span className="text-[16px] leading-none">→</span>
+                        </button>
+                      </ClassAccordion>
                     ) : null}
                   </div>
 
@@ -2421,6 +2460,14 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                         </div>
 
                         {/* ── KPI rows ── */}
+                        {editableKpis.length > 0 ? (
+                          <div className="hidden gap-x-2 border-b border-[#f0f0f3] bg-[#f7f7fa] px-5 py-1.5 md:grid md:grid-cols-[minmax(0,1fr)_132px_120px_96px] md:items-center">
+                            <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-400">Parametro</span>
+                            <span className="text-right text-[10px] font-semibold uppercase tracking-wide text-ink-400">Valore</span>
+                            <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-400">Unità</span>
+                            <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-400">Dettaglio</span>
+                          </div>
+                        ) : null}
                         {editableKpis.map((kpi) => {
                           const profiloVal = kpi.tipo === "input"
                             ? getProfiloInputValue(kpi.profiloKey, profiloTemplate, draft.profilo_dati)
@@ -2455,7 +2502,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                           return (
                             <div key={kpi.id} className="border-t border-[#f0f0f3]">
                               {/* Main row */}
-                              <div className="grid gap-4 px-5 py-4 md:grid-cols-[minmax(0,1fr)_260px] md:items-center">
+                              <div className="grid gap-x-2 gap-y-3 px-5 py-4 md:grid-cols-[minmax(0,1fr)_132px_120px_96px] md:items-center">
                                 <div className="min-w-0">
                                   <div className="flex items-start gap-3">
                                     <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${kpi.tipo === "input" ? "bg-brand-violet" : "bg-ink-300"}`} />
@@ -2471,7 +2518,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                                     </div>
                                   </div>
                                 </div>
-                                <div className="flex items-center justify-start gap-2 md:justify-end">
+                                <div className="flex items-center gap-2 md:contents">
                                   <input
                                     value={currentVal}
                                     onChange={(e) => setKpiAllYears(kpi.id, e.target.value, activeYears)}
@@ -2482,13 +2529,14 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                                   <button
                                     type="button"
                                     onClick={() => toggleKpiDetail(kpi.id, activeYears)}
-                                    title="Configura valori per anno"
+                                    title="Configura valori anno per anno"
                                     aria-label="Configura valori per anno"
-                                    className={`flex h-9 w-9 shrink-0 items-center justify-center border transition-colors ${isOpen ? "border-brand-violet bg-brand-violet text-white" : "border-ink-200 bg-white text-ink-400 hover:border-brand-violet hover:text-brand-violet"}`}
+                                    className={`flex h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap border px-2.5 text-[11px] font-semibold transition-colors md:w-full ${isOpen ? "border-brand-violet bg-brand-violet text-white" : "border-ink-200 bg-white text-ink-400 hover:border-brand-violet hover:text-brand-violet"}`}
                                   >
-                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
+                                    <span>Per anno</span>
                                   </button>
                                 </div>
                               </div>
@@ -2511,16 +2559,25 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                               {isOpen ? (
                                 <div className="border-t border-[#f0f0f3] bg-[#f7f7fa] px-5 pb-4 pt-3">
                                   <div className="mb-3">
-                                    <div className="mb-2 flex items-center gap-2">
-                                      <p className="text-[12px] font-semibold text-ink-600">Per periodi</p>
+                                    <div className="mb-1 flex items-center gap-2">
+                                      <p className="text-[12px] font-semibold text-ink-700">Valore per periodo</p>
+                                      <span className="text-[11px] text-ink-400">— assegna un valore diverso per ciascun periodo</span>
+                                    </div>
+                                    <div className="mb-2 flex items-center gap-1.5">
+                                      <button type="button" onClick={() => addKpiPeriod(kpi.id)} className="border border-ink-200 bg-white px-2 py-0.5 text-[11px] font-medium text-ink-500 hover:border-ink-400">
+                                        + periodo
+                                      </button>
                                       {periods.length > 1 ? (
                                         <button type="button" onClick={() => removeKpiPeriod(kpi.id)} className="border border-ink-200 bg-white px-2 py-0.5 text-[11px] font-medium text-ink-500 hover:border-ink-400">
                                           − periodo
                                         </button>
                                       ) : null}
-                                      <button type="button" onClick={() => addKpiPeriod(kpi.id)} className="border border-ink-200 bg-white px-2 py-0.5 text-[11px] font-medium text-ink-500 hover:border-ink-400">
-                                        + periodo
-                                      </button>
+                                    </div>
+                                    <div className="mb-1 hidden grid-cols-[70px_44px_52px_72px_auto] gap-2 pl-0 md:grid">
+                                      <span className="text-[10px] text-ink-400">Periodo</span>
+                                      <span className="text-center text-[10px] text-ink-400">Anni</span>
+                                      <span />
+                                      <span className="text-right text-[10px] text-ink-400">Valore</span>
                                     </div>
                                     <div className="space-y-1.5">
                                       {periods.map((period, periodIdx) => {
@@ -2528,7 +2585,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                                         const effectiveDur = isLast ? lastPeriodDur : Math.max(0, Number(period.dur) || 0);
                                         return (
                                           <div key={periodIdx} className="flex items-center gap-2">
-                                            <span className="w-[70px] shrink-0 text-[12px] text-ink-500">{isLast ? "Rimanenti" : "Anni"}</span>
+                                            <span className="w-[70px] shrink-0 text-[12px] text-ink-500">{isLast ? "Rimanenti" : `Periodo ${periodIdx + 1}`}</span>
                                             {isLast ? (
                                               <span className="w-[44px] py-1 text-center text-[12px] font-bold text-ink-400">{effectiveDur}</span>
                                             ) : (
@@ -2588,9 +2645,15 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                         })}
 
                         {/* ── Fattore di monetizzazione ── */}
+                        {monetKpis.length > 0 ? (
+                          <div className="flex items-center gap-3 border-t border-[#ececf1] bg-[#f7f7fa] px-5 py-2">
+                            <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-400">Fattori di monetizzazione</span>
+                            <span className="text-[10px] text-ink-400">— valori fissi da letteratura, non modificabili</span>
+                          </div>
+                        ) : null}
                         {monetKpis.map((kpi) => (
                           <div key={kpi.id} className="border-t border-[#f0f0f3] bg-[#fcfcfd]">
-                            <div className="grid gap-4 px-5 py-4 md:grid-cols-[minmax(0,1fr)_260px] md:items-center">
+                            <div className="grid gap-x-2 gap-y-3 px-5 py-4 md:grid-cols-[minmax(0,1fr)_132px_120px_96px] md:items-center">
                               <div className="min-w-0">
                                 <div className="flex items-start gap-3">
                                   <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center text-ink-400">
@@ -2598,11 +2661,11 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                                   </span>
                                   <div className="min-w-0">
                                     <p className="text-[13px] font-semibold leading-[1.35] text-ink-900">{kpi.label}</p>
-                                    <p className="mt-1 text-[11px] leading-[1.4] text-ink-400">Valore monetario fissato</p>
+                                    <p className="mt-1 text-[11px] leading-[1.4] text-ink-400">Valore da letteratura ufficiale — non modificabile</p>
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex items-center justify-start gap-2 md:justify-end">
+                              <div className="flex items-center gap-2 md:contents">
                                 <div className="flex h-10 w-[132px] items-center justify-end gap-2 border border-ink-200 bg-[#f7f7fa] px-3 text-right text-[13px] font-semibold text-ink-900">
                                   <LockIcon className="h-3.5 w-3.5 shrink-0 text-ink-400" />
                                   <span className="font-mono">
@@ -2610,7 +2673,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                                   </span>
                                 </div>
                                 <span className="w-[120px] shrink-0 whitespace-nowrap text-[12px] text-ink-400">{kpi.unit}</span>
-                                <span className="h-9 w-9 shrink-0" />
+                                <span aria-hidden="true" />
                               </div>
                             </div>
                           </div>
@@ -2619,7 +2682,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                         {activeYears.length > 0 ? (
                           <div className="border-t border-[#f0f0f3] px-5 py-2.5">
                             <p className="text-[11px] text-ink-400">
-                              Il valore inserito verrà applicato a tutti i {activeYears.length} anni ({activeYears[0]}–{activeYears[activeYears.length - 1]}). Usa l'icona calendario per configurare valori differenziati per periodo.
+                              Il valore viene applicato a tutti i {activeYears.length} anni ({activeYears[0]}–{activeYears[activeYears.length - 1]}). Usa il pulsante <span className="font-semibold text-ink-600">Per anno</span> per impostare valori diversi per fase.
                             </p>
                           </div>
                         ) : null}
