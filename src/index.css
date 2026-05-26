@@ -74,6 +74,10 @@
   .eia-fade-up-delay {
     animation-delay: 120ms;
   }
+
+  .eia-slide-right {
+    animation: eia-slide-right 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
 }
 
 @keyframes skeleton-shimmer {
@@ -92,6 +96,11 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes eia-slide-right {
+  from { transform: translateX(320px); }
+  to   { transform: translateX(0); }
 }
 
 ::-webkit-scrollbar {

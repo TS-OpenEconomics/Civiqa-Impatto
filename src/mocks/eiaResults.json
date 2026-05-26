@@ -83,6 +83,121 @@
       ]
     }
   },
+  "input": {
+    "total_spend": 41147370,
+    "currency": "EUR",
+    "origin_provinces": [{ "code": "PA", "name": "Palermo", "spend_share": 1.0 }],
+    "origin_region": { "code": "ITG12", "name": "Sicilia" },
+    "years_of_realization": 2,
+    "spend_breakdown": [
+      { "ateco_code": "F",   "ateco_name": "Costruzioni",               "amount": 14401580, "share": 0.35 },
+      { "ateco_code": "M",   "ateco_name": "Servizi professionali",     "amount":  6172105, "share": 0.15 },
+      { "ateco_code": "C23", "ateco_name": "Materiali da costruzione",  "amount":  4937684, "share": 0.12 },
+      { "ateco_code": "H",   "ateco_name": "Trasporti e logistica",     "amount":  4114737, "share": 0.10 },
+      { "ateco_code": "D",   "ateco_name": "Energia e utilities",       "amount":  3291790, "share": 0.08 },
+      { "ateco_code": "G",   "ateco_name": "Commercio",                 "amount":  2880316, "share": 0.07 },
+      { "ateco_code": "J",   "ateco_name": "ICT e digitale",            "amount":  2468842, "share": 0.06 }
+    ]
+  },
+  "synthesis": {
+    "production": { "total": 104060030, "extra_regional": 16649605 },
+    "gdp":        { "total":  57975680, "extra_regional":  9276109 },
+    "employment": { "total":    846.46, "extra_regional":    135.4, "unit": "ETP" },
+    "income":     { "total":  56540620, "extra_regional": null },
+    "fiscal":     { "total":  11192000, "geographic_split": false },
+    "kpis": {
+      "gdp_multiplier": 1.41,
+      "employment_intensity_per_meur": 20.6,
+      "fiscal_autofinanc_pct": 0.272
+    }
+  },
+  "geography": {
+    "regions": [
+      { "regione": "Sicilia",               "gdp": 49138680, "production": 88200030, "employment": 717.4 },
+      { "regione": "Piemonte",              "gdp":  1240000, "production":  2226000, "employment":  18.1 },
+      { "regione": "Lombardia",             "gdp":  1020000, "production":  1831000, "employment":  14.9 },
+      { "regione": "Lazio",                 "gdp":   890000, "production":  1597000, "employment":  13.0 },
+      { "regione": "Liguria",               "gdp":   760000, "production":  1364000, "employment":  11.1 },
+      { "regione": "Puglia",                "gdp":   690000, "production":  1238000, "employment":  10.1 },
+      { "regione": "Veneto",                "gdp":   620000, "production":  1113000, "employment":   9.1 },
+      { "regione": "Campania",              "gdp":   580000, "production":  1041000, "employment":   8.5 },
+      { "regione": "Emilia-Romagna",        "gdp":   540000, "production":   969000, "employment":   7.9 },
+      { "regione": "Toscana",               "gdp":   450000, "production":   808000, "employment":   6.6 },
+      { "regione": "Calabria",              "gdp":   380000, "production":   682000, "employment":   5.5 },
+      { "regione": "Sardegna",              "gdp":   350000, "production":   628000, "employment":   5.1 },
+      { "regione": "Basilicata",            "gdp":   290000, "production":   521000, "employment":   4.2 },
+      { "regione": "Abruzzo",               "gdp":   240000, "production":   431000, "employment":   3.5 },
+      { "regione": "Marche",                "gdp":   180000, "production":   323000, "employment":   2.6 },
+      { "regione": "Friuli-Venezia Giulia", "gdp":   160000, "production":   287000, "employment":   2.3 },
+      { "regione": "Umbria",                "gdp":   140000, "production":   251000, "employment":   2.0 },
+      { "regione": "Trentino-Alto Adige",   "gdp":   120000, "production":   215000, "employment":   1.8 },
+      { "regione": "Molise",                "gdp":   100000, "production":   179000, "employment":   1.5 },
+      { "regione": "Valle d'Aosta",         "gdp":    87000, "production":   156000, "employment":   1.3 }
+    ]
+  },
+  "sectors": {
+    "items": [
+      { "ateco_code": "F",   "ateco_name": "Costruzioni",
+        "values": { "gdp": {"intra":14000000,"extra":       0}, "production":{"intra":25129000,"extra":       0}, "employment":{"intra":204.4,"extra":  0.0} } },
+      { "ateco_code": "M",   "ateco_name": "Servizi professionali",
+        "values": { "gdp": {"intra": 7840000,"extra":  160000}, "production":{"intra":14135000,"extra":  223000}, "employment":{"intra":116.8,"extra":  0.0} } },
+      { "ateco_code": "G",   "ateco_name": "Commercio",
+        "values": { "gdp": {"intra": 6828408,"extra":  171592}, "production":{"intra":12191000,"extra":  376000}, "employment":{"intra": 97.2,"extra":  5.0} } },
+      { "ateco_code": "H",   "ateco_name": "Trasporti e logistica",
+        "values": { "gdp": {"intra": 4840000,"extra":  660000}, "production":{"intra": 8688000,"extra": 1185000}, "employment":{"intra": 70.7,"extra":  9.6} } },
+      { "ateco_code": "Q",   "ateco_name": "Sanità e assistenza",
+        "values": { "gdp": {"intra": 4560000,"extra":  240000}, "production":{"intra": 8185000,"extra":  431000}, "employment":{"intra": 66.6,"extra":  3.5} } },
+      { "ateco_code": "C23", "ateco_name": "Materiali da costruzione",
+        "values": { "gdp": {"intra": 3600000,"extra": 2400000}, "production":{"intra": 6462000,"extra": 4308000}, "employment":{"intra": 52.6,"extra": 35.0} } },
+      { "ateco_code": "L",   "ateco_name": "Attività immobiliari",
+        "values": { "gdp": {"intra": 2730000,"extra": 1470000}, "production":{"intra": 4901000,"extra": 2638000}, "employment":{"intra": 39.9,"extra": 21.4} } },
+      { "ateco_code": "D",   "ateco_name": "Energia e utilities",
+        "values": { "gdp": {"intra": 2200000,"extra": 1800000}, "production":{"intra": 3949000,"extra": 3230000}, "employment":{"intra": 32.1,"extra": 26.3} } },
+      { "ateco_code": "J",   "ateco_name": "ICT e digitale",
+        "values": { "gdp": {"intra": 1750000,"extra":  750000}, "production":{"intra": 3141000,"extra": 1346000}, "employment":{"intra": 25.6,"extra": 10.9} } },
+      { "ateco_code": "K",   "ateco_name": "Servizi finanziari",
+        "values": { "gdp": {"intra":  790272,"extra": 1185408}, "production":{"intra": 1419030,"extra": 2127000}, "employment":{"intra": 11.5,"extra": 17.3} } }
+    ]
+  },
+  "components": {
+    "production": {
+      "direct": 46827014, "indirect": 16649605, "induced": 40583411,
+      "top_sectors": {
+        "direct":   [{"name": "Costruzioni", "value": 16389355}, {"name": "Servizi professionali", "value": 7024052}, {"name": "Materiali da costruzione", "value": 5619242}],
+        "indirect": [{"name": "Materiali da costruzione", "value": 3763169}, {"name": "Trasporti e logistica", "value": 2497441}, {"name": "Energia e utilities", "value": 1831457}],
+        "induced":  [{"name": "Commercio", "value": 6493346}, {"name": "Sanità e assistenza", "value": 4463175}, {"name": "Attività immobiliari", "value": 3246673}]
+      }
+    },
+    "gdp": {
+      "direct": 26089056, "indirect": 9276109, "induced": 22610515,
+      "top_sectors": {
+        "direct":   [{"name": "Costruzioni", "value": 9131170}, {"name": "Servizi professionali", "value": 3913358}, {"name": "Materiali da costruzione", "value": 3130687}],
+        "indirect": [{"name": "Materiali da costruzione", "value": 2096645}, {"name": "Trasporti e logistica", "value": 1496527}, {"name": "Energia e utilities", "value": 1001220}],
+        "induced":  [{"name": "Commercio", "value": 3843788}, {"name": "Sanità e assistenza", "value": 2261052}, {"name": "Attività immobiliari", "value": 1808841}]
+      }
+    },
+    "employment": {
+      "direct": 380.9, "indirect": 135.4, "induced": 330.2,
+      "top_sectors": {
+        "direct":   [{"name": "Costruzioni", "value": 118.1}, {"name": "Servizi professionali", "value": 57.1}, {"name": "Materiali da costruzione", "value": 45.7}],
+        "indirect": [{"name": "Materiali da costruzione", "value": 30.6}, {"name": "Trasporti e logistica", "value": 21.9}, {"name": "Energia e utilities", "value": 14.6}],
+        "induced":  [{"name": "Commercio", "value": 56.1}, {"name": "Sanità e assistenza", "value": 33.0}, {"name": "Attività immobiliari", "value": 26.4}]
+      }
+    },
+    "income": {
+      "direct": 25443279, "indirect": 9046499, "induced": 22050842,
+      "top_sectors": {
+        "direct":   [{"name": "Costruzioni", "value": 8905148}, {"name": "Servizi professionali", "value": 3816492}, {"name": "Materiali da costruzione", "value": 3053194}],
+        "indirect": [{"name": "Materiali da costruzione", "value": 2046001}, {"name": "Trasporti e logistica", "value": 1459988}, {"name": "Energia e utilities", "value": 977222}],
+        "induced":  [{"name": "Commercio", "value": 3748643}, {"name": "Sanità e assistenza", "value": 2205084}, {"name": "Attività immobiliari", "value": 1764067}]
+      }
+    }
+  },
+  "macro_split": {
+    "origin":         { "value": 26669213, "pct": 0.46 },
+    "rest_of_region": { "value": 22030758, "pct": 0.38 },
+    "extra_region":   { "value":  9275709, "pct": 0.16 }
+  },
   "distribuzione_regionale": {
     "spese": [
       { "regione": "Piemonte", "valore": 980000, "intensita": 0.95 },

@@ -18,6 +18,13 @@ export default {
           ecba: "#A8D8F8",
           esg: "#86E8DC",
         },
+        impact: {
+          direct:   "#5B21F7",
+          indirect: "#9E7BFA",
+          induced:  "#D4C5FB",
+          retain:   "#1F8C4A",
+          leak:     "#C45A2E",
+        },
         ink: {
           900: "#0E0E10",
           700: "#2B2B2E",
