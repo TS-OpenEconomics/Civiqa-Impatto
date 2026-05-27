@@ -562,7 +562,7 @@ function TabSintesi({ updateSearch, searchParams }) {
       : `L'${regionPct}% del valore aggiunto resta in ${regionName}, il resto si attiva in altre regioni attraverso le filiere nazionali.`;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="rounded-md bg-bg-page p-4">
         <SegmentedGroup
           label="Modalità"
@@ -575,16 +575,39 @@ function TabSintesi({ updateSearch, searchParams }) {
         />
       </div>
 
-      <SpendInputCard isMultiProvince={isMultiProvince} />
+      <section className="space-y-3">
+        <SectionLabel title="L'investimento" subtitle="Da cosa parte l'analisi" />
+        <SpendInputCard isMultiProvince={isMultiProvince} />
+      </section>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
-        {EFFECTS.map((effect) => (
-          <EffectCard key={effect.id} effect={effect} perim="nazionale" mode={mode} />
-        ))}
-      </div>
+      <section className="space-y-3">
+        <SectionLabel
+          title="Impatto sull'economia italiana"
+          subtitle="Quanto valore ha generato la spesa lungo la filiera nazionale"
+        />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+          {EFFECTS.map((effect) => (
+            <EffectCard key={effect.id} effect={effect} perim="nazionale" mode={mode} />
+          ))}
+        </div>
+      </section>
 
-      <ProvinceBreakdown mode={mode} />
-      <MultiplierWaterfall />
+      <section className="space-y-3">
+        <SectionLabel
+          title="Dove va il valore"
+          subtitle="Il valore non rimane tutto nella provincia di partenza: si propaga lungo le filiere regionali e nazionali"
+        />
+        <ProvinceBreakdown mode={mode} />
+      </section>
+
+      <section className="space-y-3">
+        <SectionLabel
+          title="Come si moltiplica la spesa"
+          subtitle="Per ogni euro investito, l'economia genera questo valore aggiunto"
+        />
+        <MultiplierWaterfall />
+      </section>
+
       <TakeawayBanner text={summaryText} />
       <DimensionGlossary />
     </div>
@@ -594,7 +617,6 @@ function TabSintesi({ updateSearch, searchParams }) {
 function ProvinceBreakdown({ mode }) {
   const isPC = mode === "pc";
 
-  // Absolute values per segment
   const paloGdp = byPerimeter.origin_province?.gdp ?? 0;
   const paloEmp = byPerimeter.origin_province?.employment ?? 0;
   const paloInc = byPerimeter.origin_province?.income ?? 0;
@@ -607,107 +629,117 @@ function ProvinceBreakdown({ mode }) {
   const natEmp = byPerimeter.national?.employment ?? 0;
   const natInc = byPerimeter.national?.income ?? 0;
   const natProd = byPerimeter.national?.production ?? 0;
-
-  const altreGdp = regGdp - paloGdp;
-  const altreEmp = regEmp - paloEmp;
-  const altreInc = regInc - paloInc;
-  const altreProd = regProd - paloProd;
   const restoGdp = natGdp - regGdp;
-  const restoEmp = natEmp - regEmp;
-  const restoInc = natInc - regInc;
-  const restoProd = natProd - regProd;
 
-  // Derive population from gdp / gdp_pc for derived segments
   const paloGdpPc = perCapita.origin_province?.gdp_pc ?? 0;
   const regGdpPc = perCapita.region?.gdp_pc ?? 0;
   const natGdpPc = perCapita.national?.gdp_pc ?? 0;
   const paloPop = paloGdpPc > 0 ? paloGdp / paloGdpPc : 0;
   const regPop = regGdpPc > 0 ? regGdp / regGdpPc : 0;
   const natPop = natGdpPc > 0 ? natGdp / natGdpPc : 0;
-  const altrePop = Math.max(regPop - paloPop, 1);
-  const restoPop = Math.max(natPop - regPop, 1);
 
   function pcMoney(abs, pop) { return pop > 0 ? abs / pop : 0; }
   function pcEmp(abs, pop) { return pop > 0 ? (abs / pop) * 10000 : 0; }
 
-  const tiers = [
-    {
-      id: "palermo",
-      levelLabel: "Provincia di origine",
-      name: originProvince,
-      gdp: isPC ? (perCapita.origin_province?.gdp_pc ?? 0) : paloGdp,
-      employment: isPC ? (perCapita.origin_province?.employment_pc_per_10k ?? 0) : paloEmp,
-      income: isPC ? (perCapita.origin_province?.income_pc ?? 0) : paloInc,
-      production: isPC ? (perCapita.origin_province?.production_pc ?? 0) : paloProd,
-    },
-    {
-      id: "altre_province",
-      levelLabel: `Resto di ${regionName}`,
-      name: `Altre province ${regionName === "Sicilia" ? "siciliane" : `di ${regionName}`}`,
-      gdp: isPC ? pcMoney(altreGdp, altrePop) : altreGdp,
-      employment: isPC ? pcEmp(altreEmp, altrePop) : altreEmp,
-      income: isPC ? pcMoney(altreInc, altrePop) : altreInc,
-      production: isPC ? pcMoney(altreProd, altrePop) : altreProd,
-    },
-    {
-      id: "resto_italia",
-      levelLabel: "Fuori regione",
-      name: "Resto d'Italia",
-      gdp: isPC ? pcMoney(restoGdp, restoPop) : restoGdp,
-      employment: isPC ? pcEmp(restoEmp, restoPop) : restoEmp,
-      income: isPC ? pcMoney(restoInc, restoPop) : restoInc,
-      production: isPC ? pcMoney(restoProd, restoPop) : restoProd,
-    },
-  ];
-  const nationalGdp = isPC ? (natGdpPc || 1) : (natGdp || 1);
+  const regPct = natGdp > 0 ? Math.round((regGdp / natGdp) * 100) : 0;
+  const paloPctOfNat = natGdp > 0 ? Math.round((paloGdp / natGdp) * 100) : 0;
+  const paloPctOfReg = regGdp > 0 ? Math.round((paloGdp / regGdp) * 100) : 0;
+  const restoPct = 100 - regPct;
 
   const fmtMoney = isPC ? fmtMoneyPc : fmtM;
   const fmtEmpFn = isPC ? fmtEtpPc : fmtETP;
 
+  const tiers = [
+    {
+      id: "national",
+      levelLabel: "Totale nazionale",
+      name: "Italia",
+      gdp: isPC ? natGdpPc : natGdp,
+      production: isPC ? pcMoney(natProd, natPop) : natProd,
+      employment: isPC ? pcEmp(natEmp, natPop) : natEmp,
+      income: isPC ? pcMoney(natInc, natPop) : natInc,
+      pct: 100,
+      pctLabel: null,
+    },
+    {
+      id: "region",
+      levelLabel: "Regione di origine",
+      name: regionName,
+      gdp: isPC ? regGdpPc : regGdp,
+      production: isPC ? pcMoney(regProd, regPop) : regProd,
+      employment: isPC ? pcEmp(regEmp, regPop) : regEmp,
+      income: isPC ? pcMoney(regInc, regPop) : regInc,
+      pct: regPct,
+      pctLabel: isPC ? null : `${regPct}% del nazionale`,
+    },
+    {
+      id: "province",
+      levelLabel: "Provincia di origine",
+      name: originProvince,
+      gdp: isPC ? paloGdpPc : paloGdp,
+      production: isPC ? pcMoney(paloProd, paloPop) : paloProd,
+      employment: isPC ? pcEmp(paloEmp, paloPop) : paloEmp,
+      income: isPC ? pcMoney(paloInc, paloPop) : paloInc,
+      pct: paloPctOfNat,
+      pctLabel: isPC ? null : `${paloPctOfNat}% del nazionale · ${paloPctOfReg}% della regione`,
+    },
+  ];
+
   return (
-    <div className="border border-ink-100 bg-white shadow-sm">
+    <div className="border border-ink-100 bg-white shadow-sm overflow-hidden">
       <div className="border-b border-ink-100 bg-bg-page px-5 py-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">Dove va l'impatto</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">
+          {isPC ? "PIL pro capite per perimetro territoriale" : "PIL attivato — dal nazionale alla provincia"}
+        </p>
         <p className="mt-0.5 text-xs text-ink-400">
-          {isPC ? "Valori pro capite per perimetro territoriale" : "Distribuzione del valore generato sul territorio nazionale (somma = 100%)"}
+          {isPC ? "I valori pro capite non si sommano tra livelli" : "Ogni livello è contenuto in quello superiore · leggi dall'alto in basso"}
         </p>
       </div>
-      <div className="grid grid-cols-1 divide-y divide-ink-100 md:grid-cols-3 md:divide-x md:divide-y-0">
-        {tiers.map((t) => {
-          const pct = isPC ? null : Math.round((t.gdp / nationalGdp) * 100);
-          return (
-            <div key={t.id} className="p-6">
-              <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-ink-500">{t.levelLabel}</p>
-              <p className="mt-0.5 text-[15px] font-bold text-ink-900">{t.name}</p>
-              <p className="mt-5 text-[36px] font-bold leading-none text-ink-900">{fmtMoney(t.gdp)}</p>
-              {isPC ? (
-                <p className="mt-1 text-sm font-mono text-ink-400">PIL pro capite</p>
-              ) : (
-                <>
-                  <p className="mt-1 text-sm font-mono font-semibold text-brand-violet">{pct}% del totale nazionale</p>
-                  <div className="mt-3 h-2 w-full overflow-hidden bg-ink-100">
-                    <div className="h-full bg-brand-violet transition-all" style={{ width: `${pct}%` }} />
-                  </div>
-                </>
+
+      <div className="divide-y divide-ink-100">
+        {tiers.map((tier, i) => (
+          <div key={tier.id} className="flex gap-4 py-5 pr-5" style={{ paddingLeft: 20 + i * 24 }}>
+            {i > 0 && (
+              <div className="flex shrink-0 flex-col items-center pt-1">
+                <div className="h-2 w-px bg-ink-200" />
+                <span className="text-[10px] text-ink-300">└</span>
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-ink-500">{tier.levelLabel}</p>
+              <div className="mt-1 flex flex-wrap items-baseline justify-between gap-2">
+                <p className={["font-bold text-ink-900", i === 0 ? "text-[22px]" : i === 1 ? "text-[19px]" : "text-[17px]"].join(" ")}>
+                  {tier.name}
+                </p>
+                <p className={["font-bold tabular-nums text-ink-900", i === 0 ? "text-[22px]" : i === 1 ? "text-[19px]" : "text-[17px]"].join(" ")}>
+                  {fmtMoney(tier.gdp)}
+                  {isPC && <span className="ml-1 text-[11px] font-normal text-ink-400">PIL pro capite</span>}
+                </p>
+              </div>
+              {tier.pctLabel && (
+                <p className="mt-0.5 text-[11px] font-mono font-semibold text-brand-violet">{tier.pctLabel}</p>
               )}
-              <div className="mt-4 grid grid-cols-3 gap-2 border-t border-ink-100 pt-4">
-                <div>
-                  <p className="text-[10px] text-ink-400">Produzione</p>
-                  <p className="mt-0.5 text-[12px] font-semibold text-ink-900">{fmtMoney(t.production)}</p>
+              {!isPC && (
+                <div className="mt-2 h-1.5 w-full overflow-hidden bg-ink-100">
+                  <div className="h-full bg-brand-violet transition-all" style={{ width: `${tier.pct}%` }} />
                 </div>
-                <div>
-                  <p className="text-[10px] text-ink-400">Occupazione</p>
-                  <p className="mt-0.5 text-[12px] font-semibold text-ink-900">{fmtEmpFn(t.employment)}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-ink-400">Redditi</p>
-                  <p className="mt-0.5 text-[12px] font-semibold text-ink-900">{fmtMoney(t.income)}</p>
-                </div>
+              )}
+              <div className="mt-3 grid grid-cols-3 gap-3 border-t border-ink-100 pt-3">
+                <MetricMini label="Produzione" value={fmtMoney(tier.production)} />
+                <MetricMini label="Occupazione" value={fmtEmpFn(tier.employment)} />
+                <MetricMini label="Redditi" value={fmtMoney(tier.income)} />
               </div>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
+
+      {!isPC && (
+        <div className="flex items-center justify-between border-t border-ink-100 bg-bg-page px-5 py-3">
+          <span className="text-xs text-ink-500">Valore attivato fuori dalla regione {regionName}</span>
+          <span className="font-mono text-xs font-semibold text-ink-700">{fmtM(restoGdp)} ({restoPct}%)</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -717,49 +749,57 @@ function PerimeterBreakdown({ dim }) {
   const nationalVal = dim.id === "fiscal"
     ? (byPerimeter.national?.fiscal ?? 0)
     : (byPerimeter.national?.[dim.id] ?? 0);
+  const regionVal = byPerimeter.region?.[dim.id] ?? 0;
+  const provinceVal = byPerimeter.origin_province?.[dim.id] ?? 0;
 
-  const tiers = [
-    {
-      id: "province",
-      levelLabel: "Provincia di origine",
-      name: originProvince,
-      value: byPerimeter.origin_province?.[dim.id] ?? 0,
-    },
-    {
-      id: "region",
-      levelLabel: "Regione di origine",
-      name: regionName,
-      value: byPerimeter.region?.[dim.id] ?? 0,
-    },
-    {
-      id: "national",
-      levelLabel: "Nazionale",
-      name: "Italia",
-      value: nationalVal,
-    },
-  ];
+  const regPct = nationalVal > 0 ? Math.round((regionVal / nationalVal) * 100) : 0;
+  const provPctOfNat = nationalVal > 0 ? Math.round((provinceVal / nationalVal) * 100) : 0;
+  const provPctOfReg = regionVal > 0 ? Math.round((provinceVal / regionVal) * 100) : 0;
+
+  const tiers = dim.id === "fiscal"
+    ? [{ id: "national", levelLabel: "Totale nazionale", name: "Italia", value: nationalVal, pct: 100, pctLabel: null }]
+    : [
+        { id: "national", levelLabel: "Totale nazionale", name: "Italia", value: nationalVal, pct: 100, pctLabel: null },
+        { id: "region", levelLabel: "Regione di origine", name: regionName, value: regionVal, pct: regPct, pctLabel: `${regPct}% del nazionale` },
+        { id: "province", levelLabel: "Provincia di origine", name: originProvince, value: provinceVal, pct: provPctOfNat, pctLabel: `${provPctOfNat}% del nazionale · ${provPctOfReg}% della regione` },
+      ];
 
   return (
-    <div className="border border-ink-100 bg-white shadow-sm">
+    <div className="border border-ink-100 bg-white shadow-sm overflow-hidden">
       <div className="border-b border-ink-100 bg-bg-page px-5 py-3">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">Distribuzione territoriale</p>
-        <p className="mt-0.5 text-xs text-ink-400">Quanto valore rimane in ciascun perimetro</p>
+        <p className="mt-0.5 text-xs text-ink-400">
+          {dim.id === "fiscal" ? "Il gettito fiscale è calcolato solo su scala nazionale" : "Ogni livello è contenuto in quello superiore · leggi dall'alto in basso"}
+        </p>
       </div>
-      <div className="grid grid-cols-1 divide-y divide-ink-100 md:grid-cols-3 md:divide-x md:divide-y-0">
-        {tiers.map((t) => {
-          const pct = nationalVal > 0 ? Math.round((t.value / nationalVal) * 100) : 0;
-          return (
-            <div key={t.id} className="p-6">
-              <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-ink-500">{t.levelLabel}</p>
-              <p className="mt-0.5 text-[15px] font-bold text-ink-900">{t.name}</p>
-              <p className="mt-5 text-[36px] font-bold leading-none text-ink-900">{fmt(t.value)}</p>
-              <p className="mt-1 text-sm font-mono font-semibold text-brand-violet">{pct}% del totale</p>
-              <div className="mt-3 h-2 w-full overflow-hidden bg-ink-100">
-                <div className="h-full bg-brand-violet transition-all" style={{ width: `${pct}%` }} />
+      <div className="divide-y divide-ink-100">
+        {tiers.map((tier, i) => (
+          <div key={tier.id} className="flex gap-4 py-5 pr-5" style={{ paddingLeft: 20 + i * 24 }}>
+            {i > 0 && (
+              <div className="flex shrink-0 flex-col items-center pt-1">
+                <div className="h-2 w-px bg-ink-200" />
+                <span className="text-[10px] text-ink-300">└</span>
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-ink-500">{tier.levelLabel}</p>
+              <div className="mt-1 flex flex-wrap items-baseline justify-between gap-2">
+                <p className={["font-bold text-ink-900", i === 0 ? "text-[22px]" : i === 1 ? "text-[19px]" : "text-[17px]"].join(" ")}>
+                  {tier.name}
+                </p>
+                <p className={["font-bold tabular-nums text-ink-900", i === 0 ? "text-[22px]" : i === 1 ? "text-[19px]" : "text-[17px]"].join(" ")}>
+                  {fmt(tier.value)}
+                </p>
+              </div>
+              {tier.pctLabel && (
+                <p className="mt-0.5 text-[11px] font-mono font-semibold text-brand-violet">{tier.pctLabel}</p>
+              )}
+              <div className="mt-2 h-1.5 w-full overflow-hidden bg-ink-100">
+                <div className="h-full bg-brand-violet transition-all" style={{ width: `${tier.pct}%` }} />
               </div>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -906,6 +946,7 @@ function MultiplierWaterfall() {
 }
 
 function DimensionGlossary() {
+  const [open, setOpen] = useState(false);
   const dims = [
     {
       icon: "spese",
@@ -941,25 +982,33 @@ function DimensionGlossary() {
 
   return (
     <div className="border border-ink-100 bg-white shadow-sm">
-      <div className="border-b border-ink-100 bg-bg-page px-5 py-3">
+      <button
+        onClick={() => setOpen((prev) => !prev)}
+        className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-bg-page"
+      >
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">Cosa misura ogni dimensione</p>
-      </div>
-      <div className="grid grid-cols-1 gap-x-6 gap-y-5 p-5 md:grid-cols-2 lg:grid-cols-3">
-        {dims.map((d) => (
-          <div key={d.label} className="flex gap-3">
-            <ImpactIcon
-              type={d.icon}
-              label={d.label}
-              className="h-4 w-4"
-              wrapperClassName="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center text-brand-violet"
-            />
-            <div>
-              <p className="text-[12px] font-bold text-ink-900">{d.label}</p>
-              <p className="mt-1 text-[12px] leading-relaxed text-ink-600">{d.text}</p>
-            </div>
+        <span className="text-xs text-ink-400">{open ? "Chiudi ↑" : "Apri ↓"}</span>
+      </button>
+      {open && (
+        <div className="border-t border-ink-100">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-5 p-5 md:grid-cols-2 lg:grid-cols-3">
+            {dims.map((d) => (
+              <div key={d.label} className="flex gap-3">
+                <ImpactIcon
+                  type={d.icon}
+                  label={d.label}
+                  className="h-4 w-4"
+                  wrapperClassName="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center text-brand-violet"
+                />
+                <div>
+                  <p className="text-[12px] font-bold text-ink-900">{d.label}</p>
+                  <p className="mt-1 text-[12px] leading-relaxed text-ink-600">{d.text}</p>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1242,6 +1291,27 @@ function TakeawayBanner({ text }) {
   );
 }
 
+function SectionLabel({ title, subtitle }) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="mt-1.5 h-3.5 w-0.5 shrink-0 bg-brand-violet" />
+      <div>
+        <h3 className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-700">{title}</h3>
+        {subtitle && <p className="mt-0.5 text-xs leading-snug text-ink-400">{subtitle}</p>}
+      </div>
+    </div>
+  );
+}
+
+function MetricMini({ label, value }) {
+  return (
+    <div>
+      <p className="text-[9px] uppercase tracking-[0.12em] text-ink-400">{label}</p>
+      <p className="mt-0.5 text-[11px] font-semibold text-ink-700">{value}</p>
+    </div>
+  );
+}
+
 function TabComponenti() {
   const [dim, setDim] = useState("gdp");
   const current = COMPONENTS.find((c) => c.id === dim) ?? COMPONENTS[1];
@@ -1303,8 +1373,8 @@ function DimensionSelector({ value, onChange }) {
 
 function StackedDecomposition({ dim, data }) {
   const total = dim.id === "employment"
-    ? (byPerimeter.region?.employment ?? 0)
-    : (byPerimeter.region?.[dim.id] ?? 0);
+    ? (byPerimeter.national?.employment ?? 0)
+    : (byPerimeter.national?.[dim.id] ?? 0);
   const direct = data?.direct ?? 0;
   const indirect = data?.indirect ?? 0;
   const induced = data?.induced ?? 0;
@@ -1316,7 +1386,7 @@ function StackedDecomposition({ dim, data }) {
   return (
     <div className="border border-ink-100 bg-white p-5">
       <div className="flex items-end justify-between gap-4">
-        <p className="text-sm font-medium text-ink-700">{dim.label} totale (perimetro regionale)</p>
+        <p className="text-sm font-medium text-ink-700">{dim.label} totale (perimetro nazionale)</p>
         <p className="text-[28px] font-bold text-ink-900">{dim.isMoney ? fmtM(total) : fmtETP(total)}</p>
       </div>
       <div className="mt-4 h-12 overflow-hidden">
