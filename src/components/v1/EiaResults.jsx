@@ -12,6 +12,11 @@ import {
 } from "../ui/Icons";
 import { useToast } from "../../hooks/useToast";
 
+function assetUrl(path) {
+  const base = import.meta.env.BASE_URL ?? "/";
+  return `${base}${String(path ?? "").replace(/^\/+/, "")}`;
+}
+
 function fmtIT(n, dec = 0) {
   return new Intl.NumberFormat("it-IT", { minimumFractionDigits: dec, maximumFractionDigits: dec }).format(n);
 }
@@ -389,7 +394,7 @@ export function EiaResults({ project, analysis, onBack }) {
           <div className="flex flex-wrap items-start justify-between gap-6 bg-ink-900 px-6 py-6 text-white md:px-8">
             <div className="flex items-start gap-4">
               <span className="flex h-16 w-16 shrink-0 items-center justify-center bg-white p-2">
-                <img src="/icons/analysis-eia.png" alt="Logo analisi di impatto" className="h-full w-full object-contain" />
+                <img src={assetUrl("icons/analysis-eia.png")} alt="Logo analisi di impatto" className="h-full w-full object-contain" />
               </span>
               <div>
                 <div className="flex flex-wrap items-center gap-3">
@@ -1277,7 +1282,6 @@ function TabSettori({ updateSearch, searchParams, onOpenExplore }) {
   const [dim, setDim] = useState(searchParams?.get("dim") ?? "gdp");
   const isMoney = dim !== "employment";
   const sorted = [...sectItems].sort((a, b) => sectorTotal(b, dim) - sectorTotal(a, dim));
-  const grandTotal = sorted.reduce((sum, s) => sum + sectorTotal(s, dim), 0) || 1;
   const top10 = sorted.slice(0, 10);
 
   useEffect(() => {
@@ -1298,10 +1302,11 @@ function TabSettori({ updateSearch, searchParams, onOpenExplore }) {
       />
       <div className="border border-ink-100 bg-bg-page p-4">
         <p className="text-sm italic leading-relaxed text-ink-700">
-          La vista settori si legge in due passaggi: composizione per componente e distribuzione geografica dei settori.
+          La vista settori si legge in tre passaggi: equilibrio intra/extra regione, composizione per componente e distribuzione geografica dei settori.
         </p>
       </div>
 
+      <DivergentBarChart sectors={top10} dim={dim} isMoney={isMoney} />
       <SectorComponentStackedChart sectors={top10} dim={dim} isMoney={isMoney} />
       <SectorHeatmap
         dim={dim}
@@ -1317,6 +1322,75 @@ function TabSettori({ updateSearch, searchParams, onOpenExplore }) {
 function sectorTotal(s, dim) {
   const v = s.values?.[dim] ?? {};
   return (v.intra ?? 0) + (v.extra ?? 0);
+}
+
+function DivergentBarChart({ sectors, dim, isMoney }) {
+  const [ready, setReady] = useState(false);
+  const fmt = isMoney ? fmtM : fmtETP;
+  const maxTotal = Math.max(...sectors.map((s) => sectorTotal(s, dim)), 1);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setReady(true));
+    return () => cancelAnimationFrame(id);
+  }, [dim]);
+
+  return (
+    <div className="border border-ink-100 bg-white">
+      <div className="border-b border-ink-100 px-4 py-3">
+        <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-ink-500">Intra / extra regione</p>
+        <p className="mt-1 text-sm text-ink-700">
+          Per ogni settore, la barra confronta la quota che resta nella regione con quella attivata fuori regione.
+        </p>
+      </div>
+      <div className="grid grid-cols-[160px_1fr_120px] gap-3 border-b border-ink-100 px-4 py-2 text-[10px] font-mono uppercase tracking-[0.16em] text-ink-500">
+        <span />
+        <div className="flex items-center">
+          <span className="flex-1 text-right text-impact-leak">extra regione</span>
+          <span className="mx-2 h-4 w-px bg-ink-300" />
+          <span className="flex-1 text-left text-impact-retain">intra regione</span>
+        </div>
+        <span />
+      </div>
+      <ul className="divide-y divide-ink-100">
+        {sectors.map((s) => {
+          const intra = s.values?.[dim]?.intra ?? 0;
+          const extra = s.values?.[dim]?.extra ?? 0;
+          const total = intra + extra || 1;
+          const intraPct = Math.round((intra / total) * 100);
+          return (
+            <li key={s.ateco_code} className="grid grid-cols-[160px_1fr_120px] items-center gap-3 px-4 py-3">
+              <span className="truncate text-sm font-medium text-ink-900">{cleanText(s.ateco_name)}</span>
+              <div className="flex items-center">
+                <div className="flex-1 pr-0.5 text-right">
+                  <div
+                    className="ml-auto h-5 bg-impact-leak"
+                    style={{
+                      width: ready ? `${(extra / maxTotal) * 100}%` : "0%",
+                      transition: "width .45s ease",
+                    }}
+                  />
+                </div>
+                <div className="h-7 w-px bg-ink-300" />
+                <div className="flex-1 pl-0.5 text-left">
+                  <div
+                    className="h-5 bg-impact-retain"
+                    style={{
+                      width: ready ? `${(intra / maxTotal) * 100}%` : "0%",
+                      transition: "width .45s ease",
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs font-mono font-semibold text-ink-900">{fmt(total)}</div>
+                <div className="text-[11px] text-ink-500">{intraPct}% intra</div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
 }
 
 function getSectorComponentMix(sectorName, dim) {

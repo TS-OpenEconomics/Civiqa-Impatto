@@ -3,6 +3,11 @@ import { Skeleton, SkeletonText } from "../ui/Skeleton";
 import { Badge } from "../ui/Badge";
 import { ImpactIcon } from "../ui/ImpactIcon";
 
+function assetUrl(path) {
+  const base = import.meta.env.BASE_URL ?? "/";
+  return `${base}${String(path ?? "").replace(/^\/+/, "")}`;
+}
+
 // ── Formatters ────────────────────────────────────────────────────────────────
 
 function fmtCurrency(n) {
@@ -84,7 +89,7 @@ function RatingBadge({ rating }) {
 
 const ANALYSIS_META = {
   eia: {
-    iconSrc: "/icons/analysis-eia.png",
+    iconSrc: assetUrl("icons/analysis-eia.png"),
     title: "Analisi di Impatto Economico",
     tag: "EIA",
     tagCls: "bg-[#F8A8E2] text-[#7B1F5E]",
@@ -92,7 +97,7 @@ const ANALYSIS_META = {
     expandDesc: "Effetti economici stimati sul sistema locale durante la fase di investimento e gestione.",
   },
   ecba: {
-    iconSrc: "/icons/analysis-ecba.png",
+    iconSrc: assetUrl("icons/analysis-ecba.png"),
     title: "Analisi Costi-Benefici",
     tag: "ECBA",
     tagCls: "bg-[#A8D8F8] text-[#1A4F7A]",
@@ -100,7 +105,7 @@ const ANALYSIS_META = {
     expandDesc: "Indicatori chiave di convenienza economica e sostenibilità finanziaria del progetto.",
   },
   esg: {
-    iconSrc: "/icons/analysis-esg.png",
+    iconSrc: assetUrl("icons/analysis-esg.png"),
     title: "Analisi ESG",
     tag: "ESG",
     tagCls: "bg-[#86E8DC] text-[#0D5C54]",

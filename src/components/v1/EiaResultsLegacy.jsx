@@ -9,6 +9,11 @@ import { PlotlyChart } from "../charts/PlotlyChart";
 import { computeProvinceDistribution, REGION_NAME_TO_NUTS2 } from "../../lib/eiaEngine";
 import { useToast } from "../../hooks/useToast";
 
+function assetUrl(path) {
+  const base = import.meta.env.BASE_URL ?? "/";
+  return `${base}${String(path ?? "").replace(/^\/+/, "")}`;
+}
+
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 
 const TABS = [
@@ -211,7 +216,7 @@ export function EiaResultsLegacy({ project, eiaResults: rawResults, analysis, on
           <div className="bg-ink-900 px-6 py-6 text-white md:px-8 flex items-start justify-between gap-6 flex-wrap">
             <div className="flex items-start gap-4">
               <span className="flex h-16 w-16 items-center justify-center bg-white p-2 shrink-0">
-                <img src="/icons/analysis-eia.png" alt="Logo analisi di impatto" className="h-full w-full object-contain" />
+                <img src={assetUrl("icons/analysis-eia.png")} alt="Logo analisi di impatto" className="h-full w-full object-contain" />
               </span>
               <div>
                 <div className="flex flex-wrap items-center gap-3">
