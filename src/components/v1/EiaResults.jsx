@@ -399,12 +399,10 @@ export function EiaResults({ project, analysis, onBack }) {
           <span className="font-medium">{analysis?.updatedAt ?? meta.ultima_modifica}</span>
         </p>
 
-        <div className="overflow-hidden border border-ink-100 bg-white">
+        <div className="border border-ink-100 bg-white">
           <div className="flex flex-wrap items-start justify-between gap-4 px-6 py-5 md:px-8">
             <div className="flex items-start gap-4">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-bg-page p-1.5">
-                <img src={assetUrl("icons/analysis-eia.png")} alt="Logo analisi di impatto" className="h-full w-full object-contain" />
-              </span>
+              <img src={assetUrl("icons/analysis-eia.png")} alt="Logo analisi di impatto" className="h-16 w-16 shrink-0 object-contain" />
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-[18px] font-bold text-ink-900">Analisi di Impatto</h1>
@@ -434,7 +432,7 @@ export function EiaResults({ project, analysis, onBack }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 divide-y divide-ink-100 border-t border-ink-100 bg-bg-page text-sm md:grid-cols-3 md:divide-x md:divide-y-0">
+          <div className="grid grid-cols-1 divide-y divide-ink-100 border-t border-ink-100 bg-white text-sm md:grid-cols-3 md:divide-x md:divide-y-0">
             <MetaField label="Settore" value={project?.configurazione?.settore ?? meta.settore} />
             <MetaField label="Dataset" value={meta.dataset} />
             <MetaField label="Metodologia" value={meta.metodologia} />
@@ -1321,14 +1319,153 @@ function TabComponenti() {
     <div className="space-y-6">
       <DidacticNote />
       <DimensionSelector value={dim} onChange={setDim} />
-      <StackedDecomposition dim={current} data={data} />
-      <PerimeterBreakdown dim={current} />
+      <PerimeterDiiBreakdown dim={current} data={data} />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <ComponentColumn variant="direct" dim={current} data={data} />
         <ComponentColumn variant="indirect" dim={current} data={data} />
         <ComponentColumn variant="induced" dim={current} data={data} />
       </div>
       <ComponentsTakeaway data={data} />
+    </div>
+  );
+}
+
+function PerimeterDiiBreakdown({ dim, data }) {
+  const natTotal = byPerimeter.national?.[dim.id] ?? 0;
+  const regTotal = byPerimeter.region?.[dim.id] ?? 0;
+  const provTotal = byPerimeter.origin_province?.[dim.id] ?? 0;
+
+  const direct = data?.direct ?? 0;
+  const indirect = data?.indirect ?? 0;
+  const induced = data?.induced ?? 0;
+
+  const fmt = dim.isMoney ? fmtM : fmtETP;
+
+  // For region/province: direct stays in origin, indirect+induced disperse.
+  // Province gets all the direct that "fits", residual split by national ind/ind ratio.
+  function estimateComponents(perimTotal) {
+    if (perimTotal <= 0) return { direct: 0, indirect: 0, induced: 0 };
+    const estDirect = Math.min(direct, perimTotal);
+    const remaining = perimTotal - estDirect;
+    const indInducedSum = (indirect + induced) || 1;
+    return {
+      direct: estDirect,
+      indirect: remaining * (indirect / indInducedSum),
+      induced: remaining * (induced / indInducedSum),
+    };
+  }
+
+  const regPct = natTotal > 0 ? Math.round((regTotal / natTotal) * 100) : 0;
+  const provPctOfNat = natTotal > 0 ? Math.round((provTotal / natTotal) * 100) : 0;
+  const provPctOfReg = regTotal > 0 ? Math.round((provTotal / regTotal) * 100) : 0;
+
+  const tiers = [
+    {
+      id: "national",
+      levelLabel: "Totale nazionale",
+      name: "Italia",
+      total: natTotal,
+      components: { direct, indirect, induced },
+      barWidth: 100,
+      pctLabel: null,
+      estimated: false,
+    },
+    {
+      id: "region",
+      levelLabel: "Regione di origine",
+      name: regionName,
+      total: regTotal,
+      components: estimateComponents(regTotal),
+      barWidth: regPct,
+      pctLabel: `${regPct}% del nazionale`,
+      estimated: true,
+    },
+    {
+      id: "province",
+      levelLabel: "Provincia di origine",
+      name: originProvince,
+      total: provTotal,
+      components: estimateComponents(provTotal),
+      barWidth: provPctOfNat,
+      pctLabel: `${provPctOfNat}% del nazionale · ${provPctOfReg}% della regione`,
+      estimated: true,
+    },
+  ];
+
+  return (
+    <div className="border border-ink-100 bg-white shadow-sm overflow-hidden">
+      <div className="border-b border-ink-100 bg-bg-page px-5 py-3">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">
+          {dim.label} — composizione e distribuzione territoriale
+        </p>
+        <p className="mt-0.5 text-xs text-ink-400">
+          Nazionale: dati esatti · Regione e provincia: stima — il diretto si concentra nell'origine, indiretto e indotto si diffondono lungo la filiera
+        </p>
+      </div>
+
+      <div className="divide-y divide-ink-100">
+        {tiers.map((tier, i) => {
+          const compSum = tier.components.direct + tier.components.indirect + tier.components.induced || 1;
+          const dPct = Math.round((tier.components.direct / compSum) * 100);
+          const iPct = Math.round((tier.components.indirect / compSum) * 100);
+          const nPct = 100 - dPct - iPct;
+
+          return (
+            <div key={tier.id} className="flex gap-4 py-5 pr-5" style={{ paddingLeft: 20 + i * 24 }}>
+              {i > 0 && (
+                <div className="flex shrink-0 flex-col items-center pt-1">
+                  <div className="h-2 w-px bg-ink-200" />
+                  <span className="text-[10px] text-ink-300">└</span>
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-ink-500">{tier.levelLabel}</p>
+                    <p className={["font-bold text-ink-900", i === 0 ? "text-[20px]" : i === 1 ? "text-[18px]" : "text-[16px]"].join(" ")}>
+                      {tier.name}
+                    </p>
+                    {tier.pctLabel && (
+                      <p className="mt-0.5 text-[11px] font-mono font-semibold text-brand-violet">{tier.pctLabel}</p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <p className={["font-bold tabular-nums text-ink-900", i === 0 ? "text-[20px]" : i === 1 ? "text-[18px]" : "text-[16px]"].join(" ")}>
+                      {fmt(tier.total)}
+                    </p>
+                    {tier.estimated && (
+                      <p className="text-[9px] uppercase tracking-[0.12em] text-ink-400">stima</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-3 h-5 overflow-hidden bg-ink-100">
+                  <div className="flex h-full transition-all" style={{ width: `${tier.barWidth}%` }}>
+                    <div className="bg-impact-direct h-full" style={{ width: `${dPct}%` }} title={`Diretto: ${fmt(tier.components.direct)}`} />
+                    <div className="bg-impact-indirect h-full" style={{ width: `${iPct}%` }} title={`Indiretto: ${fmt(tier.components.indirect)}`} />
+                    <div className="bg-impact-induced h-full" style={{ width: `${nPct}%` }} title={`Indotto: ${fmt(tier.components.induced)}`} />
+                  </div>
+                </div>
+
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                  {[
+                    { cls: "bg-impact-direct", label: "Diretto", pct: dPct, value: tier.components.direct },
+                    { cls: "bg-impact-indirect", label: "Indiretto", pct: iPct, value: tier.components.indirect },
+                    { cls: "bg-impact-induced", label: "Indotto", pct: nPct, value: tier.components.induced },
+                  ].map((c) => (
+                    <span key={c.label} className="flex items-center gap-1 text-[11px]">
+                      <span className={`h-2 w-2 shrink-0 ${c.cls}`} />
+                      <span className="text-ink-600">{c.label}</span>
+                      <span className="font-mono font-semibold text-ink-800">{c.pct}%</span>
+                      <span className="text-ink-400">{fmt(c.value)}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
