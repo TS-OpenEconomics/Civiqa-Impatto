@@ -319,6 +319,67 @@ function toPercent(n) {
   return `${Math.round(n)}%`;
 }
 
+function roundedPctParts(values) {
+  const total = values.reduce((sum, value) => sum + Math.max(0, value), 0);
+  if (total <= 0) return values.map(() => 0);
+
+  const raw = values.map((value) => (Math.max(0, value) / total) * 100);
+  const floored = raw.map(Math.floor);
+  let remainder = 100 - floored.reduce((sum, value) => sum + value, 0);
+  const order = raw
+    .map((value, index) => ({ index, fraction: value - Math.floor(value) }))
+    .sort((a, b) => b.fraction - a.fraction);
+
+  for (let i = 0; i < remainder; i += 1) {
+    floored[order[i % order.length].index] += 1;
+  }
+
+  return floored;
+}
+
+function buildTerritorialSegments(dimId) {
+  const split = threeSeg[dimId] ?? {};
+  const nationalVal = byPerimeter.national?.[dimId] ?? 0;
+  const regionVal = byPerimeter.region?.[dimId] ?? 0;
+  const provinceVal = byPerimeter.origin_province?.[dimId] ?? 0;
+
+  const values = [
+    Math.max(0, split.origin ?? provinceVal),
+    Math.max(0, split.rest_region ?? (regionVal - provinceVal)),
+    Math.max(0, split.extra ?? (nationalVal - regionVal)),
+  ];
+  const pct = roundedPctParts(values);
+
+  return [
+    { id: "province", label: "Provincia di origine", name: originProvince, value: values[0], pct: pct[0], cls: "bg-impact-direct" },
+    { id: "rest_region", label: "Resto della regione", name: regionName, value: values[1], pct: pct[1], cls: "bg-impact-indirect" },
+    { id: "rest_italy", label: "Resto d'Italia", name: "Italia", value: values[2], pct: pct[2], cls: "bg-impact-induced" },
+  ];
+}
+
+function territorialSegmentName(segment) {
+  if (!segment) return "Italia";
+  if (segment.id === "rest_region") return `resto della regione ${regionName}`;
+  if (segment.id === "rest_italy") return "resto d'Italia";
+  return originProvince;
+}
+
+function buildSegmentComponentValues(data, segment) {
+  const direct = data?.direct ?? 0;
+  const indirect = data?.indirect ?? 0;
+  const induced = data?.induced ?? 0;
+  const segmentTotal = segment?.value ?? direct + indirect + induced;
+  const segmentDirect = segment?.id === "province" ? Math.min(direct, segmentTotal) : 0;
+  const residual = Math.max(0, segmentTotal - segmentDirect);
+  const spilloverTotal = indirect + induced;
+
+  return {
+    direct: segmentDirect,
+    indirect: spilloverTotal > 0 ? residual * (indirect / spilloverTotal) : 0,
+    induced: spilloverTotal > 0 ? residual * (induced / spilloverTotal) : 0,
+  };
+}
+
 function buildPerimeterPreview() {
   return {
     sintesi: TAB_PREVIEWS.sintesi,
@@ -646,6 +707,68 @@ function ProvinceBreakdown({ mode }) {
 
   const fmtMoney = isPC ? fmtMoneyPc : fmtM;
   const fmtEmpFn = isPC ? fmtEtpPc : fmtETP;
+
+  if (!isPC) {
+    const gdpSegments = buildTerritorialSegments("gdp");
+    const productionSegments = buildTerritorialSegments("production");
+    const employmentSegments = buildTerritorialSegments("employment");
+    const incomeSegments = buildTerritorialSegments("income");
+    const segmentRows = gdpSegments.map((segment, index) => ({
+      ...segment,
+      production: productionSegments[index]?.value ?? 0,
+      employment: employmentSegments[index]?.value ?? 0,
+      income: incomeSegments[index]?.value ?? 0,
+    }));
+
+    return (
+      <div className="border border-ink-100 bg-white shadow-sm overflow-hidden">
+        <div className="border-b border-ink-100 bg-bg-page px-5 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">
+            PIL attivato — distribuzione territoriale
+          </p>
+          <p className="mt-0.5 text-xs text-ink-400">
+            Le quote sono esclusive: provincia di origine + resto della regione + resto d'Italia = 100%
+          </p>
+        </div>
+
+        <div className="p-5">
+          <div className="divide-y divide-ink-100">
+            {segmentRows.map((segment) => (
+              <div key={segment.id} className="py-4 first:pt-0 last:pb-0">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.14em] text-ink-500">
+                      <span className={`h-2.5 w-2.5 shrink-0 ${segment.cls}`} />
+                      {segment.label}
+                    </p>
+                    <p className="mt-1 truncate text-[17px] font-bold text-ink-900">
+                      {segment.id === "rest_region" ? `Altre province in ${segment.name}` : segment.name}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-mono text-[18px] font-bold tabular-nums text-ink-900">{segment.pct}%</p>
+                    <p className="text-xs font-semibold text-ink-700">{fmtM(segment.value)} PIL</p>
+                  </div>
+                </div>
+                <div className="mt-3 h-2 w-full overflow-hidden bg-ink-100">
+                  <div
+                    className={`${segment.cls} h-full transition-all`}
+                    style={{ width: `${segment.pct}%` }}
+                    title={`${segment.pct}% del PIL nazionale attivato`}
+                  />
+                </div>
+                <div className="mt-3 grid grid-cols-3 gap-3 border-t border-ink-100 pt-3">
+                  <MetricMini label="Produzione" value={fmtM(segment.production)} />
+                  <MetricMini label="Occupazione" value={fmtETP(segment.employment)} />
+                  <MetricMini label="Redditi" value={fmtM(segment.income)} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const tiers = [
     {
@@ -1312,159 +1435,159 @@ function MetricMini({ label, value }) {
 
 function TabComponenti() {
   const [dim, setDim] = useState("gdp");
+  const [segmentId, setSegmentId] = useState("province");
   const current = COMPONENTS.find((c) => c.id === dim) ?? COMPONENTS[1];
   const data = current.data ?? {};
+  const segments = buildTerritorialSegments(current.id);
+  const selectedSegment = segments.find((segment) => segment.id === segmentId) ?? segments[0];
+
+  useEffect(() => {
+    setSegmentId("province");
+  }, [dim]);
 
   return (
     <div className="space-y-6">
       <DidacticNote />
       <DimensionSelector value={dim} onChange={setDim} />
-      <PerimeterDiiBreakdown dim={current} data={data} />
+      <PerimeterDiiBreakdown dim={current} />
+      <SectionLabel
+        title={`Dettaglio ${territorialSegmentName(selectedSegment)}`}
+        subtitle="Diretto, indiretto e indotto con i primi tre settori attivati"
+      />
+      <SegmentSelector
+        dim={current}
+        selectedSegmentId={selectedSegment.id}
+        onSelectSegment={setSegmentId}
+      />
+      <SelectedSegmentBar dim={current} data={data} segment={selectedSegment} />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <ComponentColumn variant="direct" dim={current} data={data} />
-        <ComponentColumn variant="indirect" dim={current} data={data} />
-        <ComponentColumn variant="induced" dim={current} data={data} />
+        <ComponentColumn variant="direct" dim={current} data={data} segment={selectedSegment} />
+        <ComponentColumn variant="indirect" dim={current} data={data} segment={selectedSegment} />
+        <ComponentColumn variant="induced" dim={current} data={data} segment={selectedSegment} />
       </div>
       <ComponentsTakeaway data={data} />
     </div>
   );
 }
 
-function PerimeterDiiBreakdown({ dim, data }) {
-  const natTotal = byPerimeter.national?.[dim.id] ?? 0;
-  const regTotal = byPerimeter.region?.[dim.id] ?? 0;
-  const provTotal = byPerimeter.origin_province?.[dim.id] ?? 0;
-
-  const direct = data?.direct ?? 0;
-  const indirect = data?.indirect ?? 0;
-  const induced = data?.induced ?? 0;
-
+function SegmentSelector({ dim, selectedSegmentId, onSelectSegment }) {
   const fmt = dim.isMoney ? fmtM : fmtETP;
+  const segments = buildTerritorialSegments(dim.id);
 
-  // For region/province: direct stays in origin, indirect+induced disperse.
-  // Province gets all the direct that "fits", residual split by national ind/ind ratio.
-  function estimateComponents(perimTotal) {
-    if (perimTotal <= 0) return { direct: 0, indirect: 0, induced: 0 };
-    const estDirect = Math.min(direct, perimTotal);
-    const remaining = perimTotal - estDirect;
-    const indInducedSum = (indirect + induced) || 1;
-    return {
-      direct: estDirect,
-      indirect: remaining * (indirect / indInducedSum),
-      induced: remaining * (induced / indInducedSum),
-    };
-  }
+  return (
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+      {segments.map((segment) => (
+        <button
+          key={segment.id}
+          type="button"
+          onClick={() => onSelectSegment(segment.id)}
+          className={[
+            "border bg-white p-4 text-left transition-colors",
+            selectedSegmentId === segment.id ? "border-brand-violet ring-1 ring-brand-violet" : "border-ink-100 hover:border-brand-violet",
+          ].join(" ")}
+        >
+          <p className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.14em] text-ink-500">
+            <span className={`h-2.5 w-2.5 shrink-0 ${segment.cls}`} />
+            {segment.label}
+          </p>
+          <p className="mt-2 text-[16px] font-bold text-ink-900">
+            {segment.id === "rest_region" ? `Altre province in ${segment.name}` : segment.name}
+          </p>
+          <div className="mt-3 flex items-end justify-between gap-2">
+            <p className="font-mono text-[24px] font-bold tabular-nums text-ink-900">{segment.pct}%</p>
+            <p className="text-right text-xs font-semibold text-ink-700">{fmt(segment.value)}</p>
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+}
 
-  const regPct = natTotal > 0 ? Math.round((regTotal / natTotal) * 100) : 0;
-  const provPctOfNat = natTotal > 0 ? Math.round((provTotal / natTotal) * 100) : 0;
-  const provPctOfReg = regTotal > 0 ? Math.round((provTotal / regTotal) * 100) : 0;
+function SelectedSegmentBar({ dim, data, segment }) {
+  const fmt = dim.isMoney ? fmtM : fmtETP;
+  const components = buildSegmentComponentValues(data, segment);
+  const total = components.direct + components.indirect + components.induced;
+  const pcts = roundedPctParts([components.direct, components.indirect, components.induced]);
+  const items = [
+    { key: "direct", label: "Diretto", value: components.direct, pct: pcts[0], cls: "bg-impact-direct" },
+    { key: "indirect", label: "Indiretto", value: components.indirect, pct: pcts[1], cls: "bg-impact-indirect" },
+    { key: "induced", label: "Indotto", value: components.induced, pct: pcts[2], cls: "bg-impact-induced" },
+  ];
 
-  const tiers = [
-    {
-      id: "national",
-      levelLabel: "Totale nazionale",
-      name: "Italia",
-      total: natTotal,
-      components: { direct, indirect, induced },
-      barWidth: 100,
-      pctLabel: null,
-      estimated: false,
-    },
-    {
-      id: "region",
-      levelLabel: "Regione di origine",
-      name: regionName,
-      total: regTotal,
-      components: estimateComponents(regTotal),
-      barWidth: regPct,
-      pctLabel: `${regPct}% del nazionale`,
-      estimated: true,
-    },
-    {
-      id: "province",
-      levelLabel: "Provincia di origine",
-      name: originProvince,
-      total: provTotal,
-      components: estimateComponents(provTotal),
-      barWidth: provPctOfNat,
-      pctLabel: `${provPctOfNat}% del nazionale · ${provPctOfReg}% della regione`,
-      estimated: true,
-    },
+  return (
+    <div className="border border-ink-100 bg-white p-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <p className="text-sm font-semibold text-ink-700">Composizione in {territorialSegmentName(segment)}</p>
+        <p className="font-mono text-[20px] font-bold tabular-nums text-ink-900">{fmt(total)}</p>
+      </div>
+      <div className="mt-4 flex h-7 w-full overflow-hidden bg-ink-100">
+        {items.map((item) => (
+          <div
+            key={item.key}
+            className={`${item.cls} h-full`}
+            style={{ width: `${item.pct}%` }}
+            title={`${item.label}: ${fmt(item.value)} (${item.pct}%)`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PerimeterDiiBreakdown({ dim }) {
+  const natTotal = byPerimeter.national?.[dim.id] ?? 0;
+  const fmt = dim.isMoney ? fmtM : fmtETP;
+  const data = dim.data ?? {};
+  const components = {
+    direct: data.direct ?? 0,
+    indirect: data.indirect ?? 0,
+    induced: data.induced ?? 0,
+  };
+  const pcts = roundedPctParts([components.direct, components.indirect, components.induced]);
+  const items = [
+    { key: "direct", label: "Diretto", value: components.direct, pct: pcts[0], cls: "bg-impact-direct" },
+    { key: "indirect", label: "Indiretto", value: components.indirect, pct: pcts[1], cls: "bg-impact-indirect" },
+    { key: "induced", label: "Indotto", value: components.induced, pct: pcts[2], cls: "bg-impact-induced" },
   ];
 
   return (
     <div className="border border-ink-100 bg-white shadow-sm overflow-hidden">
       <div className="border-b border-ink-100 bg-bg-page px-5 py-3">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">
-          {dim.label} — composizione e distribuzione territoriale
+          {dim.label} — composizione nazionale
         </p>
         <p className="mt-0.5 text-xs text-ink-400">
-          Nazionale: dati esatti · Regione e provincia: stima — il diretto si concentra nell'origine, indiretto e indotto si diffondono lungo la filiera
+          Diretto + indiretto + indotto = 100% del totale nazionale
         </p>
       </div>
 
-      <div className="divide-y divide-ink-100">
-        {tiers.map((tier, i) => {
-          const compSum = tier.components.direct + tier.components.indirect + tier.components.induced || 1;
-          const dPct = Math.round((tier.components.direct / compSum) * 100);
-          const iPct = Math.round((tier.components.indirect / compSum) * 100);
-          const nPct = 100 - dPct - iPct;
+      <div className="p-5">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-sm font-semibold text-ink-700">Totale nazionale</p>
+          <p className="font-mono text-[20px] font-bold tabular-nums text-ink-900">{fmt(natTotal)}</p>
+        </div>
 
-          return (
-            <div key={tier.id} className="flex gap-4 py-5 pr-5" style={{ paddingLeft: 20 + i * 24 }}>
-              {i > 0 && (
-                <div className="flex shrink-0 flex-col items-center pt-1">
-                  <div className="h-2 w-px bg-ink-200" />
-                  <span className="text-[10px] text-ink-300">└</span>
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-ink-500">{tier.levelLabel}</p>
-                    <p className={["font-bold text-ink-900", i === 0 ? "text-[20px]" : i === 1 ? "text-[18px]" : "text-[16px]"].join(" ")}>
-                      {tier.name}
-                    </p>
-                    {tier.pctLabel && (
-                      <p className="mt-0.5 text-[11px] font-mono font-semibold text-brand-violet">{tier.pctLabel}</p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <p className={["font-bold tabular-nums text-ink-900", i === 0 ? "text-[20px]" : i === 1 ? "text-[18px]" : "text-[16px]"].join(" ")}>
-                      {fmt(tier.total)}
-                    </p>
-                    {tier.estimated && (
-                      <p className="text-[9px] uppercase tracking-[0.12em] text-ink-400">stima</p>
-                    )}
-                  </div>
-                </div>
+        <div className="mt-4 flex h-7 w-full overflow-hidden bg-ink-100">
+          {items.map((item) => (
+            <div
+              key={item.key}
+              className={`${item.cls} h-full`}
+              style={{ width: `${item.pct}%` }}
+              title={`${item.label}: ${fmt(item.value)} (${item.pct}%)`}
+            />
+          ))}
+        </div>
 
-                <div className="mt-3 h-5 overflow-hidden bg-ink-100">
-                  <div className="flex h-full transition-all" style={{ width: `${tier.barWidth}%` }}>
-                    <div className="bg-impact-direct h-full" style={{ width: `${dPct}%` }} title={`Diretto: ${fmt(tier.components.direct)}`} />
-                    <div className="bg-impact-indirect h-full" style={{ width: `${iPct}%` }} title={`Indiretto: ${fmt(tier.components.indirect)}`} />
-                    <div className="bg-impact-induced h-full" style={{ width: `${nPct}%` }} title={`Indotto: ${fmt(tier.components.induced)}`} />
-                  </div>
-                </div>
-
-                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-                  {[
-                    { cls: "bg-impact-direct", label: "Diretto", pct: dPct, value: tier.components.direct },
-                    { cls: "bg-impact-indirect", label: "Indiretto", pct: iPct, value: tier.components.indirect },
-                    { cls: "bg-impact-induced", label: "Indotto", pct: nPct, value: tier.components.induced },
-                  ].map((c) => (
-                    <span key={c.label} className="flex items-center gap-1 text-[11px]">
-                      <span className={`h-2 w-2 shrink-0 ${c.cls}`} />
-                      <span className="text-ink-600">{c.label}</span>
-                      <span className="font-mono font-semibold text-ink-800">{c.pct}%</span>
-                      <span className="text-ink-400">{fmt(c.value)}</span>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          );
-        })}
+        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
+          {items.map((item) => (
+            <span key={item.key} className="flex items-center gap-2 text-[11px] text-ink-600">
+              <span className={`h-2.5 w-2.5 shrink-0 ${item.cls}`} />
+              <span>{item.label}</span>
+              <span className="font-mono font-semibold text-ink-900">{item.pct}%</span>
+              <span className="font-mono text-ink-400">{fmt(item.value)}</span>
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -1508,83 +1631,43 @@ function DimensionSelector({ value, onChange }) {
   );
 }
 
-function StackedDecomposition({ dim, data }) {
-  const total = dim.id === "employment"
-    ? (byPerimeter.national?.employment ?? 0)
-    : (byPerimeter.national?.[dim.id] ?? 0);
-  const direct = data?.direct ?? 0;
-  const indirect = data?.indirect ?? 0;
-  const induced = data?.induced ?? 0;
-  const sum = direct + indirect + induced || 1;
-  const pctD = (direct / sum) * 100;
-  const pctI = (indirect / sum) * 100;
-  const pctN = (induced / sum) * 100;
-
-  return (
-    <div className="border border-ink-100 bg-white p-5">
-      <div className="flex items-end justify-between gap-4">
-        <p className="text-sm font-medium text-ink-700">{dim.label} totale (perimetro nazionale)</p>
-        <p className="text-[28px] font-bold text-ink-900">{dim.isMoney ? fmtM(total) : fmtETP(total)}</p>
-      </div>
-      <div className="mt-4 h-12 overflow-hidden">
-        <div className="flex h-12 w-full">
-          <div className="bg-impact-direct" style={{ width: `${pctD}%` }} />
-          <div className="bg-impact-indirect" style={{ width: `${pctI}%` }} />
-          <div className="bg-impact-induced" style={{ width: `${pctN}%` }} />
-        </div>
-      </div>
-      <div className="mt-4 flex flex-wrap gap-5">
-        {[
-          { label: "Diretto", value: direct, pct: pctD, cls: "bg-impact-direct" },
-          { label: "Indiretto", value: indirect, pct: pctI, cls: "bg-impact-indirect" },
-          { label: "Indotto", value: induced, pct: pctN, cls: "bg-impact-induced" },
-        ].map((item) => (
-          <div key={item.label} className="flex items-center gap-2">
-            <div className={`h-3 w-3 shrink-0 rounded-sm ${item.cls}`} />
-            <span className="text-xs font-semibold text-ink-700">{item.label}</span>
-            <span className="text-xs font-mono font-semibold text-ink-900">{dim.isMoney ? fmtM(item.value) : fmtETP(item.value)}</span>
-            <span className="text-xs text-ink-400">{Math.round(item.pct)}%</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function StackedLabel({ label, value, pct, isMoney }) {
-  return (
-    <div className="border border-ink-100 bg-bg-page p-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-500">{label}</p>
-      <p className="mt-2 text-sm font-semibold text-ink-900">{isMoney ? fmtM(value) : fmtETP(value)}</p>
-      <p className="text-xs text-ink-500">{Math.round(pct)}% del totale</p>
-    </div>
-  );
-}
-
-function ComponentColumn({ variant, dim, data }) {
+function ComponentColumn({ variant, dim, data, segment = null }) {
   const key = variant === "direct" ? "direct" : variant === "indirect" ? "indirect" : "induced";
   const accent = variant === "direct" ? "bg-impact-direct" : variant === "indirect" ? "bg-impact-indirect" : "bg-impact-induced";
-  const value = data?.[key] ?? 0;
-  const total = (data?.direct ?? 0) + (data?.indirect ?? 0) + (data?.induced ?? 0) || 1;
-  const pct = Math.round((value / total) * 100);
-  const items = (data?.top_sectors?.[key] ?? []).slice(0, 3);
+  const components = buildSegmentComponentValues(data, segment);
+  const value = components[key] ?? 0;
+  const total = components.direct + components.indirect + components.induced;
+  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+  const nationalValue = data?.[key] ?? 0;
+  const componentRatio = nationalValue > 0 ? value / nationalValue : 0;
+  const items = (data?.top_sectors?.[key] ?? [])
+    .slice(0, 3)
+    .map((item) => ({ ...item, value: item.value * componentRatio }));
+  const variantLabel = variant === "direct" ? "Diretto" : variant === "indirect" ? "Indiretto" : "Indotto";
+  const segmentLabel = territorialSegmentName(segment);
 
   return (
     <div className="border border-ink-100 bg-white p-5">
       <div className="flex items-center gap-2">
         <span className={`h-2.5 w-2.5 rounded-full ${accent}`} />
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">{variant}</h3>
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">{variantLabel}</h3>
       </div>
       <p className="mt-3 text-[28px] font-bold text-ink-900">{dim.isMoney ? fmtM(value) : fmtETP(value)}</p>
-      <p className="mt-1 text-xs text-ink-500">{pct}% del totale</p>
+      <p className="mt-1 text-xs text-ink-500">
+        {pct}% del totale in {segmentLabel}
+      </p>
       <div className="mt-4 h-px bg-ink-100" />
       <ul className="mt-4 space-y-2">
-        {items.map((s, idx) => (
-          <li key={`${variant}-${idx}`} className="flex items-center justify-between gap-3 text-xs">
-            <span className="truncate text-ink-700">{idx + 1}. {s.name}</span>
-            <span className="font-mono font-semibold text-ink-900">{dim.isMoney ? fmtM(s.value) : fmtETP(s.value)}</span>
-          </li>
-        ))}
+        {value > 0 ? (
+          items.map((s, idx) => (
+            <li key={`${variant}-${idx}`} className="flex items-center justify-between gap-3 text-xs">
+              <span className="truncate text-ink-700">{idx + 1}. {s.name}</span>
+              <span className="font-mono font-semibold text-ink-900">{dim.isMoney ? fmtM(s.value) : fmtETP(s.value)}</span>
+            </li>
+          ))
+        ) : (
+          <li className="text-xs italic text-ink-500">Nessun valore {variantLabel.toLowerCase()} in questo perimetro.</li>
+        )}
       </ul>
       <p className="mt-4 text-sm leading-relaxed text-ink-700">
         {variant === "direct" && "L'effetto immediato sui settori che ricevono la spesa."}
