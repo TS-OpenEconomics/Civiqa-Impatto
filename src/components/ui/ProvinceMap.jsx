@@ -18,10 +18,12 @@ export function ProvinceMap({ nuts2Code, data, minHeight = 220, className = "" }
 
   useEffect(() => {
     const element = ref.current;
-    if (!element || !geojson || !nuts2Code) return;
+    if (!element || !geojson) return;
 
-    const prefixes = nuts2Code === "ITH1" ? ["ITH1","ITH2"] : [nuts2Code];
-    const features = geojson.features.filter(f => prefixes.some(p => f.properties.NUTS_ID.startsWith(p)));
+    const prefixes = nuts2Code === "ITH1" ? ["ITH1","ITH2"] : nuts2Code ? [nuts2Code] : null;
+    const features = prefixes
+      ? geojson.features.filter(f => prefixes.some(p => f.properties.NUTS_ID.startsWith(p)))
+      : geojson.features;
     if (!features.length) return;
 
     const filteredGj = { type:"FeatureCollection", features };
@@ -48,7 +50,7 @@ export function ProvinceMap({ nuts2Code, data, minHeight = 220, className = "" }
       margin:{ t:0, b:0, l:0, r:0 },
     }, { responsive:true, displayModeBar:false });
 
-    return () => { Plotly.purge(element); };
+    return () => { if (element) Plotly.purge(element); };
   }, [geojson, nuts2Code, data]);
 
   if (!geojson) return (
