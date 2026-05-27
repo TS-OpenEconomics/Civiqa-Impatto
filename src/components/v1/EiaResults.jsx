@@ -1832,10 +1832,10 @@ function TabSettori({ updateSearch, searchParams, onOpenExplore }) {
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500 mb-1">Sankey — flusso di attivazione settoriale</p>
           <p className="text-sm leading-relaxed text-ink-700">
             Come la spesa diretta (sinistra) si propaga nei settori attivati per effetto indiretto e indotto (destra).
-            Lo spessore dei flussi è proporzionale al valore di {SECTOR_DIMS.find((d) => d.id === dim)?.label ?? dim} attivato.
+            Lo spessore dei flussi è proporzionale al valore attivato per la dimensione selezionata.
           </p>
         </div>
-        <SectorSankeyChart dim={dim} />
+        <SectorSankeyChart key={dim} dim={dim} />
       </div>
 
       <SettoriTakeaway dim={dim} />
