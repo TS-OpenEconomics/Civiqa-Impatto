@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import staticResults from "../../mocks/eiaResults.json";
 import { Badge } from "../ui/Badge";
 import { ImpactIcon } from "../ui/ImpactIcon";
 import { ItalyMap } from "../ui/ItalyMap";
+import { ProvinceMap } from "../ui/ProvinceMap";
 import { IconDownload } from "../ui/Icons";
 import { useToast } from "../../hooks/useToast";
 
@@ -13,17 +15,83 @@ function fmtIT(n, dec = 0) {
 }
 function fmtM(n)   { return `${fmtIT(n / 1_000_000, 1)} M€`; }
 function fmtETP(n) { return `${fmtIT(n, n < 10 ? 1 : 0)} ETP`; }
+function fmtPC(n)  { return `${fmtIT(n, 2)} EUR/ab`; }
 
 // ── Static data derived once from mock ───────────────────────────────────────
 
-const syn        = staticResults.synthesis  ?? {};
-const inp        = staticResults.input      ?? {};
-const macroSplit = staticResults.macro_split ?? {};
-const comps      = staticResults.components  ?? {};
-const geo        = staticResults.geography   ?? {};
-const sectItems  = staticResults.sectors?.items ?? [];
+const d          = staticResults;
+const rawSyn     = d.synthesis ?? {};
+const inp        = d.input ?? {};
+const comps      = d.components ?? {};
+const rawGeo     = d.geography ?? {};
+const sectItems  = d.sectors?.items ?? [];
+const previews   = d.previews ?? {};
+
+const byPerimeter = rawSyn.by_perimeter ?? {};
+const national    = byPerimeter.national ?? {};
+const threeSeg    = rawSyn.three_segments ?? {};
+const synthKpis   = rawSyn.synthetic_kpis ?? rawSyn.kpis ?? {};
+
+const syn = {
+  production: {
+    total: national.production ?? rawSyn.production?.total ?? 0,
+    extra_regional: threeSeg.production?.extra ?? rawSyn.production?.extra_regional ?? 0,
+    geographic_split: true,
+  },
+  gdp: {
+    total: national.gdp ?? rawSyn.gdp?.total ?? 0,
+    extra_regional: threeSeg.gdp?.extra ?? rawSyn.gdp?.extra_regional ?? 0,
+    geographic_split: true,
+  },
+  employment: {
+    total: national.employment ?? rawSyn.employment?.total ?? 0,
+    extra_regional: threeSeg.employment?.extra ?? rawSyn.employment?.extra_regional ?? 0,
+    geographic_split: true,
+  },
+  income: {
+    total: national.income ?? rawSyn.income?.total ?? 0,
+    extra_regional: threeSeg.income?.extra ?? rawSyn.income?.extra_regional ?? 0,
+    geographic_split: true,
+  },
+  fiscal: {
+    total: rawSyn.fiscal_national ?? national.fiscal ?? rawSyn.fiscal?.total ?? 0,
+    geographic_split: false,
+  },
+  kpis: synthKpis,
+};
+
+const geo = {
+  ...rawGeo,
+  regions: (rawGeo.regions ?? []).map(r => ({
+    ...r,
+    regione: r.regione ?? r.name,
+    production: r.production ?? r.values?.production?.absolute ?? 0,
+    gdp: r.gdp ?? r.values?.gdp?.absolute ?? 0,
+    employment: r.employment ?? r.values?.employment?.absolute ?? 0,
+    income: r.income ?? r.values?.income?.absolute ?? 0,
+    production_pc: r.production_pc ?? r.values?.production?.per_capita ?? 0,
+    gdp_pc: r.gdp_pc ?? r.values?.gdp?.per_capita ?? 0,
+    employment_pc: r.employment_pc ?? r.values?.employment?.per_capita_per_10k ?? 0,
+    income_pc: r.income_pc ?? r.values?.income?.per_capita ?? 0,
+  })),
+  provinces: (rawGeo.provinces ?? []).map(p => ({
+    ...p,
+    provincia: p.provincia ?? p.name,
+    regione: p.regione ?? p.region_name,
+    production: p.production ?? p.values?.production?.absolute ?? 0,
+    gdp: p.gdp ?? p.values?.gdp?.absolute ?? 0,
+    employment: p.employment ?? p.values?.employment?.absolute ?? 0,
+    income: p.income ?? p.values?.income?.absolute ?? 0,
+    production_pc: p.production_pc ?? p.values?.production?.per_capita ?? 0,
+    gdp_pc: p.gdp_pc ?? p.values?.gdp?.per_capita ?? 0,
+    employment_pc: p.employment_pc ?? p.values?.employment?.per_capita_per_10k ?? 0,
+    income_pc: p.income_pc ?? p.values?.income?.per_capita ?? 0,
+  })),
+};
+const macroSplit = rawGeo.macro_split ?? d.macro_split ?? {};
 
 const regionName     = inp.origin_region?.name ?? "Italia";
+const regionNuts2    = inp.origin_region?.nuts2_code ?? null;
 const pctIntraRegion = Math.round(((macroSplit.origin?.pct ?? 0.46) + (macroSplit.rest_of_region?.pct ?? 0.38)) * 100);
 const nVoci          = inp.spend_breakdown?.length ?? 7;
 const origineLabel   = inp.origin_provinces?.length > 1
@@ -48,10 +116,11 @@ const topSectorLabel = (() => {
 // ── Tab definitions ────────────────────────────────────────────────────────────
 
 const TABS = [
-  { id: "sintesi",    label: "Sintesi",    preview: fmtM(syn.gdp?.total ?? 0) },
-  { id: "componenti", label: "Componenti", preview: directPctLabel },
-  { id: "geografia",  label: "Geografia",  preview: `${pctIntraRegion}% in regione` },
-  { id: "settori",    label: "Settori",    preview: topSectorLabel },
+  { id: "sintesi",    label: "Sintesi",    preview: previews.sintesi ?? fmtM(syn.gdp?.total ?? 0) },
+  { id: "componenti", label: "Componenti", preview: previews.componenti ?? directPctLabel },
+  { id: "geografia",  label: "Geografia",  preview: previews.geografia ?? `${pctIntraRegion}% in regione` },
+  { id: "settori",    label: "Settori",    preview: previews.settori ?? topSectorLabel },
+  { id: "esplora",    label: "Esplora",    preview: previews.esplora ?? "Pivot dati" },
 ];
 
 // ── Effect card configs ───────────────────────────────────────────────────────
@@ -86,7 +155,7 @@ const EFFECTS = [
     label: "OCCUPAZIONE",
     getData: s => s.employment,
     isMoney: false,
-    getDescription: (region, s) => {
+    getDescription: (region) => {
       const anni = inp.years_of_realization ?? 1;
       return `Sono i posti di lavoro equivalenti a tempo pieno generati in ${region} su tutta la filiera. Calcolati assumendo ${anni} ann${anni === 1 ? "o" : "i"} di realizzazione.`;
     },
@@ -183,11 +252,25 @@ const GLOSSARY = {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function EiaResults({ project, eiaResults: rawResults, analysis, onBack }) {
-  const [tab, setTab] = useState("sintesi");
+export function EiaResults({ project, analysis, onBack }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get("tab");
+  const initialTab = TABS.some(t => t.id === requestedTab) ? requestedTab : "sintesi";
+  const [tab, setTab] = useState(initialTab);
   const [glossaryOpen, setGlossaryOpen] = useState(false);
   const { showToast } = useToast();
   const meta = staticResults.metadata;
+
+  const handleTabChange = useCallback((nextTab) => {
+    setTab(nextTab);
+    setGlossaryOpen(false);
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      if (nextTab === "sintesi") next.delete("tab");
+      else next.set("tab", nextTab);
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
 
   async function handleDownloadExcel() {
     try {
@@ -281,7 +364,7 @@ export function EiaResults({ project, eiaResults: rawResults, analysis, onBack }
             {TABS.map(t => (
               <button
                 key={t.id}
-                onClick={() => setTab(t.id)}
+                onClick={() => handleTabChange(t.id)}
                 className={`relative px-4 py-3.5 text-sm whitespace-nowrap transition-colors ${
                   tab === t.id
                     ? "font-bold text-ink-900"
@@ -289,7 +372,7 @@ export function EiaResults({ project, eiaResults: rawResults, analysis, onBack }
                 }`}
               >
                 {t.label}
-                <span className={`ml-1.5 text-xs font-normal ${tab === t.id ? "text-ink-500" : "text-ink-300"}`}>
+                <span className={`ml-1.5 hidden text-xs font-normal sm:inline ${tab === t.id ? "text-ink-500" : "text-ink-300"}`}>
                   · {t.preview}
                 </span>
                 {tab === t.id && (
@@ -318,6 +401,7 @@ export function EiaResults({ project, eiaResults: rawResults, analysis, onBack }
             {tab === "componenti" && <TabComponenti />}
             {tab === "geografia" && <TabGeografia />}
             {tab === "settori" && <TabSettori />}
+            {tab === "esplora" && <TabEsplora showToast={showToast} project={project} />}
           </div>
         </div>
       </div>
@@ -561,6 +645,22 @@ function TabGeografia() {
   const others      = sorted.slice(10);
   const othersTotal = others.reduce((s, r) => s + (r[dim] ?? 0), 0);
   const grandTotal  = regions.reduce((s, r) => s + (r[dim] ?? 0), 0);
+  const selectedRegionInfo = regions.find(r => r.regione === selectedRegion);
+  const selectedNuts2 = selectedRegionInfo?.nuts2_code ?? (selectedRegion === regionName ? regionNuts2 : null);
+  const regionProvinces = selectedRegion
+    ? (geo.provinces ?? []).filter(p => p.regione === selectedRegion || p.region_name === selectedRegion)
+    : [];
+  const maxProvinceVal = Math.max(...regionProvinces.map(p => p[dim] ?? 0), 1);
+  const provinceMapData = regionProvinces.map(p => {
+    const val = p[dim] ?? 0;
+    return {
+      provincia: p.provincia,
+      intensita: Math.sqrt(val / maxProvinceVal),
+      hoverText: `${p.provincia}: ${fmt(val)}`,
+    };
+  });
+  const sortedProvinces = [...regionProvinces].sort((a, b) => (b[dim] ?? 0) - (a[dim] ?? 0));
+  const provinceTotal = sortedProvinces.reduce((s, p) => s + (p[dim] ?? 0), 0);
 
   return (
     <div className="space-y-6">
@@ -571,26 +671,60 @@ function TabGeografia() {
 
       <GeoControls dim={dim} onDimChange={d => { setDim(d); setSelectedRegion(null); }} />
 
+      {selectedRegion && (
+        <div className="flex items-center justify-between gap-3 border border-ink-100 bg-bg-page px-4 py-3">
+          <div>
+            <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Dettaglio regionale</p>
+            <p className="text-sm font-semibold text-ink-900">
+              {selectedRegion}: province per {dimLabel.toLowerCase()}
+            </p>
+          </div>
+          <button
+            onClick={() => setSelectedRegion(null)}
+            className="border border-ink-300 px-3 py-2 text-xs font-semibold text-ink-700 hover:border-brand-violet hover:text-brand-violet"
+          >
+            Torna all'Italia
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 items-start">
         <div className="border border-ink-100 bg-white overflow-hidden">
-          <ItalyMap
-            data={mapData}
-            tone="violet"
-            onRegionClick={r => setSelectedRegion(prev => prev === r ? null : r)}
-            selectedRegion={selectedRegion}
-            minHeight={360}
-          />
+          {selectedRegion && selectedNuts2 && regionProvinces.length > 0 ? (
+            <ProvinceMap
+              nuts2Code={selectedNuts2}
+              data={provinceMapData}
+              minHeight={360}
+            />
+          ) : (
+            <ItalyMap
+              data={mapData}
+              tone="violet"
+              onRegionClick={r => setSelectedRegion(prev => prev === r ? null : r)}
+              selectedRegion={selectedRegion}
+              minHeight={360}
+            />
+          )}
         </div>
-        <RegionList
-          top10={top10}
-          othersCount={others.length}
-          othersTotal={othersTotal}
-          grandTotal={grandTotal}
-          dim={dim}
-          isMoney={isMoney}
-          selectedRegion={selectedRegion}
-          onSelect={r => setSelectedRegion(prev => prev === r ? null : r)}
-        />
+        {selectedRegion && regionProvinces.length > 0 ? (
+          <ProvinceList
+            provinces={sortedProvinces}
+            grandTotal={provinceTotal}
+            dim={dim}
+            isMoney={isMoney}
+          />
+        ) : (
+          <RegionList
+            top10={top10}
+            othersCount={others.length}
+            othersTotal={othersTotal}
+            grandTotal={grandTotal}
+            dim={dim}
+            isMoney={isMoney}
+            selectedRegion={selectedRegion}
+            onSelect={r => setSelectedRegion(prev => prev === r ? null : r)}
+          />
+        )}
       </div>
 
       <div className="border border-ink-100 bg-bg-page px-4 py-4">
@@ -664,6 +798,36 @@ function RegionList({ top10, othersCount, othersTotal, grandTotal, dim, isMoney,
         <li className="flex items-center gap-3 px-4 py-2.5 border-t-2 border-ink-200">
           <span className="w-4 shrink-0" />
           <span className="text-xs font-bold text-ink-900 flex-1">Totale Italia</span>
+          <span className="text-xs font-mono font-bold text-ink-900 shrink-0">{fmt(grandTotal)}</span>
+        </li>
+      </ul>
+    </div>
+  );
+}
+
+function ProvinceList({ provinces, grandTotal, dim, isMoney }) {
+  const fmt = v => isMoney ? fmtM(v) : fmtETP(v);
+  return (
+    <div className="border border-ink-100 bg-white overflow-auto" style={{ maxHeight: 396 }}>
+      <div className="sticky top-0 px-4 py-3 border-b border-ink-100 bg-white">
+        <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Province della regione</p>
+      </div>
+      <ul className="divide-y divide-ink-100">
+        {provinces.map((p, i) => {
+          const val = p[dim] ?? 0;
+          const pct = grandTotal > 0 ? Math.round((val / grandTotal) * 100) : 0;
+          return (
+            <li key={p.code ?? p.provincia} className="flex items-center gap-3 px-4 py-2.5">
+              <span className="text-[11px] font-mono text-ink-300 w-4 shrink-0 select-none">{i + 1}</span>
+              <span className="text-xs font-medium text-ink-900 flex-1 truncate">{p.provincia}</span>
+              <span className="text-xs font-mono font-semibold text-ink-900 shrink-0">{fmt(val)}</span>
+              <span className="text-[11px] text-ink-400 shrink-0 w-7 text-right">{pct}%</span>
+            </li>
+          );
+        })}
+        <li className="flex items-center gap-3 px-4 py-2.5 border-t-2 border-ink-200">
+          <span className="w-4 shrink-0" />
+          <span className="text-xs font-bold text-ink-900 flex-1">Totale regione</span>
           <span className="text-xs font-mono font-bold text-ink-900 shrink-0">{fmt(grandTotal)}</span>
         </li>
       </ul>
@@ -914,6 +1078,173 @@ function SettoriTakeaway({ topIntra, topExtra }) {
 }
 
 // ── SpendInputCard ─────────────────────────────────────────────────────────────
+
+// Tab Esplora
+
+const ESPLORA_DIMS = [
+  { id: "gdp", label: "PIL", isMoney: true },
+  { id: "production", label: "Produzione", isMoney: true },
+  { id: "employment", label: "Occupazione", isMoney: false },
+  { id: "income", label: "Redditi", isMoney: true },
+];
+
+const ESPLORA_AXES = [
+  { id: "territorio", label: "Territorio" },
+  { id: "settore", label: "Settore" },
+];
+
+const ESPLORA_LEVELS = [
+  { id: "assoluto", label: "Valori assoluti" },
+  { id: "pc", label: "Pro capite" },
+];
+
+function TabEsplora({ showToast, project }) {
+  const [dim, setDim] = useState("gdp");
+  const [axis, setAxis] = useState("territorio");
+  const [level, setLevel] = useState("assoluto");
+
+  const meta = ESPLORA_DIMS.find(d => d.id === dim) ?? ESPLORA_DIMS[0];
+  const rows = getExploraRows({ dim, axis, level });
+  const isPerCapita = level === "pc";
+
+  function handleExport() {
+    showToast?.(`Export pivot "${project?.nome ?? "progetto"}" disponibile nella versione completa.`, "info");
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Esplora dati</p>
+          <h3 className="mt-1 text-xl font-bold text-ink-900">Pivot per territorio e settore</h3>
+          <p className="mt-2 max-w-2xl text-sm text-ink-600">
+            Una vista operativa per leggere gli stessi risultati cambiando dimensione, asse e normalizzazione.
+          </p>
+        </div>
+        <button
+          onClick={handleExport}
+          className="flex h-10 items-center gap-2 border border-ink-300 px-4 text-sm font-semibold text-ink-700 hover:border-brand-violet hover:text-brand-violet"
+        >
+          Esporta pivot <IconDownload />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 border border-ink-100 bg-bg-page p-4 md:grid-cols-3">
+        <SegmentedControl label="Dimensione" value={dim} options={ESPLORA_DIMS} onChange={setDim} />
+        <SegmentedControl label="Asse" value={axis} options={ESPLORA_AXES} onChange={setAxis} />
+        <SegmentedControl label="Lettura" value={level} options={ESPLORA_LEVELS} onChange={setLevel} />
+      </div>
+
+      <ExploraChart rows={rows.slice(0, 12)} meta={meta} isPerCapita={isPerCapita} />
+      <ExploraTable rows={rows} meta={meta} isPerCapita={isPerCapita} />
+    </div>
+  );
+}
+
+function getExploraRows({ dim, axis, level }) {
+  if (axis === "settore") {
+    return [...sectItems]
+      .map(s => {
+        const v = s.values?.[dim] ?? {};
+        const value = (v.intra ?? 0) + (v.extra ?? 0);
+        return {
+          label: s.ateco_name,
+          code: s.ateco_code,
+          value,
+          detail: `${Math.round(value > 0 ? ((v.intra ?? 0) / value) * 100 : 0)}% in regione`,
+        };
+      })
+      .sort((a, b) => b.value - a.value);
+  }
+
+  const rows = (geo.regions ?? []).map(r => {
+    const value = level === "pc"
+      ? (dim === "employment" ? (r.employment_pc ?? 0) : (r[`${dim}_pc`] ?? 0))
+      : (r[dim] ?? 0);
+    return {
+      label: r.regione,
+      code: r.code,
+      value,
+      detail: level === "pc" ? (dim === "employment" ? "ETP ogni 10k ab." : fmtPC(value)) : (r.is_origin ? "regione origine" : "spillover"),
+    };
+  });
+
+  return rows.sort((a, b) => b.value - a.value);
+}
+
+function SegmentedControl({ label, value, options, onChange }) {
+  return (
+    <div>
+      <p className="mb-2 text-[10px] font-mono uppercase tracking-[0.16em] text-ink-500">{label}</p>
+      <div className="flex flex-wrap gap-2">
+        {options.map(o => (
+          <button
+            key={o.id}
+            onClick={() => onChange(o.id)}
+            className={`border px-3 py-2 text-xs font-semibold transition-colors ${
+              value === o.id
+                ? "border-brand-violet bg-brand-violet text-white"
+                : "border-ink-300 bg-white text-ink-700 hover:border-brand-violet hover:text-brand-violet"
+            }`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ExploraChart({ rows, meta, isPerCapita }) {
+  const [on, setOn] = useState(false);
+  useEffect(() => { const id = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(id); }, []);
+  const max = Math.max(...rows.map(r => r.value), 1);
+  const fmt = v => isPerCapita ? fmtIT(v, 2) : (meta.isMoney ? fmtM(v) : fmtETP(v));
+
+  return (
+    <div className="border border-ink-100 bg-white">
+      <div className="border-b border-ink-100 px-5 py-4">
+        <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Top risultati</p>
+      </div>
+      <ul className="divide-y divide-ink-100">
+        {rows.map((r, i) => (
+          <li key={`${r.code}-${r.label}`} className="grid grid-cols-[minmax(120px,220px)_1fr_96px] items-center gap-3 px-5 py-3">
+            <span className="truncate text-xs font-medium text-ink-900">{r.label}</span>
+            <div className="h-4 bg-ink-100">
+              <div
+                className="h-full bg-brand-violet"
+                style={{ width: on ? `${(r.value / max) * 100}%` : "0%", transition: `width 0.45s cubic-bezier(0.16,1,0.3,1) ${i * 25}ms` }}
+              />
+            </div>
+            <span className="text-right text-xs font-mono font-semibold text-ink-900">{fmt(r.value)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function ExploraTable({ rows, meta, isPerCapita }) {
+  const fmt = v => isPerCapita ? fmtIT(v, 2) : (meta.isMoney ? fmtM(v) : fmtETP(v));
+  return (
+    <div className="overflow-hidden border border-ink-100 bg-white">
+      <div className="grid grid-cols-[1fr_120px_140px] gap-3 bg-ink-900 px-4 py-3 text-xs font-bold text-white">
+        <span>Voce</span>
+        <span className="text-right">Valore</span>
+        <span className="text-right">Nota</span>
+      </div>
+      <div className="max-h-[420px] divide-y divide-ink-100 overflow-y-auto">
+        {rows.map(r => (
+          <div key={`${r.code}-${r.label}`} className="grid grid-cols-[1fr_120px_140px] gap-3 px-4 py-3 text-sm">
+            <span className="truncate font-medium text-ink-900">{r.label}</span>
+            <span className="text-right font-mono text-xs font-semibold text-ink-900">{fmt(r.value)}</span>
+            <span className="truncate text-right text-xs text-ink-500">{r.detail}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function SpendInputCard() {
   const totalSpend = inp.total_spend ?? 0;

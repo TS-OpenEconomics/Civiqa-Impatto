@@ -7,158 +7,79 @@
     "dataset": "Matrice contabilità sociale",
     "metodologia": "SAM EU-ITA 2019"
   },
-  "riepilogo": {
-    "descrizione_1": "L'Analisi di Impatto Economico sintetizza gli effetti attesi del progetto sul sistema locale. I riquadri mostrano i principali indicatori: spese attivate, PIL generato, occupazione (ETP), valore della produzione, redditi delle famiglie e gettito fiscale. I valori sono espressi in migliaia di euro (K€) o, per l'occupazione, in unità equivalenti a tempo pieno (ETP).",
-    "descrizione_2": "Le stime integrano gli impatti diretti, indiretti e indotti della spesa e delle filiere collegate, restituendo il contributo complessivo del progetto all'economia del territorio. Usa questo riepilogo per una lettura immediata dell'attivazione economica; i dettagli e la scomposizione per singola dimensione sono disponibili nelle sezioni dedicate."
+
+  "previews": {
+    "sintesi": "48,7 M€ PIL",
+    "componenti": "45% diretto",
+    "geografia": "84% in Sicilia",
+    "settori": "Costruzioni leader",
+    "esplora": "Pivot dati"
   },
-  "dimensioni": {
-    "spese": {
-      "label": "Spese",
-      "valore": 41147.37,
-      "unita": "K€ in valore attuale",
-      "unita_breve": "K€",
-      "narrativa_corta": "Il progetto attiva 41.147 K€ di nuova spesa sul territorio. Questo importo riflette il valore aggiunto diretto dei lavori e dei servizi acquistati, insieme agli effetti indiretti sulle filiere produttive locali.",
-      "titolo_dettaglio": "Le spese attive del progetto",
-      "descrizione_dettaglio": "Questa sezione mostra la stima del valore aggiunto generato dalle spese di investimento del progetto. Include spesa diretta e indotta, calcolata a partire dalla struttura dei costi. Le spese attivano una catena di valore che coinvolge imprese locali e fornitori. Il moltiplicatore della spesa è 2,53: ogni euro speso ne genera oltre due in produzione.",
-      "moltiplicatori": [
-        { "tipo": "diretto", "label": "Moltiplicatore diretto", "sublabel": "Effetto della spesa iniziale", "valore": 1.45, "range": "1 : 2" },
-        { "tipo": "indiretto", "label": "Moltiplicatore indiretto", "sublabel": "Effetto sull'economia collegata", "valore": 0.78, "range": "0 : 1" },
-        { "tipo": "indotto", "label": "Moltiplicatore indotto", "sublabel": "Effetto dei consumi generati", "valore": 0.30, "range": "0 : 1" }
-      ]
-    },
-    "pil": {
-      "label": "PIL",
-      "valore": 57975.68,
-      "unita": "K€ in valore attuale",
-      "unita_breve": "K€",
-      "narrativa_corta": "Il PIL generato sul territorio è stimato in 57.975 K€, includendo gli effetti diretti, indiretti e indotti dell'intervento.",
-      "titolo_dettaglio": "Gli effetti del progetto sul PIL",
-      "descrizione_dettaglio": "In questa sezione vengono analizzati gli impatti economici generati dall'intervento sul Prodotto Interno Lordo. Oltre agli effetti diretti, legati alla spesa e alle attività avviate dal progetto, vengono considerati anche quelli indiretti e indotti, che si propagano lungo la filiera produttiva e sull'economia del territorio.",
-      "moltiplicatori": [
-        { "tipo": "diretto", "label": "Moltiplicatore diretto", "sublabel": "Effetto della spesa iniziale", "valore": 2.00, "range": "0 : 3" },
-        { "tipo": "indiretto", "label": "Moltiplicatore indiretto", "sublabel": "Effetto sull'economia collegata", "valore": 1.00, "range": "0 : 2" },
-        { "tipo": "indotto", "label": "Moltiplicatore indotto", "sublabel": "Effetto dei consumi generati", "valore": 3.85, "range": "0 : 4" }
-      ]
-    },
-    "occupazione": {
-      "label": "Occupazione",
-      "valore": 846.46,
-      "unita": "Equivalente tempo pieno",
-      "unita_breve": "ETP",
-      "narrativa_corta": "Sono attivati circa 846 equivalenti a tempo pieno tra impatti diretti, indiretti e indotti sul ciclo di vita del progetto.",
-      "titolo_dettaglio": "L'occupazione attivata dal progetto",
-      "descrizione_dettaglio": "Questa sezione stima l'occupazione complessivamente attivata dall'intervento, espressa in unità equivalenti a tempo pieno (ETP). Sono incluse posizioni lavorative direttamente legate al progetto, quelle generate lungo la filiera dei fornitori e quelle indotte dalla maggiore capacità di spesa dei lavoratori coinvolti.",
-      "moltiplicatori": [
-        { "tipo": "diretto", "label": "Moltiplicatore diretto", "sublabel": "Effetto della spesa iniziale", "valore": 1.10, "range": "1 : 2" },
-        { "tipo": "indiretto", "label": "Moltiplicatore indiretto", "sublabel": "Effetto sull'economia collegata", "valore": 0.65, "range": "0 : 1" },
-        { "tipo": "indotto", "label": "Moltiplicatore indotto", "sublabel": "Effetto dei consumi generati", "valore": 0.40, "range": "0 : 1" }
-      ]
-    },
-    "produzione": {
-      "label": "Valore produzione",
-      "valore": 104060.03,
-      "unita": "K€ in valore attuale",
-      "unita_breve": "K€",
-      "narrativa_corta": "Il valore della produzione attivato lungo le filiere è pari a 104.060 K€, espressione della catena di subforniture mobilitata dal progetto.",
-      "titolo_dettaglio": "Il valore della produzione attivata",
-      "descrizione_dettaglio": "Questa sezione stima il valore complessivo della produzione attivata dall'intervento lungo l'intera filiera economica. Include il valore prodotto direttamente dalle imprese coinvolte nei lavori e dai loro fornitori di primo e secondo livello.",
-      "moltiplicatori": [
-        { "tipo": "diretto", "label": "Moltiplicatore diretto", "sublabel": "Effetto della spesa iniziale", "valore": 2.53, "range": "2 : 3" },
-        { "tipo": "indiretto", "label": "Moltiplicatore indiretto", "sublabel": "Effetto sull'economia collegata", "valore": 1.18, "range": "1 : 2" },
-        { "tipo": "indotto", "label": "Moltiplicatore indotto", "sublabel": "Effetto dei consumi generati", "valore": 0.49, "range": "0 : 1" }
-      ]
-    },
-    "redditi": {
-      "label": "Redditi delle famiglie",
-      "valore": 56540.62,
-      "unita": "K€ in valore attuale",
-      "unita_breve": "K€",
-      "narrativa_corta": "I redditi attivati per le famiglie del territorio sono stimati in 56.540 K€, comprensivi degli impatti diretti, indiretti e indotti sulla forza lavoro.",
-      "titolo_dettaglio": "I redditi delle famiglie",
-      "descrizione_dettaglio": "Questa sezione misura il reddito complessivo che il progetto trasferisce alle famiglie del territorio. Include la remunerazione del lavoro direttamente attivato, quella generata dalla filiera dei fornitori e quella indotta dai consumi successivi.",
-      "moltiplicatori": [
-        { "tipo": "diretto", "label": "Moltiplicatore diretto", "sublabel": "Effetto della spesa iniziale", "valore": 1.60, "range": "1 : 2" },
-        { "tipo": "indiretto", "label": "Moltiplicatore indiretto", "sublabel": "Effetto sull'economia collegata", "valore": 0.86, "range": "0 : 1" },
-        { "tipo": "indotto", "label": "Moltiplicatore indotto", "sublabel": "Effetto dei consumi generati", "valore": 0.36, "range": "0 : 1" }
-      ]
-    }
-  },
+
   "input": {
     "total_spend": 41147370,
     "currency": "EUR",
-    "origin_provinces": [{ "code": "PA", "name": "Palermo", "spend_share": 1.0 }],
-    "origin_region": { "code": "ITG12", "name": "Sicilia" },
+    "origin_provinces": [{ "code": "PA", "name": "Palermo", "region_code": "19", "region_name": "Sicilia", "spend_share": 1.0 }],
+    "origin_region": { "code": "19", "name": "Sicilia", "nuts2_code": "ITG1" },
     "years_of_realization": 2,
     "spend_breakdown": [
-      { "ateco_code": "F",   "ateco_name": "Costruzioni",               "amount": 14401580, "share": 0.35 },
-      { "ateco_code": "M",   "ateco_name": "Servizi professionali",     "amount":  6172105, "share": 0.15 },
-      { "ateco_code": "C23", "ateco_name": "Materiali da costruzione",  "amount":  4937684, "share": 0.12 },
-      { "ateco_code": "H",   "ateco_name": "Trasporti e logistica",     "amount":  4114737, "share": 0.10 },
-      { "ateco_code": "D",   "ateco_name": "Energia e utilities",       "amount":  3291790, "share": 0.08 },
-      { "ateco_code": "G",   "ateco_name": "Commercio",                 "amount":  2880316, "share": 0.07 },
-      { "ateco_code": "J",   "ateco_name": "ICT e digitale",            "amount":  2468842, "share": 0.06 }
+      { "ateco_code": "F",   "ateco_name": "Costruzioni",              "amount": 14401580, "share": 0.35 },
+      { "ateco_code": "M",   "ateco_name": "Servizi professionali",    "amount":  6172105, "share": 0.15 },
+      { "ateco_code": "C23", "ateco_name": "Materiali da costruzione", "amount":  4937684, "share": 0.12 },
+      { "ateco_code": "H",   "ateco_name": "Trasporti e logistica",    "amount":  4114737, "share": 0.10 },
+      { "ateco_code": "D",   "ateco_name": "Energia e utilities",      "amount":  3291790, "share": 0.08 },
+      { "ateco_code": "G",   "ateco_name": "Commercio",                "amount":  2880316, "share": 0.07 },
+      { "ateco_code": "J",   "ateco_name": "ICT e digitale",           "amount":  2468842, "share": 0.06 }
     ]
   },
+
   "synthesis": {
-    "production": { "total": 104060030, "extra_regional": 16649605 },
-    "gdp":        { "total":  57975680, "extra_regional":  9276109 },
-    "employment": { "total":    846.46, "extra_regional":    135.4, "unit": "ETP" },
-    "income":     { "total":  56540620, "extra_regional": null },
-    "fiscal":     { "total":  11192000, "geographic_split": false },
-    "kpis": {
+    "by_perimeter": {
+      "origin_province": {
+        "production": 47867614, "gdp": 26668813, "employment": 389.4,
+        "income": 26008685, "fiscal": null
+      },
+      "region": {
+        "production": 87410425, "gdp": 48699571, "employment": 711.0,
+        "income": 47494121, "fiscal": null
+      },
+      "national": {
+        "production": 104060030, "gdp": 57975680, "employment": 846.46,
+        "income": 56540620, "fiscal": 11192000
+      }
+    },
+    "fiscal_national": 11192000,
+    "three_segments": {
+      "production": { "origin": 47867614, "rest_region": 39542811, "extra": 16649605 },
+      "gdp":        { "origin": 26668813, "rest_region": 22030758, "extra":  9276109 },
+      "employment": { "origin":    389.4, "rest_region":    321.66, "extra":    135.4 },
+      "income":     { "origin": 26008685, "rest_region": 21485436, "extra":  9046499 }
+    },
+    "per_capita": {
+      "origin_province": {
+        "population": 1250000,
+        "production_pc": 38.3, "gdp_pc": 21.3,
+        "employment_pc_per_10k": 3.1, "income_pc": 20.8
+      },
+      "region": {
+        "population": 4875000,
+        "production_pc": 17.9, "gdp_pc": 10.0,
+        "employment_pc_per_10k": 1.46, "income_pc": 9.74
+      },
+      "national": {
+        "population": 59000000,
+        "production_pc": 1.76, "gdp_pc": 0.98,
+        "employment_pc_per_10k": 0.14, "income_pc": 0.96
+      }
+    },
+    "synthetic_kpis": {
       "gdp_multiplier": 1.41,
+      "production_multiplier": 2.53,
       "employment_intensity_per_meur": 20.6,
       "fiscal_autofinanc_pct": 0.272
     }
   },
-  "geography": {
-    "regions": [
-      { "regione": "Sicilia",               "gdp": 49138680, "production": 88200030, "employment": 717.4 },
-      { "regione": "Piemonte",              "gdp":  1240000, "production":  2226000, "employment":  18.1 },
-      { "regione": "Lombardia",             "gdp":  1020000, "production":  1831000, "employment":  14.9 },
-      { "regione": "Lazio",                 "gdp":   890000, "production":  1597000, "employment":  13.0 },
-      { "regione": "Liguria",               "gdp":   760000, "production":  1364000, "employment":  11.1 },
-      { "regione": "Puglia",                "gdp":   690000, "production":  1238000, "employment":  10.1 },
-      { "regione": "Veneto",                "gdp":   620000, "production":  1113000, "employment":   9.1 },
-      { "regione": "Campania",              "gdp":   580000, "production":  1041000, "employment":   8.5 },
-      { "regione": "Emilia-Romagna",        "gdp":   540000, "production":   969000, "employment":   7.9 },
-      { "regione": "Toscana",               "gdp":   450000, "production":   808000, "employment":   6.6 },
-      { "regione": "Calabria",              "gdp":   380000, "production":   682000, "employment":   5.5 },
-      { "regione": "Sardegna",              "gdp":   350000, "production":   628000, "employment":   5.1 },
-      { "regione": "Basilicata",            "gdp":   290000, "production":   521000, "employment":   4.2 },
-      { "regione": "Abruzzo",               "gdp":   240000, "production":   431000, "employment":   3.5 },
-      { "regione": "Marche",                "gdp":   180000, "production":   323000, "employment":   2.6 },
-      { "regione": "Friuli-Venezia Giulia", "gdp":   160000, "production":   287000, "employment":   2.3 },
-      { "regione": "Umbria",                "gdp":   140000, "production":   251000, "employment":   2.0 },
-      { "regione": "Trentino-Alto Adige",   "gdp":   120000, "production":   215000, "employment":   1.8 },
-      { "regione": "Molise",                "gdp":   100000, "production":   179000, "employment":   1.5 },
-      { "regione": "Valle d'Aosta",         "gdp":    87000, "production":   156000, "employment":   1.3 }
-    ]
-  },
-  "sectors": {
-    "items": [
-      { "ateco_code": "F",   "ateco_name": "Costruzioni",
-        "values": { "gdp": {"intra":14000000,"extra":       0}, "production":{"intra":25129000,"extra":       0}, "employment":{"intra":204.4,"extra":  0.0} } },
-      { "ateco_code": "M",   "ateco_name": "Servizi professionali",
-        "values": { "gdp": {"intra": 7840000,"extra":  160000}, "production":{"intra":14135000,"extra":  223000}, "employment":{"intra":116.8,"extra":  0.0} } },
-      { "ateco_code": "G",   "ateco_name": "Commercio",
-        "values": { "gdp": {"intra": 6828408,"extra":  171592}, "production":{"intra":12191000,"extra":  376000}, "employment":{"intra": 97.2,"extra":  5.0} } },
-      { "ateco_code": "H",   "ateco_name": "Trasporti e logistica",
-        "values": { "gdp": {"intra": 4840000,"extra":  660000}, "production":{"intra": 8688000,"extra": 1185000}, "employment":{"intra": 70.7,"extra":  9.6} } },
-      { "ateco_code": "Q",   "ateco_name": "Sanità e assistenza",
-        "values": { "gdp": {"intra": 4560000,"extra":  240000}, "production":{"intra": 8185000,"extra":  431000}, "employment":{"intra": 66.6,"extra":  3.5} } },
-      { "ateco_code": "C23", "ateco_name": "Materiali da costruzione",
-        "values": { "gdp": {"intra": 3600000,"extra": 2400000}, "production":{"intra": 6462000,"extra": 4308000}, "employment":{"intra": 52.6,"extra": 35.0} } },
-      { "ateco_code": "L",   "ateco_name": "Attività immobiliari",
-        "values": { "gdp": {"intra": 2730000,"extra": 1470000}, "production":{"intra": 4901000,"extra": 2638000}, "employment":{"intra": 39.9,"extra": 21.4} } },
-      { "ateco_code": "D",   "ateco_name": "Energia e utilities",
-        "values": { "gdp": {"intra": 2200000,"extra": 1800000}, "production":{"intra": 3949000,"extra": 3230000}, "employment":{"intra": 32.1,"extra": 26.3} } },
-      { "ateco_code": "J",   "ateco_name": "ICT e digitale",
-        "values": { "gdp": {"intra": 1750000,"extra":  750000}, "production":{"intra": 3141000,"extra": 1346000}, "employment":{"intra": 25.6,"extra": 10.9} } },
-      { "ateco_code": "K",   "ateco_name": "Servizi finanziari",
-        "values": { "gdp": {"intra":  790272,"extra": 1185408}, "production":{"intra": 1419030,"extra": 2127000}, "employment":{"intra": 11.5,"extra": 17.3} } }
-    ]
-  },
+
   "components": {
     "production": {
       "direct": 46827014, "indirect": 16649605, "induced": 40583411,
@@ -183,43 +104,168 @@
         "indirect": [{"name": "Materiali da costruzione", "value": 30.6}, {"name": "Trasporti e logistica", "value": 21.9}, {"name": "Energia e utilities", "value": 14.6}],
         "induced":  [{"name": "Commercio", "value": 56.1}, {"name": "Sanità e assistenza", "value": 33.0}, {"name": "Attività immobiliari", "value": 26.4}]
       }
-    },
-    "income": {
-      "direct": 25443279, "indirect": 9046499, "induced": 22050842,
-      "top_sectors": {
-        "direct":   [{"name": "Costruzioni", "value": 8905148}, {"name": "Servizi professionali", "value": 3816492}, {"name": "Materiali da costruzione", "value": 3053194}],
-        "indirect": [{"name": "Materiali da costruzione", "value": 2046001}, {"name": "Trasporti e logistica", "value": 1459988}, {"name": "Energia e utilities", "value": 977222}],
-        "induced":  [{"name": "Commercio", "value": 3748643}, {"name": "Sanità e assistenza", "value": 2205084}, {"name": "Attività immobiliari", "value": 1764067}]
-      }
     }
   },
-  "macro_split": {
-    "origin":         { "value": 26669213, "pct": 0.46 },
-    "rest_of_region": { "value": 22030758, "pct": 0.38 },
-    "extra_region":   { "value":  9275709, "pct": 0.16 }
+
+  "geography": {
+    "regions": [
+      { "code": "19", "name": "Sicilia",               "nuts2_code": "ITG1", "population": 4875000, "is_origin": true,
+        "values": { "production": {"absolute":88200030,"per_capita":18.09}, "gdp": {"absolute":49138680,"per_capita":10.08}, "employment": {"absolute":717.4,"per_capita_per_10k":1.47}, "income": {"absolute":47928000,"per_capita":9.83} } },
+      { "code": "01", "name": "Piemonte",               "nuts2_code": "ITC1", "population": 4350000,
+        "values": { "production": {"absolute":2226000,"per_capita":0.51}, "gdp": {"absolute":1240000,"per_capita":0.29}, "employment": {"absolute":18.1,"per_capita_per_10k":0.042}, "income": {"absolute":1209248,"per_capita":0.28} } },
+      { "code": "03", "name": "Lombardia",              "nuts2_code": "ITC4", "population": 10070000,
+        "values": { "production": {"absolute":1831000,"per_capita":0.18}, "gdp": {"absolute":1020000,"per_capita":0.10}, "employment": {"absolute":14.9,"per_capita_per_10k":0.015}, "income": {"absolute":994704,"per_capita":0.10} } },
+      { "code": "12", "name": "Lazio",                  "nuts2_code": "ITI4", "population": 5796000,
+        "values": { "production": {"absolute":1597000,"per_capita":0.28}, "gdp": {"absolute":890000,"per_capita":0.15}, "employment": {"absolute":13.0,"per_capita_per_10k":0.022}, "income": {"absolute":867928,"per_capita":0.15} } },
+      { "code": "07", "name": "Liguria",                "nuts2_code": "ITC3", "population": 1550000,
+        "values": { "production": {"absolute":1364000,"per_capita":0.88}, "gdp": {"absolute":760000,"per_capita":0.49}, "employment": {"absolute":11.1,"per_capita_per_10k":0.072}, "income": {"absolute":741152,"per_capita":0.48} } },
+      { "code": "16", "name": "Puglia",                 "nuts2_code": "ITF4", "population": 3988000,
+        "values": { "production": {"absolute":1238000,"per_capita":0.31}, "gdp": {"absolute":690000,"per_capita":0.17}, "employment": {"absolute":10.1,"per_capita_per_10k":0.025}, "income": {"absolute":672888,"per_capita":0.17} } },
+      { "code": "05", "name": "Veneto",                 "nuts2_code": "ITH3", "population": 4910000,
+        "values": { "production": {"absolute":1113000,"per_capita":0.23}, "gdp": {"absolute":620000,"per_capita":0.13}, "employment": {"absolute":9.1,"per_capita_per_10k":0.019}, "income": {"absolute":604624,"per_capita":0.12} } },
+      { "code": "15", "name": "Campania",               "nuts2_code": "ITF3", "population": 5802000,
+        "values": { "production": {"absolute":1041000,"per_capita":0.18}, "gdp": {"absolute":580000,"per_capita":0.10}, "employment": {"absolute":8.5,"per_capita_per_10k":0.015}, "income": {"absolute":565616,"per_capita":0.10} } },
+      { "code": "08", "name": "Emilia-Romagna",         "nuts2_code": "ITH5", "population": 4467000,
+        "values": { "production": {"absolute":969000,"per_capita":0.22}, "gdp": {"absolute":540000,"per_capita":0.12}, "employment": {"absolute":7.9,"per_capita_per_10k":0.018}, "income": {"absolute":526608,"per_capita":0.12} } },
+      { "code": "09", "name": "Toscana",                "nuts2_code": "ITI1", "population": 3739000,
+        "values": { "production": {"absolute":808000,"per_capita":0.22}, "gdp": {"absolute":450000,"per_capita":0.12}, "employment": {"absolute":6.6,"per_capita_per_10k":0.018}, "income": {"absolute":438840,"per_capita":0.12} } },
+      { "code": "18", "name": "Calabria",               "nuts2_code": "ITF6", "population": 1905000,
+        "values": { "production": {"absolute":682000,"per_capita":0.36}, "gdp": {"absolute":380000,"per_capita":0.20}, "employment": {"absolute":5.5,"per_capita_per_10k":0.029}, "income": {"absolute":370576,"per_capita":0.19} } },
+      { "code": "20", "name": "Sardegna",               "nuts2_code": "ITG2", "population": 1630000,
+        "values": { "production": {"absolute":628000,"per_capita":0.39}, "gdp": {"absolute":350000,"per_capita":0.21}, "employment": {"absolute":5.1,"per_capita_per_10k":0.031}, "income": {"absolute":341320,"per_capita":0.21} } },
+      { "code": "17", "name": "Basilicata",             "nuts2_code": "ITF5", "population": 553000,
+        "values": { "production": {"absolute":521000,"per_capita":0.94}, "gdp": {"absolute":290000,"per_capita":0.52}, "employment": {"absolute":4.2,"per_capita_per_10k":0.076}, "income": {"absolute":282808,"per_capita":0.51} } },
+      { "code": "13", "name": "Abruzzo",                "nuts2_code": "ITF1", "population": 1305000,
+        "values": { "production": {"absolute":431000,"per_capita":0.33}, "gdp": {"absolute":240000,"per_capita":0.18}, "employment": {"absolute":3.5,"per_capita_per_10k":0.027}, "income": {"absolute":234048,"per_capita":0.18} } },
+      { "code": "11", "name": "Marche",                 "nuts2_code": "ITI3", "population": 1526000,
+        "values": { "production": {"absolute":323000,"per_capita":0.21}, "gdp": {"absolute":180000,"per_capita":0.12}, "employment": {"absolute":2.6,"per_capita_per_10k":0.017}, "income": {"absolute":175536,"per_capita":0.12} } },
+      { "code": "06", "name": "Friuli-Venezia Giulia",  "nuts2_code": "ITH4", "population": 1210000,
+        "values": { "production": {"absolute":287000,"per_capita":0.24}, "gdp": {"absolute":160000,"per_capita":0.13}, "employment": {"absolute":2.3,"per_capita_per_10k":0.019}, "income": {"absolute":156032,"per_capita":0.13} } },
+      { "code": "10", "name": "Umbria",                 "nuts2_code": "ITI2", "population": 882000,
+        "values": { "production": {"absolute":251000,"per_capita":0.28}, "gdp": {"absolute":140000,"per_capita":0.16}, "employment": {"absolute":2.0,"per_capita_per_10k":0.023}, "income": {"absolute":136528,"per_capita":0.15} } },
+      { "code": "04", "name": "Trentino-Alto Adige",    "nuts2_code": "ITH1", "population": 1070000,
+        "values": { "production": {"absolute":215000,"per_capita":0.20}, "gdp": {"absolute":120000,"per_capita":0.11}, "employment": {"absolute":1.8,"per_capita_per_10k":0.017}, "income": {"absolute":117024,"per_capita":0.11} } },
+      { "code": "14", "name": "Molise",                 "nuts2_code": "ITF2", "population": 304000,
+        "values": { "production": {"absolute":179000,"per_capita":0.59}, "gdp": {"absolute":100000,"per_capita":0.33}, "employment": {"absolute":1.5,"per_capita_per_10k":0.049}, "income": {"absolute":97520,"per_capita":0.32} } },
+      { "code": "02", "name": "Valle d'Aosta",          "nuts2_code": "ITC2", "population": 126000,
+        "values": { "production": {"absolute":156000,"per_capita":1.24}, "gdp": {"absolute":87000,"per_capita":0.69}, "employment": {"absolute":1.3,"per_capita_per_10k":0.103}, "income": {"absolute":84842,"per_capita":0.67} } }
+    ],
+
+    "provinces": [
+      { "code": "PA", "name": "Palermo",      "region_code": "19", "region_name": "Sicilia", "is_origin": true,  "population": 1250000,
+        "values": { "production": {"absolute":47867614,"per_capita":38.3}, "gdp": {"absolute":26668813,"per_capita":21.3}, "employment": {"absolute":389.4,"per_capita_per_10k":3.1}, "income": {"absolute":26008685,"per_capita":20.8} } },
+      { "code": "CT", "name": "Catania",      "region_code": "19", "region_name": "Sicilia", "is_origin": false, "population": 1100000,
+        "values": { "production": {"absolute":15769200,"per_capita":14.3}, "gdp": {"absolute":8784923,"per_capita":7.99}, "employment": {"absolute":128.3,"per_capita_per_10k":1.17}, "income": {"absolute":8564344,"per_capita":7.79} } },
+      { "code": "ME", "name": "Messina",      "region_code": "19", "region_name": "Sicilia", "is_origin": false, "population": 620000,
+        "values": { "production": {"absolute":8763528,"per_capita":14.1}, "gdp": {"absolute":4881957,"per_capita":7.87}, "employment": {"absolute":71.3,"per_capita_per_10k":1.15}, "income": {"absolute":4759225,"per_capita":7.68} } },
+      { "code": "AG", "name": "Agrigento",    "region_code": "19", "region_name": "Sicilia", "is_origin": false, "population": 440000,
+        "values": { "production": {"absolute":6134770,"per_capita":13.9}, "gdp": {"absolute":3415370,"per_capita":7.76}, "employment": {"absolute":49.9,"per_capita_per_10k":1.13}, "income": {"absolute":3329823,"per_capita":7.57} } },
+      { "code": "TP", "name": "Trapani",      "region_code": "19", "region_name": "Sicilia", "is_origin": false, "population": 430000,
+        "values": { "production": {"absolute":5254800,"per_capita":12.2}, "gdp": {"absolute":2927974,"per_capita":6.81}, "employment": {"absolute":42.7,"per_capita_per_10k":0.99}, "income": {"absolute":2854546,"per_capita":6.64} } },
+      { "code": "SR", "name": "Siracusa",     "region_code": "19", "region_name": "Sicilia", "is_origin": false, "population": 400000,
+        "values": { "production": {"absolute":4378200,"per_capita":10.9}, "gdp": {"absolute":2439745,"per_capita":6.10}, "employment": {"absolute":35.6,"per_capita_per_10k":0.89}, "income": {"absolute":2378712,"per_capita":5.95} } },
+      { "code": "RG", "name": "Ragusa",       "region_code": "19", "region_name": "Sicilia", "is_origin": false, "population": 320000,
+        "values": { "production": {"absolute":2627100,"per_capita":8.21}, "gdp": {"absolute":1463987,"per_capita":4.57}, "employment": {"absolute":21.4,"per_capita_per_10k":0.67}, "income": {"absolute":1427534,"per_capita":4.46} } },
+      { "code": "EN", "name": "Enna",         "region_code": "19", "region_name": "Sicilia", "is_origin": false, "population": 165000,
+        "values": { "production": {"absolute":1409213,"per_capita":8.54}, "gdp": {"absolute":784802,"per_capita":4.76}, "employment": {"absolute":11.5,"per_capita_per_10k":0.70}, "income": {"absolute":765246,"per_capita":4.64} } },
+      { "code": "CL", "name": "Caltanissetta","region_code": "19", "region_name": "Sicilia", "is_origin": false, "population": 250000,
+        "values": { "production": {"absolute":1005000,"per_capita":4.02}, "gdp": {"absolute":560000,"per_capita":2.24}, "employment": {"absolute":8.2,"per_capita_per_10k":0.33}, "income": {"absolute":546112,"per_capita":2.18} } }
+    ],
+
+    "macro_split": {
+      "origin":         { "value": 26669213, "pct": 0.46 },
+      "rest_of_region": { "value": 22030758, "pct": 0.38 },
+      "extra_region":   { "value":  9275709, "pct": 0.16 }
+    }
   },
-  "distribuzione_regionale": {
-    "spese": [
-      { "regione": "Piemonte", "valore": 980000, "intensita": 0.95 },
-      { "regione": "Liguria", "valore": 820000, "intensita": 0.78 },
-      { "regione": "Puglia", "valore": 650000, "intensita": 0.62 },
-      { "regione": "Basilicata", "valore": 630000, "intensita": 0.60 },
-      { "regione": "Veneto", "valore": 620000, "intensita": 0.59 },
-      { "regione": "Trentino-Alto Adige", "valore": 620000, "intensita": 0.59 },
-      { "regione": "Friuli-Venezia Giulia", "valore": 620000, "intensita": 0.59 },
-      { "regione": "Abruzzo", "valore": 580000, "intensita": 0.55 },
-      { "regione": "Sicilia", "valore": 560000, "intensita": 0.53 },
-      { "regione": "Sardegna", "valore": 540000, "intensita": 0.51 },
-      { "regione": "Lazio", "valore": 510000, "intensita": 0.49 },
-      { "regione": "Campania", "valore": 480000, "intensita": 0.46 },
-      { "regione": "Emilia-Romagna", "valore": 450000, "intensita": 0.43 },
-      { "regione": "Lombardia", "valore": 420000, "intensita": 0.40 },
-      { "regione": "Umbria", "valore": 380000, "intensita": 0.36 },
-      { "regione": "Calabria", "valore": 360000, "intensita": 0.34 },
-      { "regione": "Molise", "valore": 320000, "intensita": 0.30 },
-      { "regione": "Valle d'Aosta", "valore": 280000, "intensita": 0.27 },
-      { "regione": "Marche", "valore": 240000, "intensita": 0.23 },
-      { "regione": "Toscana", "valore": 220000, "intensita": 0.21 }
+
+  "sectors": {
+    "items": [
+      { "ateco_code": "F",   "ateco_name": "Costruzioni",
+        "values": { "gdp": {"intra":14000000,"extra":0}, "production": {"intra":25129000,"extra":0}, "employment": {"intra":204.4,"extra":0.0} },
+        "by_territory": { "regions": [
+          {"code":"19","name":"Sicilia","values":{"gdp":14000000,"production":25129000,"employment":204.4}}
+        ]}},
+      { "ateco_code": "M",   "ateco_name": "Servizi professionali",
+        "values": { "gdp": {"intra":7840000,"extra":160000}, "production": {"intra":14135000,"extra":289000}, "employment": {"intra":116.8,"extra":2.4} },
+        "by_territory": { "regions": [
+          {"code":"19","name":"Sicilia","values":{"gdp":7840000,"production":14135000,"employment":116.8}},
+          {"code":"01","name":"Piemonte","values":{"gdp":60000,"production":108000,"employment":0.9}},
+          {"code":"03","name":"Lombardia","values":{"gdp":60000,"production":108000,"employment":0.9}},
+          {"code":"12","name":"Lazio","values":{"gdp":40000,"production":73000,"employment":0.6}}
+        ]}},
+      { "ateco_code": "G",   "ateco_name": "Commercio",
+        "values": { "gdp": {"intra":6828408,"extra":171592}, "production": {"intra":12191000,"extra":307000}, "employment": {"intra":97.2,"extra":2.4} },
+        "by_territory": { "regions": [
+          {"code":"19","name":"Sicilia","values":{"gdp":6828408,"production":12191000,"employment":97.2}},
+          {"code":"12","name":"Lazio","values":{"gdp":76000,"production":136000,"employment":1.1}},
+          {"code":"03","name":"Lombardia","values":{"gdp":56000,"production":100000,"employment":0.8}},
+          {"code":"15","name":"Campania","values":{"gdp":40000,"production":71000,"employment":0.6}}
+        ]}},
+      { "ateco_code": "H",   "ateco_name": "Trasporti e logistica",
+        "values": { "gdp": {"intra":4840000,"extra":660000}, "production": {"intra":8688000,"extra":1185000}, "employment": {"intra":70.7,"extra":9.6} },
+        "by_territory": { "regions": [
+          {"code":"19","name":"Sicilia","values":{"gdp":4840000,"production":8688000,"employment":70.7}},
+          {"code":"01","name":"Piemonte","values":{"gdp":220000,"production":395000,"employment":3.2}},
+          {"code":"03","name":"Lombardia","values":{"gdp":200000,"production":359000,"employment":2.9}},
+          {"code":"12","name":"Lazio","values":{"gdp":140000,"production":251000,"employment":2.0}},
+          {"code":"15","name":"Campania","values":{"gdp":100000,"production":180000,"employment":1.5}}
+        ]}},
+      { "ateco_code": "Q",   "ateco_name": "Sanità e assistenza",
+        "values": { "gdp": {"intra":4560000,"extra":240000}, "production": {"intra":8185000,"extra":431000}, "employment": {"intra":66.6,"extra":3.5} },
+        "by_territory": { "regions": [
+          {"code":"19","name":"Sicilia","values":{"gdp":4560000,"production":8185000,"employment":66.6}},
+          {"code":"15","name":"Campania","values":{"gdp":90000,"production":162000,"employment":1.3}},
+          {"code":"16","name":"Puglia","values":{"gdp":90000,"production":161000,"employment":1.3}},
+          {"code":"18","name":"Calabria","values":{"gdp":60000,"production":108000,"employment":0.9}}
+        ]}},
+      { "ateco_code": "C23", "ateco_name": "Materiali da costruzione",
+        "values": { "gdp": {"intra":3600000,"extra":2400000}, "production": {"intra":6462000,"extra":4308000}, "employment": {"intra":52.6,"extra":35.0} },
+        "by_territory": { "regions": [
+          {"code":"19","name":"Sicilia","values":{"gdp":3600000,"production":6462000,"employment":52.6}},
+          {"code":"03","name":"Lombardia","values":{"gdp":820000,"production":1472000,"employment":11.9}},
+          {"code":"01","name":"Piemonte","values":{"gdp":600000,"production":1077000,"employment":8.7}},
+          {"code":"08","name":"Emilia-Romagna","values":{"gdp":560000,"production":1005000,"employment":8.1}},
+          {"code":"05","name":"Veneto","values":{"gdp":420000,"production":754000,"employment":6.1}}
+        ]}},
+      { "ateco_code": "L",   "ateco_name": "Attività immobiliari",
+        "values": { "gdp": {"intra":2730000,"extra":1470000}, "production": {"intra":4901000,"extra":2638000}, "employment": {"intra":39.9,"extra":21.4} },
+        "by_territory": { "regions": [
+          {"code":"19","name":"Sicilia","values":{"gdp":2730000,"production":4901000,"employment":39.9}},
+          {"code":"12","name":"Lazio","values":{"gdp":525000,"production":942000,"employment":7.7}},
+          {"code":"03","name":"Lombardia","values":{"gdp":490000,"production":880000,"employment":7.1}},
+          {"code":"01","name":"Piemonte","values":{"gdp":270000,"production":485000,"employment":3.9}},
+          {"code":"05","name":"Veneto","values":{"gdp":185000,"production":332000,"employment":2.7}}
+        ]}},
+      { "ateco_code": "D",   "ateco_name": "Energia e utilities",
+        "values": { "gdp": {"intra":2200000,"extra":1800000}, "production": {"intra":3949000,"extra":3230000}, "employment": {"intra":32.1,"extra":26.3} },
+        "by_territory": { "regions": [
+          {"code":"19","name":"Sicilia","values":{"gdp":2200000,"production":3949000,"employment":32.1}},
+          {"code":"03","name":"Lombardia","values":{"gdp":540000,"production":970000,"employment":7.9}},
+          {"code":"01","name":"Piemonte","values":{"gdp":450000,"production":808000,"employment":6.6}},
+          {"code":"12","name":"Lazio","values":{"gdp":290000,"production":520000,"employment":4.2}},
+          {"code":"05","name":"Veneto","values":{"gdp":250000,"production":449000,"employment":3.6}},
+          {"code":"08","name":"Emilia-Romagna","values":{"gdp":270000,"production":485000,"employment":3.9}}
+        ]}},
+      { "ateco_code": "J",   "ateco_name": "ICT e digitale",
+        "values": { "gdp": {"intra":1750000,"extra":750000}, "production": {"intra":3141000,"extra":1346000}, "employment": {"intra":25.6,"extra":10.9} },
+        "by_territory": { "regions": [
+          {"code":"19","name":"Sicilia","values":{"gdp":1750000,"production":3141000,"employment":25.6}},
+          {"code":"12","name":"Lazio","values":{"gdp":285000,"production":511000,"employment":4.2}},
+          {"code":"03","name":"Lombardia","values":{"gdp":285000,"production":511000,"employment":4.2}},
+          {"code":"01","name":"Piemonte","values":{"gdp":130000,"production":233000,"employment":1.9}},
+          {"code":"08","name":"Emilia-Romagna","values":{"gdp":50000,"production":90000,"employment":0.7}}
+        ]}},
+      { "ateco_code": "K",   "ateco_name": "Servizi finanziari",
+        "values": { "gdp": {"intra":790272,"extra":1185408}, "production": {"intra":1419030,"extra":2127000}, "employment": {"intra":11.5,"extra":17.3} },
+        "by_territory": { "regions": [
+          {"code":"19","name":"Sicilia","values":{"gdp":790272,"production":1419030,"employment":11.5}},
+          {"code":"12","name":"Lazio","values":{"gdp":490000,"production":879000,"employment":7.2}},
+          {"code":"03","name":"Lombardia","values":{"gdp":450000,"production":808000,"employment":6.6}},
+          {"code":"01","name":"Piemonte","values":{"gdp":95000,"production":170000,"employment":1.4}},
+          {"code":"08","name":"Emilia-Romagna","values":{"gdp":80000,"production":144000,"employment":1.2}},
+          {"code":"05","name":"Veneto","values":{"gdp":70000,"production":126000,"employment":1.0}}
+        ]}}
     ]
   }
 }
