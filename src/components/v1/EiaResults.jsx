@@ -670,25 +670,25 @@ function EffectCard({ effect, perim, mode }) {
     : perimeterCaption(perim);
 
   return (
-    <div className="animate-[fadeIn_.25s_ease] border border-ink-100 bg-white p-5">
-      <div className="flex items-center gap-3">
+    <div className="animate-[fadeIn_.25s_ease] border border-ink-100 bg-white p-4">
+      <div className="flex items-center gap-2">
         <ImpactIcon
           type={effect.icon}
           label={effect.label}
-          className="h-8 w-8"
-          wrapperClassName="flex h-10 w-10 shrink-0 items-center justify-center bg-bg-page text-brand-violet"
+          className="h-5 w-5"
+          wrapperClassName="flex h-7 w-7 shrink-0 items-center justify-center bg-bg-page text-brand-violet"
         />
         <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-ink-700">{effect.label}</span>
       </div>
 
-      <div className="mt-5">
-        <p className="text-[38px] font-bold tracking-tight text-ink-900 md:text-[46px]">
+      <div className="mt-3">
+        <p className="text-[28px] font-bold tracking-tight text-ink-900 md:text-[34px]">
           {formatDimensionValue(displayDim, perimValue, displayMode)}
         </p>
         <p className="mt-1 text-xs text-ink-500">{caption}</p>
       </div>
 
-      <div className="my-4 h-px bg-ink-100" />
+      <div className="my-3 h-px bg-ink-100" />
 
       <p className="text-sm leading-relaxed text-ink-700">{effect.description(perim, mode)}</p>
     </div>
@@ -1300,10 +1300,10 @@ function TabSettori({ updateSearch, searchParams, onOpenExplore }) {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">Come si legge</p>
             <p className="mt-2 text-sm leading-relaxed text-ink-700">
               Ogni riga è un settore. La barra{" "}
-              <span className="font-semibold" style={{ color: "#1F8C4A" }}>verde</span> a destra
+              <span className="font-semibold" style={{ color: "#4318C2" }}>viola</span> a destra
               mostra il valore di {dimLabel} che resta in {regionName} (quota intra-regionale);
               la barra{" "}
-              <span className="font-semibold" style={{ color: "#C45A2E" }}>arancione</span> a sinistra
+              <span className="font-semibold" style={{ color: "#6B7280" }}>grigia</span> a sinistra
               mostra il valore che si attiva fuori regione (quota extra-regionale).
               I valori a lato indicano ammontare e percentuale di ciascuna parte.
             </p>
@@ -1368,13 +1368,13 @@ function DivergentBarChart({ sectors, dim, isMoney }) {
       <div className="grid grid-cols-[160px_1fr_170px] gap-3 border-b border-ink-100 bg-bg-page px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em]">
         <span className="text-ink-500">Settore</span>
         <div className="flex items-center">
-          <span className="flex-1 text-right" style={{ color: "#C45A2E" }}>← extra regione</span>
+          <span className="flex-1 text-right" style={{ color: "#6B7280" }}>← extra regione</span>
           <span className="mx-2 h-4 w-px bg-ink-300" />
-          <span className="flex-1 text-left" style={{ color: "#1F8C4A" }}>intra regione →</span>
+          <span className="flex-1 text-left" style={{ color: "#4318C2" }}>intra regione →</span>
         </div>
         <div className="grid grid-cols-2 text-center text-ink-500">
-          <span style={{ color: "#1F8C4A" }}>Intra</span>
-          <span style={{ color: "#C45A2E" }}>Extra</span>
+          <span style={{ color: "#4318C2" }}>Intra</span>
+          <span style={{ color: "#6B7280" }}>Extra</span>
         </div>
       </div>
       <ul className="divide-y divide-ink-100">
@@ -1394,7 +1394,7 @@ function DivergentBarChart({ sectors, dim, isMoney }) {
                   <div
                     className="ml-auto h-5"
                     style={{
-                      backgroundColor: "#C45A2E",
+                      backgroundColor: "#6B7280",
                       width: ready ? `${(extra / maxTotal) * 100}%` : "0%",
                       transition: "width .45s ease",
                       minWidth: extra > 0 ? 2 : 0,
@@ -1406,7 +1406,7 @@ function DivergentBarChart({ sectors, dim, isMoney }) {
                   <div
                     className="h-5"
                     style={{
-                      backgroundColor: "#1F8C4A",
+                      backgroundColor: "#4318C2",
                       width: ready ? `${(intra / maxTotal) * 100}%` : "0%",
                       transition: "width .45s ease",
                       minWidth: intra > 0 ? 2 : 0,
@@ -1416,11 +1416,11 @@ function DivergentBarChart({ sectors, dim, isMoney }) {
               </div>
               <div className="grid grid-cols-2 gap-1 text-right">
                 <div className="text-left">
-                  <div className="text-[11px] font-mono font-semibold" style={{ color: "#1F8C4A" }}>{intraPct}%</div>
+                  <div className="text-[11px] font-mono font-semibold" style={{ color: "#4318C2" }}>{intraPct}%</div>
                   <div className="text-[10px] text-ink-500">{fmt(intra)}</div>
                 </div>
                 <div className="text-left">
-                  <div className="text-[11px] font-mono font-semibold" style={{ color: "#C45A2E" }}>{extraPct}%</div>
+                  <div className="text-[11px] font-mono font-semibold" style={{ color: "#6B7280" }}>{extraPct}%</div>
                   <div className="text-[10px] text-ink-500">{fmt(extra)}</div>
                 </div>
               </div>
@@ -1518,7 +1518,7 @@ function SectorInsightCards({ sectors, dim, isMoney }) {
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <div className="border border-ink-100 bg-white p-5" style={{ borderLeft: "4px solid #1F8C4A" }}>
+      <div className="border border-ink-100 bg-white p-5" style={{ borderLeft: "4px solid #4318C2" }}>
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">Trattiene di più sul territorio</p>
         <p className="mt-1 text-xs text-ink-500">Settori con la quota intra-regionale più alta</p>
         <ul className="mt-4 space-y-3">
@@ -1530,7 +1530,7 @@ function SectorInsightCards({ sectors, dim, isMoney }) {
               <li key={s.ateco_code} className="flex items-center justify-between gap-3">
                 <span className="truncate text-sm text-ink-900">{cleanText(s.ateco_name)}</span>
                 <div className="flex shrink-0 items-center gap-2">
-                  <span className="text-xs font-semibold font-mono" style={{ color: "#1F8C4A" }}>{intraPct}% intra</span>
+                  <span className="text-xs font-semibold font-mono" style={{ color: "#4318C2" }}>{intraPct}% intra</span>
                   <span className="text-[11px] text-ink-500">{fmt(intra)}</span>
                 </div>
               </li>
@@ -1538,7 +1538,7 @@ function SectorInsightCards({ sectors, dim, isMoney }) {
           })}
         </ul>
       </div>
-      <div className="border border-ink-100 bg-white p-5" style={{ borderLeft: "4px solid #C45A2E" }}>
+      <div className="border border-ink-100 bg-white p-5" style={{ borderLeft: "4px solid #6B7280" }}>
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">Disperde di più fuori regione</p>
         <p className="mt-1 text-xs text-ink-500">Settori con la quota extra-regionale più alta</p>
         <ul className="mt-4 space-y-3">
@@ -1550,7 +1550,7 @@ function SectorInsightCards({ sectors, dim, isMoney }) {
               <li key={s.ateco_code} className="flex items-center justify-between gap-3">
                 <span className="truncate text-sm text-ink-900">{cleanText(s.ateco_name)}</span>
                 <div className="flex shrink-0 items-center gap-2">
-                  <span className="text-xs font-semibold font-mono" style={{ color: "#C45A2E" }}>{extraPct}% extra</span>
+                  <span className="text-xs font-semibold font-mono" style={{ color: "#6B7280" }}>{extraPct}% extra</span>
                   <span className="text-[11px] text-ink-500">{fmt(extra)}</span>
                 </div>
               </li>
@@ -2030,15 +2030,10 @@ function buildExploreRows({ dim, axis, level, filter, focus, regionFilt }) {
   if (axis === "settoriale") {
     const territory = resolveTerritoryFocus(focus);
     const territoryCode = territory?.regionCode ?? null;
-    const componentBySector = new Map();
     const source = comps[dim];
-    if (source?.top_sectors) {
-      ["direct", "indirect", "induced"].forEach((key) => {
-        (source.top_sectors[key] ?? []).forEach((entry) => {
-          if (!componentBySector.has(entry.name)) componentBySector.set(entry.name, key);
-        });
-      });
-    }
+    const directMap = new Map((source?.top_sectors?.direct ?? []).map((e) => [e.name, e.value]));
+    const indirectMap = new Map((source?.top_sectors?.indirect ?? []).map((e) => [e.name, e.value]));
+    const inducedMap = new Map((source?.top_sectors?.induced ?? []).map((e) => [e.name, e.value]));
     const rows = [...sectItems].map((s) => {
       const territorialValue = territoryCode
         ? (s.by_territory?.regions?.find((r) => r.code === territoryCode)?.values?.[dim] ?? 0)
@@ -2053,7 +2048,9 @@ function buildExploreRows({ dim, axis, level, filter, focus, regionFilt }) {
         intra,
         extra,
         pct: total > 0 ? (territoryCode ? 100 : (intra / total) * 100) : 0,
-        component: componentBySector.get(s.ateco_name) ?? null,
+        directValue: directMap.get(s.ateco_name) ?? null,
+        indirectValue: indirectMap.get(s.ateco_name) ?? null,
+        inducedValue: inducedMap.get(s.ateco_name) ?? null,
       };
     });
     return filter === "top10" ? rows.sort((a, b) => b.value - a.value).slice(0, 10) : rows.sort((a, b) => b.value - a.value);
@@ -2268,6 +2265,7 @@ function ExploreTable({ axis, rows, meta, sortKey, sortDir, onSort }) {
     return <div className="border border-ink-100 bg-white p-6 text-sm text-ink-700">Nessun risultato per questa combinazione.</div>;
   }
 
+  const fmt = meta.isMoney ? fmtM : fmtETP;
   const spendMode = axis === "settoriale" && meta.id === "spend";
   const headers = spendMode
     ? [
@@ -2278,9 +2276,10 @@ function ExploreTable({ axis, rows, meta, sortKey, sortDir, onSort }) {
     : axis === "settoriale"
       ? [
           { key: "label", label: "Voce" },
-          { key: "component", label: "Componente" },
-          { key: "value", label: "Valore" },
-          { key: "pct", label: "%" },
+          { key: "directValue", label: "Diretto" },
+          { key: "indirectValue", label: "Indiretto" },
+          { key: "inducedValue", label: "Indotto" },
+          { key: "value", label: "Totale" },
         ]
       : [
           { key: "label", label: "Voce" },
@@ -2288,17 +2287,15 @@ function ExploreTable({ axis, rows, meta, sortKey, sortDir, onSort }) {
           { key: "pct", label: "%" },
         ];
 
+  const gridClass = spendMode
+    ? "grid-cols-[1fr_80px_120px]"
+    : axis === "settoriale"
+      ? "grid-cols-[1fr_100px_100px_100px_100px]"
+      : "grid-cols-[1fr_120px_80px]";
+
   return (
     <div className="overflow-hidden border border-ink-100 bg-white">
-      <div
-        className={
-          spendMode
-            ? "sticky top-0 grid grid-cols-[1fr_120px_120px] gap-3 bg-bg-page px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-700"
-            : axis === "settoriale"
-              ? "sticky top-0 grid grid-cols-[1fr_120px_120px_80px] gap-3 bg-bg-page px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-700"
-              : "sticky top-0 grid grid-cols-[1fr_120px_80px] gap-3 bg-bg-page px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-700"
-        }
-      >
+      <div className={`sticky top-0 grid ${gridClass} gap-3 bg-bg-page px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-700`}>
         {headers.map((h) => (
           <button key={h.key} onClick={() => onSort(h.key)} className="text-left">
             {h.label} {sortKey === h.key ? (sortDir === "desc" ? "↓" : "↑") : ""}
@@ -2307,41 +2304,27 @@ function ExploreTable({ axis, rows, meta, sortKey, sortDir, onSort }) {
       </div>
       <div className="max-h-[520px] divide-y divide-ink-100 overflow-y-auto">
         {rows.map((row) => (
-          <div
-            key={row.code}
-            className={
-              spendMode
-                ? "grid grid-cols-[1fr_120px_120px] gap-3 px-4 py-3 text-sm"
-                : axis === "settoriale"
-                  ? "grid grid-cols-[1fr_120px_120px_80px] gap-3 px-4 py-3 text-sm"
-                  : "grid grid-cols-[1fr_120px_80px] gap-3 px-4 py-3 text-sm"
-            }
-          >
+          <div key={row.code} className={`grid ${gridClass} gap-3 px-4 py-3 text-sm`}>
             <span className="truncate font-medium text-ink-900">{row.label}</span>
             {spendMode ? (
               <span className="text-right font-mono text-xs font-semibold text-ink-900">{Math.round((row.share ?? 0) * 100)}%</span>
-            ) : axis === "settoriale" && (
-              <span className="inline-flex items-center">
-                {row.component ? (
-                  <span
-                    className={[
-                      "inline-flex items-center border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]",
-                      row.component === "direct"
-                        ? "border-impact-direct text-impact-direct"
-                        : row.component === "indirect"
-                          ? "border-impact-indirect text-impact-indirect"
-                          : "border-impact-induced text-impact-induced",
-                    ].join(" ")}
-                  >
-                    {row.component === "direct" ? "Diretto" : row.component === "indirect" ? "Indiretto" : "Indotto"}
-                  </span>
-                ) : (
-                  <span className="text-xs text-ink-500">-</span>
-                )}
-              </span>
+            ) : axis === "settoriale" ? (
+              <>
+                <span className="text-right font-mono text-xs text-brand-violet">
+                  {row.directValue != null ? fmt(row.directValue) : <span className="text-ink-400">—</span>}
+                </span>
+                <span className="text-right font-mono text-xs" style={{ color: "#9E7BFA" }}>
+                  {row.indirectValue != null ? fmt(row.indirectValue) : <span className="text-ink-400">—</span>}
+                </span>
+                <span className="text-right font-mono text-xs" style={{ color: "#C4B5FD" }}>
+                  {row.inducedValue != null ? fmt(row.inducedValue) : <span className="text-ink-400">—</span>}
+                </span>
+              </>
+            ) : null}
+            <span className="text-right font-mono text-xs font-semibold text-ink-900">{fmt(row.value)}</span>
+            {axis !== "settoriale" && !spendMode && (
+              <span className="text-right text-xs text-ink-500">{row.pct != null ? `${Math.round(row.pct)}%` : "—"}</span>
             )}
-            <span className="text-right font-mono text-xs font-semibold text-ink-900">{meta.isMoney ? fmtM(row.value) : fmtETP(row.value)}</span>
-            {!spendMode && <span className="text-right text-xs text-ink-500">{row.pct != null ? `${Math.round(row.pct)}%` : "-"}</span>}
           </div>
         ))}
       </div>
