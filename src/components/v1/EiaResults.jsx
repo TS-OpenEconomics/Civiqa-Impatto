@@ -376,59 +376,56 @@ export function EiaResults({ project, analysis, onBack }) {
 
   return (
     <div className="min-h-full bg-bg-page">
-      <div className="px-4 pt-8 pb-6 md:px-10">
-        <nav className="flex items-center gap-1.5 text-xs text-ink-500">
-          <button onClick={onBack} className="hover:text-brand-violet transition-colors">
+      <div className="px-4 py-8 md:px-8">
+        <nav className="mb-3 flex items-center gap-1.5 text-xs text-ink-500">
+          <button onClick={onBack} className="transition-colors hover:text-brand-violet">
             Dettaglio del progetto
           </button>
           <span>›</span>
           <span className="font-semibold text-ink-700">Analisi di Impatto</span>
         </nav>
-        <p className="mt-3 text-xs text-ink-500">
-          Creato il <span className="font-mono font-semibold">{meta.creato_il}</span> da{" "}
-          <strong>{meta.creato_da}</strong> - Ultima modifica{" "}
-          <span className="font-mono font-semibold">{analysis?.updatedAt ?? meta.ultima_modifica}</span>
+        <p className="mb-5 text-[11px] text-ink-400">
+          Creato il <span className="font-medium">{meta.creato_il}</span> da{" "}
+          <span className="font-medium">{meta.creato_da}</span> — Ultima modifica{" "}
+          <span className="font-medium">{analysis?.updatedAt ?? meta.ultima_modifica}</span>
         </p>
 
-        <div className="mt-5 overflow-hidden border border-ink-100 bg-white">
-          <div className="flex flex-wrap items-start justify-between gap-6 bg-ink-900 px-6 py-6 text-white md:px-8">
+        <div className="overflow-hidden border border-ink-100 bg-white">
+          <div className="flex flex-wrap items-start justify-between gap-4 px-6 py-5 md:px-8">
             <div className="flex items-start gap-4">
-              <span className="flex h-16 w-16 shrink-0 items-center justify-center bg-white p-2">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-bg-page p-1.5">
                 <img src={assetUrl("icons/analysis-eia.png")} alt="Logo analisi di impatto" className="h-full w-full object-contain" />
               </span>
               <div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <h1 className="text-[22px] font-bold">Analisi di Impatto</h1>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-[18px] font-bold text-ink-900">Analisi di Impatto</h1>
                   <Badge type="EIA" />
-                  <span className="inline-flex bg-white/10 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.18em] text-white/70">
+                  <span className="inline-flex border border-ink-200 px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">
                     Diretti / Indiretti / Indotti
                   </span>
                 </div>
-                <p className="mt-2 text-sm text-white/80">
-                  Del progetto <span className="font-medium text-white">{project?.nome}</span>
-                </p>
-                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/70">
-                  Vista sintetica dei risultati economici, territoriali e occupazionali generati dall'investimento.
+                <p className="mt-1 text-sm text-ink-500">
+                  Del progetto <span className="font-medium text-ink-900">{project?.nome}</span>
                 </p>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-sm">
+            <div className="flex flex-wrap items-center gap-2 text-sm">
               <button
                 onClick={() => showToast("Export PDF disponibile nella versione completa.", "info")}
-                className="flex h-10 items-center gap-2 border border-white/20 bg-white/10 px-4 font-semibold text-white hover:bg-white/20"
+                className="flex h-9 items-center gap-2 border border-ink-200 bg-white px-4 font-semibold text-ink-700 transition-colors hover:bg-bg-page"
               >
                 Scarica report <IconDownload />
               </button>
               <button
                 onClick={handleDownloadExcel}
-                className="flex h-10 items-center gap-2 bg-accent-lime px-4 font-semibold text-ink-900 hover:opacity-90"
+                className="flex h-9 items-center gap-2 bg-accent-lime px-4 font-semibold text-ink-900 hover:opacity-90"
               >
                 Scarica Excel <IconDownload />
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 divide-y divide-ink-100 border-t border-ink-100 bg-white text-sm md:grid-cols-3 md:divide-x md:divide-y-0">
+          <div className="grid grid-cols-1 divide-y divide-ink-100 border-t border-ink-100 bg-bg-page text-sm md:grid-cols-3 md:divide-x md:divide-y-0">
             <MetaField label="Settore" value={project?.configurazione?.settore ?? meta.settore} />
             <MetaField label="Dataset" value={meta.dataset} />
             <MetaField label="Metodologia" value={meta.metodologia} />
@@ -436,7 +433,7 @@ export function EiaResults({ project, analysis, onBack }) {
         </div>
       </div>
 
-      <div className="px-4 pb-10 md:px-10">
+      <div className="px-4 pb-8 md:px-8">
         {errored && <ErrorBanner />}
         {loading && <LoadingBanner />}
         <div className="overflow-hidden border border-ink-100 bg-white">
@@ -445,7 +442,7 @@ export function EiaResults({ project, analysis, onBack }) {
             previews={buildPerimeterPreview()}
             onChange={handleTabChange}
           />
-          <div className="border-t border-ink-100 px-4 py-8 md:px-6">
+          <div className="border-t border-ink-100 px-4 py-6 md:px-6">
             {tab === "sintesi" && (
               <TabShell title="Sintesi dell'impatto" tab="sintesi" onHelp={() => setGlossaryOpen(true)}>
                 <TabSintesi updateSearch={updateSearch} searchParams={searchParams} />
