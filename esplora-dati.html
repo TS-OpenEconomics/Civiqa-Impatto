@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esplora i dati — Civiqa</title>
+<style>
+  :root {
+    --purple-50:  #EEEDFE;
+    --purple-100: #CECBF6;
+    --purple-200: #AFA9EC;
+    --purple-400: #7F77DD;
+    --purple-600: #534AB7;
+    --purple-800: #3C3489;
+    --purple-900: #26215C;
+
+    --text-primary:   #111111;
+    --text-secondary: #555555;
+    --text-tertiary:  #888888;
+
+    --bg-primary:   #FFFFFF;
+    --bg-secondary: #F5F5F4;
+    --bg-page:      #FAFAF9;
+
+    --border: rgba(0, 0, 0, 0.08);
+    --border-strong: rgba(0, 0, 0, 0.16);
+
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-pill: 999px;
+
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    background: var(--bg-page);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 4rem;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 500;
+    margin: 0 0 0.5rem;
+    line-height: 1.3;
+  }
+  .page-lede {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin: 0 0 2rem;
+    line-height: 1.6;
+    max-width: 720px;
+  }
+
+  /* =====================================================
+     QUERY BUILDER — natural language sentence with pills
+     ===================================================== */
+  .query-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .query-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .query-sentence {
+    font-size: 18px;
+    line-height: 1.8;
+    color: var(--text-primary);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--purple-50);
+    border: 1px solid var(--purple-200);
+    border-radius: var(--radius-pill);
+    padding: 5px 14px 5px 14px;
+    font-size: 15px;
+    color: var(--purple-800);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+    position: relative;
+  }
+  .pill:hover {
+    background: var(--purple-100);
+    border-color: var(--purple-400);
+  }
+  .pill .caret {
+    width: 12px;
+    height: 12px;
+    opacity: 0.6;
+  }
+  .pill.compact {
+    padding: 4px 10px;
+    font-size: 13px;
+  }
+
+  /* Dropdown menu */
+  .dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 220px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+    z-index: 100;
+    overflow: hidden;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .dropdown-item {
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.1s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-weight: 400;
+  }
+  .dropdown-item:hover { background: var(--purple-50); }
+  .dropdown-item.selected {
+    background: var(--purple-50);
+    color: var(--purple-800);
+    font-weight: 500;
+  }
+  .dropdown-item .check {
+    color: var(--purple-600);
+    font-weight: 500;
+  }
+  .dropdown-group-label {
+    padding: 8px 14px 4px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    font-weight: 500;
+    background: var(--bg-secondary);
+  }
+  .dropdown-search {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg-primary);
+  }
+  .dropdown-search input {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text-primary);
+  }
+  .dropdown-search input:focus {
+    outline: none;
+    border-color: var(--purple-400);
+  }
+
+  /* =====================================================
+     PRESET CHIPS
+     ===================================================== */
+  .presets {
+    margin-bottom: 1.5rem;
+  }
+  .presets-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .preset-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .preset-chip {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    padding: 6px 14px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .preset-chip:hover {
+    border-color: var(--purple-400);
+    color: var(--purple-800);
+    background: var(--purple-50);
+  }
+  .preset-chip svg {
+    width: 12px;
+    height: 12px;
+    opacity: 0.7;
+  }
+
+  /* =====================================================
+     RESULT HEADER (breadcrumb + total + export)
+     ===================================================== */
+  .result-header {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .result-summary .summary-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .result-summary .summary-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .result-summary .summary-text strong {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .result-total {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .result-total-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .result-total-value {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--purple-600);
+    line-height: 1;
+  }
+  .toolbar {
+    display: flex;
+    gap: 8px;
+  }
+  .btn-secondary {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 7px 12px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+  .btn-secondary:hover {
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+  }
+  .btn-secondary svg { width: 14px; height: 14px; }
+
+  /* =====================================================
+     SINGLE NUMBER HERO (when query produces 1 value)
+     ===================================================== */
+  .single-number-card {
+    background: linear-gradient(135deg, var(--purple-600), var(--purple-800));
+    color: white;
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  .single-number-eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 12px;
+  }
+  .single-number-value {
+    font-size: 64px;
+    font-weight: 500;
+    line-height: 1;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+  .single-number-context {
+    font-size: 15px;
+    opacity: 0.9;
+    line-height: 1.6;
+    max-width: 540px;
+  }
+  .single-number-breakdown {
+    display: flex;
+    gap: 32px;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255,255,255,0.2);
+  }
+  .breakdown-item-sn .label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-bottom: 4px;
+  }
+  .breakdown-item-sn .value {
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  /* =====================================================
+     TABLE WITH INLINE BARS
+     ===================================================== */
+  .data-table-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .data-table thead th {
+    background: var(--bg-secondary);
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .data-table thead th:hover {
+    color: var(--text-primary);
+  }
+  .data-table thead th.sortable .sort-icon {
+    margin-left: 4px;
+    opacity: 0.4;
+    font-size: 10px;
+  }
+  .data-table thead th.sorted .sort-icon {
+    opacity: 1;
+    color: var(--purple-600);
+  }
+  .data-table thead th.numeric { text-align: right; }
+  .data-table tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    vertical-align: middle;
+  }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+  .data-table tbody tr:hover { background: var(--bg-secondary); }
+  .data-table .row-name {
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  .data-table .numeric {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+  }
+  .data-table .numeric .muted {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    margin-left: 4px;
+  }
+
+  .bar-cell {
+    min-width: 160px;
+    padding: 12px 16px;
+  }
+  .stacked-bar {
+    display: flex;
+    height: 14px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--bg-secondary);
+  }
+  .stacked-bar > div {
+    height: 100%;
+    transition: width 0.4s ease;
+  }
+  .stacked-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .stacked-bar-pct {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    min-width: 30px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Footer row */
+  .data-table tfoot td {
+    padding: 14px 16px;
+    background: var(--bg-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    border-top: 2px solid var(--border-strong);
+  }
+  .data-table tfoot td.numeric {
+    font-size: 14px;
+  }
+
+  /* Legend */
+  .table-legend {
+    display: flex;
+    gap: 16px;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .legend-item-tbl {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .legend-swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+  }
+
+  /* Empty / single state */
+  .info-bar {
+    background: var(--purple-50);
+    border-left: 3px solid var(--purple-600);
+    padding: 12px 16px;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    margin-bottom: 1rem;
+    font-size: 13px;
+    color: var(--purple-800);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .info-bar svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  @media (max-width: 720px) {
+    .page { padding: 1.5rem 1rem 3rem; }
+    h1 { font-size: 22px; }
+    .query-sentence { font-size: 15px; }
+    .pill { font-size: 13px; padding: 4px 12px; }
+    .single-number-value { font-size: 44px; }
+    .single-number-breakdown { flex-direction: column; gap: 16px; }
+    .result-header { flex-direction: column; align-items: flex-start; }
+    .bar-cell { min-width: 100px; }
+    .data-table thead th, .data-table tbody td { padding: 10px 12px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<main class="page" aria-label="Esplora i dati">
+
+  <div class="eyebrow">Esplora i dati</div>
+  <h1>Costruisci la tua interrogazione</h1>
+  <p class="page-lede">Componi la domanda che ti interessa scegliendo cosa misurare, come scomporlo e per quale territorio. Il risultato si aggiorna istantaneamente e può essere esportato.</p>
+
+  <div class="query-card">
+    <div class="query-eyebrow">La tua domanda</div>
+    <div class="query-sentence" id="query-sentence">
+      <span>Mostrami il</span>
+      <button class="pill" data-pill="metric">
+        <span id="pill-metric-label">PIL</span>
+        <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <span>per</span>
+      <button class="pill" data-pill="dim">
+        <span id="pill-dim-label">regione</span>
+        <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <span>scomposto in</span>
+      <button class="pill" data-pill="effect">
+        <span id="pill-effect-label">diretto, indiretto e indotto</span>
+        <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <span>, limitato a</span>
+      <button class="pill" data-pill="filter">
+        <span id="pill-filter-label">tutti i territori</span>
+        <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="presets">
+    <div class="presets-label">Domande frequenti</div>
+    <div class="preset-chips" id="preset-chips"></div>
+  </div>
+
+  <div class="result-header">
+    <div class="result-summary">
+      <div class="summary-eyebrow">Risultato</div>
+      <div class="summary-text" id="summary-text">
+        Stai vedendo <strong>PIL</strong> per <strong>regione</strong>, scomposto per effetto. <strong>20</strong> righe.
+      </div>
+    </div>
+    <div class="result-total">
+      <span class="result-total-label">Totale:</span>
+      <span class="result-total-value" id="total-value">58,0 M€</span>
+    </div>
+    <div class="toolbar">
+      <button class="btn-secondary" id="btn-csv">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        CSV
+      </button>
+      <button class="btn-secondary" id="btn-xlsx">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Excel
+      </button>
+      <button class="btn-secondary" id="btn-copy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copia
+      </button>
+    </div>
+  </div>
+
+  <div id="result-container"></div>
+
+</main>
+
+<script>
+(function() {
+
+  /* ============================================
+     CONFIG: dimensions, dropdowns, presets
+     ============================================ */
+
+  const METRICS = {
+    pil:         { label: 'PIL',         unit: 'M€' },
+    produzione:  { label: 'Produzione',  unit: 'M€' },
+    occupazione: { label: 'Occupazione', unit: 'ETP' },
+    redditi:     { label: 'Redditi',     unit: 'M€' },
+    gettito:     { label: 'Gettito fiscale', unit: 'M€' }
+  };
+
+  const DIMENSIONS = {
+    territorio_regione:    { label: 'regione',    type: 'regione' },
+    territorio_provincia:  { label: 'provincia',  type: 'provincia' },
+    settore:               { label: 'settore',    type: 'settore' },
+    settore_macro:         { label: 'macro-settore', type: 'macro' }
+  };
+
+  const EFFECTS = {
+    tutti:     'diretto, indiretto e indotto',
+    diretto:   'solo diretto',
+    indiretto: 'solo indiretto',
+    indotto:   'solo indotto'
+  };
+
+  const FILTERS_BY_DIM = {
+    territorio_regione: {
+      tutti:   'tutti i territori',
+      sicilia: 'Sicilia',
+      sud:     'Sud Italia',
+      nord:    'Nord Italia',
+      centro:  'Centro Italia'
+    },
+    territorio_provincia: {
+      tutti:   'tutte le province',
+      sicilia: 'province siciliane',
+      palermo: 'solo Palermo'
+    },
+    settore: {
+      tutti:    'tutti i settori',
+      top10:    'top 10 settori',
+      manifattura: 'settori manifatturieri',
+      servizi:  'servizi'
+    },
+    settore_macro: {
+      tutti:    'tutti i macro-settori'
+    }
+  };
+
+  const REGIONS = [
+    { name: 'Sicilia', macro: 'sud', d: 22.9, i: 14.1, n: 12.1 },
+    { name: 'Piemonte', macro: 'nord', d: 0,  i: 0.6,  n: 0.6 },
+    { name: 'Lombardia', macro: 'nord', d: 0, i: 0.5, n: 0.5 },
+    { name: 'Lazio', macro: 'centro', d: 0, i: 0.4, n: 0.5 },
+    { name: 'Liguria', macro: 'nord', d: 0, i: 0.4, n: 0.4 },
+    { name: 'Puglia', macro: 'sud', d: 0, i: 0.3, n: 0.4 },
+    { name: 'Veneto', macro: 'nord', d: 0, i: 0.3, n: 0.3 },
+    { name: 'Campania', macro: 'sud', d: 0, i: 0.3, n: 0.3 },
+    { name: 'Emilia-Romagna', macro: 'nord', d: 0, i: 0.2, n: 0.3 },
+    { name: 'Toscana', macro: 'centro', d: 0, i: 0.2, n: 0.3 },
+    { name: 'Marche', macro: 'centro', d: 0, i: 0.2, n: 0.2 },
+    { name: 'Abruzzo', macro: 'sud', d: 0, i: 0.2, n: 0.2 },
+    { name: 'Calabria', macro: 'sud', d: 0, i: 0.1, n: 0.2 },
+    { name: 'Sardegna', macro: 'sud', d: 0, i: 0.1, n: 0.2 },
+    { name: 'Friuli-V.G.', macro: 'nord', d: 0, i: 0.1, n: 0.2 },
+    { name: 'Trentino-A.A.', macro: 'nord', d: 0, i: 0.1, n: 0.1 },
+    { name: 'Umbria', macro: 'centro', d: 0, i: 0.1, n: 0.1 },
+    { name: 'Basilicata', macro: 'sud', d: 0, i: 0.1, n: 0.1 },
+    { name: 'Molise', macro: 'sud', d: 0, i: 0.05, n: 0.05 },
+    { name: "Valle d'Aosta", macro: 'nord', d: 0, i: 0.05, n: 0.05 }
+  ];
+
+  const PROVINCES = [
+    { name: 'Palermo', d: 22.4, i: 0.0, n: 0.0 },
+    { name: 'Catania', d: 0.0, i: 5.4, n: 4.6 },
+    { name: 'Messina', d: 0.0, i: 3.8, n: 3.2 },
+    { name: 'Trapani', d: 0.0, i: 2.0, n: 1.8 },
+    { name: 'Siracusa', d: 0.0, i: 1.5, n: 1.4 },
+    { name: 'Agrigento', d: 0.0, i: 0.8, n: 0.7 },
+    { name: 'Caltanissetta', d: 0.0, i: 0.4, n: 0.3 },
+    { name: 'Ragusa', d: 0.0, i: 0.2, n: 0.2 },
+    { name: 'Enna', d: 0.0, i: 0.1, n: 0.1 }
+  ];
+
+  const SECTORS = [
+    { name: 'Costruzioni', macro: 'manifattura', d: 5.2, i: 3.8, n: 1.8 },
+    { name: 'Servizi professionali', macro: 'servizi', d: 2.3, i: 1.5, n: 1.0 },
+    { name: 'Commercio', macro: 'servizi', d: 0, i: 1.6, n: 2.4 },
+    { name: 'Sanità e assistenza', macro: 'servizi', d: 0, i: 1.2, n: 1.9 },
+    { name: 'Trasporti e logistica', macro: 'servizi', d: 0, i: 1.8, n: 0.9 },
+    { name: 'Materiali da costruzione', macro: 'manifattura', d: 0, i: 2.4, n: 0.3 },
+    { name: 'Attività immobiliari', macro: 'servizi', d: 0, i: 0.8, n: 1.5 },
+    { name: 'Energia e utilities', macro: 'manifattura', d: 0, i: 1.4, n: 0.4 },
+    { name: 'ICT e digitale', macro: 'servizi', d: 0, i: 0.9, n: 0.4 },
+    { name: 'Servizi finanziari', macro: 'servizi', d: 0, i: 0.6, n: 0.6 }
+  ];
+
+  const MACRO_SECTORS = [
+    { name: 'Manifattura', d: 5.2, i: 7.6, n: 2.5 },
+    { name: 'Servizi', d: 2.3, i: 8.4, n: 8.7 },
+    { name: 'Costruzioni (incl.)', d: 5.2, i: 3.8, n: 1.8 },
+    { name: 'Agricoltura', d: 0, i: 0.2, n: 0.4 },
+    { name: 'PA e istruzione', d: 0, i: 0.4, n: 0.8 }
+  ];
+
+  const PRESETS = [
+    { id: 'top5_pil', label: 'Top 5 regioni per PIL', q: { metric: 'pil', dim: 'territorio_regione', effect: 'tutti', filter: 'tutti', limit: 5 } },
+    { id: 'indotto_sicilia', label: 'PIL indotto in Sicilia', q: { metric: 'pil', dim: 'territorio_regione', effect: 'indotto', filter: 'sicilia' } },
+    { id: 'settori_top', label: 'Settori principali (PIL totale)', q: { metric: 'pil', dim: 'settore', effect: 'tutti', filter: 'tutti' } },
+    { id: 'occ_sicilia', label: 'Occupazione in Sicilia', q: { metric: 'occupazione', dim: 'territorio_regione', effect: 'tutti', filter: 'sicilia' } },
+    { id: 'prov_palermo', label: 'PIL diretto di Palermo', q: { metric: 'pil', dim: 'territorio_provincia', effect: 'diretto', filter: 'palermo' } },
+    { id: 'nord', label: 'PIL nel Nord Italia', q: { metric: 'pil', dim: 'territorio_regione', effect: 'tutti', filter: 'nord' } }
+  ];
+
+  /* ============================================
+     STATE
+     ============================================ */
+  const state = {
+    metric: 'pil',
+    dim: 'territorio_regione',
+    effect: 'tutti',
+    filter: 'tutti',
+    limit: null,
+    sortBy: 'value',
+    sortDir: 'desc'
+  };
+
+  /* ============================================
+     HELPERS
+     ============================================ */
+  function fmt(v, unit) {
+    if (unit === 'ETP') return Math.round(v).toLocaleString('it-IT');
+    if (v < 0.1) return v.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return v.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  }
+  function fmtFull(v, unit) {
+    if (unit === 'ETP') return fmt(v, unit) + ' ETP';
+    return fmt(v, unit) + ' M€';
+  }
+
+  // Scale values based on metric (we keep PIL as base, scale for others)
+  function scaleForMetric(v, metric) {
+    if (metric === 'pil') return v;
+    if (metric === 'produzione') return v * 1.79;
+    if (metric === 'redditi') return v * 0.97;
+    if (metric === 'gettito') return v * 0.19;
+    if (metric === 'occupazione') return v * 14.6;
+    return v;
+  }
+
+  function getRows() {
+    let rows;
+    if (state.dim === 'territorio_regione') {
+      rows = REGIONS.map(r => ({
+        name: r.name,
+        d: scaleForMetric(r.d, state.metric),
+        i: scaleForMetric(r.i, state.metric),
+        n: scaleForMetric(r.n, state.metric),
+        macro: r.macro
+      }));
+      // filter
+      if (state.filter === 'sicilia') rows = rows.filter(r => r.name === 'Sicilia');
+      else if (['sud','nord','centro'].includes(state.filter)) rows = rows.filter(r => r.macro === state.filter);
+    } else if (state.dim === 'territorio_provincia') {
+      rows = PROVINCES.map(p => ({
+        name: p.name,
+        d: scaleForMetric(p.d, state.metric),
+        i: scaleForMetric(p.i, state.metric),
+        n: scaleForMetric(p.n, state.metric)
+      }));
+      if (state.filter === 'palermo') rows = rows.filter(r => r.name === 'Palermo');
+    } else if (state.dim === 'settore') {
+      rows = SECTORS.map(s => ({
+        name: s.name,
+        d: scaleForMetric(s.d, state.metric),
+        i: scaleForMetric(s.i, state.metric),
+        n: scaleForMetric(s.n, state.metric),
+        macro: s.macro
+      }));
+      if (state.filter === 'manifattura') rows = rows.filter(r => r.macro === 'manifattura');
+      else if (state.filter === 'servizi') rows = rows.filter(r => r.macro === 'servizi');
+      else if (state.filter === 'top10') rows = rows.slice(0, 10);
+    } else if (state.dim === 'settore_macro') {
+      rows = MACRO_SECTORS.map(m => ({
+        name: m.name,
+        d: scaleForMetric(m.d, state.metric),
+        i: scaleForMetric(m.i, state.metric),
+        n: scaleForMetric(m.n, state.metric)
+      }));
+    }
+
+    // compute total per row based on effect filter
+    rows.forEach(r => {
+      if (state.effect === 'tutti') r.value = r.d + r.i + r.n;
+      else if (state.effect === 'diretto') r.value = r.d;
+      else if (state.effect === 'indiretto') r.value = r.i;
+      else if (state.effect === 'indotto') r.value = r.n;
+    });
+
+    // remove zero rows when filtering by single effect
+    if (state.effect !== 'tutti') {
+      rows = rows.filter(r => r.value > 0);
+    }
+
+    // sort
+    rows.sort((a, b) => {
+      let x, y;
+      if (state.sortBy === 'name') { x = a.name; y = b.name; return state.sortDir === 'asc' ? x.localeCompare(y) : y.localeCompare(x); }
+      if (state.sortBy === 'value') { x = a.value; y = b.value; }
+      else if (state.sortBy === 'd') { x = a.d; y = b.d; }
+      else if (state.sortBy === 'i') { x = a.i; y = b.i; }
+      else if (state.sortBy === 'n') { x = a.n; y = b.n; }
+      return state.sortDir === 'asc' ? x - y : y - x;
+    });
+
+    if (state.limit) rows = rows.slice(0, state.limit);
+    return rows;
+  }
+
+  /* ============================================
+     RENDER
+     ============================================ */
+
+  function renderSentence() {
+    const m = METRICS[state.metric];
+    const d = DIMENSIONS[state.dim];
+    const filters = FILTERS_BY_DIM[state.dim];
+    document.getElementById('pill-metric-label').textContent = m.label;
+    document.getElementById('pill-dim-label').textContent = d.label;
+    document.getElementById('pill-effect-label').textContent = EFFECTS[state.effect];
+    if (!filters[state.filter]) state.filter = 'tutti';
+    document.getElementById('pill-filter-label').textContent = filters[state.filter];
+  }
+
+  function renderPresets() {
+    const container = document.getElementById('preset-chips');
+    container.innerHTML = '';
+    PRESETS.forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'preset-chip';
+      btn.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>' +
+        p.label;
+      btn.addEventListener('click', () => {
+        Object.assign(state, p.q);
+        state.limit = p.q.limit || null;
+        renderSentence();
+        renderResult();
+      });
+      container.appendChild(btn);
+    });
+  }
+
+  function renderResult() {
+    const rows = getRows();
+    const meta = METRICS[state.metric];
+    const total = rows.reduce((a, r) => a + r.value, 0);
+    const totalD = rows.reduce((a, r) => a + r.d, 0);
+    const totalI = rows.reduce((a, r) => a + r.i, 0);
+    const totalN = rows.reduce((a, r) => a + r.n, 0);
+
+    // summary
+    const dimLabel = DIMENSIONS[state.dim].label;
+    document.getElementById('summary-text').innerHTML =
+      'Stai vedendo <strong>' + meta.label + '</strong> per <strong>' + dimLabel + '</strong>, ' +
+      (state.effect === 'tutti' ? 'scomposto per effetto' : 'solo effetto ' + state.effect) +
+      '. <strong>' + rows.length + '</strong> riga' + (rows.length === 1 ? '' : 'he') + '.';
+    document.getElementById('total-value').textContent = fmtFull(total, meta.unit);
+
+    const container = document.getElementById('result-container');
+
+    // Single-row hero
+    if (rows.length === 1) {
+      const r = rows[0];
+      const showBreakdown = state.effect === 'tutti';
+      container.innerHTML =
+        '<div class="single-number-card">' +
+          '<div class="single-number-eyebrow">' + meta.label + ' · ' + (state.effect === 'tutti' ? 'totale' : 'solo ' + state.effect) + '</div>' +
+          '<div class="single-number-value">' + fmtFull(r.value, meta.unit) + '</div>' +
+          '<div class="single-number-context">Valore attivato in <strong>' + r.name + '</strong> dall\'investimento iniziale di Palermo (41,1 M€).</div>' +
+          (showBreakdown ?
+            '<div class="single-number-breakdown">' +
+              '<div class="breakdown-item-sn"><div class="label">Diretto</div><div class="value">' + fmtFull(r.d, meta.unit) + '</div></div>' +
+              '<div class="breakdown-item-sn"><div class="label">Indiretto</div><div class="value">' + fmtFull(r.i, meta.unit) + '</div></div>' +
+              '<div class="breakdown-item-sn"><div class="label">Indotto</div><div class="value">' + fmtFull(r.n, meta.unit) + '</div></div>' +
+            '</div>' : '') +
+        '</div>';
+      return;
+    }
+
+    // Empty state
+    if (rows.length === 0) {
+      container.innerHTML =
+        '<div class="info-bar">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+          'Nessun dato per questa combinazione. Modifica i filtri per ottenere risultati.' +
+        '</div>';
+      return;
+    }
+
+    // Table
+    const showEffectCols = state.effect === 'tutti';
+    const maxValue = Math.max(...rows.map(r => r.value));
+
+    let html = '<div class="data-table-card">';
+
+    if (showEffectCols) {
+      html += '<div class="table-legend">' +
+        '<div class="legend-item-tbl"><span class="legend-swatch" style="background: var(--purple-600);"></span>Diretto</div>' +
+        '<div class="legend-item-tbl"><span class="legend-swatch" style="background: var(--purple-200);"></span>Indiretto</div>' +
+        '<div class="legend-item-tbl"><span class="legend-swatch" style="background: var(--purple-100);"></span>Indotto</div>' +
+      '</div>';
+    }
+
+    html += '<table class="data-table">';
+    html += '<thead><tr>';
+    html += '<th class="sortable' + (state.sortBy === 'name' ? ' sorted' : '') + '" data-sort="name">Voce<span class="sort-icon">' + (state.sortBy === 'name' ? (state.sortDir === 'asc' ? '↑' : '↓') : '↕') + '</span></th>';
+    html += '<th>Composizione</th>';
+    if (showEffectCols) {
+      html += '<th class="sortable numeric' + (state.sortBy === 'd' ? ' sorted' : '') + '" data-sort="d">Diretto<span class="sort-icon">' + (state.sortBy === 'd' ? (state.sortDir === 'asc' ? '↑' : '↓') : '↕') + '</span></th>';
+      html += '<th class="sortable numeric' + (state.sortBy === 'i' ? ' sorted' : '') + '" data-sort="i">Indiretto<span class="sort-icon">' + (state.sortBy === 'i' ? (state.sortDir === 'asc' ? '↑' : '↓') : '↕') + '</span></th>';
+      html += '<th class="sortable numeric' + (state.sortBy === 'n' ? ' sorted' : '') + '" data-sort="n">Indotto<span class="sort-icon">' + (state.sortBy === 'n' ? (state.sortDir === 'asc' ? '↑' : '↓') : '↕') + '</span></th>';
+    }
+    html += '<th class="sortable numeric' + (state.sortBy === 'value' ? ' sorted' : '') + '" data-sort="value">Totale<span class="sort-icon">' + (state.sortBy === 'value' ? (state.sortDir === 'asc' ? '↑' : '↓') : '↕') + '</span></th>';
+    html += '<th class="numeric">% su totale</th>';
+    html += '</tr></thead>';
+
+    html += '<tbody>';
+    rows.forEach(r => {
+      const widthPct = (r.value / maxValue) * 100;
+      const sharePct = total > 0 ? (r.value / total) * 100 : 0;
+      let barInner;
+      if (showEffectCols && r.value > 0) {
+        barInner =
+          '<div style="width: ' + (r.d / r.value * 100) + '%; background: var(--purple-600);"></div>' +
+          '<div style="width: ' + (r.i / r.value * 100) + '%; background: var(--purple-200);"></div>' +
+          '<div style="width: ' + (r.n / r.value * 100) + '%; background: var(--purple-100);"></div>';
+      } else {
+        barInner = '<div style="width: 100%; background: var(--purple-600);"></div>';
+      }
+
+      html += '<tr>' +
+        '<td class="row-name">' + r.name + '</td>' +
+        '<td class="bar-cell">' +
+          '<div class="stacked-bar-row">' +
+            '<div class="stacked-bar" style="width: ' + widthPct + '%;">' + barInner + '</div>' +
+          '</div>' +
+        '</td>';
+      if (showEffectCols) {
+        html += '<td class="numeric">' + fmt(r.d, meta.unit) + '</td>';
+        html += '<td class="numeric">' + fmt(r.i, meta.unit) + '</td>';
+        html += '<td class="numeric">' + fmt(r.n, meta.unit) + '</td>';
+      }
+      html += '<td class="numeric"><strong>' + fmt(r.value, meta.unit) + '</strong></td>';
+      html += '<td class="numeric">' + sharePct.toFixed(1) + '%</td>';
+      html += '</tr>';
+    });
+    html += '</tbody>';
+
+    // Footer with totals
+    html += '<tfoot><tr>' +
+      '<td><strong>Totale</strong></td>' +
+      '<td></td>';
+    if (showEffectCols) {
+      html += '<td class="numeric">' + fmt(totalD, meta.unit) + '</td>';
+      html += '<td class="numeric">' + fmt(totalI, meta.unit) + '</td>';
+      html += '<td class="numeric">' + fmt(totalN, meta.unit) + '</td>';
+    }
+    html += '<td class="numeric"><strong>' + fmt(total, meta.unit) + '</strong></td>';
+    html += '<td class="numeric">100%</td>';
+    html += '</tr></tfoot>';
+
+    html += '</table></div>';
+
+    container.innerHTML = html;
+
+    // Bind sort
+    container.querySelectorAll('th.sortable').forEach(th => {
+      th.addEventListener('click', () => {
+        const sortKey = th.dataset.sort;
+        if (state.sortBy === sortKey) {
+          state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          state.sortBy = sortKey;
+          state.sortDir = sortKey === 'name' ? 'asc' : 'desc';
+        }
+        renderResult();
+      });
+    });
+  }
+
+  /* ============================================
+     DROPDOWNS
+     ============================================ */
+  let activeDropdown = null;
+
+  function closeDropdown() {
+    if (activeDropdown) {
+      activeDropdown.remove();
+      activeDropdown = null;
+    }
+  }
+
+  function openDropdown(pill, type) {
+    closeDropdown();
+    const dd = document.createElement('div');
+    dd.className = 'dropdown';
+
+    let items = [];
+    if (type === 'metric') {
+      items = Object.entries(METRICS).map(([k, v]) => ({ key: k, label: v.label, selected: state.metric === k }));
+    } else if (type === 'dim') {
+      items = Object.entries(DIMENSIONS).map(([k, v]) => ({ key: k, label: v.label, selected: state.dim === k }));
+    } else if (type === 'effect') {
+      items = Object.entries(EFFECTS).map(([k, v]) => ({ key: k, label: v, selected: state.effect === k }));
+    } else if (type === 'filter') {
+      const filters = FILTERS_BY_DIM[state.dim];
+      items = Object.entries(filters).map(([k, v]) => ({ key: k, label: v, selected: state.filter === k }));
+    }
+
+    items.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'dropdown-item' + (item.selected ? ' selected' : '');
+      div.innerHTML = '<span>' + item.label + '</span>' + (item.selected ? '<span class="check">✓</span>' : '');
+      div.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (type === 'metric') state.metric = item.key;
+        else if (type === 'dim') {
+          state.dim = item.key;
+          state.filter = 'tutti';
+        }
+        else if (type === 'effect') state.effect = item.key;
+        else if (type === 'filter') state.filter = item.key;
+        state.limit = null;
+        closeDropdown();
+        renderSentence();
+        renderResult();
+      });
+      dd.appendChild(div);
+    });
+
+    pill.appendChild(dd);
+    activeDropdown = dd;
+  }
+
+  document.querySelectorAll('.pill[data-pill]').forEach(pill => {
+    pill.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (activeDropdown && pill.contains(activeDropdown)) {
+        closeDropdown();
+      } else {
+        openDropdown(pill, pill.dataset.pill);
+      }
+    });
+  });
+
+  document.addEventListener('click', closeDropdown);
+
+  /* ============================================
+     EXPORT
+     ============================================ */
+  function buildExportRows() {
+    const rows = getRows();
+    const meta = METRICS[state.metric];
+    const header = ['Voce'];
+    if (state.effect === 'tutti') header.push('Diretto', 'Indiretto', 'Indotto');
+    header.push('Totale (' + meta.unit + ')');
+    const data = [header];
+    rows.forEach(r => {
+      const row = [r.name];
+      if (state.effect === 'tutti') row.push(r.d.toFixed(2), r.i.toFixed(2), r.n.toFixed(2));
+      row.push(r.value.toFixed(2));
+      data.push(row);
+    });
+    return data;
+  }
+
+  function downloadCSV() {
+    const data = buildExportRows();
+    const csv = data.map(row => row.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'civiqa_export.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function copyToClipboard() {
+    const data = buildExportRows();
+    const tsv = data.map(row => row.join('\t')).join('\n');
+    navigator.clipboard.writeText(tsv).then(() => {
+      const btn = document.getElementById('btn-copy');
+      const original = btn.innerHTML;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copiato!';
+      setTimeout(() => { btn.innerHTML = original; }, 1500);
+    });
+  }
+
+  document.getElementById('btn-csv').addEventListener('click', downloadCSV);
+  document.getElementById('btn-xlsx').addEventListener('click', downloadCSV);
+  document.getElementById('btn-copy').addEventListener('click', copyToClipboard);
+
+  /* ============================================
+     INIT
+     ============================================ */
+  renderSentence();
+  renderPresets();
+  renderResult();
+})();
+</script>
+
+</body>
+</html>

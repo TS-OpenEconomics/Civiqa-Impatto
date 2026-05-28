@@ -2370,14 +2370,14 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
         <div className="mx-auto flex aspect-square w-full max-w-[380px] items-center justify-center">
           <svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" className="block h-full w-full">
             <circle cx="160" cy="160" r="155" fill="#EEEDFE" stroke="#AFA9EC" strokeWidth="1" />
-            <circle cx="160" cy="180" r="118" fill="#CECBF6" stroke="white" strokeWidth="2" />
+            <circle cx="160" cy="180" r="118" fill="#AFA9EC" stroke="white" strokeWidth="2" />
             <circle cx="160" cy="195" r="82" fill="#534AB7" stroke="white" strokeWidth="2" />
-            <text x="160" y="200" textAnchor="middle" fontSize="32" fontWeight="500" fill="white">{originPct}%</text>
-            <text x="160" y="220" textAnchor="middle" fontSize="11" fill="white" opacity="0.85">{originProvince}</text>
+            <text x="160" y="195" textAnchor="middle" fontSize="32" fontWeight="500" fill="white" dominantBaseline="middle">{originPct}%</text>
+            <text x="160" y="215" textAnchor="middle" fontSize="11" fill="white" opacity="0.85" style={{ textTransform: "uppercase", letterSpacing: "0.05em" }}>{originProvince}</text>
             <text x="160" y="108" textAnchor="middle" fontSize="18" fontWeight="500" fill="#26215C">{restRegPct}%</text>
-            <text x="160" y="125" textAnchor="middle" fontSize="10" fill="#3C3489">Resto {regionName}</text>
+            <text x="160" y="125" textAnchor="middle" fontSize="10" fill="#3C3489" style={{ textTransform: "uppercase", letterSpacing: "0.05em" }}>Resto {regionName}</text>
             <text x="160" y="32" textAnchor="middle" fontSize="14" fontWeight="500" fill="#3C3489">{extraPct}%</text>
-            <text x="160" y="48" textAnchor="middle" fontSize="10" fill="#534AB7">Resto d'Italia</text>
+            <text x="160" y="48" textAnchor="middle" fontSize="10" fill="#534AB7" style={{ textTransform: "uppercase", letterSpacing: "0.05em" }}>Resto d'Italia</text>
           </svg>
         </div>
 
@@ -2453,102 +2453,112 @@ function GeoTabPills({ options, value, onChange }) {
 
 function TabSettori({ updateSearch, searchParams, onOpenExplore }) {
   const [dim, setDim] = useState(searchParams?.get("dim") ?? "gdp");
-  const [vista, setVista] = useState(searchParams?.get("view") ?? "intraextra");
+  const [heatmapMode, setHeatmapMode] = useState("tutti");
   const isMoney = dim !== "employment";
   const sorted = [...sectItems].sort((a, b) => sectorTotal(b, dim) - sectorTotal(a, dim));
-  const top10 = sorted.slice(0, 10);
 
-  useEffect(() => {
-    updateSearch?.({ dim, view: vista });
-  }, [dim, vista, updateSearch]);
-
-  useEffect(() => {
-    setDim(searchParams?.get("dim") ?? "gdp");
-    setVista(searchParams?.get("view") ?? "intraextra");
-  }, [searchParams]);
+  useEffect(() => { updateSearch?.({ dim }); }, [dim, updateSearch]);
+  useEffect(() => { setDim(searchParams?.get("dim") ?? "gdp"); }, [searchParams]);
 
   const dimLabel = SECTOR_DIMS.find((d) => d.id === dim)?.label ?? dim;
+  const fmt = isMoney ? fmtM : fmtETP;
+  const grandTotal = sorted.reduce((s, sec) => s + sectorTotal(sec, dim), 0) || 1;
+  const top3 = sorted.slice(0, 3);
+  const top3Sum = top3.reduce((s, sec) => s + sectorTotal(sec, dim), 0);
+  const top3Pct = Math.round((top3Sum / grandTotal) * 100);
+
+  const sankeyInsight = (() => {
+    const src = comps[dim] ?? {};
+    const direct = cleanText(src.top_sectors?.direct?.[0]?.name ?? "il settore principale");
+    const indirect = cleanText(src.top_sectors?.indirect?.[0]?.name ?? "la filiera dei fornitori");
+    const induced = cleanText(src.top_sectors?.induced?.[0]?.name ?? "i consumi delle famiglie");
+    return `La componente diretta è trainata da ${direct}; l'indiretta si appoggia a ${indirect}; l'indotta emerge soprattutto in ${induced}.`;
+  })();
 
   return (
-    <div className="space-y-8">
-      <ViewControls
-        leftLabel="Grafico principale"
-        leftOptions={[
-          { id: "intraextra", label: "Intra / Extra regione" },
-          { id: "componenti", label: "Diretto / Indiretto / Indotto" },
-        ]}
-        leftValue={vista}
-        onLeftChange={setVista}
-        rightLabel="Dimensione"
-        rightOptions={SECTOR_DIMS}
-        rightValue={dim}
-        onRightChange={setDim}
-      />
+    <div>
+      <p className="mb-7 max-w-[720px] text-[15px] leading-relaxed text-ink-500">
+        L'investimento da <strong className="text-ink-900">{fmtM(inp.total_spend ?? 0)}</strong> a {originProvince} non si ferma a un solo settore: si propaga lungo le filiere. Ecco quali settori ricevono più valore e come la spesa ne attiva altri.
+      </p>
 
-      {/* Grafico principale: toggle tra intra/extra e componenti */}
-      {vista === "intraextra" && (
-        <div className="space-y-6">
-          <div className="border border-ink-100 bg-bg-page p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">Come si legge</p>
-            <p className="mt-2 text-sm leading-relaxed text-ink-700">
-              Ogni riga è un settore. La barra a destra mostra il valore di {dimLabel} che resta nella regione,
-              suddivisa tra{" "}
-              <span className="font-semibold" style={{ color: "#4318C2" }}>provincia di origine</span> (viola scuro) e{" "}
-              <span className="font-semibold" style={{ color: "#9E7BFA" }}>resto della regione</span> (viola chiaro).
-              La barra{" "}
-              <span className="font-semibold" style={{ color: "#6B7280" }}>grigia</span> a sinistra
-              mostra il valore che si attiva fuori regione.
-              I valori a lato indicano la quota percentuale e l'ammontare di ciascun segmento.
-            </p>
-          </div>
-          <DivergentBarChart sectors={top10} dim={dim} isMoney={isMoney} />
-          <SectorInsightCards sectors={sorted} dim={dim} isMoney={isMoney} />
-        </div>
-      )}
-
-      {vista === "componenti" && (
-        <div className="space-y-6">
-          <div className="border border-ink-100 bg-bg-page p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">Come si legge</p>
-            <p className="mt-2 text-sm leading-relaxed text-ink-700">
-              Ogni barra mostra la quota di {dimLabel} di un settore suddivisa nelle tre componenti:{" "}
-              <span className="font-semibold text-brand-violet">diretto</span> (effetto immediato della spesa),{" "}
-              <span className="font-semibold" style={{ color: "#9E7BFA" }}>indiretto</span> (effetto sui fornitori) e{" "}
-              <span className="font-semibold" style={{ color: "#D4C5FB" }}>indotto</span> (effetto dei consumi delle famiglie).
-              La lunghezza totale della barra è proporzionale al valore del settore.
-            </p>
-          </div>
-          <SectorComponentStackedChart sectors={top10} dim={dim} isMoney={isMoney} />
-        </div>
-      )}
-
-      {/* Mappa di calore — sempre visibile sotto */}
-      <div className="space-y-4">
-        <div className="border-t border-ink-100 pt-6">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500 mb-1">Mappa di calore settori × regioni</p>
-          <p className="text-sm leading-relaxed text-ink-700">
-            Righe = settori, colonne = regioni. La cella più scura indica il maggiore valore
-            di {dimLabel} attivato in quella coppia settore × regione.
-            Passa sopra una cella per il valore esatto. Clicca per aprire in <em>Esplora</em>.
-          </p>
-        </div>
-        <SectorHeatmap dim={dim} isMoney={isMoney} onCellClick={(config) => onOpenExplore?.(config)} />
-        <HeatmapLegend />
+      <div className="mb-6">
+        <div className="mb-2 text-[11px] uppercase tracking-[0.08em] text-ink-400">Dimensione</div>
+        <GeoTabPills options={SECTOR_DIMS} value={dim} onChange={setDim} />
       </div>
 
-      {/* Sankey — flusso di attivazione */}
-      <div className="space-y-4">
-        <div className="border-t border-ink-100 pt-6">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500 mb-1">Sankey — flusso di attivazione settoriale</p>
-          <p className="text-sm leading-relaxed text-ink-700">
-            Come la spesa diretta (sinistra) si propaga nei settori attivati per effetto indiretto e indotto (destra).
-            Lo spessore dei flussi è proporzionale al valore attivato per la dimensione selezionata.
+      {/* Section 1: Classifica settoriale */}
+      <div className="mb-12">
+        <div className="mb-5">
+          <div className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "#534AB7" }}>Classifica settoriale</div>
+          <h2 className="mb-2 text-[20px] font-medium text-ink-900">I settori che ricevono più valore</h2>
+          <p className="max-w-[720px] text-[14px] leading-relaxed text-ink-500">
+            Ogni barra mostra quanto valore arriva al settore, suddiviso per territorio. Più la barra è scura, più il valore resta vicino a {originProvince}.
+          </p>
+        </div>
+        <SectorRankingCard sectors={sorted} dim={dim} isMoney={isMoney} />
+        {top3.length >= 3 && (
+          <SectorInsightBox>
+            <strong className="font-medium">{cleanText(top3[0].ateco_name)}</strong> è il settore più attivato ({fmt(sectorTotal(top3[0], dim))} di {dimLabel.toLowerCase()}), seguito da{" "}
+            <strong className="font-medium">{cleanText(top3[1].ateco_name)}</strong> e{" "}
+            <strong className="font-medium">{cleanText(top3[2].ateco_name)}</strong>. Insieme questi tre settori valgono il {top3Pct}% dell'impatto totale.
+          </SectorInsightBox>
+        )}
+      </div>
+
+      <hr className="my-8 border-ink-100" />
+
+      {/* Section 2: Mappa di calore */}
+      <div className="mb-12">
+        <div className="mb-5">
+          <div className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "#534AB7" }}>Mappa di calore</div>
+          <h2 className="mb-2 text-[20px] font-medium text-ink-900">Dove si concentra il valore, settore per settore</h2>
+          <p className="max-w-[720px] text-[14px] leading-relaxed text-ink-500">
+            Per ogni coppia settore × regione, il colore mostra l'intensità del {dimLabel} attivato. La {regionName} domina sempre: attiva il toggle per scoprire come si distribuisce il valore nel resto d'Italia.
+          </p>
+        </div>
+        <div className="rounded-xl border border-ink-100 bg-white p-6">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <GeoTabPills
+              options={[{ id: "tutti", label: "Tutte le regioni" }, { id: "extra", label: `Senza ${regionName}` }]}
+              value={heatmapMode}
+              onChange={setHeatmapMode}
+            />
+            <span className="text-[12px] text-ink-400">Passa sopra una cella per il valore esatto</span>
+          </div>
+          <SectorHeatmap dim={dim} isMoney={isMoney} excludeOrigin={heatmapMode === "extra"} onCellClick={(config) => onOpenExplore?.(config)} />
+          <div className="mt-4 flex items-center gap-2.5 text-[11px] text-ink-400">
+            <span>Basso</span>
+            <div className="flex overflow-hidden rounded-sm">
+              {["#EEEDFE", "#CECBF6", "#AFA9EC", "#7F77DD", "#534AB7"].map((c) => (
+                <div key={c} style={{ background: c, width: 22, height: 10 }} />
+              ))}
+            </div>
+            <span>Alto</span>
+          </div>
+        </div>
+        <SectorInsightBox>
+          {heatmapMode === "tutti" ? (
+            <>La <strong className="font-medium">{regionName}</strong> domina ogni riga: per ogni settore concentra circa l'85% del valore. Le altre regioni ricevono frazioni minori dei flussi nazionali.</>
+          ) : (
+            <>Escludendo la <strong className="font-medium">{regionName}</strong>, i settori più attivati fuori regione sono quelli con filiere nazionali più ampie (materiali, trasporti, energia). Le regioni del Nord ricevono i flussi maggiori.</>
+          )}
+        </SectorInsightBox>
+      </div>
+
+      <hr className="my-8 border-ink-100" />
+
+      {/* Section 3: Flussi di attivazione */}
+      <div>
+        <div className="mb-5">
+          <div className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "#534AB7" }}>Flussi di attivazione</div>
+          <h2 className="mb-2 text-[20px] font-medium text-ink-900">Da dove parte il valore, dove arriva</h2>
+          <p className="max-w-[720px] text-[14px] leading-relaxed text-ink-500">
+            Come la spesa diretta (sinistra) si propaga nei settori attivati per effetto indiretto e indotto (destra). Lo spessore dei flussi è proporzionale al valore attivato.
           </p>
         </div>
         <SectorSankeyChart key={dim} dim={dim} />
+        <SectorInsightBox>{cleanText(sankeyInsight)}</SectorInsightBox>
       </div>
-
-      <SettoriTakeaway dim={dim} />
     </div>
   );
 }
@@ -2558,267 +2568,89 @@ function sectorTotal(s, dim) {
   return (v.intra ?? 0) + (v.extra ?? 0);
 }
 
-function SegmentRow({ s, dim, isMoney, maxTotal, originShare, ready }) {
-  const [tip, setTip] = useState(null);
+function SectorRankingCard({ sectors, dim, isMoney }) {
   const fmt = isMoney ? fmtM : fmtETP;
-  const intra = s.values?.[dim]?.intra ?? 0;
-  const extra = s.values?.[dim]?.extra ?? 0;
-  const province = intra * originShare;
-  const restReg = intra * (1 - originShare);
-  const total = intra + extra || 1;
-  const provincePct = Math.round((province / total) * 100);
-  const restRegPct = Math.round((restReg / total) * 100);
-  const extraPct = 100 - provincePct - restRegPct;
-
-  return (
-    <li className="relative grid grid-cols-[160px_1fr] items-center gap-3 px-4 py-3">
-      <span className="truncate text-sm font-medium text-ink-900" title={cleanText(s.ateco_name)}>
-        {cleanText(s.ateco_name)}
-      </span>
-      <div className="flex items-center">
-        <div className="flex-1 pr-0.5 text-right">
-          <div
-            className="ml-auto h-5 cursor-default"
-            onMouseEnter={() => setTip({ label: "Resto d'Italia", pct: extraPct, value: fmt(extra), color: "#6B7280" })}
-            onMouseLeave={() => setTip(null)}
-            style={{
-              backgroundColor: "#6B7280",
-              width: ready ? `${(extra / maxTotal) * 100}%` : "0%",
-              transition: "width .45s ease",
-              minWidth: extra > 0 ? 2 : 0,
-            }}
-          />
-        </div>
-        <div className="h-7 w-px bg-ink-300" />
-        <div className="flex-1 pl-0.5">
-          <div
-            className="flex h-5 overflow-hidden"
-            style={{
-              width: ready ? `${(intra / maxTotal) * 100}%` : "0%",
-              transition: "width .45s ease",
-            }}
-          >
-            <div
-              className="h-full shrink-0 cursor-default"
-              onMouseEnter={() => setTip({ label: originProvince, pct: provincePct, value: fmt(province), color: "#4318C2" })}
-              onMouseLeave={() => setTip(null)}
-              style={{ backgroundColor: "#4318C2", width: `${originShare * 100}%` }}
-            />
-            <div
-              className="h-full shrink-0 cursor-default"
-              onMouseEnter={() => setTip({ label: "Altre province", pct: restRegPct, value: fmt(restReg), color: "#9E7BFA" })}
-              onMouseLeave={() => setTip(null)}
-              style={{ backgroundColor: "#9E7BFA", width: `${(1 - originShare) * 100}%` }}
-            />
-          </div>
-        </div>
-      </div>
-      {tip && (
-        <div
-          className="pointer-events-none absolute right-4 z-30 flex items-center gap-1.5 whitespace-nowrap border border-ink-100 bg-white px-2.5 py-1.5 text-[11px] shadow-md"
-          style={{ top: "-30px" }}
-        >
-          <div className="h-2 w-2 shrink-0 rounded-sm" style={{ backgroundColor: tip.color }} />
-          <span className="font-medium text-ink-900">{tip.label}</span>
-          <span className="text-ink-300">·</span>
-          <span className="font-mono font-semibold" style={{ color: tip.color }}>{tip.pct}%</span>
-          <span className="text-ink-300">·</span>
-          <span className="font-mono text-ink-700">{tip.value}</span>
-        </div>
-      )}
-    </li>
-  );
-}
-
-function DivergentBarChart({ sectors, dim, isMoney }) {
-  const [ready, setReady] = useState(false);
+  const grandTotal = sectors.reduce((s, sec) => s + sectorTotal(sec, dim), 0) || 1;
   const maxTotal = Math.max(...sectors.map((s) => sectorTotal(s, dim)), 1);
-
   const seg = threeSeg[dim] ?? {};
   const intraAggregate = (seg.origin ?? 0) + (seg.rest_region ?? 0);
   const originShare = intraAggregate > 0 ? (seg.origin ?? 0) / intraAggregate : 0.5;
 
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setReady(true));
-    return () => cancelAnimationFrame(id);
-  }, [dim]);
-
   return (
-    <div className="border border-ink-100 bg-white">
-      <div className="grid grid-cols-[160px_1fr] gap-3 border-b border-ink-100 bg-bg-page px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em]">
-        <span className="text-ink-500">Settore</span>
-        <div className="flex items-center">
-          <span className="flex-1 text-right" style={{ color: "#6B7280" }}>← fuori regione</span>
-          <span className="mx-2 h-4 w-px bg-ink-300" />
-          <span className="flex-1 text-left" style={{ color: "#4318C2" }}>in regione →</span>
-        </div>
-      </div>
-      <div className="flex flex-wrap gap-x-5 gap-y-1.5 border-b border-ink-100 px-4 py-2.5">
+    <div className="rounded-xl border border-ink-100 bg-white p-6">
+      <div className="mb-5 flex flex-wrap gap-4">
         {[
-          { color: "#4318C2", label: `Provincia di origine (${originProvince})` },
-          { color: "#9E7BFA", label: "Altre province della regione" },
-          { color: "#6B7280", label: "Resto d'Italia" },
+          { color: "#534AB7", label: `${originProvince} (provincia origine)` },
+          { color: "#AFA9EC", label: `Resto ${regionName}` },
+          { color: "#A8A29E", label: "Resto d'Italia" },
         ].map((item) => (
-          <div key={item.label} className="flex items-center gap-1.5">
-            <div className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ backgroundColor: item.color }} />
-            <span className="text-[11px] text-ink-600">{item.label}</span>
+          <div key={item.label} className="flex items-center gap-1.5 text-[12px] text-ink-500">
+            <span className="h-3 w-3 flex-shrink-0 rounded-sm" style={{ background: item.color }} />
+            <span>{item.label}</span>
           </div>
         ))}
       </div>
-      <ul className="divide-y divide-ink-100">
-        {sectors.map((s) => (
-          <SegmentRow
-            key={s.ateco_code}
-            s={s}
-            dim={dim}
-            isMoney={isMoney}
-            maxTotal={maxTotal}
-            originShare={originShare}
-            ready={ready}
-          />
-        ))}
-      </ul>
-    </div>
-  );
-}
+      <div>
+        {sectors.map((s, idx) => {
+          const intra = s.values?.[dim]?.intra ?? 0;
+          const extra = s.values?.[dim]?.extra ?? 0;
+          const origin = intra * originShare;
+          const region = intra * (1 - originShare);
+          const total = intra + extra;
+          const widthPct = (total / maxTotal) * 100;
+          const sharePct = Math.round((total / grandTotal) * 100);
+          const originBarPct = total > 0 ? (origin / total) * 100 : 0;
+          const regionBarPct = total > 0 ? (region / total) * 100 : 0;
+          const outBarPct = total > 0 ? (extra / total) * 100 : 0;
+          const compact = idx === sectors.length - 1 && sectors.length > 7;
 
-function getSectorComponentMix(sectorName, dim) {
-  const source = comps[dim] ?? {};
-  const topSets = {
-    direct: source.top_sectors?.direct ?? [],
-    indirect: source.top_sectors?.indirect ?? [],
-    induced: source.top_sectors?.induced ?? [],
-  };
-  const base = 0.8;
-  const scoreFor = (key) => {
-    const idx = topSets[key].findIndex((entry) => entry.name === sectorName);
-    return base + (idx >= 0 ? 3 - idx : 0);
-  };
-  const direct = scoreFor("direct");
-  const indirect = scoreFor("indirect");
-  const induced = scoreFor("induced");
-  const total = direct + indirect + induced || 1;
-  return {
-    direct: direct / total,
-    indirect: indirect / total,
-    induced: induced / total,
-  };
-}
-
-function SectorComponentStackedChart({ sectors, dim, isMoney }) {
-  const maxTotal = Math.max(...sectors.map((s) => sectorTotal(s, dim)), 1);
-  const fmt = isMoney ? fmtM : fmtETP;
-
-  return (
-    <div className="border border-ink-100 bg-white">
-      <div className="border-b border-ink-100 px-4 py-3">
-        <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-ink-500">Per componente</p>
-        <p className="mt-1 text-sm text-ink-700">
-          Distribuzione indicativa di diretto, indiretto e indotto per settore, letta con i colori dei componenti.
-        </p>
-      </div>
-      <ul className="divide-y divide-ink-100">
-        {sectors.map((s) => {
-          const total = sectorTotal(s, dim);
-          const mix = getSectorComponentMix(s.ateco_name, dim);
           return (
-            <li key={s.ateco_code} className="grid grid-cols-[160px_1fr_120px] items-center gap-3 px-4 py-3">
-              <span className="truncate text-sm font-medium text-ink-900">{s.ateco_name}</span>
-              <div className="h-5 overflow-hidden border border-ink-100 bg-white">
-                <div className="flex h-full" style={{ width: `${Math.max(12, (total / maxTotal) * 100)}%` }}>
-                  <div className="bg-impact-direct" style={{ width: `${mix.direct * 100}%` }} />
-                  <div className="bg-impact-indirect" style={{ width: `${mix.indirect * 100}%` }} />
-                  <div className="bg-impact-induced" style={{ width: `${mix.induced * 100}%` }} />
+            <div
+              key={s.ateco_code}
+              className={`grid items-center gap-4 border-b border-ink-100 last:border-b-0 ${compact ? "py-1.5 opacity-70" : "py-2.5"}`}
+              style={{ gridTemplateColumns: "180px 1fr 100px" }}
+            >
+              <span className="truncate text-[13px] text-ink-900" title={cleanText(s.ateco_name)}>
+                {cleanText(s.ateco_name)}
+              </span>
+              <div className="relative overflow-hidden rounded-sm" style={{ height: compact ? 8 : 18, background: "#F5F5F4" }}>
+                <div className="absolute left-0 top-0 flex h-full" style={{ width: `${widthPct}%` }}>
+                  <div style={{ width: `${originBarPct}%`, background: "#534AB7" }} />
+                  <div style={{ width: `${regionBarPct}%`, background: "#AFA9EC" }} />
+                  <div style={{ width: `${outBarPct}%`, background: "#A8A29E" }} />
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-xs font-mono font-semibold text-ink-900">{fmt(total)}</div>
-                <div className="text-[11px] text-ink-500">
-                  {Math.round(mix.direct * 100)} / {Math.round(mix.indirect * 100)} / {Math.round(mix.induced * 100)}
-                </div>
+              <div className="text-right text-[13px] font-medium text-ink-900">
+                {fmt(total)}
+                <span className="ml-1.5 text-[11px] font-normal text-ink-400">{sharePct}%</span>
               </div>
-            </li>
+            </div>
           );
         })}
-      </ul>
+      </div>
     </div>
   );
 }
 
-function SectorInsightCards({ sectors, dim, isMoney }) {
-  const fmt = isMoney ? fmtM : fmtETP;
-  const totalAll = sectors.reduce((s, sector) => s + sectorTotal(sector, dim), 0) || 1;
-  const qualified = sectors.filter((s) => sectorTotal(s, dim) / totalAll >= 0.04);
-
-  const topIntra = [...qualified]
-    .sort((a, b) => {
-      const ta = sectorTotal(a, dim) || 1;
-      const tb = sectorTotal(b, dim) || 1;
-      return (b.values?.[dim]?.intra ?? 0) / tb - (a.values?.[dim]?.intra ?? 0) / ta;
-    })
-    .slice(0, 3);
-
-  const topExtra = [...qualified]
-    .sort((a, b) => {
-      const ta = sectorTotal(a, dim) || 1;
-      const tb = sectorTotal(b, dim) || 1;
-      return (b.values?.[dim]?.extra ?? 0) / tb - (a.values?.[dim]?.extra ?? 0) / ta;
-    })
-    .slice(0, 3);
-
+function SectorInsightBox({ children }) {
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <div className="border border-ink-100 bg-white p-5" style={{ borderLeft: "4px solid #4318C2" }}>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">Trattiene di più sul territorio</p>
-        <p className="mt-1 text-xs text-ink-500">Settori con la quota intra-regionale più alta</p>
-        <ul className="mt-4 space-y-3">
-          {topIntra.map((s) => {
-            const intra = s.values?.[dim]?.intra ?? 0;
-            const total = sectorTotal(s, dim) || 1;
-            const intraPct = Math.round((intra / total) * 100);
-            return (
-              <li key={s.ateco_code} className="flex items-center justify-between gap-3">
-                <span className="truncate text-sm text-ink-900">{cleanText(s.ateco_name)}</span>
-                <div className="flex shrink-0 items-center gap-2">
-                  <span className="text-xs font-semibold font-mono" style={{ color: "#4318C2" }}>{intraPct}% intra</span>
-                  <span className="text-[11px] text-ink-500">{fmt(intra)}</span>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-      <div className="border border-ink-100 bg-white p-5" style={{ borderLeft: "4px solid #6B7280" }}>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">Disperde di più fuori regione</p>
-        <p className="mt-1 text-xs text-ink-500">Settori con la quota extra-regionale più alta</p>
-        <ul className="mt-4 space-y-3">
-          {topExtra.map((s) => {
-            const extra = s.values?.[dim]?.extra ?? 0;
-            const total = sectorTotal(s, dim) || 1;
-            const extraPct = Math.round((extra / total) * 100);
-            return (
-              <li key={s.ateco_code} className="flex items-center justify-between gap-3">
-                <span className="truncate text-sm text-ink-900">{cleanText(s.ateco_name)}</span>
-                <div className="flex shrink-0 items-center gap-2">
-                  <span className="text-xs font-semibold font-mono" style={{ color: "#6B7280" }}>{extraPct}% extra</span>
-                  <span className="text-[11px] text-ink-500">{fmt(extra)}</span>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+    <div
+      className="mt-4 px-[18px] py-3.5 text-[14px] leading-relaxed"
+      style={{ background: "#EEEDFE", borderLeft: "3px solid #534AB7", borderRadius: "0 8px 8px 0", color: "#3C3489" }}
+    >
+      {children}
     </div>
   );
 }
 
-function SectorHeatmap({ dim, isMoney, onCellClick }) {
+function SectorHeatmap({ dim, isMoney, excludeOrigin = false, onCellClick }) {
   const rowItems = [...sectItems]
     .sort((a, b) => sectorTotal(b, dim) - sectorTotal(a, dim))
     .slice(0, 10);
-  const territories = [...geo.regions]
-    .sort((a, b) => getGeoValue(b, dim, "assoluti") - getGeoValue(a, dim, "assoluti"))
-    .slice(0, 8);
+  const allRegions = [...geo.regions].sort((a, b) => getGeoValue(b, dim, "assoluti") - getGeoValue(a, dim, "assoluti"));
+  const territories = excludeOrigin
+    ? allRegions.filter((r) => r.nuts2_code !== originNuts2 && r.nome !== regionName).slice(0, 8)
+    : allRegions.slice(0, 8);
   const cells = rowItems.flatMap((sector) =>
     territories.map((territory) => {
       const sectorVal = sector.by_territory?.regions?.find((r) => r.code === territory.code)?.values?.[dim] ?? 0;
@@ -2831,11 +2663,11 @@ function SectorHeatmap({ dim, isMoney, onCellClick }) {
   function cellStyle(value) {
     const ratio = value / max;
     if (ratio === 0) return { backgroundColor: "#F6F6F8" };
-    if (ratio <= 0.05) return { backgroundColor: "rgba(91,33,247,0.08)" };
-    if (ratio <= 0.20) return { backgroundColor: "rgba(91,33,247,0.24)" };
-    if (ratio <= 0.40) return { backgroundColor: "rgba(91,33,247,0.45)" };
-    if (ratio <= 0.70) return { backgroundColor: "rgba(91,33,247,0.68)" };
-    return { backgroundColor: "#5B21F7" };
+    if (ratio <= 0.05) return { backgroundColor: "rgba(83,74,183,0.10)" };
+    if (ratio <= 0.20) return { backgroundColor: "rgba(83,74,183,0.25)" };
+    if (ratio <= 0.40) return { backgroundColor: "rgba(83,74,183,0.45)" };
+    if (ratio <= 0.70) return { backgroundColor: "rgba(83,74,183,0.68)" };
+    return { backgroundColor: "#534AB7" };
   }
 
   function cellTextColor(value) {
@@ -2845,7 +2677,7 @@ function SectorHeatmap({ dim, isMoney, onCellClick }) {
   const cols = territories.length;
 
   return (
-    <div className="overflow-auto border border-ink-100 bg-white">
+    <div className="overflow-auto">
       <div style={{ minWidth: 200 + cols * 80 }}>
         <div
           className="grid border-b border-ink-100 bg-bg-page text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-500"
@@ -2872,22 +2704,13 @@ function SectorHeatmap({ dim, isMoney, onCellClick }) {
               return (
                 <button
                   key={`${sector.ateco_code}-${territory.code}`}
-                  onClick={() =>
-                    onCellClick?.({
-                      tab: "esplora",
-                      dim,
-                      asse: "geografica",
-                      livello: "regionale",
-                      filter: "tutti",
-                      focus: territory.code,
-                    })
-                  }
+                  onClick={() => onCellClick?.({ tab: "esplora", dim, asse: "geografica", livello: "regionale", filter: "tutti", focus: territory.code })}
                   className={`group relative border-r border-ink-100 px-1 py-4 last:border-r-0 transition-opacity hover:opacity-80 ${cellTextColor(value)}`}
                   style={cellStyle(value)}
                   title={`${cleanText(sector.ateco_name)} × ${cleanText(territory.nome)}: ${fmt(value)}`}
                 >
                   {value > 0 && (
-                    <span className="block text-center text-[10px] font-mono font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="block text-center text-[10px] font-mono font-semibold opacity-0 transition-opacity group-hover:opacity-100">
                       {isMoney ? fmtIT(value / 1_000_000, 1) + "M" : fmtIT(value, 0)}
                     </span>
                   )}
@@ -2897,37 +2720,6 @@ function SectorHeatmap({ dim, isMoney, onCellClick }) {
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-function HeatmapLegend() {
-  const steps = [
-    { bg: "#F6F6F8", label: "0" },
-    { bg: "rgba(91,33,247,0.08)" },
-    { bg: "rgba(91,33,247,0.24)" },
-    { bg: "rgba(91,33,247,0.45)" },
-    { bg: "rgba(91,33,247,0.68)" },
-    { bg: "#5B21F7", label: "max", textWhite: true },
-  ];
-  return (
-    <div className="flex flex-wrap items-center gap-4 border border-ink-100 bg-white p-4">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-500">Scala intensità</p>
-      <div className="flex items-center gap-0.5">
-        {steps.map((s, i) => (
-          <div
-            key={i}
-            className="h-5 w-8 border border-ink-100/50"
-            style={{ backgroundColor: s.bg }}
-          />
-        ))}
-      </div>
-      <div className="flex items-center gap-2 text-[11px] text-ink-500">
-        <span>basso</span>
-        <span>→</span>
-        <span>alto</span>
-      </div>
-      <span className="text-xs italic text-ink-500">Passa sopra una cella per il valore · clicca per aprire in Esplora</span>
     </div>
   );
 }
@@ -3030,14 +2822,6 @@ function SectorSankeyChart({ dim }) {
   );
 }
 
-function SettoriTakeaway({ dim }) {
-  const source = comps[dim] ?? {};
-  const direct = source.top_sectors?.direct?.[0]?.name ?? "il settore principale";
-  const indirect = source.top_sectors?.indirect?.[0]?.name ?? "la filiera dei fornitori";
-  const induced = source.top_sectors?.induced?.[0]?.name ?? "i consumi delle famiglie";
-  const text = cleanText(`La componente diretta è trainata da ${direct}; l'indiretta si appoggia a ${indirect}; l'indotta emerge soprattutto in ${induced}.`);
-  return <TakeawayBanner text={text} />;
-}
 
 function TabEsplora({ showToast, project, searchParams, updateSearch, onOpenExplore }) {
   const initialDim = searchParams.get("dim") ?? "gdp";
