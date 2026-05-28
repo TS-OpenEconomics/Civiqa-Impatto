@@ -2071,6 +2071,7 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
   const [mode, setMode] = useState(searchParams?.get("modal") ?? "assoluti");
   const [selectedRegion, setSelectedRegion] = useState(searchParams?.get("drill") ?? null);
   const [mapLevel, setMapLevel] = useState("regionale");
+
   const regions = geo.regions ?? [];
   const allProvinces = geo.provinces ?? [];
   const selectedRegionInfo = regions.find((r) => r.nome === selectedRegion);
@@ -2085,10 +2086,6 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
   const currentList = selectedRegion ? regionProvinces : (mapLevel === "provinciale" ? allProvinces : regions);
   const fmt = getGeoFmt(dim, mode);
   const grandTotal = currentList.reduce((sum, item) => sum + getGeoValue(item, dim, mode), 0);
-  const sorted = [...currentList].sort((a, b) => getGeoValue(b, dim, mode) - getGeoValue(a, dim, mode));
-  const top10 = sorted.slice(0, 10);
-  const rest = sorted.slice(10);
-  const restTotal = rest.reduce((sum, item) => sum + getGeoValue(item, dim, mode), 0);
 
   const mapMax = Math.max(...currentList.map((item) => getGeoValue(item, dim, mode)), 1);
 
@@ -2133,12 +2130,27 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
     return { value: `${fmtIT(m, 2)}×`, sub: "redditi / spesa" };
   })();
 
+  // Ranking — always absolute, always all regions
+  const rankFmt = getGeoFmt(dim, "assoluti");
+  const rankSorted = [...regions].sort((a, b) => getGeoValue(b, dim, "assoluti") - getGeoValue(a, dim, "assoluti"));
+  const rankTotal = rankSorted.reduce((sum, r) => sum + getGeoValue(r, dim, "assoluti"), 0);
+  const rankLeader = rankSorted[0];
+  const rankTop5 = rankSorted.slice(1, 6);
+  const rankOthers = rankSorted.slice(6);
+  const rankOthersSum = rankOthers.reduce((sum, r) => sum + getGeoValue(r, dim, "assoluti"), 0);
+
+  // Bottom section
+  const macroSplit = rawGeo.macro_split ?? {};
+  const originPct = Math.round((macroSplit.origin?.pct ?? 0.46) * 100);
+  const restRegPct = Math.round((macroSplit.rest_of_region?.pct ?? 0.38) * 100);
+  const extraPct = 100 - originPct - restRegPct;
+  const stayPct = originPct + restRegPct;
+  const dimTotal = byPerimeter.national?.[dim] ?? 0;
+  const dimFmt = dim === "employment" ? fmtETP : fmtM;
+  const dimLabel = GEO_DIMS.find((g) => g.id === dim)?.label ?? dim;
+
   useEffect(() => {
-    updateSearch?.({
-      dim: dim,
-      modal: mode,
-      drill: selectedRegion ? selectedRegion : null,
-    });
+    updateSearch?.({ dim, modal: mode, drill: selectedRegion ?? null });
   }, [dim, mode, selectedRegion, updateSearch]);
 
   useEffect(() => {
@@ -2148,235 +2160,295 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
   }, [searchParams]);
 
   return (
-    <div className="space-y-6">
-      <div className="text-sm text-ink-700">
-        L'investimento è localizzato in <strong>{originProvince}</strong>. Vediamo dove si distribuisce il valore attivato.
+    <div>
+      <p className="mb-7 max-w-[720px] text-[15px] leading-relaxed text-ink-500">
+        L'investimento parte da <strong className="text-ink-900">{originProvince}</strong>. La mappa di destra mostra dove si attiva il valore lungo le filiere produttive.
+      </p>
+
+      {/* Controls */}
+      <div className="mb-5 flex flex-wrap items-end gap-5">
+        <div>
+          <div className="mb-2 text-[11px] uppercase tracking-[0.08em] text-ink-400">Dimensione</div>
+          <GeoTabPills
+            options={GEO_DIMS}
+            value={dim}
+            onChange={(next) => { setDim(next); setSelectedRegion(null); }}
+          />
+        </div>
+        <div className="ml-auto flex flex-wrap items-end gap-4">
+          <div>
+            <div className="mb-2 text-[11px] uppercase tracking-[0.08em] text-ink-400">Mappa</div>
+            <GeoTabPills
+              options={[{ id: "regionale", label: "Regioni" }, { id: "provinciale", label: "Province" }]}
+              value={mapLevel}
+              onChange={(next) => { setMapLevel(next); setSelectedRegion(null); }}
+            />
+          </div>
+          <div>
+            <div className="mb-2 text-[11px] uppercase tracking-[0.08em] text-ink-400">Modalità</div>
+            <GeoTabPills
+              options={[{ id: "assoluti", label: "Assoluti" }, { id: "pc", label: "Pro capite" }]}
+              value={mode}
+              onChange={setMode}
+            />
+          </div>
+        </div>
       </div>
 
-      <GeoControls
-        dim={dim}
-        mode={mode}
-        mapLevel={mapLevel}
-        onDimChange={(next) => { setDim(next); setSelectedRegion(null); }}
-        onModeChange={setMode}
-        onMapLevelChange={(next) => { setMapLevel(next); setSelectedRegion(null); }}
-      />
+      {/* Breadcrumb */}
+      {selectedRegion && (
+        <div className="mb-4 flex items-center justify-between gap-3 text-sm">
+          <p className="font-medium text-ink-700">Italia › {selectedRegion}</p>
+          <button onClick={() => setSelectedRegion(null)} className="inline-flex items-center gap-2 text-brand-violet hover:underline">
+            <IconArrowLeft className="h-4 w-4" />
+            Torna alla mappa nazionale
+          </button>
+        </div>
+      )}
 
-      <GeoBreadcrumb selectedRegion={selectedRegion} onBack={() => setSelectedRegion(null)} />
+      {/* Dual row: spesa | moltiplicatore | impatto | ranking */}
+      <div className="mb-6 grid grid-cols-1 items-stretch gap-3.5 xl:grid-cols-[1fr_auto_1fr_300px]">
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_320px]">
-        {/* Dual map: spend → multiplier arrow → impact */}
-        <div className="grid grid-cols-1 items-stretch gap-0 md:grid-cols-[1fr_80px_1fr]">
-          {/* Spend map */}
-          <div className="border border-ink-100 bg-white">
-            <div className="border-b border-ink-100 bg-bg-page px-4 py-2">
-              <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-ink-400">Spesa investita</p>
-              <p className="mt-0.5 text-sm font-bold text-ink-900">{fmtM(inp.total_spend ?? 0)}</p>
-            </div>
+        {/* Spesa map card */}
+        <div className="flex flex-col rounded-xl border border-ink-100 bg-white p-5">
+          <div className="mb-3">
+            <div className="mb-1 text-[11px] uppercase tracking-[0.08em] text-ink-400">Spesa investita</div>
+            <div className="text-[22px] font-medium text-ink-900">{fmtM(inp.total_spend ?? 0)}</div>
+            <div className="mt-1 text-[12px] text-ink-500">Concentrata nella provincia di {originProvince}</div>
+          </div>
+          <div className="relative min-h-[360px] flex-1">
             {isProvinceView ? (
-              <ProvinceMap nuts2Code={provinceNuts2} data={spendMapPayload} minHeight={460} />
+              <ProvinceMap nuts2Code={provinceNuts2} data={spendMapPayload} minHeight={360} />
             ) : (
-              <ItalyMap data={spendMapPayload} tone="violet" minHeight={460} />
+              <ItalyMap data={spendMapPayload} tone="violet" minHeight={360} />
             )}
           </div>
-
-          {/* Multiplier arrow */}
-          <div className="flex flex-row items-center justify-center gap-4 border-y border-ink-100 bg-white px-4 py-4 md:flex-col md:border-x md:border-y-0 md:gap-2 md:px-2 md:py-6">
-            <div className="flex flex-col items-center gap-1 text-center">
-              <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-400">Moltiplica</p>
-              <p className="text-[20px] font-bold leading-tight text-brand-violet">{multInfo.value}</p>
-              <p className="text-[9px] text-ink-400">{multInfo.sub}</p>
-            </div>
-            <svg className="shrink-0 md:hidden" width="10" height="24" viewBox="0 0 10 24">
-              <line x1="5" y1="0" x2="5" y2="16" stroke="#4318C2" strokeWidth="1.5" opacity="0.45" />
-              <polygon points="1,16 5,24 9,16" fill="#4318C2" opacity="0.45" />
-            </svg>
-            <svg className="hidden shrink-0 md:block" width="28" height="10" viewBox="0 0 28 10">
-              <line x1="0" y1="5" x2="20" y2="5" stroke="#4318C2" strokeWidth="1.5" opacity="0.45" />
-              <polygon points="20,1 28,5 20,9" fill="#4318C2" opacity="0.45" />
-            </svg>
+          <div className="mt-3 flex items-center justify-between border-t border-ink-100 pt-3 text-[11px] text-ink-400">
+            <span>100% in 1 sola {isProvinceView ? "provincia" : "regione"}</span>
           </div>
+        </div>
 
-          {/* Impact map */}
-          <div className="border border-ink-100 bg-white">
-            <div className="border-b border-ink-100 bg-bg-page px-4 py-2">
-              <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-ink-400">Impatto attivato — {GEO_DIMS.find((g) => g.id === dim)?.label ?? dim}</p>
-              <p className="mt-0.5 text-sm font-bold text-ink-900">{fmt(grandTotal)}</p>
-            </div>
+        {/* Moltiplicatore (desktop) */}
+        <div className="hidden min-w-[110px] flex-col items-center justify-center px-1 xl:flex">
+          <div className="w-px flex-1" style={{ minHeight: 40, background: "linear-gradient(180deg, transparent, #AFA9EC 50%, #AFA9EC)" }} />
+          <div className="my-3 min-w-[110px] rounded-xl px-[18px] py-[14px] text-center" style={{ background: "#EEEDFE", border: "1px solid #AFA9EC" }}>
+            <div className="mb-1 text-[10px] uppercase tracking-[0.08em]" style={{ color: "#534AB7" }}>Moltiplica</div>
+            <div className="text-[28px] font-medium leading-none" style={{ color: "#534AB7" }}>{multInfo.value}</div>
+            <div className="mt-1.5 text-[11px] leading-tight" style={{ color: "#3C3489" }}>{multInfo.sub}</div>
+          </div>
+          <div className="w-px flex-1" style={{ minHeight: 40, background: "linear-gradient(180deg, #AFA9EC, #AFA9EC 50%, transparent)" }} />
+        </div>
+
+        {/* Moltiplicatore (mobile) */}
+        <div className="flex justify-center xl:hidden">
+          <div className="min-w-[110px] rounded-xl px-[18px] py-[14px] text-center" style={{ background: "#EEEDFE", border: "1px solid #AFA9EC" }}>
+            <div className="mb-1 text-[10px] uppercase tracking-[0.08em]" style={{ color: "#534AB7" }}>Moltiplica</div>
+            <div className="text-[28px] font-medium leading-none" style={{ color: "#534AB7" }}>{multInfo.value}</div>
+            <div className="mt-1.5 text-[11px] leading-tight" style={{ color: "#3C3489" }}>{multInfo.sub}</div>
+          </div>
+        </div>
+
+        {/* Impatto map card */}
+        <div className="flex flex-col rounded-xl border border-ink-100 bg-white p-5">
+          <div className="mb-3">
+            <div className="mb-1 text-[11px] uppercase tracking-[0.08em] text-ink-400">{dimLabel} attivato</div>
+            <div className="text-[22px] font-medium" style={{ color: "#534AB7" }}>{fmt(grandTotal)}</div>
+            <div className="mt-1 text-[12px] text-ink-500">Distribuito su {regions.length} regioni italiane</div>
+          </div>
+          <div className="relative min-h-[360px] flex-1">
             {isProvinceView ? (
-              <ProvinceMap nuts2Code={provinceNuts2} data={mapPayload} minHeight={460} />
+              <ProvinceMap nuts2Code={provinceNuts2} data={mapPayload} minHeight={360} />
             ) : (
               <ItalyMap
                 data={mapPayload}
                 tone="violet"
                 onRegionClick={(name) => setSelectedRegion((prev) => (prev === name ? null : name))}
                 selectedRegion={selectedRegion}
-                minHeight={460}
+                minHeight={360}
               />
             )}
           </div>
+          <div className="mt-3 flex items-center justify-between border-t border-ink-100 pt-3 text-[11px] text-ink-400">
+            <span>Meno valore</span>
+            <div className="flex overflow-hidden rounded-sm">
+              {["#EEEDFE", "#CECBF6", "#AFA9EC", "#7F77DD", "#534AB7"].map((c) => (
+                <div key={c} style={{ background: c, width: 16, height: 8 }} />
+              ))}
+            </div>
+            <span>Più valore</span>
+          </div>
         </div>
 
-        {/* Territory list */}
-        {selectedRegion ? (
-          <TerritoryList
-            items={sorted}
-            grandTotal={grandTotal}
-            dim={dim}
-            mode={mode}
-            isProvince
-            onSelect={() => {}}
-          />
-        ) : (
-          <TerritoryList
-            items={top10}
-            grandTotal={grandTotal}
-            dim={dim}
-            mode={mode}
-            restCount={rest.length}
-            restTotal={restTotal}
-            onSelect={(r) => setSelectedRegion(r.nome)}
-            onRestSelect={() => onOpenExplore?.({ asse: "geografica", livello: "regionale", dim })}
-          />
-        )}
+        {/* Ranking card */}
+        <div className="flex flex-col rounded-xl border border-ink-100 bg-white p-5">
+          <div className="mb-3.5 text-[11px] uppercase tracking-[0.08em] text-ink-400">Top regioni per valore</div>
+
+          {rankLeader && (
+            <div className="mb-4 border-b border-ink-100 pb-3.5">
+              <div className="mb-2 flex items-baseline justify-between">
+                <span className="text-[15px] font-medium text-ink-900">{rankLeader.nome}</span>
+                <span className="text-[15px] font-medium text-ink-900">{rankFmt(getGeoValue(rankLeader, dim, "assoluti"))}</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <div className="h-2 flex-1 overflow-hidden rounded" style={{ background: "#F5F5F4" }}>
+                  <div
+                    className="h-full rounded transition-all"
+                    style={{ width: `${rankTotal > 0 ? (getGeoValue(rankLeader, dim, "assoluti") / rankTotal) * 100 : 0}%`, background: "#534AB7" }}
+                  />
+                </div>
+                <span className="min-w-[36px] text-right text-[12px] text-ink-500">
+                  {rankTotal > 0 ? Math.round((getGeoValue(rankLeader, dim, "assoluti") / rankTotal) * 100) : 0}%
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="flex-1">
+            {rankTop5.map((r, idx) => {
+              const val = getGeoValue(r, dim, "assoluti");
+              const pct = rankTotal > 0 ? (val / rankTotal) * 100 : 0;
+              return (
+                <div
+                  key={r.code ?? r.nome}
+                  className={`-mx-2 cursor-pointer rounded px-2 py-2 transition-colors hover:bg-bg-page ${selectedRegion === r.nome ? "bg-[#EEEDFE]" : ""}`}
+                  onClick={() => setSelectedRegion((prev) => (prev === r.nome ? null : r.nome))}
+                >
+                  <div className="mb-1 flex items-baseline justify-between">
+                    <span className="text-[13px] text-ink-900">{idx + 2} · {r.nome}</span>
+                    <span className="text-[12px] text-ink-500">{rankFmt(val)} · {Math.round(pct)}%</span>
+                  </div>
+                  <div className="h-1 overflow-hidden rounded-sm" style={{ background: "#F5F5F4" }}>
+                    <div className="h-full rounded-sm transition-all" style={{ width: `${Math.max(pct, 0.5)}%`, background: "#AFA9EC" }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {rankOthers.length > 0 && (
+            <button
+              className="mt-3.5 flex w-full cursor-pointer items-center justify-between rounded-lg border-0 px-3 py-2.5 text-[12px] text-ink-500 transition-colors hover:bg-ink-100 font-inherit"
+              style={{ background: "#F5F5F4" }}
+              onClick={() => onOpenExplore?.({ asse: "geografica", livello: "regionale", dim })}
+            >
+              <span>Altre {rankOthers.length} regioni</span>
+              <span className="font-medium text-ink-900">
+                {rankFmt(rankOthersSum)} · {rankTotal > 0 ? Math.round((rankOthersSum / rankTotal) * 100) : 0}% ›
+              </span>
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="border border-ink-100 bg-bg-page p-4">
-        <p className="text-sm italic leading-relaxed text-ink-700">
-          Più scura la regione, maggiore il valore di {GEO_DIMS.find((g) => g.id === dim)?.label ?? dim} attivato.{" "}
-          {mode === "pc"
-            ? "In modalità pro-capite il valore è diviso per la popolazione di ciascun territorio."
-            : "La spesa è fisicamente localizzata in " + originProvince + "; il colore mostra dove gli effetti si diffondono lungo le filiere produttive."}
+      {/* Divisore */}
+      <hr className="my-10 border-ink-100" />
+
+      {/* Bottom header */}
+      <div className="mb-6">
+        <div className="mb-1.5 text-[11px] uppercase tracking-[0.08em] text-ink-400">Quanto valore resta vicino</div>
+        <h2 className="mb-2 text-[22px] font-medium text-ink-900">Il valore si concentra dove parte la spesa</h2>
+        <p className="max-w-[720px] text-[14px] leading-relaxed text-ink-500">
+          Su 100€ di valore attivato, una larga maggioranza non lascia {regionName}. Più ci si allontana da {originProvince}, meno valore si attiva.
         </p>
       </div>
 
-      <ThreeAreaBand dim={dim} />
-      <GeoTakeaway dim={dim} mode={mode} selectedRegion={selectedRegion} />
-    </div>
-  );
-}
-
-function GeoControls({ dim, mode, mapLevel, onDimChange, onModeChange, onMapLevelChange }) {
-  return (
-    <div className="grid grid-cols-1 gap-3 rounded-md bg-bg-page p-4 md:grid-cols-3">
-      <SegmentedGroup
-        label="Dimensione"
-        options={GEO_DIMS}
-        value={dim}
-        onChange={onDimChange}
-      />
-      <SegmentedGroup
-        label="Modalità"
-        options={GEO_MODES}
-        value={mode}
-        onChange={onModeChange}
-      />
-      <SegmentedGroup
-        label="Livello mappa"
-        options={[
-          { id: "regionale", label: "Regionale" },
-          { id: "provinciale", label: "Provinciale" },
-        ]}
-        value={mapLevel}
-        onChange={onMapLevelChange}
-      />
-    </div>
-  );
-}
-
-function GeoBreadcrumb({ selectedRegion, onBack }) {
-  if (!selectedRegion) return null;
-  return (
-    <div className="flex items-center justify-between gap-3 text-sm">
-      <p className="font-medium text-ink-700">Italia › {selectedRegion}</p>
-      <button onClick={onBack} className="inline-flex items-center gap-2 text-brand-violet hover:underline">
-        <IconArrowLeft className="h-4 w-4" />
-        Torna alla mappa nazionale
-      </button>
-    </div>
-  );
-}
-
-function TerritoryList({ items, grandTotal, dim, mode, restCount = 0, restTotal = 0, isProvince = false, onSelect, onRestSelect }) {
-  const fmt = getGeoFmt(dim, mode);
-  const label = isProvince ? "Province della regione" : "Top regioni per valore";
-
-  return (
-    <div className="border border-ink-100 bg-white">
-      <div className="border-b border-ink-100 px-4 py-3">
-        <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">{label}</p>
+      {/* Hero stat */}
+      <div className="mb-6 rounded-xl p-8" style={{ background: "#EEEDFE", borderLeft: "4px solid #534AB7" }}>
+        <div className="text-[56px] font-medium leading-none" style={{ color: "#26215C", letterSpacing: "-0.02em" }}>
+          {stayPct}%
+        </div>
+        <div className="mt-3 max-w-[720px] text-[17px] leading-relaxed" style={{ color: "#3C3489" }}>
+          del {dimLabel.toLowerCase()} attivato <strong className="font-medium">resta in {regionName}</strong>:{" "}
+          <strong className="font-medium">{originPct}%</strong> nella provincia di {originProvince},{" "}
+          <strong className="font-medium">{restRegPct}%</strong> nelle altre province della regione. Solo il{" "}
+          <strong className="font-medium">{extraPct}%</strong> si propaga nel resto d'Italia lungo le filiere nazionali.
+        </div>
       </div>
-      <ul className="divide-y divide-ink-100">
-        {items.map((item, idx) => {
-          const value = getGeoValue(item, dim, mode);
-          const pct = grandTotal > 0 ? Math.round((value / grandTotal) * 100) : 0;
-          const name = item.nome ?? item.name;
-          return (
-            <li
-              key={`${name}-${idx}`}
-              onClick={() => onSelect(item)}
-              className="flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors hover:bg-bg-page"
+
+      {/* Viz row: cerchi concentrici + breakdown */}
+      <div className="grid grid-cols-1 items-center gap-10 rounded-xl border border-ink-100 bg-white p-8 xl:grid-cols-[minmax(280px,380px)_1fr]">
+        <div className="mx-auto flex aspect-square w-full max-w-[380px] items-center justify-center">
+          <svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" className="block h-full w-full">
+            <circle cx="160" cy="160" r="155" fill="#EEEDFE" stroke="#AFA9EC" strokeWidth="1" />
+            <circle cx="160" cy="180" r="118" fill="#CECBF6" stroke="white" strokeWidth="2" />
+            <circle cx="160" cy="195" r="82" fill="#534AB7" stroke="white" strokeWidth="2" />
+            <text x="160" y="200" textAnchor="middle" fontSize="32" fontWeight="500" fill="white">{originPct}%</text>
+            <text x="160" y="220" textAnchor="middle" fontSize="11" fill="white" opacity="0.85">{originProvince}</text>
+            <text x="160" y="108" textAnchor="middle" fontSize="18" fontWeight="500" fill="#26215C">{restRegPct}%</text>
+            <text x="160" y="125" textAnchor="middle" fontSize="10" fill="#3C3489">Resto {regionName}</text>
+            <text x="160" y="32" textAnchor="middle" fontSize="14" fontWeight="500" fill="#3C3489">{extraPct}%</text>
+            <text x="160" y="48" textAnchor="middle" fontSize="10" fill="#534AB7">Resto d'Italia</text>
+          </svg>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          {[
+            {
+              color: "#534AB7",
+              label: "Provincia di origine",
+              name: originProvince,
+              meaning: "Imprese, lavoratori e fornitori della provincia da cui parte la spesa.",
+              pct: originPct,
+              value: dimFmt(dimTotal * (macroSplit.origin?.pct ?? 0.46)),
+            },
+            {
+              color: "#AFA9EC",
+              label: "Resto della regione",
+              name: "Altre province della regione",
+              meaning: "Filiere e consumi che si attivano nelle province vicine grazie all'investimento.",
+              pct: restRegPct,
+              value: dimFmt(dimTotal * (macroSplit.rest_of_region?.pct ?? 0.38)),
+            },
+            {
+              color: "#CECBF6",
+              label: "Fuori regione",
+              name: "Resto d'Italia",
+              meaning: "Effetti sulle filiere nazionali: fornitori, materiali e servizi acquistati fuori dalla regione.",
+              pct: extraPct,
+              value: dimFmt(dimTotal * (macroSplit.extra_region?.pct ?? 0.16)),
+            },
+          ].map((item, idx, arr) => (
+            <div
+              key={item.label}
+              className={`grid items-center gap-4 pb-4 ${idx < arr.length - 1 ? "border-b border-ink-100" : ""}`}
+              style={{ gridTemplateColumns: "auto 1fr auto" }}
             >
-              <span className="w-5 shrink-0 select-none font-mono text-[11px] text-ink-300">{idx + 1}</span>
-              <span className="flex-1 truncate text-sm font-medium text-ink-900">{name}</span>
-              <span className="shrink-0 font-mono text-xs font-semibold text-ink-900">{fmt(value)}</span>
-              <span className="w-10 shrink-0 text-right text-[11px] text-ink-500">{pct}%</span>
-            </li>
-          );
-        })}
-        {!isProvince && restCount > 0 && (
-          <li
-            onClick={onRestSelect}
-            className={`flex items-center gap-3 px-4 py-3${onRestSelect ? " cursor-pointer transition-colors hover:bg-bg-page" : ""}`}
-          >
-            <span className="w-5 shrink-0 select-none font-mono text-[11px] text-ink-300">-</span>
-            <span className="flex-1 text-sm font-semibold text-ink-700">Altre {restCount} regioni</span>
-            <span className="shrink-0 font-mono text-xs font-semibold text-ink-900">{fmt(restTotal)}</span>
-            {onRestSelect && <span className="shrink-0 text-[11px] font-medium text-brand-violet">→ Esplora</span>}
-          </li>
-        )}
-        <li className="flex items-center gap-3 border-t-2 border-ink-100 px-4 py-3">
-          <span className="w-5 shrink-0" />
-          <span className="flex-1 text-sm font-bold text-ink-900">{isProvince ? "Totale regione" : "Totale Italia"}</span>
-          <span className="shrink-0 font-mono text-xs font-bold text-ink-900">{fmt(grandTotal)}</span>
-        </li>
-      </ul>
-    </div>
-  );
-}
-
-function ThreeAreaBand({ dim }) {
-  const total = byPerimeter.region?.[dim] ?? 0;
-  const fmt = dim === "employment" ? fmtETP : fmtM;
-  const areas = [
-    { label: "Provincia origine", pct: rawGeo.macro_split?.origin?.pct ?? 0.46, color: "bg-impact-direct" },
-    { label: "Resto regione", pct: rawGeo.macro_split?.rest_of_region?.pct ?? 0.38, color: "bg-impact-indirect" },
-    { label: "Fuori regione", pct: rawGeo.macro_split?.extra_region?.pct ?? 0.16, color: "bg-impact-induced" },
-  ].map((a) => ({ ...a, value: total * a.pct }));
-
-  return (
-    <div className="border border-ink-100 bg-white">
-      <div className="grid grid-cols-3 divide-x divide-ink-100">
-        {areas.map((a) => (
-          <div key={a.label} className="p-4 text-center">
-            <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-ink-500">{a.label}</p>
-            <p className="mt-3 text-xl font-bold text-ink-900">{fmt(a.value)}</p>
-            <p className="mt-2 text-xs text-ink-500">{toPercent(a.pct * 100)}</p>
-          </div>
-        ))}
+              <span className="h-3.5 w-3.5 flex-shrink-0 rounded-sm" style={{ background: item.color }} />
+              <div className="min-w-0">
+                <div className="mb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-400">{item.label}</div>
+                <div className="mb-0.5 text-[16px] font-medium text-ink-900">{item.name}</div>
+                <div className="text-[13px] leading-relaxed text-ink-500">{item.meaning}</div>
+              </div>
+              <div className="min-w-[100px] flex-shrink-0 text-right">
+                <div className="text-[26px] font-medium leading-none text-ink-900">{item.pct}%</div>
+                <div className="mt-1 text-[13px] text-ink-500">{item.value}</div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
-function GeoTakeaway({ dim, mode, selectedRegion }) {
-  const pct = Math.round(((rawGeo.macro_split?.origin?.pct ?? 0) + (rawGeo.macro_split?.rest_of_region?.pct ?? 0)) * 100);
-  const text = selectedRegion
-    ? `Il bordo lime evidenzia la provincia di origine della spesa. Il colore delle altre province mostra il valore di ${GEO_DIMS.find((g) => g.id === dim)?.label ?? dim} attivato dallo spillover regionale.`
-    : mode === "pc"
-      ? `In modalità pro-capite il valore è diviso per la popolazione di ciascun territorio, neutralizzando l'effetto delle dimensioni demografiche.`
-      : `L'${pct}% del valore resta in ${regionName}; la differenza si attiva fuori regione lungo le filiere nazionali.`;
-  return <TakeawayBanner text={text} />;
+function GeoTabPills({ options, value, onChange }) {
+  return (
+    <div className="inline-flex gap-0.5 rounded-[8px] p-[3px]" style={{ background: "#F5F5F4" }}>
+      {options.map((opt) => (
+        <button
+          key={opt.id}
+          onClick={() => onChange(opt.id)}
+          className={`cursor-pointer rounded-[6px] border-0 px-3.5 py-2 font-inherit text-[13px] transition-colors ${
+            value === opt.id
+              ? "bg-white font-medium text-ink-900 shadow-sm"
+              : "bg-transparent text-ink-500 hover:text-ink-900"
+          }`}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 function TabSettori({ updateSearch, searchParams, onOpenExplore }) {
