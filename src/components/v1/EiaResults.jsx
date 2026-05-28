@@ -601,74 +601,263 @@ function TabShell({ title, tab, onHelp, children }) {
   );
 }
 
-function TabSintesi({ updateSearch, searchParams }) {
-  const [mode, setMode] = useState(searchParams?.get("modal") ?? "assoluti");
-  const regionPct = Math.round(((rawGeo.macro_split?.origin?.pct ?? 0) + (rawGeo.macro_split?.rest_of_region?.pct ?? 0)) * 100);
+function TabSintesi() {
+  const spend = inp.total_spend ?? 0;
+  const spendM = spend / 1_000_000;
   const isMultiProvince = (inp.origin_provinces?.length ?? 0) > 1;
 
-  useEffect(() => {
-    updateSearch?.({ modal: mode });
-  }, [mode, updateSearch]);
+  const natProd = byPerimeter.national?.production ?? 0;
+  const natGdp = byPerimeter.national?.gdp ?? 0;
+  const natEmp = byPerimeter.national?.employment ?? 0;
+  const natFiscal = byPerimeter.national?.fiscal ?? 0;
+  const regGdp = byPerimeter.region?.gdp ?? 0;
+  const regProd = byPerimeter.region?.production ?? 0;
+  const regEmp = byPerimeter.region?.employment ?? 0;
 
-  useEffect(() => {
-    setMode(searchParams?.get("modal") ?? "assoluti");
-  }, [searchParams]);
+  const gdpSeg = threeSeg.gdp ?? {};
+  const empSeg = threeSeg.employment ?? {};
+  const provGdp = gdpSeg.origin ?? byPerimeter.origin_province?.gdp ?? 0;
+  const restRegGdp = gdpSeg.rest_region ?? 0;
+  const extraGdp = gdpSeg.extra ?? 0;
+  const provEmp = empSeg.origin ?? byPerimeter.origin_province?.employment ?? 0;
+  const restRegEmp = empSeg.rest_region ?? 0;
+  const extraEmp = empSeg.extra ?? 0;
 
-  const summaryText = mode === "pc"
-    ? `In termini pro-capite, il progetto attiva valore sulla scala nazionale.`
-    : regionPct >= 70
-      ? `L'${regionPct}% del valore aggiunto attivato resta in ${regionName}. La spesa è fortemente ancorata al territorio.`
-      : `L'${regionPct}% del valore aggiunto resta in ${regionName}, il resto si attiva in altre regioni attraverso le filiere nazionali.`;
+  const gdpPcts = roundedPctParts([provGdp, restRegGdp, extraGdp]);
+
+  const regGdpMult = spend > 0 ? regGdp / spend : 0;
+  const natGdpMult = spend > 0 ? natGdp / spend : 0;
+  const regProdMult = spend > 0 ? regProd / spend : 0;
+  const natProdMult = spend > 0 ? natProd / spend : 0;
+  const regEmpInt = spendM > 0 ? regEmp / spendM : 0;
+  const natEmpInt = spendM > 0 ? natEmp / spendM : 0;
+  const fiscalPct = (synthKpis.fiscal_autofinanc_pct ?? 0) * 100;
+
+  const provPc = perCapita.origin_province ?? {};
+  const regPc = perCapita.region ?? {};
+  const natPc = perCapita.national ?? {};
+
+  const summaryText = `L'investimento di ${fmtM(spend)} ha attivato ${fmtM(natGdp)} di PIL, sostenuto ${fmtIT(natEmp, 0)} posti di lavoro equivalenti e restituito ${fmtM(natFiscal)} in gettito fiscale.`;
 
   return (
-    <div className="space-y-8">
-      <div className="rounded-md bg-bg-page p-4">
-        <SegmentedGroup
-          label="Modalità"
-          options={[
-            { id: "assoluti", label: "Valori assoluti" },
-            { id: "pc", label: "Pro capite" },
-          ]}
-          value={mode}
-          onChange={setMode}
-        />
+    <div className="space-y-14">
+      {/* Hero: investimento */}
+      <div className="border-l-4 border-brand-violet bg-brand-violet/5 px-6 py-5">
+        <p className="text-[10px] font-mono font-medium uppercase tracking-[0.18em] text-brand-violet">Il punto di partenza</p>
+        <div className="mt-2 flex flex-wrap items-baseline gap-4">
+          <p className="text-[38px] font-bold leading-none text-brand-violet">{fmtM(spend)}</p>
+          <p className="text-[15px] text-ink-700">
+            investiti {isMultiProvince ? "nelle province di" : "nella provincia di"}{" "}
+            <strong>{originProvince}</strong>, distribuiti su {nVoci} voci di spesa
+          </p>
+        </div>
       </div>
 
-      <section className="space-y-3">
-        <SectionLabel title="L'investimento" subtitle="Da cosa parte l'analisi" />
-        <SpendInputCard isMultiProvince={isMultiProvince} />
-      </section>
-
-      <section className="space-y-3">
-        <SectionLabel
-          title="Impatto sull'economia italiana"
-          subtitle="Quanto valore ha generato la spesa lungo la filiera nazionale"
-        />
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
-          {EFFECTS.map((effect) => (
-            <EffectCard key={effect.id} effect={effect} perim="nazionale" mode={mode} />
-          ))}
+      {/* Cosa ha generato */}
+      <section className="space-y-4">
+        <SintesiSectionHead title="Cosa ha generato" subtitle="I principali impatti attivati sull'economia italiana" />
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <SintesiKPI icon="pil"        label="PIL"                    value={fmtM(natGdp)}         caption="valore aggiunto generato in Italia" />
+          <SintesiKPI icon="produzione" label="Valore della Produzione" value={fmtM(natProd)}        caption="di volume d'affari in Italia" />
+          <SintesiKPI icon="occupazione" label="Occupazione"            value={fmtIT(natEmp, 0)} valueUnit="ETP" caption="posti equivalenti a tempo pieno" />
+          <SintesiKPI icon="gettito"    label="Gettito fiscale"         value={fmtM(natFiscal)}      caption="di gettito per lo Stato" />
         </div>
       </section>
 
-      <section className="space-y-3">
-        <SectionLabel
-          title="Dove va il valore"
-          subtitle="Il valore non rimane tutto nella provincia di partenza: si propaga lungo le filiere regionali e nazionali"
+      {/* Dove resta il valore */}
+      <section className="space-y-4">
+        <SintesiSectionHead
+          title="Quanto resta sul territorio"
+          subtitle={`Il ${gdpPcts[0]}% del PIL attivato resta nella provincia di ${originProvince}`}
         />
-        <ProvinceBreakdown mode={mode} />
+        <SintesiTerritoryCard
+          provPct={gdpPcts[0]} provGdp={provGdp} provEmp={provEmp}
+          restRegPct={gdpPcts[1]} restRegGdp={restRegGdp} restRegEmp={restRegEmp}
+          extraPct={gdpPcts[2]} extraGdp={extraGdp} extraEmp={extraEmp}
+        />
       </section>
 
-      <section className="space-y-3">
-        <SectionLabel
-          title="Come si moltiplica la spesa"
-          subtitle="Per ogni euro investito, l'economia genera questo valore aggiunto"
+      {/* Effetto moltiplicatore */}
+      <section className="space-y-4">
+        <SintesiSectionHead
+          title="L'effetto moltiplicatore"
+          subtitle="Per ogni euro speso — confronto tra perimetro regionale e nazionale"
         />
-        <MultiplierWaterfall />
+        <SintesiMultiplierGrid
+          regGdpMult={regGdpMult} natGdpMult={natGdpMult}
+          regProdMult={regProdMult} natProdMult={natProdMult}
+          regEmpInt={regEmpInt} natEmpInt={natEmpInt}
+          fiscalPct={fiscalPct}
+        />
+      </section>
+
+      {/* Callout sintetico */}
+      <div className="border border-ink-100 bg-bg-page px-6 py-5">
+        <p className="text-sm leading-relaxed text-ink-700">
+          <strong className="text-ink-900">In parole semplici:</strong> ogni milione di euro investito a{" "}
+          {originProvince} genera circa{" "}
+          <strong>{fmtIT(regProdMult, 2)} milioni</strong> di attività economica nella regione (
+          <strong>{fmtIT(natProdMult, 2)} milioni</strong> a livello nazionale), sostiene{" "}
+          <strong>{fmtIT(regEmpInt, 0)} posti di lavoro</strong> regionali ({fmtIT(natEmpInt, 0)} nazionali) e
+          restituisce allo Stato{" "}
+          <strong>{fmtIT(Math.round(fiscalPct / 100 * 1_000_000), 0)} €</strong> in tasse ogni milione speso.
+        </p>
+      </div>
+
+      {/* Pro capite */}
+      <section className="space-y-4">
+        <SintesiSectionHead title="Valori pro capite" subtitle="L'impatto rapportato alla popolazione residente in ciascun perimetro" />
+        <SintesiPerCapita
+          provName={originProvince} provGdpPc={provPc.gdp_pc ?? 0} provEmpPc={provPc.employment_pc_per_10k ?? 0} provPop={provPc.population ?? 0}
+          regName={regionName} regGdpPc={regPc.gdp_pc ?? 0} regEmpPc={regPc.employment_pc_per_10k ?? 0} regPop={regPc.population ?? 0}
+          natGdpPc={natPc.gdp_pc ?? 0} natEmpPc={natPc.employment_pc_per_10k ?? 0} natPop={natPc.population ?? 0}
+        />
       </section>
 
       <TakeawayBanner text={summaryText} />
       <DimensionGlossary />
+    </div>
+  );
+}
+
+function SintesiSectionHead({ title, subtitle }) {
+  return (
+    <div>
+      <h3 className="text-[17px] font-bold text-ink-900">{title}</h3>
+      {subtitle && <p className="mt-1 text-sm text-ink-500">{subtitle}</p>}
+    </div>
+  );
+}
+
+function SintesiKPI({ icon, label, value, valueUnit, caption }) {
+  return (
+    <div className="border border-ink-100 bg-white p-4">
+      <div className="mb-3 flex items-center gap-2">
+        <ImpactIcon
+          type={icon}
+          label={label}
+          className="h-4 w-4"
+          wrapperClassName="flex h-7 w-7 shrink-0 items-center justify-center bg-brand-violet/10 text-brand-violet"
+        />
+        <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-ink-500">{label}</p>
+      </div>
+      <p className="text-[26px] font-bold leading-none text-ink-900">
+        {value}
+        {valueUnit && <span className="ml-1 text-[16px] font-semibold text-ink-400">{valueUnit}</span>}
+      </p>
+      <p className="mt-2 text-[12px] leading-snug text-ink-500">{caption}</p>
+    </div>
+  );
+}
+
+function SintesiTerritoryCard({ provPct, provGdp, provEmp, restRegPct, restRegGdp, restRegEmp, extraPct, extraGdp, extraEmp }) {
+  return (
+    <div className="overflow-hidden border border-ink-100 bg-white">
+      <div className="flex h-3.5" role="img" aria-label={`PIL: ${provPct}% provincia, ${restRegPct}% regione, ${extraPct}% resto Italia`}>
+        <div className="bg-impact-direct transition-all" style={{ width: `${provPct}%` }} />
+        <div className="bg-impact-indirect transition-all" style={{ width: `${restRegPct}%` }} />
+        <div className="bg-impact-induced transition-all" style={{ width: `${extraPct}%` }} />
+      </div>
+      <div className="grid grid-cols-1 divide-y divide-ink-100 p-5 md:grid-cols-3 md:divide-x md:divide-y-0 md:gap-0 md:p-0">
+        <SintesiTerritoryCol color="bg-impact-direct" name={originProvince} pct={provPct} gdp={provGdp} emp={provEmp} />
+        <SintesiTerritoryCol color="bg-impact-indirect" name={`Resto della ${regionName}`} pct={restRegPct} gdp={restRegGdp} emp={restRegEmp} />
+        <SintesiTerritoryCol color="bg-impact-induced" name="Resto d'Italia" pct={extraPct} gdp={extraGdp} emp={extraEmp} />
+      </div>
+    </div>
+  );
+}
+
+function SintesiTerritoryCol({ color, name, pct, gdp, emp }) {
+  return (
+    <div className="p-5">
+      <div className="mb-2 flex items-center gap-2">
+        <span className={`h-2.5 w-2.5 flex-shrink-0 rounded-sm ${color}`} />
+        <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-ink-500">{name}</p>
+      </div>
+      <p className="text-[28px] font-bold leading-none text-ink-900">{pct}%</p>
+      <p className="mt-2 text-[13px] text-ink-600">
+        {fmtM(gdp)} PIL · {fmtIT(emp, emp < 10 ? 1 : 0)} ETP
+      </p>
+    </div>
+  );
+}
+
+function SintesiMultiplierGrid({ regGdpMult, natGdpMult, regProdMult, natProdMult, regEmpInt, natEmpInt, fiscalPct }) {
+  const rows = [
+    { icon: "pil",         label: "PIL",                    regVal: `${fmtIT(regGdpMult, 2)}×`,   natVal: `${fmtIT(natGdpMult, 2)}×` },
+    { icon: "produzione",  label: "Valore della Produzione", regVal: `${fmtIT(regProdMult, 2)}×`,  natVal: `${fmtIT(natProdMult, 2)}×` },
+    { icon: "occupazione", label: "Occupazione",             regVal: `${fmtIT(regEmpInt, 1)} ETP`, natVal: `${fmtIT(natEmpInt, 1)} ETP` },
+    { icon: "gettito",     label: "Gettito fiscale",         regVal: "–",                          natVal: `${fmtIT(fiscalPct, 1)}%` },
+  ];
+
+  return (
+    <div className="overflow-hidden border border-ink-100 bg-white">
+      <div className="grid grid-cols-[1fr_120px_120px] border-b border-ink-100 bg-bg-page px-5 py-2.5">
+        <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400">Indicatore</p>
+        <p className="text-center text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400">Regionale</p>
+        <p className="text-center text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400">Nazionale</p>
+      </div>
+      {rows.map((row, i) => (
+        <div
+          key={row.label}
+          className={`grid grid-cols-[1fr_120px_120px] items-center px-5 py-4 ${i < rows.length - 1 ? "border-b border-ink-100" : ""}`}
+        >
+          <div className="flex items-center gap-2">
+            <ImpactIcon type={row.icon} label={row.label} className="h-3.5 w-3.5" wrapperClassName="flex h-3.5 w-3.5 items-center justify-center text-brand-violet" />
+            <p className="text-[13px] font-semibold text-ink-700">{row.label}</p>
+          </div>
+          <p className="text-center text-[20px] font-bold text-brand-violet">{row.regVal}</p>
+          <p className="text-center text-[20px] font-bold text-ink-700">{row.natVal}</p>
+        </div>
+      ))}
+      <div className="border-t border-ink-100 bg-bg-page px-5 py-2.5">
+        <p className="text-[11px] italic text-ink-400">
+          I moltiplicatori regionali sono più affidabili di quelli nazionali, che tendono a sovrastimare perché includono valore attivato fuori dalla regione committente.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SintesiPerCapita({ provName, provGdpPc, provEmpPc, provPop, regName, regGdpPc, regEmpPc, regPop, natGdpPc, natEmpPc, natPop }) {
+  return (
+    <div className="overflow-hidden border border-ink-100 bg-white">
+      <div className="border-b border-ink-100 bg-bg-page px-5 py-3">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">PIL e occupazione per abitante</p>
+        <p className="mt-0.5 text-xs text-ink-400">I valori pro capite non si sommano tra livelli territoriali</p>
+      </div>
+      <div className="grid grid-cols-1 divide-y divide-ink-100 md:grid-cols-3 md:divide-x md:divide-y-0">
+        <SintesiPerCapitaCol name={provName} pop={provPop} gdpPc={provGdpPc} empPc={provEmpPc} highlight />
+        <SintesiPerCapitaCol name={regName} pop={regPop} gdpPc={regGdpPc} empPc={regEmpPc} />
+        <SintesiPerCapitaCol name="Italia" pop={natPop} gdpPc={natGdpPc} empPc={natEmpPc} />
+      </div>
+    </div>
+  );
+}
+
+function SintesiPerCapitaCol({ name, pop, gdpPc, empPc, highlight }) {
+  return (
+    <div className={`p-5 ${highlight ? "bg-brand-violet/5" : ""}`}>
+      <p className={`text-[11px] font-bold uppercase tracking-[0.1em] ${highlight ? "text-brand-violet" : "text-ink-500"}`}>{name}</p>
+      {pop > 0 && (
+        <p className="mt-0.5 text-[11px] text-ink-400">
+          {pop >= 1_000_000 ? `${fmtIT(pop / 1_000_000, 1)} milioni di ab.` : `${fmtIT(Math.round(pop / 1000), 0)} mila ab.`}
+        </p>
+      )}
+      <div className="mt-4 space-y-4">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.12em] text-ink-400">PIL pro capite</p>
+          <p className={`mt-1 text-[22px] font-bold leading-none ${highlight ? "text-brand-violet" : "text-ink-900"}`}>
+            {fmtMoneyPc(gdpPc)}
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.12em] text-ink-400">ETP ogni 10.000 ab.</p>
+          <p className={`mt-1 text-[22px] font-bold leading-none ${highlight ? "text-brand-violet" : "text-ink-900"}`}>
+            {fmtIT(empPc, 2)}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

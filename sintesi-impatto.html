@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sintesi dell'impatto — Civiqa</title>
+<style>
+  :root {
+    --purple-50:  #EEEDFE;
+    --purple-100: #CECBF6;
+    --purple-200: #AFA9EC;
+    --purple-400: #7F77DD;
+    --purple-600: #534AB7;
+    --purple-800: #3C3489;
+    --purple-900: #26215C;
+
+    --text-primary:   #111111;
+    --text-secondary: #555555;
+    --text-tertiary:  #888888;
+
+    --bg-primary:   #FFFFFF;
+    --bg-secondary: #F5F5F4;
+    --bg-page:      #FAFAF9;
+
+    --border: rgba(0, 0, 0, 0.08);
+
+    --radius-md: 8px;
+    --radius-lg: 12px;
+
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    background: var(--bg-page);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 4rem;
+  }
+
+  /* Header */
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 500;
+    margin: 0 0 2rem;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  /* Section eyebrow + heading */
+  .section-head { margin-bottom: 1rem; }
+  .section-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h2 {
+    font-size: 18px;
+    font-weight: 500;
+    margin: 0 0 0.5rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+  .section-lede {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 1.25rem;
+    line-height: 1.6;
+  }
+
+  /* Hero card */
+  .hero {
+    background: var(--purple-50);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem 1.5rem;
+    margin-bottom: 2.5rem;
+    border-left: 3px solid var(--purple-600);
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--purple-600);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .hero-row {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .hero-value {
+    font-size: 44px;
+    font-weight: 500;
+    color: var(--purple-900);
+    line-height: 1;
+  }
+  .hero-caption {
+    font-size: 16px;
+    color: var(--purple-800);
+    line-height: 1.5;
+  }
+
+  /* KPI grid */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 2.5rem;
+  }
+  .kpi {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 1.25rem;
+  }
+  .kpi-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .kpi-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--purple-50);
+    color: var(--purple-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .kpi-icon svg { width: 18px; height: 18px; }
+  .kpi-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .kpi-value {
+    font-size: 30px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+  .kpi-unit {
+    font-size: 18px;
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+  .kpi-caption {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  /* Territory card */
+  .territory-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+  .territory-bar {
+    display: flex;
+    height: 16px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .territory-bar > div { transition: opacity 0.2s; }
+  .territory-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .territory-stat .swatch-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .territory-name {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .territory-pct {
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+  .territory-detail {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+  }
+
+  /* Multiplier */
+  .multiplier-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 1.25rem;
+  }
+  .multiplier {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: 1.5rem 1.25rem;
+    text-align: center;
+  }
+  .multiplier-value {
+    font-size: 36px;
+    font-weight: 500;
+    color: var(--purple-600);
+    line-height: 1;
+  }
+  .multiplier-value .suffix {
+    font-size: 20px;
+  }
+  .multiplier-caption {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 10px;
+    line-height: 1.4;
+  }
+
+  /* Summary callout */
+  .callout {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.5rem;
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .callout strong {
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  /* Responsive */
+  @media (max-width: 720px) {
+    .page { padding: 1.5rem 1rem 3rem; }
+    h1 { font-size: 22px; }
+    .hero-value { font-size: 34px; }
+    .hero-caption { font-size: 14px; }
+    .kpi-grid,
+    .territory-stats,
+    .multiplier-grid {
+      grid-template-columns: 1fr;
+    }
+    .kpi-value { font-size: 26px; }
+    .multiplier-value { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<main class="page" aria-label="Sintesi dell'impatto economico">
+
+  <!-- Header -->
+  <div class="eyebrow">Sintesi dell'impatto · Provincia di Palermo</div>
+  <h1>L'investimento e il suo ritorno per il territorio</h1>
+
+  <!-- HERO: il punto di partenza -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-eyebrow" id="hero-title">Il punto di partenza</div>
+    <div class="hero-row">
+      <span class="hero-value">41,1 M€</span>
+      <span class="hero-caption">investiti nella provincia di Palermo, distribuiti su 7 voci di spesa</span>
+    </div>
+  </section>
+
+  <!-- ATTO 1: cosa è stato generato -->
+  <div class="section-head">
+    <div class="section-eyebrow">Atto 1 · Cosa ha generato</div>
+    <h2>Tre risultati per il territorio</h2>
+  </div>
+
+  <div class="kpi-grid" role="list">
+    <div class="kpi" role="listitem">
+      <div class="kpi-head">
+        <div class="kpi-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>
+        </div>
+        <span class="kpi-label">Attività economica</span>
+      </div>
+      <div class="kpi-value">104,1 M€</div>
+      <div class="kpi-caption">di produzione attivata in Italia</div>
+    </div>
+
+    <div class="kpi" role="listitem">
+      <div class="kpi-head">
+        <div class="kpi-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M3 21v-2a4 4 0 0 1 4 -4h4"/><circle cx="17" cy="17" r="4"/><path d="M19.5 19.5l-2.5 -2.5"/></svg>
+        </div>
+        <span class="kpi-label">Lavoro</span>
+      </div>
+      <div class="kpi-value">846 <span class="kpi-unit">lavoratori</span></div>
+      <div class="kpi-caption">posti di lavoro sostenuti (equivalenti a tempo pieno)</div>
+    </div>
+
+    <div class="kpi" role="listitem">
+      <div class="kpi-head">
+        <div class="kpi-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 7h6"/><path d="M9 11h6"/><path d="M9 15h4"/></svg>
+        </div>
+        <span class="kpi-label">Ritorno fiscale</span>
+      </div>
+      <div class="kpi-value">11,2 M€</div>
+      <div class="kpi-caption">di gettito per lo Stato</div>
+    </div>
+  </div>
+
+  <!-- ATTO 2: dove resta il valore -->
+  <div class="section-head">
+    <div class="section-eyebrow">Atto 2 · Quanto resta sul territorio</div>
+    <h2>Il 46% del valore resta a Palermo</h2>
+    <p class="section-lede">Quasi la metà del valore aggiunto generato rimane nella provincia di origine. Il resto si distribuisce nelle altre province siciliane (38%) e nel resto d'Italia (16%).</p>
+  </div>
+
+  <div class="territory-card">
+    <div class="territory-bar" role="img" aria-label="Distribuzione del valore: 46% Palermo, 38% resto della Sicilia, 16% resto d'Italia">
+      <div style="width: 46%; background: var(--purple-600);"></div>
+      <div style="width: 38%; background: var(--purple-200);"></div>
+      <div style="width: 16%; background: var(--purple-100);"></div>
+    </div>
+
+    <div class="territory-stats">
+      <div class="territory-stat">
+        <div class="swatch-row">
+          <span class="swatch" style="background: var(--purple-600);"></span>
+          <span class="territory-name">Palermo</span>
+        </div>
+        <div class="territory-pct">46%</div>
+        <div class="territory-detail">26,7 M€ · 389 lavoratori</div>
+      </div>
+      <div class="territory-stat">
+        <div class="swatch-row">
+          <span class="swatch" style="background: var(--purple-200);"></span>
+          <span class="territory-name">Resto della Sicilia</span>
+        </div>
+        <div class="territory-pct">38%</div>
+        <div class="territory-detail">22,0 M€ · 322 lavoratori</div>
+      </div>
+      <div class="territory-stat">
+        <div class="swatch-row">
+          <span class="swatch" style="background: var(--purple-100);"></span>
+          <span class="territory-name">Resto d'Italia</span>
+        </div>
+        <div class="territory-pct">16%</div>
+        <div class="territory-detail">9,3 M€ · 135 lavoratori</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ATTO 3: il moltiplicatore -->
+  <div class="section-head">
+    <div class="section-eyebrow">Atto 3 · L'effetto moltiplicatore</div>
+    <h2>Per ogni euro speso</h2>
+  </div>
+
+  <div class="multiplier-grid">
+    <div class="multiplier">
+      <div class="multiplier-value">2,12<span class="suffix">×</span></div>
+      <div class="multiplier-caption">in attività economica</div>
+    </div>
+    <div class="multiplier">
+      <div class="multiplier-value">17<span class="suffix"> lavoratori</span></div>
+      <div class="multiplier-caption">ogni milione speso</div>
+    </div>
+    <div class="multiplier">
+      <div class="multiplier-value">27<span class="suffix">%</span></div>
+      <div class="multiplier-caption">rientra come gettito</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>In parole semplici:</strong> ogni milione di euro investito a Palermo genera circa <strong>2,1 milioni</strong> di attività economica, sostiene <strong>17 posti di lavoro</strong> e restituisce allo Stato <strong>270.000 €</strong> in tasse.
+  </div>
+
+</main>
+
+</body>
+</html>
