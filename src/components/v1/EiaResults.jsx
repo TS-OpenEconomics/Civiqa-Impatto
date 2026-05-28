@@ -2130,15 +2130,17 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
     return { value: `${fmtIT(m, 2)}×`, sub: "redditi / spesa" };
   })();
 
-  // Ranking — adapts to current view (province or regioni)
-  const rankFmt = getGeoFmt(dim, "assoluti");
-  const rankSorted = [...currentList].sort((a, b) => getGeoValue(b, dim, "assoluti") - getGeoValue(a, dim, "assoluti"));
-  const rankTotal = rankSorted.reduce((sum, r) => sum + getGeoValue(r, dim, "assoluti"), 0);
+  // Ranking — adapts to current view (province or regioni) and selected mode.
+  const rankFmt = getGeoFmt(dim, mode);
+  const rankSorted = [...currentList].sort((a, b) => getGeoValue(b, dim, mode) - getGeoValue(a, dim, mode));
+  const rankTotal = rankSorted.reduce((sum, r) => sum + getGeoValue(r, dim, mode), 0);
   const rankLeader = rankSorted[0];
   const rankTop5 = rankSorted.slice(1, 6);
   const rankOthers = rankSorted.slice(6);
-  const rankOthersSum = rankOthers.reduce((sum, r) => sum + getGeoValue(r, dim, "assoluti"), 0);
-  const rankTitle = selectedRegion ? `Top province — ${selectedRegion}` : isProvinceView ? "Top province per valore" : "Top regioni per valore";
+  const rankOthersSum = rankOthers.reduce((sum, r) => sum + getGeoValue(r, dim, mode), 0);
+  const rankTitleSuffix = mode === "pc" ? "pro capite" : "per valore";
+  const rankTitle = selectedRegion ? `Top province — ${selectedRegion}` : isProvinceView ? `Top province ${rankTitleSuffix}` : `Top regioni ${rankTitleSuffix}`;
+  const rankOthersLabel = isProvinceView ? "province" : "regioni";
 
   // Bottom section
   const macroSplit = rawGeo.macro_split ?? {};
@@ -2285,20 +2287,23 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
           <div className="mb-3.5 text-[11px] uppercase tracking-[0.08em] text-ink-400">{rankTitle}</div>
 
           {rankLeader && (
-            <div className="mb-4 border-b border-ink-100 pb-3.5">
+            <div
+              className={`-mx-2 mb-4 rounded border-b border-ink-100 px-2 pb-3.5 pt-2 transition-colors ${!isProvinceView ? `cursor-pointer hover:bg-bg-page${selectedRegion === rankLeader.nome ? " bg-[#EEEDFE]" : ""}` : ""}`}
+              onClick={!isProvinceView ? () => setSelectedRegion((prev) => (prev === rankLeader.nome ? null : rankLeader.nome)) : undefined}
+            >
               <div className="mb-2 flex items-baseline justify-between">
                 <span className="text-[15px] font-medium text-ink-900">{rankLeader.nome}</span>
-                <span className="text-[15px] font-medium text-ink-900">{rankFmt(getGeoValue(rankLeader, dim, "assoluti"))}</span>
+                <span className="text-[15px] font-medium text-ink-900">{rankFmt(getGeoValue(rankLeader, dim, mode))}</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <div className="h-2 flex-1 overflow-hidden rounded" style={{ background: "#F5F5F4" }}>
                   <div
                     className="h-full rounded transition-all"
-                    style={{ width: `${rankTotal > 0 ? (getGeoValue(rankLeader, dim, "assoluti") / rankTotal) * 100 : 0}%`, background: "#534AB7" }}
+                    style={{ width: `${rankTotal > 0 ? (getGeoValue(rankLeader, dim, mode) / rankTotal) * 100 : 0}%`, background: "#534AB7" }}
                   />
                 </div>
                 <span className="min-w-[36px] text-right text-[12px] text-ink-500">
-                  {rankTotal > 0 ? Math.round((getGeoValue(rankLeader, dim, "assoluti") / rankTotal) * 100) : 0}%
+                  {rankTotal > 0 ? Math.round((getGeoValue(rankLeader, dim, mode) / rankTotal) * 100) : 0}%
                 </span>
               </div>
             </div>
@@ -2306,7 +2311,7 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
 
           <div className="flex-1">
             {rankTop5.map((r, idx) => {
-              const val = getGeoValue(r, dim, "assoluti");
+              const val = getGeoValue(r, dim, mode);
               const pct = rankTotal > 0 ? (val / rankTotal) * 100 : 0;
               return (
                 <div
@@ -2332,7 +2337,7 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
               style={{ background: "#F5F5F4" }}
               onClick={() => onOpenExplore?.({ asse: "geografica", livello: "regionale", dim })}
             >
-              <span>Altre {rankOthers.length} regioni</span>
+              <span>Altre {rankOthers.length} {rankOthersLabel}</span>
               <span className="font-medium text-ink-900">
                 {rankFmt(rankOthersSum)} · {rankTotal > 0 ? Math.round((rankOthersSum / rankTotal) * 100) : 0}% ›
               </span>
@@ -2375,8 +2380,8 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
             <circle cx="160" cy="195" r="82" fill="#534AB7" stroke="white" strokeWidth="2" />
             <text x="160" y="195" textAnchor="middle" fontSize="32" fontWeight="500" fill="white" dominantBaseline="middle">{originPct}%</text>
             <text x="160" y="215" textAnchor="middle" fontSize="11" fill="white" opacity="0.85" style={{ textTransform: "uppercase", letterSpacing: "0.05em" }}>{originProvince}</text>
-            <text x="160" y="108" textAnchor="middle" fontSize="18" fontWeight="500" fill="#26215C">{restRegPct}%</text>
-            <text x="160" y="125" textAnchor="middle" fontSize="10" fill="#3C3489" style={{ textTransform: "uppercase", letterSpacing: "0.05em" }}>Resto {regionName}</text>
+            <text x="160" y="84" textAnchor="middle" fontSize="18" fontWeight="500" fill="#26215C">{restRegPct}%</text>
+            <text x="160" y="101" textAnchor="middle" fontSize="9" fill="#3C3489" style={{ textTransform: "uppercase", letterSpacing: "0.05em" }}>Resto {regionName}</text>
             <text x="160" y="32" textAnchor="middle" fontSize="14" fontWeight="500" fill="#3C3489">{extraPct}%</text>
             <text x="160" y="48" textAnchor="middle" fontSize="10" fill="#534AB7" style={{ textTransform: "uppercase", letterSpacing: "0.05em" }}>Resto d'Italia</text>
           </svg>
