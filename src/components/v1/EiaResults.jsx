@@ -125,7 +125,7 @@ const geo = {
 
 const TABS = [
   { id: "sintesi", label: "Sintesi" },
-  { id: "componenti", label: "Componenti" },
+  { id: "componenti", label: "Propagazione" },
   { id: "geografia", label: "Geografia" },
   { id: "settori", label: "Settori" },
   { id: "esplora", label: "Esplora" },
@@ -1623,38 +1623,197 @@ function MetricMini({ label, value }) {
 }
 
 function TabComponenti() {
-  const [dim, setDim] = useState("gdp");
-  const [segmentId, setSegmentId] = useState("province");
-  const current = COMPONENTS.find((c) => c.id === dim) ?? COMPONENTS[1];
-  const data = current.data ?? {};
-  const segments = buildTerritorialSegments(current.id);
-  const selectedSegment = segments.find((segment) => segment.id === segmentId) ?? segments[0];
+  const TERR_OPTS = [
+    { id: "province",    label: originProvince },
+    { id: "rest_region", label: `Resto della ${regionName}` },
+    { id: "rest_italy",  label: "Resto d'Italia" },
+    { id: "national",    label: "Totale Italia" },
+  ];
 
-  useEffect(() => {
-    setSegmentId("province");
-  }, [dim]);
+  const METRIC_OPTS = [
+    { id: "production", label: "Produzione", isMoney: true },
+    { id: "gdp",        label: "PIL",        isMoney: true },
+    { id: "employment", label: "Occupazione", isMoney: false },
+  ];
+
+  const EFFECT_DEFS = [
+    { id: "direct",   label: "Diretto",   cls: "bg-impact-direct",   chipDesc: "la spesa iniziale",        sectorDesc: "I settori che ricevono direttamente la spesa." },
+    { id: "indirect", label: "Indiretto", cls: "bg-impact-indirect", chipDesc: "i fornitori attivati",     sectorDesc: "I fornitori attivati a cascata dai settori diretti." },
+    { id: "induced",  label: "Indotto",   cls: "bg-impact-induced",  chipDesc: "i consumi delle famiglie", sectorDesc: "I settori sostenuti dai consumi delle famiglie dei lavoratori." },
+  ];
+
+  const EFFECTS_BY_TERR = {
+    province:    ["direct", "indirect", "induced"],
+    rest_region: ["indirect", "induced"],
+    rest_italy:  ["indirect", "induced"],
+    national:    ["direct", "indirect", "induced"],
+  };
+
+  const [terrId, setTerrId] = useState("province");
+  const [metricId, setMetricId] = useState("production");
+
+  const metricDef = METRIC_OPTS.find(m => m.id === metricId) ?? METRIC_OPTS[0];
+  const data = comps[metricId] ?? {};
+  const effects = EFFECTS_BY_TERR[terrId] ?? EFFECTS_BY_TERR.national;
+  const hasDirect = effects.includes("direct");
+  const fmt = metricDef.isMoney ? fmtM : fmtETP;
+  const terrLabel = TERR_OPTS.find(t => t.id === terrId)?.label ?? "";
+
+  let compValues;
+  if (terrId === "national") {
+    compValues = { direct: data.direct ?? 0, indirect: data.indirect ?? 0, induced: data.induced ?? 0 };
+  } else {
+    const segIdx = { province: 0, rest_region: 1, rest_italy: 2 };
+    const segs = buildTerritorialSegments(metricId);
+    const seg = segs[segIdx[terrId] ?? 0];
+    compValues = buildSegmentComponentValues(data, seg);
+  }
+
+  const total = effects.reduce((sum, e) => sum + (compValues[e] ?? 0), 0);
+  const pctArr = roundedPctParts(effects.map(e => compValues[e] ?? 0));
+
+  const effectItems = effects.map((e, i) => {
+    const def = EFFECT_DEFS.find(d => d.id === e);
+    const value = compValues[e] ?? 0;
+    const natValue = data[e] ?? 0;
+    const ratio = natValue > 0 ? value / natValue : 0;
+    const topSectors = (data.top_sectors?.[e] ?? []).slice(0, 3).map(s => ({ name: s.name, value: s.value * ratio }));
+    return { ...def, value, pct: pctArr[i], topSectors };
+  });
+
+  const directPct  = hasDirect && total > 0 ? Math.round(((compValues.direct  ?? 0) / total) * 100) : 0;
+  const indirectPct = total > 0 ? Math.round(((compValues.indirect ?? 0) / total) * 100) : 0;
+  const inducedPct  = total > 0 ? Math.round(((compValues.induced  ?? 0) / total) * 100) : 0;
+
+  let insight = "";
+  if (terrId === "province") {
+    insight = directPct > 85
+      ? `A ${originProvince} la quasi totalità dell'impatto è diretta (${directPct}%): la spesa iniziale è concentrata sul territorio.`
+      : `A ${originProvince} il diretto domina (${directPct}%), affiancato da indiretto (${indirectPct}%) e indotto (${inducedPct}%).`;
+  } else if (terrId === "rest_region") {
+    insight = inducedPct >= indirectPct
+      ? `Nel resto della ${regionName} l'indotto (${inducedPct}%) supera l'indiretto: i consumi delle famiglie generano valore in tutta la regione.`
+      : `Nel resto della ${regionName} indiretto (${indirectPct}%) e indotto (${inducedPct}%) si spartiscono l'impatto a cascata.`;
+  } else if (terrId === "rest_italy") {
+    insight = `Nel resto d'Italia ${inducedPct >= indirectPct ? `l'indotto (${inducedPct}%)` : `l'indiretto (${indirectPct}%)`} è la componente principale: la spesa di ${originProvince} si propaga ben oltre i confini regionali.`;
+  } else {
+    const dom = directPct >= indirectPct && directPct >= inducedPct
+      ? `il diretto (${directPct}%)` : inducedPct >= directPct && inducedPct >= indirectPct
+      ? `l'indotto (${inducedPct}%)` : `l'indiretto (${indirectPct}%)`;
+    insight = `A livello nazionale ${dom} è la componente principale, ma tutti e tre gli effetti concorrono alla creazione di valore.`;
+  }
 
   return (
     <div className="space-y-6">
-      <DidacticNote />
-      <DimensionSelector value={dim} onChange={setDim} />
-      <PerimeterDiiBreakdown dim={current} />
-      <SectionLabel
-        title={`Dettaglio ${territorialSegmentName(selectedSegment)}`}
-        subtitle="Diretto, indiretto e indotto con i primi tre settori attivati"
-      />
-      <SegmentSelector
-        dim={current}
-        selectedSegmentId={selectedSegment.id}
-        onSelectSegment={setSegmentId}
-      />
-      <SelectedSegmentBar dim={current} data={data} segment={selectedSegment} />
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <ComponentColumn variant="direct" dim={current} data={data} segment={selectedSegment} />
-        <ComponentColumn variant="indirect" dim={current} data={data} segment={selectedSegment} />
-        <ComponentColumn variant="induced" dim={current} data={data} segment={selectedSegment} />
+      {/* Legenda effetti */}
+      <div className="flex flex-wrap gap-2">
+        {EFFECT_DEFS.map(e => (
+          <div key={e.id} className="flex items-center gap-2 rounded-full bg-brand-violet/5 px-3 py-1.5">
+            <span className={`h-2 w-2 flex-shrink-0 rounded-full ${e.cls}`} />
+            <span className="text-[12px] font-semibold text-brand-violet-dark">{e.label}</span>
+            <span className="text-[12px] text-ink-500">{e.chipDesc}</span>
+          </div>
+        ))}
       </div>
-      <ComponentsTakeaway data={data} />
+
+      {/* Selettori */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-8">
+        <div>
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-400">Territorio</p>
+          <div className="flex flex-wrap gap-0.5 rounded bg-bg-page p-1">
+            {TERR_OPTS.map(t => (
+              <button key={t.id} onClick={() => setTerrId(t.id)}
+                className={["rounded px-3 py-1.5 text-[13px] font-medium transition-colors",
+                  terrId === t.id ? "bg-white text-ink-900 shadow-sm ring-1 ring-ink-100" : "text-ink-500 hover:text-ink-900",
+                ].join(" ")}>{t.label}</button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-400">Metrica</p>
+          <div className="flex flex-wrap gap-0.5 rounded bg-bg-page p-1">
+            {METRIC_OPTS.map(m => (
+              <button key={m.id} onClick={() => setMetricId(m.id)}
+                className={["rounded px-3 py-1.5 text-[13px] font-medium transition-colors",
+                  metricId === m.id ? "bg-white text-ink-900 shadow-sm ring-1 ring-ink-100" : "text-ink-500 hover:text-ink-900",
+                ].join(" ")}>{m.label}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Insight */}
+      <div className="border-l-4 border-brand-violet bg-brand-violet/5 px-5 py-4">
+        <p className="text-[14px] leading-relaxed text-brand-violet">{insight}</p>
+      </div>
+
+      {/* Composizione */}
+      <div className="overflow-hidden border border-ink-100 bg-white">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-ink-100 px-5 py-4">
+          <div>
+            <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400">Composizione in</p>
+            <p className="mt-0.5 text-[17px] font-bold text-ink-900">{terrLabel}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400">Totale</p>
+            <p className="mt-0.5 text-[22px] font-bold text-ink-900">{fmt(total)}</p>
+          </div>
+        </div>
+        <div className="px-5 pt-5">
+          <div className="flex h-5 w-full overflow-hidden bg-ink-100">
+            {effectItems.map(item => (
+              <div key={item.id} className={item.cls} style={{ width: `${item.pct}%` }}
+                title={`${item.label}: ${fmt(item.value)} (${item.pct}%)`} />
+            ))}
+          </div>
+          <div className={`mt-5 grid gap-5 pb-5 ${effects.length === 3 ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2"}`}>
+            {effectItems.map(item => (
+              <div key={item.id}>
+                <div className="mb-1.5 flex items-center gap-2">
+                  <span className={`h-2.5 w-2.5 flex-shrink-0 rounded-sm ${item.cls}`} />
+                  <span className="text-[12px] font-semibold text-ink-600">{item.label}</span>
+                </div>
+                <p className="text-[20px] font-bold leading-none text-ink-900">{fmt(item.value)}</p>
+                <p className="mt-1 text-[12px] text-ink-400">{item.pct}% del totale</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        {!hasDirect && (
+          <div className="mx-5 mb-5 flex items-start gap-2 bg-bg-page px-4 py-3">
+            <svg className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-ink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>
+            </svg>
+            <p className="text-[12px] text-ink-600">
+              L'effetto diretto è presente solo nella provincia di origine ({originProvince}), dove la spesa è realmente sostenuta. In {terrLabel} arrivano solo gli effetti a cascata.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Settori */}
+      <div>
+        <SintesiSectionHead
+          title="Dove finisce il valore, effetto per effetto"
+          subtitle={`I primi tre settori per ciascun effetto in ${terrLabel}`}
+        />
+        <div className={`mt-4 grid border border-ink-100 bg-white divide-y divide-ink-100 md:divide-y-0 md:divide-x ${effects.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
+          {effectItems.map(item => (
+            <div key={item.id} className="px-5 py-5">
+              <div className="mb-4 flex items-center gap-2">
+                <span className={`h-2.5 w-2.5 flex-shrink-0 rounded-sm ${item.cls}`} />
+                <span className="text-[13px] font-bold text-ink-900">{item.label}</span>
+              </div>
+              {item.topSectors.map((s, i) => (
+                <div key={i} className="flex items-baseline justify-between gap-3 border-b border-ink-100 py-2 last:border-0">
+                  <span className="truncate text-[13px] text-ink-600">{i + 1}. {s.name}</span>
+                  <span className="whitespace-nowrap text-[13px] font-semibold text-ink-900">{fmt(s.value)}</span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
