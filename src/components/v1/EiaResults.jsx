@@ -2130,14 +2130,15 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
     return { value: `${fmtIT(m, 2)}×`, sub: "redditi / spesa" };
   })();
 
-  // Ranking — always absolute, always all regions
+  // Ranking — adapts to current view (province or regioni)
   const rankFmt = getGeoFmt(dim, "assoluti");
-  const rankSorted = [...regions].sort((a, b) => getGeoValue(b, dim, "assoluti") - getGeoValue(a, dim, "assoluti"));
+  const rankSorted = [...currentList].sort((a, b) => getGeoValue(b, dim, "assoluti") - getGeoValue(a, dim, "assoluti"));
   const rankTotal = rankSorted.reduce((sum, r) => sum + getGeoValue(r, dim, "assoluti"), 0);
   const rankLeader = rankSorted[0];
   const rankTop5 = rankSorted.slice(1, 6);
   const rankOthers = rankSorted.slice(6);
   const rankOthersSum = rankOthers.reduce((sum, r) => sum + getGeoValue(r, dim, "assoluti"), 0);
+  const rankTitle = selectedRegion ? `Top province — ${selectedRegion}` : isProvinceView ? "Top province per valore" : "Top regioni per valore";
 
   // Bottom section
   const macroSplit = rawGeo.macro_split ?? {};
@@ -2253,7 +2254,7 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
           <div className="mb-3">
             <div className="mb-1 text-[11px] uppercase tracking-[0.08em] text-ink-400">{dimLabel} attivato</div>
             <div className="text-[22px] font-medium" style={{ color: "#534AB7" }}>{fmt(grandTotal)}</div>
-            <div className="mt-1 text-[12px] text-ink-500">Distribuito su {regions.length} regioni italiane</div>
+            <div className="mt-1 text-[12px] text-ink-500">Distribuito su {isProvinceView ? `${currentList.length} province` : `${regions.length} regioni`} italiane</div>
           </div>
           <div className="relative min-h-[360px] flex-1">
             {isProvinceView ? (
@@ -2281,7 +2282,7 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
 
         {/* Ranking card */}
         <div className="flex flex-col rounded-xl border border-ink-100 bg-white p-5">
-          <div className="mb-3.5 text-[11px] uppercase tracking-[0.08em] text-ink-400">Top regioni per valore</div>
+          <div className="mb-3.5 text-[11px] uppercase tracking-[0.08em] text-ink-400">{rankTitle}</div>
 
           {rankLeader && (
             <div className="mb-4 border-b border-ink-100 pb-3.5">
@@ -2310,8 +2311,8 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
               return (
                 <div
                   key={r.code ?? r.nome}
-                  className={`-mx-2 cursor-pointer rounded px-2 py-2 transition-colors hover:bg-bg-page ${selectedRegion === r.nome ? "bg-[#EEEDFE]" : ""}`}
-                  onClick={() => setSelectedRegion((prev) => (prev === r.nome ? null : r.nome))}
+                  className={`-mx-2 rounded px-2 py-2 transition-colors ${!isProvinceView ? `cursor-pointer hover:bg-bg-page${selectedRegion === r.nome ? " bg-[#EEEDFE]" : ""}` : ""}`}
+                  onClick={!isProvinceView ? () => setSelectedRegion((prev) => (prev === r.nome ? null : r.nome)) : undefined}
                 >
                   <div className="mb-1 flex items-baseline justify-between">
                     <span className="text-[13px] text-ink-900">{idx + 2} · {r.nome}</span>
@@ -2454,6 +2455,7 @@ function GeoTabPills({ options, value, onChange }) {
 function TabSettori({ updateSearch, searchParams, onOpenExplore }) {
   const [dim, setDim] = useState(searchParams?.get("dim") ?? "gdp");
   const [heatmapMode, setHeatmapMode] = useState("tutti");
+  const [rankView, setRankView] = useState("territorio");
   const isMoney = dim !== "employment";
   const sorted = [...sectItems].sort((a, b) => sectorTotal(b, dim) - sectorTotal(a, dim));
 
@@ -2492,10 +2494,22 @@ function TabSettori({ updateSearch, searchParams, onOpenExplore }) {
           <div className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "#534AB7" }}>Classifica settoriale</div>
           <h2 className="mb-2 text-[20px] font-medium text-ink-900">I settori che ricevono più valore</h2>
           <p className="max-w-[720px] text-[14px] leading-relaxed text-ink-500">
-            Ogni barra mostra quanto valore arriva al settore, suddiviso per territorio. Più la barra è scura, più il valore resta vicino a {originProvince}.
+            {rankView === "territorio"
+              ? `Ogni barra mostra quanto valore arriva al settore, suddiviso per territorio. Più la barra è scura, più il valore resta vicino a ${originProvince}.`
+              : "Ogni barra mostra come il valore di ogni settore si divide tra effetto diretto (spesa immediata), indiretto (fornitori) e indotto (consumi delle famiglie)."}
           </p>
         </div>
-        <SectorRankingCard sectors={sorted} dim={dim} isMoney={isMoney} />
+        <div className="mb-4">
+          <GeoTabPills
+            options={[
+              { id: "territorio", label: "Per territorio" },
+              { id: "componenti", label: "Per componente" },
+            ]}
+            value={rankView}
+            onChange={setRankView}
+          />
+        </div>
+        <SectorRankingCard sectors={sorted} dim={dim} isMoney={isMoney} rankView={rankView} />
         {top3.length >= 3 && (
           <SectorInsightBox>
             <strong className="font-medium">{cleanText(top3[0].ateco_name)}</strong> è il settore più attivato ({fmt(sectorTotal(top3[0], dim))} di {dimLabel.toLowerCase()}), seguito da{" "}
@@ -2568,7 +2582,26 @@ function sectorTotal(s, dim) {
   return (v.intra ?? 0) + (v.extra ?? 0);
 }
 
-function SectorRankingCard({ sectors, dim, isMoney }) {
+function getSectorComponentMix(sectorName, dim) {
+  const source = comps[dim] ?? {};
+  const topSets = {
+    direct: source.top_sectors?.direct ?? [],
+    indirect: source.top_sectors?.indirect ?? [],
+    induced: source.top_sectors?.induced ?? [],
+  };
+  const base = 0.8;
+  const scoreFor = (key) => {
+    const idx = topSets[key].findIndex((entry) => entry.name === sectorName);
+    return base + (idx >= 0 ? 3 - Math.min(idx, 2) : 0);
+  };
+  const direct = scoreFor("direct");
+  const indirect = scoreFor("indirect");
+  const induced = scoreFor("induced");
+  const total = direct + indirect + induced || 1;
+  return { direct: direct / total, indirect: indirect / total, induced: induced / total };
+}
+
+function SectorRankingCard({ sectors, dim, isMoney, rankView = "territorio" }) {
   const fmt = isMoney ? fmtM : fmtETP;
   const grandTotal = sectors.reduce((s, sec) => s + sectorTotal(sec, dim), 0) || 1;
   const maxTotal = Math.max(...sectors.map((s) => sectorTotal(s, dim)), 1);
@@ -2576,14 +2609,22 @@ function SectorRankingCard({ sectors, dim, isMoney }) {
   const intraAggregate = (seg.origin ?? 0) + (seg.rest_region ?? 0);
   const originShare = intraAggregate > 0 ? (seg.origin ?? 0) / intraAggregate : 0.5;
 
+  const legendItems = rankView === "territorio"
+    ? [
+        { color: "#534AB7", label: `${originProvince} (provincia origine)` },
+        { color: "#AFA9EC", label: `Resto ${regionName}` },
+        { color: "#A8A29E", label: "Resto d'Italia" },
+      ]
+    : [
+        { color: "#534AB7", label: "Diretto" },
+        { color: "#AFA9EC", label: "Indiretto" },
+        { color: "#CECBF6", label: "Indotto" },
+      ];
+
   return (
     <div className="rounded-xl border border-ink-100 bg-white p-6">
       <div className="mb-5 flex flex-wrap gap-4">
-        {[
-          { color: "#534AB7", label: `${originProvince} (provincia origine)` },
-          { color: "#AFA9EC", label: `Resto ${regionName}` },
-          { color: "#A8A29E", label: "Resto d'Italia" },
-        ].map((item) => (
+        {legendItems.map((item) => (
           <div key={item.label} className="flex items-center gap-1.5 text-[12px] text-ink-500">
             <span className="h-3 w-3 flex-shrink-0 rounded-sm" style={{ background: item.color }} />
             <span>{item.label}</span>
@@ -2599,10 +2640,21 @@ function SectorRankingCard({ sectors, dim, isMoney }) {
           const total = intra + extra;
           const widthPct = (total / maxTotal) * 100;
           const sharePct = Math.round((total / grandTotal) * 100);
-          const originBarPct = total > 0 ? (origin / total) * 100 : 0;
-          const regionBarPct = total > 0 ? (region / total) * 100 : 0;
-          const outBarPct = total > 0 ? (extra / total) * 100 : 0;
           const compact = idx === sectors.length - 1 && sectors.length > 7;
+
+          let seg1Pct, seg2Pct, seg3Pct, seg1Color, seg2Color, seg3Color;
+          if (rankView === "territorio") {
+            seg1Pct = total > 0 ? (origin / total) * 100 : 0;
+            seg2Pct = total > 0 ? (region / total) * 100 : 0;
+            seg3Pct = total > 0 ? (extra / total) * 100 : 0;
+            seg1Color = "#534AB7"; seg2Color = "#AFA9EC"; seg3Color = "#A8A29E";
+          } else {
+            const mix = getSectorComponentMix(cleanText(s.ateco_name), dim);
+            seg1Pct = mix.direct * 100;
+            seg2Pct = mix.indirect * 100;
+            seg3Pct = mix.induced * 100;
+            seg1Color = "#534AB7"; seg2Color = "#AFA9EC"; seg3Color = "#CECBF6";
+          }
 
           return (
             <div
@@ -2615,9 +2667,9 @@ function SectorRankingCard({ sectors, dim, isMoney }) {
               </span>
               <div className="relative overflow-hidden rounded-sm" style={{ height: compact ? 8 : 18, background: "#F5F5F4" }}>
                 <div className="absolute left-0 top-0 flex h-full" style={{ width: `${widthPct}%` }}>
-                  <div style={{ width: `${originBarPct}%`, background: "#534AB7" }} />
-                  <div style={{ width: `${regionBarPct}%`, background: "#AFA9EC" }} />
-                  <div style={{ width: `${outBarPct}%`, background: "#A8A29E" }} />
+                  <div style={{ width: `${seg1Pct}%`, background: seg1Color }} />
+                  <div style={{ width: `${seg2Pct}%`, background: seg2Color }} />
+                  <div style={{ width: `${seg3Pct}%`, background: seg3Color }} />
                 </div>
               </div>
               <div className="text-right text-[13px] font-medium text-ink-900">
@@ -2823,221 +2875,221 @@ function SectorSankeyChart({ dim }) {
 }
 
 
-function TabEsplora({ showToast, project, searchParams, updateSearch, onOpenExplore }) {
-  const initialDim = searchParams.get("dim") ?? "gdp";
-  const initialAxis = searchParams.get("asse") ?? "geografica";
-  const initialLevel = searchParams.get("livello") ?? "regionale";
-  const initialFilter = searchParams.get("filter") ?? "top10";
-  const initialFocus = searchParams.get("focus") ?? "";
-  const initialRegionFilt = searchParams.get("regfilt") ?? "";
-
-  const [dim, setDim] = useState(initialDim);
-  const [axis, setAxis] = useState(initialAxis);
-  const [level, setLevel] = useState(initialLevel);
-  const [filter, setFilter] = useState(initialFilter);
-  const [focus, setFocus] = useState(initialFocus);
-  const [regionFilt, setRegionFilt] = useState(initialRegionFilt);
+function TabEsplora({ showToast, project, searchParams, updateSearch }) {
+  const [metric, setMetric] = useState(searchParams.get("dim") ?? "gdp");
+  const [dimKey, setDimKey] = useState(searchParams.get("asse_key") ?? "regione");
+  const [effect, setEffect] = useState("tutti");
+  const [areaFilter, setAreaFilter] = useState(searchParams.get("filter") ?? "tutti");
+  const [focus, setFocus] = useState(searchParams.get("focus") ?? "");
   const [sortKey, setSortKey] = useState("value");
   const [sortDir, setSortDir] = useState("desc");
+  const [openPill, setOpenPill] = useState(null);
+
+  const axis = { regione: "geografica", provincia: "geografica", settore: "settoriale", componente: "componente", totale: "totale" }[dimKey] ?? "geografica";
+  const level = dimKey === "provincia" ? "provinciale" : "regionale";
+  const regionFilt = dimKey === "provincia" && areaFilter !== "tutti" ? areaFilter : "";
 
   useEffect(() => {
-    updateSearch({ tab: "esplora", dim, asse: axis, livello: level, filter, focus, regfilt: regionFilt });
-  }, [dim, axis, level, filter, focus, regionFilt, updateSearch]);
+    updateSearch({ tab: "esplora", dim: metric, asse_key: dimKey, filter: areaFilter, focus });
+  }, [metric, dimKey, areaFilter, focus, updateSearch]);
 
   useEffect(() => {
-    setDim(searchParams.get("dim") ?? "gdp");
-    setAxis(searchParams.get("asse") ?? "geografica");
-    setLevel(searchParams.get("livello") ?? "regionale");
-    setFilter(searchParams.get("filter") ?? "top10");
+    setMetric(searchParams.get("dim") ?? "gdp");
+    setDimKey(searchParams.get("asse_key") ?? "regione");
+    setAreaFilter(searchParams.get("filter") ?? "tutti");
     setFocus(searchParams.get("focus") ?? "");
-    setRegionFilt(searchParams.get("regfilt") ?? "");
   }, [searchParams]);
 
   useEffect(() => {
-    if (dim === "fiscal" && axis !== "totale") {
-      setAxis("totale");
-      setLevel("totale");
-      setFilter("tutti");
-      setFocus("");
-    }
-    if ((dim === "income" || dim === "fiscal") && axis === "componente") {
-      setAxis("totale");
-      setLevel("totale");
-      setFilter("tutti");
-      setFocus("");
-    }
-  }, [dim, axis]);
+    if (metric === "fiscal") { setDimKey("totale"); setAreaFilter("tutti"); setFocus(""); }
+    if (metric === "income" && dimKey === "componente") { setDimKey("regione"); }
+  }, [metric, dimKey]);
 
-  const rows = useMemo(
-    () => buildExploreRows({ dim, axis, level, filter, focus, regionFilt }),
-    [dim, axis, level, filter, focus, regionFilt]
+  const baseRows = useMemo(
+    () => buildExploreRows({ dim: metric, axis, level, filter: dimKey === "settore" ? areaFilter : "tutti", focus, regionFilt }),
+    [metric, axis, level, areaFilter, focus, regionFilt, dimKey]
   );
+
+  const effectRows = useMemo(() => {
+    if (effect === "tutti" || dimKey !== "settore") return baseRows;
+    return baseRows
+      .map((r) => ({ ...r, value: effect === "diretto" ? (r.directValue ?? 0) : effect === "indiretto" ? (r.indirectValue ?? 0) : (r.inducedValue ?? 0) }))
+      .filter((r) => r.value > 0);
+  }, [baseRows, effect, dimKey]);
+
   const sortedRows = useMemo(() => {
-    const copy = [...rows];
+    const copy = [...effectRows];
     copy.sort((a, b) => {
-      if (sortKey === "label") {
-        return sortDir === "desc"
-          ? String(b.label ?? "").localeCompare(String(a.label ?? ""))
-          : String(a.label ?? "").localeCompare(String(b.label ?? ""));
-      }
-      const av = a[sortKey] ?? 0;
-      const bv = b[sortKey] ?? 0;
-      return sortDir === "desc" ? bv - av : av - bv;
+      if (sortKey === "label") return sortDir === "desc" ? String(b.label ?? "").localeCompare(String(a.label ?? "")) : String(a.label ?? "").localeCompare(String(b.label ?? ""));
+      return sortDir === "desc" ? (b[sortKey] ?? 0) - (a[sortKey] ?? 0) : (a[sortKey] ?? 0) - (b[sortKey] ?? 0);
     });
     return copy;
-  }, [rows, sortKey, sortDir]);
+  }, [effectRows, sortKey, sortDir]);
 
-  const meta = EXPLORE_DIMS.find((d) => d.id === dim) ?? EXPLORE_DIMS[1];
-  const summary = buildExploreSummary(dim, axis, level, sortedRows.length, focus);
+  const metaMeta = EXPLORE_DIMS.find((d) => d.id === metric) ?? EXPLORE_DIMS[1];
+  const total = sortedRows.reduce((s, r) => s + (r.value ?? 0), 0);
+  const maxValue = Math.max(...sortedRows.map((r) => r.value ?? 0), 1);
 
-  function handleExport(kind) {
-    showToast?.(`${kind.toUpperCase()} export disponibile per ${project?.nome ?? "questo progetto"} nella versione completa.`, "info");
-  }
+  useEffect(() => {
+    const handler = () => setOpenPill(null);
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, []);
 
-  function handleHeaderSort(key) {
-    if (sortKey === key) setSortDir((prev) => (prev === "desc" ? "asc" : "desc"));
-    else { setSortKey(key); setSortDir("desc"); }
-  }
+  function togglePill(name, e) { e.stopPropagation(); setOpenPill((p) => (p === name ? null : name)); }
 
-  const canUseGeo = dim !== "fiscal";
-  const canUseSector = dim !== "fiscal";
-  const canUseComponent = dim !== "fiscal" && dim !== "income";
+  const metricOptions = EXPLORE_DIMS.filter((d) => d.id !== "spend").map((d) => ({ id: d.id, label: d.label }));
+  const dimOptions = [
+    { id: "regione", label: "regione" },
+    { id: "provincia", label: "provincia" },
+    { id: "settore", label: "settore" },
+    { id: "componente", label: "componente", disabled: metric === "fiscal" || metric === "income" },
+    { id: "totale", label: "valore complessivo" },
+  ];
+  const effectOptions = [
+    { id: "tutti", label: "diretto, indiretto e indotto" },
+    { id: "diretto", label: "solo diretto" },
+    { id: "indiretto", label: "solo indiretto" },
+    { id: "indotto", label: "solo indotto" },
+  ];
 
-  // Province filtered by region when regionFilt is set
-  const filteredProvinces = regionFilt
-    ? geo.provinces.filter((p) => p.regione === regionFilt || p.region_name === regionFilt || p.region_code === regionFilt)
-    : geo.provinces;
+  const areaFilterOptions = useMemo(() => {
+    if (dimKey === "provincia") return [{ id: "tutti", label: "tutte le regioni" }, ...geo.regions.map((r) => ({ id: r.nome, label: r.nome }))];
+    if (dimKey === "settore") return [{ id: "tutti", label: "tutti i settori" }, { id: "top10", label: "top 10 settori" }];
+    return [];
+  }, [dimKey]);
 
-  // Territory focused for "Esplora il territorio" panel
-  const focusedTerritory = focus
-    ? (level === "provinciale" ? geo.provinces : geo.regions).find((item) => item.code === focus)
-    : null;
+  const focusOptions = useMemo(() => {
+    if (dimKey === "settore") return [
+      { id: "", label: "tutti i territori" },
+      ...geo.regions.map((r) => ({ id: r.code, label: r.nome })),
+      ...geo.provinces.map((p) => ({ id: p.code, label: `${p.nome} (prov.)` })),
+    ];
+    if (dimKey === "regione") return [{ id: "", label: "tutte le regioni" }, ...geo.regions.map((r) => ({ id: r.code, label: r.nome }))];
+    if (dimKey === "provincia") {
+      const filtered = areaFilter && areaFilter !== "tutti"
+        ? geo.provinces.filter((p) => p.regione === areaFilter || p.region_name === areaFilter)
+        : geo.provinces;
+      return [{ id: "", label: "tutte le province" }, ...filtered.map((p) => ({ id: p.code, label: p.nome }))];
+    }
+    return [];
+  }, [dimKey, areaFilter]);
+
+  const metricLabel = metricOptions.find((o) => o.id === metric)?.label ?? metric;
+  const dimLabel2 = dimOptions.find((o) => o.id === dimKey)?.label ?? dimKey;
+  const effectLabel = effectOptions.find((o) => o.id === effect)?.label ?? effect;
+  const areaFilterLabel = areaFilterOptions.find((o) => o.id === areaFilter)?.label ?? areaFilter;
+  const focusLabel = focusOptions.find((o) => o.id === focus)?.label ?? "tutti";
+
+  const summaryText = (() => {
+    const eff = effect === "tutti" ? "scomposto per effetto" : `solo effetto ${effect}`;
+    return `Stai vedendo <strong>${metricLabel}</strong> per <strong>${dimLabel2}</strong>, ${eff}. <strong>${sortedRows.length}</strong> riga${sortedRows.length === 1 ? "" : "he"}.`;
+  })();
+
+  const PRESETS = [
+    { label: "Top 5 regioni per PIL", fn: () => { setMetric("gdp"); setDimKey("regione"); setEffect("tutti"); setAreaFilter("tutti"); setFocus(""); setSortKey("value"); setSortDir("desc"); } },
+    { label: "Settori principali (PIL)", fn: () => { setMetric("gdp"); setDimKey("settore"); setEffect("tutti"); setAreaFilter("top10"); setFocus(""); } },
+    { label: "Occupazione per regione", fn: () => { setMetric("employment"); setDimKey("regione"); setEffect("tutti"); setAreaFilter("tutti"); setFocus(""); } },
+    { label: "PIL diretto — settori", fn: () => { setMetric("gdp"); setDimKey("settore"); setEffect("diretto"); setAreaFilter("tutti"); setFocus(""); } },
+    { label: `Province di ${regionName}`, fn: () => { setMetric("gdp"); setDimKey("provincia"); setEffect("tutti"); setAreaFilter(regionName); setFocus(""); } },
+    { label: "Scomposizione componenti", fn: () => { setMetric("gdp"); setDimKey("componente"); setEffect("tutti"); setAreaFilter("tutti"); setFocus(""); } },
+  ];
+
+  const showAreaFilter = areaFilterOptions.length > 0;
+  const showFocusPill = focusOptions.length > 1 && dimKey !== "componente" && dimKey !== "totale";
+  const showEffectPill = dimKey === "settore";
 
   return (
-    <div className="space-y-6">
-      <div className="border border-ink-100 bg-bg-page p-4">
-        <p className="text-sm leading-relaxed text-ink-700">
-          Seleziona cosa misurare e come visualizzarlo. Il grafico a sinistra mostra sempre
-          le barre con la scomposizione <strong>diretto / indiretto / indotto</strong>.
-          La tabella a destra mostra i valori ordinabili per colonna. Usa i pulsanti in alto per esportare.
-        </p>
+    <div>
+      <p className="mb-7 max-w-[720px] text-[15px] leading-relaxed text-ink-500">
+        Componi la domanda che ti interessa scegliendo cosa misurare, come scomporlo e per quale territorio. Il risultato si aggiorna istantaneamente e può essere esportato.
+      </p>
+
+      {/* Query card */}
+      <div className="mb-5 border border-ink-100 bg-white p-6">
+        <div className="mb-3 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-400">La tua domanda</div>
+        <div className="flex flex-wrap items-center gap-2 leading-relaxed text-ink-900" style={{ fontSize: 18 }}>
+          <span>Mostrami il</span>
+          <ExplorePill label={metricLabel} open={openPill === "metric"} onToggle={(e) => togglePill("metric", e)}>
+            <ExplorePillDropdown options={metricOptions} selected={metric} onSelect={(v) => { setMetric(v); setOpenPill(null); }} />
+          </ExplorePill>
+          <span>per</span>
+          <ExplorePill label={dimLabel2} open={openPill === "dim"} onToggle={(e) => togglePill("dim", e)}>
+            <ExplorePillDropdown options={dimOptions} selected={dimKey} onSelect={(v) => { setDimKey(v); setAreaFilter("tutti"); setFocus(""); setEffect("tutti"); setOpenPill(null); }} />
+          </ExplorePill>
+          {showEffectPill && (
+            <>
+              <span>scomposto in</span>
+              <ExplorePill label={effectLabel} open={openPill === "effect"} onToggle={(e) => togglePill("effect", e)}>
+                <ExplorePillDropdown options={effectOptions} selected={effect} onSelect={(v) => { setEffect(v); setOpenPill(null); }} />
+              </ExplorePill>
+            </>
+          )}
+          {showAreaFilter && (
+            <>
+              <span>, limitato a</span>
+              <ExplorePill label={areaFilterLabel} open={openPill === "area"} onToggle={(e) => togglePill("area", e)}>
+                <ExplorePillDropdown options={areaFilterOptions} selected={areaFilter} onSelect={(v) => { setAreaFilter(v); setFocus(""); setOpenPill(null); }} />
+              </ExplorePill>
+            </>
+          )}
+          {showFocusPill && (
+            <>
+              <span>·</span>
+              <ExplorePill label={focusLabel} open={openPill === "focus"} onToggle={(e) => togglePill("focus", e)}>
+                <ExplorePillDropdown options={focusOptions} selected={focus} onSelect={(v) => { setFocus(v); setOpenPill(null); }} searchable={focusOptions.length > 10} />
+              </ExplorePill>
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Selector cascade */}
-      <div className="grid grid-cols-1 gap-4 bg-bg-page p-4 md:grid-cols-2 xl:grid-cols-4">
-        <ExploreSelect
-          label="1. Cosa misurare"
-          value={dim}
-          onChange={(next) => {
-            setDim(next);
-            if (next === "fiscal") { setAxis("totale"); setLevel("totale"); setFilter("tutti"); setFocus(""); }
-          }}
-          options={EXPLORE_DIMS}
-        />
-        <ExploreSelect
-          label="2. Visualizza per"
-          value={axis}
-          onChange={(next) => {
-            setAxis(next);
-            if (next === "totale" || next === "componente") setLevel("totale");
-            if (next === "settoriale") { setLevel("regionale"); setFilter("top10"); }
-            if (next === "geografica") setLevel("regionale");
-            setFocus(""); setRegionFilt("");
-          }}
-          options={[
-            { id: "geografica", label: "Territorio", disabled: !canUseGeo },
-            { id: "settoriale", label: "Settori", disabled: !canUseSector },
-            { id: "componente", label: "Componente (Dir/Ind/Indot)", disabled: !canUseComponent },
-            { id: "totale", label: "Complessivo", disabled: false },
-          ]}
-        />
-        {axis === "geografica" && (
-          <ExploreSelect
-            label="3. Scala territoriale"
-            value={level}
-            onChange={(next) => { setLevel(next); setFocus(""); setRegionFilt(""); }}
-            options={[
-              { id: "regionale", label: "Regioni" },
-              { id: "provinciale", label: "Province" },
-            ]}
-          />
-        )}
-        {axis === "settoriale" && (
-          <ExploreSelect
-            label="3. Quanti settori"
-            value={filter}
-            onChange={setFilter}
-            options={[
-              { id: "top10", label: "Top 10" },
-              { id: "tutti", label: "Tutti" },
-            ]}
-          />
-        )}
-        {axis === "geografica" && level === "provinciale" && (
-          <ExploreSelect
-            label="4. Filtra per regione"
-            value={regionFilt}
-            onChange={(next) => { setRegionFilt(next); setFocus(""); }}
-            options={[
-              { id: "", label: "Tutte le regioni" },
-              ...geo.regions.map((r) => ({ id: r.nome, label: r.nome })),
-            ]}
-          />
-        )}
-        {axis === "geografica" && (
-          <ExploreSelect
-            label={level === "provinciale" ? "5. Provincia specifica" : "4. Regione specifica"}
-            value={focus}
-            onChange={setFocus}
-            options={[
-              { id: "", label: "Tutti i territori" },
-              ...(level === "provinciale" ? filteredProvinces : geo.regions).map((item) => ({
-                id: item.code,
-                label: item.nome,
-              })),
-            ]}
-          />
-        )}
-        {axis === "settoriale" && (
-          <ExploreSelect
-            label="4. Filtra per territorio"
-            value={focus}
-            onChange={setFocus}
-            options={[
-              { id: "", label: "Tutti i territori" },
-              ...geo.regions.map((r) => ({ id: r.code, label: r.nome })),
-              ...geo.provinces.map((p) => ({ id: p.code, label: `${p.nome} (prov.)` })),
-            ]}
-          />
-        )}
+      {/* Presets */}
+      <div className="mb-6">
+        <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-400">Domande frequenti</div>
+        <div className="flex flex-wrap gap-2">
+          {PRESETS.map((p) => (
+            <button key={p.label} onClick={p.fn} className="flex items-center gap-1.5 border border-ink-200 bg-white px-3.5 py-1.5 text-[13px] text-ink-500 transition-colors hover:border-[#AFA9EC] hover:bg-[#EEEDFE] hover:text-[#3C3489]">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.6"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              {p.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* State + export */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border border-ink-100 bg-white p-4">
+      {/* Result header */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-4 border border-ink-100 bg-white px-5 py-4">
         <div>
-          <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Stato attuale</p>
-          <p className="mt-1 text-sm text-ink-700">{summary}</p>
+          <div className="mb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-400">Risultato</div>
+          <div className="text-[14px] text-ink-500" dangerouslySetInnerHTML={{ __html: summaryText }} />
+        </div>
+        <div className="flex items-baseline gap-2.5">
+          <span className="text-[13px] text-ink-500">Totale:</span>
+          <span className="text-[22px] font-medium" style={{ color: "#534AB7" }}>
+            {metaMeta.isMoney ? fmtM(total) : fmtETP(total)}
+          </span>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => handleExport("csv")} className="border border-ink-300 px-4 py-2 text-sm font-semibold text-ink-900 hover:border-brand-violet hover:text-brand-violet">
-            Esporta CSV
-          </button>
-          <button onClick={() => handleExport("xlsx")} className="border border-ink-300 px-4 py-2 text-sm font-semibold text-ink-900 hover:border-brand-violet hover:text-brand-violet">
-            Esporta Excel
-          </button>
+          {["CSV", "Excel", "Copia"].map((label) => (
+            <button key={label} onClick={() => showToast?.(`${label} export disponibile nella versione completa.`, "info")} className="flex items-center gap-1.5 border border-ink-200 bg-white px-3 py-1.5 text-[13px] text-ink-500 transition-colors hover:border-ink-400 hover:bg-bg-page hover:text-ink-900">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Esplora il territorio */}
-      {focusedTerritory && axis === "geografica" && (
-        <TerritoryExplorePanel territory={focusedTerritory} dim={dim} level={level} />
-      )}
-
-      {/* Chart + table */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.3fr_1fr]">
-        <ExploreChart config={{ dim, axis, level, filter }} rows={sortedRows} meta={meta} onOpenExplore={onOpenExplore} />
-        <ExploreTable axis={axis} rows={sortedRows} meta={meta} sortKey={sortKey} sortDir={sortDir} onSort={handleHeaderSort} />
-      </div>
+      <ExploreResultTable
+        rows={sortedRows}
+        meta={metaMeta}
+        dimKey={dimKey}
+        effect={effect}
+        maxValue={maxValue}
+        total={total}
+        sortKey={sortKey}
+        sortDir={sortDir}
+        onSort={(key) => { if (sortKey === key) setSortDir((d) => (d === "desc" ? "asc" : "desc")); else { setSortKey(key); setSortDir("desc"); } }}
+      />
     </div>
   );
 }
@@ -3206,164 +3258,180 @@ function buildExploreRows({ dim, axis, level, filter, focus, regionFilt }) {
   return rows.sort((a, b) => b.value - a.value);
 }
 
-function exploreLevelOptions(axis) {
-  if (axis === "geografica" || axis === "settoriale") {
-    return [
-      { id: "regionale", label: "Regionale" },
-      { id: "provinciale", label: "Provinciale" },
-    ];
-  }
-  return [{ id: "totale", label: "Totale" }];
-}
-
-function exploreFilterOptions(axis) {
-  if (axis === "settoriale") {
-    return [
-      { id: "top10", label: "Solo top 10" },
-      { id: "tutti", label: "Tutti" },
-    ];
-  }
-  return [{ id: "tutti", label: "Tutti" }];
-}
-
-function ExploreSelect({ label, value, onChange, options, disabled = false }) {
+function ExplorePill({ label, open, onToggle, compact = false, children }) {
   return (
-    <div className="space-y-2">
-      <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-ink-500">{label}</p>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-        className="w-full border border-ink-300 bg-white px-3 py-2 text-sm font-medium text-ink-900 outline-none transition-colors focus:border-brand-violet"
+    <span className="relative" onClick={(e) => e.stopPropagation()}>
+      <button
+        onClick={onToggle}
+        className="inline-flex items-center gap-1.5 border font-medium transition-all"
+        style={{
+          borderRadius: 4,
+          padding: compact ? "4px 10px" : "5px 14px",
+          fontSize: compact ? 13 : 15,
+          background: open ? "#CECBF6" : "#EEEDFE",
+          borderColor: open ? "#7F77DD" : "#AFA9EC",
+          color: "#3C3489",
+        }}
       >
-        {options.map((opt) => (
-          <option key={opt.id} value={opt.id} disabled={opt.disabled}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
+        {label}
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.55"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      {open && children}
+    </span>
+  );
+}
+
+function ExplorePillDropdown({ options, selected, onSelect, searchable = false }) {
+  const [search, setSearch] = useState("");
+  const filtered = searchable && search
+    ? options.filter((o) => o.label.toLowerCase().includes(search.toLowerCase()))
+    : options;
+
+  return (
+    <div
+      className="absolute left-0 z-50 min-w-[220px] border border-ink-100 bg-white shadow-lg"
+      style={{ top: "calc(100% + 6px)", borderRadius: 0, maxHeight: 320, overflowY: "auto" }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {searchable && (
+        <div className="sticky top-0 border-b border-ink-100 bg-white p-2">
+          <input
+            autoFocus
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Cerca..."
+            className="w-full border border-ink-200 px-2.5 py-1.5 text-[13px] outline-none focus:border-[#7F77DD]"
+            style={{ borderRadius: 6 }}
+          />
+        </div>
+      )}
+      {filtered.map((opt) => (
+        <button
+          key={opt.id}
+          onClick={() => !opt.disabled && onSelect(opt.id)}
+          className={`flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left text-[14px] transition-colors ${opt.disabled ? "cursor-not-allowed opacity-40" : "hover:bg-[#EEEDFE]"} ${selected === opt.id ? "font-medium" : "text-ink-900"}`}
+          style={selected === opt.id ? { background: "#EEEDFE", color: "#3C3489" } : {}}
+        >
+          <span>{opt.label}</span>
+          {selected === opt.id && <span style={{ color: "#534AB7", fontWeight: 600, fontSize: 13 }}>✓</span>}
+        </button>
+      ))}
     </div>
   );
 }
 
-function ExploreChart({ config, rows, meta }) {
+function ExploreResultTable({ rows, meta, dimKey, effect, maxValue, total, sortKey, sortDir, onSort }) {
   const fmt = meta.isMoney ? fmtM : fmtETP;
-  const maxValue = Math.max(...rows.map((r) => r.value), 1);
+  const showEffectCols = effect === "tutti" && dimKey === "settore" && rows.length > 0 && rows[0]?.directValue != null;
 
-  function getComponentRatios() {
-    const data = comps[config.dim];
-    if (!data) return { direct: 0.45, indirect: 0.30, induced: 0.25 };
-    const total = (data.direct ?? 0) + (data.indirect ?? 0) + (data.induced ?? 0) || 1;
-    return {
-      direct: (data.direct ?? 0) / total,
-      indirect: (data.indirect ?? 0) / total,
-      induced: (data.induced ?? 0) / total,
-    };
-  }
-
-  if (config.axis === "totale") {
-    const first = rows[0];
+  if (rows.length === 1) {
+    const r = rows[0];
+    const showBreakdown = showEffectCols;
     return (
-      <div className="border border-ink-100 bg-white p-6">
-        <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Totale complessivo</p>
-        <p className="mt-4 text-[38px] font-bold text-ink-900">{fmt(first?.value ?? 0)}</p>
-        <p className="mt-2 text-sm text-ink-700">Valore aggregato per il perimetro regionale.</p>
+      <div className="p-10 text-white" style={{ background: "linear-gradient(135deg, #534AB7, #3C3489)" }}>
+        <div className="mb-3 text-[12px] uppercase tracking-[0.08em] opacity-70">{meta.label} · {effect === "tutti" ? "totale" : `solo ${effect}`}</div>
+        <div className="mb-4 font-medium leading-none" style={{ fontSize: 64, letterSpacing: "-0.02em" }}>{fmt(r.value)}</div>
+        <div className="text-[15px] opacity-90">Valore attivato in <strong>{cleanText(r.label ?? "")}</strong>.</div>
+        {showBreakdown && (r.directValue != null || r.indirectValue != null || r.inducedValue != null) && (
+          <div className="mt-6 flex flex-wrap gap-8 border-t pt-6" style={{ borderColor: "rgba(255,255,255,0.2)" }}>
+            {r.directValue != null && <div><div className="mb-1 text-[11px] uppercase tracking-[0.08em] opacity-60">Diretto</div><div className="text-[18px] font-medium">{fmt(r.directValue)}</div></div>}
+            {r.indirectValue != null && <div><div className="mb-1 text-[11px] uppercase tracking-[0.08em] opacity-60">Indiretto</div><div className="text-[18px] font-medium">{fmt(r.indirectValue)}</div></div>}
+            {r.inducedValue != null && <div><div className="mb-1 text-[11px] uppercase tracking-[0.08em] opacity-60">Indotto</div><div className="text-[18px] font-medium">{fmt(r.inducedValue)}</div></div>}
+          </div>
+        )}
       </div>
     );
   }
 
-  const COMPONENT_COLORS = {
-    direct: "bg-impact-direct",
-    indirect: "bg-impact-indirect",
-    induced: "bg-impact-induced",
-    Diretto: "bg-impact-direct",
-    Indiretto: "bg-impact-indirect",
-    Indotto: "bg-impact-induced",
-  };
-
-  if (config.axis === "componente") {
+  if (rows.length === 0) {
     return (
-      <div className="border border-ink-100 bg-white p-5">
-        <p className="mb-4 text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Scomposizione per componente</p>
-        <div className="space-y-5">
-          {rows.map((row) => (
-            <div key={row.code}>
-              <div className="flex items-center justify-between gap-3 mb-2">
-                <span className="text-sm font-semibold text-ink-900">{cleanText(row.label)}</span>
-                <span className="font-mono text-xs font-semibold text-ink-900">{fmt(row.value)}</span>
-              </div>
-              <div className="h-5 overflow-hidden bg-ink-100">
-                <div
-                  className={`h-full ${COMPONENT_COLORS[row.code] ?? COMPONENT_COLORS[row.label] ?? "bg-brand-violet"}`}
-                  style={{ width: `${Math.max(4, Math.round((row.value / maxValue) * 100))}%` }}
-                />
-              </div>
+      <div className="flex items-center gap-2.5 px-4 py-3 text-[13px]" style={{ background: "#EEEDFE", borderLeft: "3px solid #534AB7", borderRadius: "0 8px 8px 0", color: "#3C3489" }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Nessun dato per questa combinazione. Modifica i filtri per ottenere risultati.
+      </div>
+    );
+  }
+
+  const SortIcon = ({ col }) => (
+    <span className="ml-1 opacity-40 text-[10px]">{sortKey === col ? (sortDir === "asc" ? "↑" : "↓") : "↕"}</span>
+  );
+
+  return (
+    <div className="overflow-hidden border border-ink-100 bg-white">
+      {showEffectCols && (
+        <div className="flex flex-wrap gap-4 border-b border-ink-100 bg-bg-page px-4 py-2.5">
+          {[{ color: "#534AB7", label: "Diretto" }, { color: "#AFA9EC", label: "Indiretto" }, { color: "#CECBF6", label: "Indotto" }].map((item) => (
+            <div key={item.label} className="flex items-center gap-1.5 text-[12px] text-ink-500">
+              <span className="h-2.5 w-2.5 rounded-sm" style={{ background: item.color }} />
+              {item.label}
             </div>
           ))}
         </div>
-      </div>
-    );
-  }
-
-  const ratios = getComponentRatios();
-  const displayRows = rows.slice(0, 15);
-
-  return (
-    <div className="border border-ink-100 bg-white p-5">
-      <div className="mb-4 flex flex-wrap items-center gap-4">
-        <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">
-          {config.axis === "settoriale" ? "Settori" : "Territori"}
-        </p>
-        <div className="flex items-center gap-3 text-[11px] text-ink-500">
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block h-2.5 w-4 bg-impact-direct" />
-            Diretto
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block h-2.5 w-4 bg-impact-indirect" />
-            Indiretto
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block h-2.5 w-4 bg-impact-induced" />
-            Indotto
-          </span>
-        </div>
-      </div>
-      <div className="space-y-3">
-        {displayRows.map((row) => {
-          const sectorRatios = config.axis === "settoriale"
-            ? getSectorComponentMix(row.label, config.dim)
-            : ratios;
-          return (
-            <div key={row.code}>
-              <div className="flex items-center justify-between gap-2 mb-1">
-                <span
-                  className="truncate text-xs font-medium text-ink-900"
-                  style={{ maxWidth: "60%" }}
-                  title={cleanText(row.label)}
-                >
-                  {cleanText(row.label)}
-                </span>
-                <span className="shrink-0 font-mono text-xs font-semibold text-ink-900">{fmt(row.value)}</span>
-              </div>
-              <div className="h-5 overflow-hidden bg-ink-100">
-                <div
-                  className="flex h-full"
-                  style={{ width: `${Math.max(4, Math.round((row.value / maxValue) * 100))}%` }}
-                >
-                  <div className="bg-impact-direct" style={{ width: `${sectorRatios.direct * 100}%` }} />
-                  <div className="bg-impact-indirect" style={{ width: `${sectorRatios.indirect * 100}%` }} />
-                  <div className="bg-impact-induced" style={{ width: `${sectorRatios.induced * 100}%` }} />
-                </div>
-              </div>
-            </div>
-          );
-        })}
-        {rows.length > 15 && (
-          <p className="pt-2 text-xs italic text-ink-500">
-            ...e altri {rows.length - 15} elementi. Esporta CSV/Excel per vedere tutti.
-          </p>
-        )}
+      )}
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr>
+              <th className="cursor-pointer border-b border-ink-100 bg-bg-page px-4 py-3 text-left text-[11px] font-medium uppercase tracking-[0.05em] text-ink-400 hover:text-ink-900" onClick={() => onSort("label")}>
+                Voce <SortIcon col="label" />
+              </th>
+              <th className="border-b border-ink-100 bg-bg-page px-4 py-3 text-left text-[11px] font-medium uppercase tracking-[0.05em] text-ink-400" style={{ minWidth: 160 }}>Composizione</th>
+              {showEffectCols && (
+                <>
+                  <th className="cursor-pointer border-b border-ink-100 bg-bg-page px-4 py-3 text-right text-[11px] font-medium uppercase tracking-[0.05em] text-ink-400 hover:text-ink-900 whitespace-nowrap" onClick={() => onSort("directValue")}>Diretto <SortIcon col="directValue" /></th>
+                  <th className="cursor-pointer border-b border-ink-100 bg-bg-page px-4 py-3 text-right text-[11px] font-medium uppercase tracking-[0.05em] text-ink-400 hover:text-ink-900 whitespace-nowrap" onClick={() => onSort("indirectValue")}>Indiretto <SortIcon col="indirectValue" /></th>
+                  <th className="cursor-pointer border-b border-ink-100 bg-bg-page px-4 py-3 text-right text-[11px] font-medium uppercase tracking-[0.05em] text-ink-400 hover:text-ink-900 whitespace-nowrap" onClick={() => onSort("inducedValue")}>Indotto <SortIcon col="inducedValue" /></th>
+                </>
+              )}
+              <th className="cursor-pointer border-b border-ink-100 bg-bg-page px-4 py-3 text-right text-[11px] font-medium uppercase tracking-[0.05em] text-ink-400 hover:text-ink-900 whitespace-nowrap" onClick={() => onSort("value")}>Totale <SortIcon col="value" /></th>
+              <th className="border-b border-ink-100 bg-bg-page px-4 py-3 text-right text-[11px] font-medium uppercase tracking-[0.05em] text-ink-400">% su totale</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, idx) => {
+              const sharePct = total > 0 ? (row.value / total) * 100 : 0;
+              const barWidth = maxValue > 0 ? (row.value / maxValue) * 100 : 0;
+              return (
+                <tr key={row.code ?? idx} className="border-b border-ink-100 last:border-b-0 hover:bg-bg-page">
+                  <td className="px-4 py-3 text-[13px] font-medium text-ink-900">{cleanText(row.label ?? "")}</td>
+                  <td className="px-4 py-3" style={{ minWidth: 160 }}>
+                    <div className="overflow-hidden rounded-sm" style={{ height: 14, background: "#F5F5F4" }}>
+                      <div className="flex h-full" style={{ width: `${barWidth}%` }}>
+                        {showEffectCols && row.value > 0 ? (
+                          <>
+                            <div style={{ width: `${(row.directValue ?? 0) / row.value * 100}%`, background: "#534AB7" }} />
+                            <div style={{ width: `${(row.indirectValue ?? 0) / row.value * 100}%`, background: "#AFA9EC" }} />
+                            <div style={{ width: `${(row.inducedValue ?? 0) / row.value * 100}%`, background: "#CECBF6" }} />
+                          </>
+                        ) : (
+                          <div className="h-full w-full" style={{ background: "#534AB7" }} />
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  {showEffectCols && (
+                    <>
+                      <td className="px-4 py-3 text-right font-mono text-[13px] text-ink-700">{row.directValue != null ? fmt(row.directValue) : "—"}</td>
+                      <td className="px-4 py-3 text-right font-mono text-[13px] text-ink-500">{row.indirectValue != null ? fmt(row.indirectValue) : "—"}</td>
+                      <td className="px-4 py-3 text-right font-mono text-[13px] text-ink-400">{row.inducedValue != null ? fmt(row.inducedValue) : "—"}</td>
+                    </>
+                  )}
+                  <td className="px-4 py-3 text-right font-mono text-[13px] font-semibold text-ink-900">{fmt(row.value)}</td>
+                  <td className="px-4 py-3 text-right text-[13px] text-ink-400">{sharePct.toFixed(1)}%</td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td className="border-t-2 border-ink-200 bg-bg-page px-4 py-3.5 text-[13px] font-semibold text-ink-900">Totale</td>
+              <td className="border-t-2 border-ink-200 bg-bg-page" />
+              {showEffectCols && <><td className="border-t-2 border-ink-200 bg-bg-page" /><td className="border-t-2 border-ink-200 bg-bg-page" /><td className="border-t-2 border-ink-200 bg-bg-page" /></>}
+              <td className="border-t-2 border-ink-200 bg-bg-page px-4 py-3.5 text-right font-mono text-[14px] font-semibold text-ink-900">{fmt(total)}</td>
+              <td className="border-t-2 border-ink-200 bg-bg-page px-4 py-3.5 text-right text-[13px] text-ink-700">100%</td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
     </div>
   );
@@ -3392,77 +3460,6 @@ function buildExploreSummary(dim, axis, level, rowsCount, focus = "") {
   return `${dimLabel} · ${level} · ${rowsCount} righe`;
 }
 
-function ExploreTable({ axis, rows, meta, sortKey, sortDir, onSort }) {
-  if (!rows.length) {
-    return <div className="border border-ink-100 bg-white p-6 text-sm text-ink-700">Nessun risultato per questa combinazione.</div>;
-  }
-
-  const fmt = meta.isMoney ? fmtM : fmtETP;
-  const spendMode = axis === "settoriale" && meta.id === "spend";
-  const headers = spendMode
-    ? [
-        { key: "label", label: "Voce" },
-        { key: "share", label: "Quota" },
-        { key: "value", label: "Valore" },
-      ]
-    : axis === "settoriale"
-      ? [
-          { key: "label", label: "Voce" },
-          { key: "directValue", label: "Diretto" },
-          { key: "indirectValue", label: "Indiretto" },
-          { key: "inducedValue", label: "Indotto" },
-          { key: "value", label: "Totale" },
-        ]
-      : [
-          { key: "label", label: "Voce" },
-          { key: "value", label: "Valore" },
-          { key: "pct", label: "%" },
-        ];
-
-  const gridClass = spendMode
-    ? "grid-cols-[1fr_80px_120px]"
-    : axis === "settoriale"
-      ? "grid-cols-[1fr_100px_100px_100px_100px]"
-      : "grid-cols-[1fr_120px_80px]";
-
-  return (
-    <div className="overflow-hidden border border-ink-100 bg-white">
-      <div className={`sticky top-0 grid ${gridClass} gap-3 bg-bg-page px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-700`}>
-        {headers.map((h) => (
-          <button key={h.key} onClick={() => onSort(h.key)} className="text-left">
-            {h.label} {sortKey === h.key ? (sortDir === "desc" ? "↓" : "↑") : ""}
-          </button>
-        ))}
-      </div>
-      <div className="max-h-[520px] divide-y divide-ink-100 overflow-y-auto">
-        {rows.map((row) => (
-          <div key={row.code} className={`grid ${gridClass} gap-3 px-4 py-3 text-sm`}>
-            <span className="truncate font-medium text-ink-900">{row.label}</span>
-            {spendMode ? (
-              <span className="text-right font-mono text-xs font-semibold text-ink-900">{Math.round((row.share ?? 0) * 100)}%</span>
-            ) : axis === "settoriale" ? (
-              <>
-                <span className="text-right font-mono text-xs text-brand-violet">
-                  {row.directValue != null ? fmt(row.directValue) : <span className="text-ink-400">—</span>}
-                </span>
-                <span className="text-right font-mono text-xs" style={{ color: "#9E7BFA" }}>
-                  {row.indirectValue != null ? fmt(row.indirectValue) : <span className="text-ink-400">—</span>}
-                </span>
-                <span className="text-right font-mono text-xs" style={{ color: "#C4B5FD" }}>
-                  {row.inducedValue != null ? fmt(row.inducedValue) : <span className="text-ink-400">—</span>}
-                </span>
-              </>
-            ) : null}
-            <span className="text-right font-mono text-xs font-semibold text-ink-900">{fmt(row.value)}</span>
-            {axis !== "settoriale" && !spendMode && (
-              <span className="text-right text-xs text-ink-500">{row.pct != null ? `${Math.round(row.pct)}%` : "—"}</span>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 const GLOSSARY = {
   sintesi: [
