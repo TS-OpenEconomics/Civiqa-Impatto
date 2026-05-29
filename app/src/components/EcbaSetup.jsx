@@ -195,9 +195,9 @@ export function EcbaSetup({ project, eiaResults, initialValues, onClose, onRun }
 
           {/* Right panel */}
           <div className="space-y-3">
-            <div className="bg-ink-900 text-white p-6">
-              <p className="text-xs font-mono uppercase tracking-[0.16em] text-ink-300 mb-5">Base dati progetto</p>
-              <div className="space-y-4 text-sm">
+            <div className="border border-ink-100 bg-white">
+              <p className="text-xs font-mono uppercase tracking-[0.16em] text-ink-500 px-6 pt-5">Base dati progetto</p>
+              <div className="space-y-4 text-sm px-6 pb-6 pt-3">
                 <SummaryRow label="CAPEX totale" value={`${fmt(capex)} €`} />
                 <SummaryRow label="OPEX annuo" value={`${fmt(opex)} €`} />
                 <SummaryRow label="Vita utile" value={`${vitaUtile} anni`} />
@@ -248,7 +248,7 @@ export function EcbaSetup({ project, eiaResults, initialValues, onClose, onRun }
             : "bg-ink-100 text-ink-300 cursor-not-allowed"
         }`}
       >
-        Esegui l'analisi costi-benefici
+        Esegui l'Analisi Costi-Benefici
         <IconArrowRight className="w-5 h-5" />
       </button>
     </div>
@@ -267,9 +267,9 @@ function Field({ label, hint, children }) {
 
 function SummaryRow({ label, value }) {
   return (
-    <div className="border-b border-white/10 pb-3 last:border-0 last:pb-0">
-      <p className="text-ink-300 text-xs">{label}</p>
-      <p className="mt-1 font-mono font-semibold">{value}</p>
+    <div className="border-b border-ink-100 pb-3 last:border-0 last:pb-0">
+      <p className="text-ink-500 text-xs">{label}</p>
+      <p className="mt-1 font-mono font-semibold text-ink-900">{value}</p>
     </div>
   );
 }

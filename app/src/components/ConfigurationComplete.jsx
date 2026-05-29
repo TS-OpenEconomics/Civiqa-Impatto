@@ -125,22 +125,22 @@ export function ConfigurationComplete({ onOpenProject, onOpenEia, onOpenEcba, on
             <AnalysisCard
               accent="bg-[#f472b6]"
               icon={<IconTargetLarge className="h-10 w-10 text-brand-violet" />}
-              title="Analisi di impatto"
-              description="per stimare gli effetti del progetto su economia locale, occupazione e sviluppo del territorio."
+              title="Analisi di Impatto"
+              description="Per stimare gli effetti del progetto su economia locale, occupazione e sviluppo del territorio."
               onRun={onOpenEia}
             />
             <AnalysisCard
               accent="bg-brand-violet"
               icon={<IconScales className="h-10 w-10 text-brand-violet" />}
               title="Analisi Costi-Benefici"
-              description="per valutare il rapporto tra costi e benefici del progetto, misurandone la convenienza complessiva per la collettività."
+              description="Per valutare il rapporto tra costi e benefici del progetto, misurandone la convenienza complessiva per la collettività."
               onRun={onOpenEcba}
             />
             <AnalysisCard
               accent="bg-[#22d3ee]"
               icon={<IconNetwork className="h-10 w-10 text-brand-violet" />}
               title="Analisi ESG"
-              description="per valutare la sostenibilità del progetto secondo i criteri ambientali, sociali e di governance."
+              description="Per valutare la sostenibilità del progetto secondo i criteri ambientali, sociali e di governance."
               onRun={onOpenEsg}
             />
           </div>

@@ -3,7 +3,7 @@ import { IconArrowRight } from "./ui/Icons";
 
 function RunningIcon({ done }) {
   return (
-    <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-[#2f2f2f] text-white">
+    <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-brand-violet text-white">
       {done ? (
         <svg className="h-9 w-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="20 6 9 17 4 12" />
@@ -63,7 +63,7 @@ export function AnalysisRunningBoth({ onBackToProject, onOpenEsg, onComplete }) 
         <h1 className="mt-8 max-w-lg text-[20px] font-bold leading-tight text-ink-900">
           {done
             ? "Analisi completate con successo"
-            : "Analisi di Impatto e Costi-Benefici in corso..."}
+            : "Analisi di Impatto e Costi-Benefici in corso…"}
         </h1>
 
         <p className="mx-auto mt-4 max-w-[480px] text-[13px] leading-[1.55] text-ink-600">

@@ -74,7 +74,7 @@ export function EsgRunning({ onBackToProject, onComplete }) {
       <div className="dots-grey-bg flex-1 px-6 py-14">
         <div className="flex flex-col items-center text-center">
           {/* Icon: dark circle with lime square */}
-          <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-[#2f2f2f]">
+          <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-brand-violet">
             {done ? (
               <svg className="h-9 w-9 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12" />
@@ -85,7 +85,7 @@ export function EsgRunning({ onBackToProject, onComplete }) {
           </div>
 
           <h2 className="mt-6 text-[18px] font-bold text-ink-900">
-            {done ? "Analisi ESG completata." : "L'esecuzione dell'Analisi ESG è in corso..."}
+            {done ? "Analisi ESG completata." : "L'esecuzione dell'Analisi ESG è in corso…"}
           </h2>
 
           <p className="mx-auto mt-3 max-w-md text-[13px] leading-[1.55] text-ink-700">

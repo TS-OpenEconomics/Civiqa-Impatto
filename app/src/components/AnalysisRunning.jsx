@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 function RunningIcon({ done }) {
   return (
-    <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-[#2f2f2f] text-white">
+    <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-brand-violet text-white">
       {done ? <span className="text-[22px] font-semibold">OK</span> : <div className="h-9 w-9 animate-pulse bg-white" />}
     </div>
   );
@@ -27,7 +27,7 @@ export function AnalysisRunning({ title, onComplete, onBack }) {
 
   const done = progress >= 100;
   const runningLabel =
-    title === "Analisi ESG" ? "L'esecuzione dell'Analisi ESG e in corso..." : "L'esecuzione delle Analisi di Impatto e Costi-Benefici e in corso...";
+    title === "Analisi ESG" ? "L'esecuzione dell'Analisi ESG è in corso…" : "L'esecuzione delle Analisi di Impatto e Costi-Benefici è in corso…";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-white px-4">
@@ -41,7 +41,7 @@ export function AnalysisRunning({ title, onComplete, onBack }) {
         <p className="mx-auto mt-6 max-w-[500px] text-[12px] leading-[1.45] text-ink-700">
           Puoi andare al dettaglio del progetto o eseguire un'altra analisi.
           <br />
-          Ti arrivera una comunicazione via mail quando l'analisi sara stata eseguita.
+          Ti arriverà una comunicazione via mail quando l'analisi sarà stata eseguita.
         </p>
 
         <div className="mx-auto mt-8 h-[4px] w-full max-w-[240px] overflow-hidden bg-[#ececec]">

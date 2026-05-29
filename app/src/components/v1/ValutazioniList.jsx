@@ -24,34 +24,34 @@ const FEATURED = [
     analisi: ["EIA", "ECBA", "ESG"],
     body: (
       <>
-        L&apos;intervento iniziera il <strong>15/09/2025</strong>. Assicurati che le attivita siano completate. Puoi
+        L&apos;intervento inizierà il <strong>15/09/2025</strong>. Assicurati che le attività siano completate. Puoi
         monitorarne l&apos;andamento dal modulo PMO.
       </>
     ),
-    settore: "Attivita di raccolta, recupero e smaltimento rifiuti",
+    settore: "Attività di raccolta, recupero e smaltimento rifiuti",
     durata: "4 anni, 3 mesi",
   },
   {
     tag: "PROGETTI DA COMPLETARE",
-    nome: "Progetti per la sostenibilita ambientale",
+    nome: "Progetti per la sostenibilità ambientale",
     cup: "I63C22000050127",
     analisi: ["EIA", "ECBA"],
     analisiDisabled: ["ESG"],
     body: <>Hai avviato solo alcune delle analisi disponibili. Completa le restanti per ottenere una valutazione completa del progetto.</>,
-    settore: "Attivita di raccolta, recupero e smaltimento rifiuti",
+    settore: "Attività di raccolta, recupero e smaltimento rifiuti",
     durata: "4 anni, 3 mesi",
   },
   {
     tag: "ULTIMI AGGIORNAMENTI",
-    nome: "Progetti per la sostenibilita ambientale",
+    nome: "Progetti per la sostenibilità ambientale",
     cup: "I63C22000050127",
     analisi: ["EIA", "ECBA", "ESG"],
     body: (
       <>
-        Il progetto e stato aggiornato da <strong>Maria Concetta Rossi</strong> in data <strong>23/07/2025</strong>.
+        Il progetto è stato aggiornato da <strong>Maria Concetta Rossi</strong> in data <strong>23/07/2025</strong>.
       </>
     ),
-    settore: "Attivita di raccolta, recupero e smaltimento rifiuti",
+    settore: "Attività di raccolta, recupero e smaltimento rifiuti",
     durata: "4 anni, 3 mesi",
   },
 ];
@@ -72,7 +72,7 @@ const LIST_PRESETS = [
     action: "trash",
   },
   {
-    nome: "Progetti per la sostenibilita ambientale",
+    nome: "Progetti per la sostenibilità ambientale",
     cup: "I63C22000050127",
     creato_il: "12/05/2025",
     proprietario: "Francesca Mori",
@@ -115,22 +115,20 @@ function AnalysisBadges({ active = [], className = "", sizeClass = "px-3 py-1 te
 
 function FeaturedCard({ item, onOpen }) {
   return (
-    <article data-featured-card="true" className="w-[470px] shrink-0 overflow-hidden bg-white shadow-[0_0_0_1px_rgba(14,14,16,0.08)]">
-      <div className="flex h-10 items-end bg-[#2f2f2f]">
-        <div className="bg-accent-lime px-4 py-2 text-[11px] font-bold uppercase leading-none text-ink-900">{item.tag}</div>
-      </div>
+    <article data-featured-card="true" className="w-[470px] shrink-0 overflow-hidden border border-ink-100 bg-white">
+      <div className="bg-accent-lime w-fit px-4 py-1.5 text-[11px] font-bold uppercase leading-none text-ink-900">{item.tag}</div>
 
-      <div className="bg-[#2f2f2f] px-4 pb-4 pt-3">
+      <div className="border-b border-ink-100 bg-white px-4 pb-4 pt-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="truncate text-[15px] font-bold text-white">{item.nome}</h3>
-            <p className="mt-1 text-[11px] text-white/85">CUP {item.cup}</p>
+            <h3 className="truncate text-[15px] font-bold text-ink-900">{item.nome}</h3>
+            <p className="mt-1 text-[11px] text-ink-500">CUP {item.cup}</p>
           </div>
           <AnalysisBadges active={item.analisi || []} className="shrink-0 justify-end" sizeClass="px-2 py-0.5 text-[10px] font-bold" />
         </div>
       </div>
 
-      <div className="grid min-h-[176px] grid-cols-[1.2fr_0.8fr] border-x border-ink-100 bg-white">
+      <div className="grid min-h-[176px] grid-cols-[1.2fr_0.8fr] bg-white">
         <div className="px-4 py-4 text-[13px] leading-[1.45] text-ink-700">{item.body}</div>
         <div className="border-l border-ink-100 px-4 py-4 text-[12px] text-ink-700">
           <p className="mb-1 font-bold text-ink-900">Settore</p>
@@ -442,7 +440,7 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
               <h1 className="text-[22px] font-bold leading-none text-ink-900">Valutazione</h1>
             </div>
             <p className="mt-4 max-w-[900px] text-[14px] leading-[1.5] text-ink-900">
-              All&apos;interno di questa sezione potrai configurare i tuoi progetti e consultare le valutazioni gia elaborate. Creando una nuova valutazione ti verra chiesto di definire un progetto, sul quale potrai eseguire analisi di impatto, analisi costi-benefici e analisi ESG.{" "}
+              All&apos;interno di questa sezione puoi configurare i tuoi progetti e consultare le valutazioni già elaborate. Creando una nuova valutazione ti verrà chiesto di definire un progetto, sul quale potrai eseguire analisi di impatto, analisi costi-benefici e analisi ESG.{" "}
               <button
                 type="button"
                 onClick={() => setShowInfo(true)}
@@ -618,7 +616,7 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
                 onClick={() => setSortMode(uiState.sortMode === "az" ? "recent" : "az")}
                 className="min-w-[154px] justify-between bg-[#f6f6f6] px-3"
               >
-                <span>{uiState.sortMode === "az" ? "A-Z" : "piu recenti"}</span>
+                <span>{uiState.sortMode === "az" ? "A-Z" : "Più recenti"}</span>
                 <IconChevronDown className="h-4 w-4 text-brand-violet" />
               </ToolButton>
             </div>

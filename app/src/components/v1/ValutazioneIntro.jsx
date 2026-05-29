@@ -3,7 +3,7 @@ const COLUMNS = [
     title: "In cosa consiste?",
     items: [
       "Identificare il progetto",
-      "Scegliere settore tipo di intervento",
+      "Scegliere settore e tipo di intervento",
       "Inserire la localizzazione",
       "Inserire i parametri economici",
       "Avviare una valutazione*",
@@ -24,7 +24,7 @@ const COLUMNS = [
     items: [
       "Più dettagli riuscirai a inserire e più saranno aderenti alla realtà, più la valutazione sarà affidabile",
       "Potrai tornare indietro, modificare e completare i dati in qualsiasi momento. Il salvataggio è automatico",
-      "Per l'analisi di impatto la configurazione sarà sufficiente: per eseguirle non sarà necessario integrare altre informazioni",
+      "Per l'analisi di impatto la configurazione è sufficiente: non servirà integrare altre informazioni per eseguirla",
     ],
   },
 ];
@@ -61,7 +61,7 @@ export function ValutazioneIntro({ onContinua, onClose }) {
         <div className="w-full max-w-5xl">
           <h1 className="text-3xl font-bold text-center text-ink-900 mb-4">Valutazione</h1>
           <p className="text-center text-sm text-ink-700 max-w-3xl mx-auto leading-relaxed">
-            La valutazione rappresenta il punto di partenza di un intervento, e funge da contenitore dinamico delle analisi che sceglierai di eseguire tra Analisi di Impatto, Analisi Costi-Benefici e Analisi ESG
+            La valutazione rappresenta il punto di partenza di un intervento e funge da contenitore dinamico delle analisi che sceglierai di eseguire tra Analisi di Impatto, Analisi Costi-Benefici e Analisi ESG.
           </p>
 
           <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-0 border border-ink-200">

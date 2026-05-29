@@ -99,7 +99,7 @@ export function buildSeedProjects() {
           nome: "Restauro Palazzo Reale",
           descrizione:
             "Intervento di recupero del complesso monumentale con rifunzionalizzazione degli spazi e piano di valorizzazione culturale.",
-          stato: "In valutazione",
+          stato: "In approvazione",
           creato_il: "10/05/2025",
           ultima_modifica: "18/05/2025",
           configurazione: {
@@ -135,7 +135,7 @@ export function buildSeedProjects() {
           configurazione: {
             settore: "Infrastrutture ambientali e risorse idriche",
             sotto_settore: "Difesa del suolo e prevenzione",
-            categoria_intervento: "Corpi idrici: Miglioramento della qualita",
+            categoria_intervento: "Corpi idrici: Miglioramento della qualità",
             tipo_intervento: "Efficientamento",
             durata_progetto: "3 anni",
             localizzazione: "Via Roma 42 - Bari BA",

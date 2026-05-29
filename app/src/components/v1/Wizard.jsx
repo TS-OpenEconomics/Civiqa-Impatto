@@ -6,8 +6,8 @@ const SETTORI_DATA = {
   "Infrastrutture sociali": {
     nace: "F41.20",
     sottosettori: {
-      "Istruzione e formazione": ["Scuole e asili", "Universita e ricerca", "Formazione professionale", "Servizi integrativi"],
-      "Sanita e assistenza": ["Ospedali e cliniche", "Strutture per anziani", "Centri di salute", "Assistenza domiciliare"],
+      "Istruzione e formazione": ["Scuole e asili", "Università e ricerca", "Formazione professionale", "Servizi integrativi"],
+      "Sanità e assistenza": ["Ospedali e cliniche", "Strutture per anziani", "Centri di salute", "Assistenza domiciliare"],
       "Cultura e sport": ["Biblioteche e musei", "Impianti sportivi", "Spazi culturali", "Teatri e auditorium"],
       "Edilizia residenziale pubblica": ["Riqualificazione alloggi", "Nuova costruzione ERP", "Manutenzione straordinaria"],
     },
@@ -15,22 +15,22 @@ const SETTORI_DATA = {
   "Infrastrutture di trasporto": {
     nace: "F42.11",
     sottosettori: {
-      "Strade e autostrade": ["Nuova viabilita", "Adeguamento e manutenzione", "Sicurezza stradale", "Gallerie e ponti"],
-      "Ferrovie e metropolitane": ["Linee ferroviarie", "Metropolitane e tram", "Stazioni e interscambi", "Alta velocita"],
+      "Strade e autostrade": ["Nuova viabilità", "Adeguamento e manutenzione", "Sicurezza stradale", "Gallerie e ponti"],
+      "Ferrovie e metropolitane": ["Linee ferroviarie", "Metropolitane e tram", "Stazioni e interscambi", "Alta velocità"],
       "Porti e aeroporti": ["Infrastrutture portuali", "Piste e terminal aeroportuali", "Logistica e magazzini"],
-      "Mobilita urbana": ["Piste ciclabili", "ZTL e aree pedonali", "Parcheggi e nodi di scambio", "Bus rapid transit"],
+      "Mobilità urbana": ["Piste ciclabili", "ZTL e aree pedonali", "Parcheggi e nodi di scambio", "Bus rapid transit"],
     },
   },
   "Infrastrutture ambientali e risorse idriche": {
     nace: "E36.00",
     sottosettori: {
-      "Risorse idriche e acque reflue": ["Reti fognarie", "Reti idriche urbane", "Corpi idrici: Miglioramento della qualita", "Impianti depurazione acque", "Reti idriche rurali"],
+      "Risorse idriche e acque reflue": ["Reti fognarie", "Reti idriche urbane", "Corpi idrici: Miglioramento della qualità", "Impianti depurazione acque", "Reti idriche rurali"],
       "Difesa del suolo e prevenzione": ["Protezione idrogeologica", "Bonifica siti inquinati", "Gestione alluvioni", "Stabilizzazione versanti"],
-      "Valorizzazione dell'ambiente": ["Parchi e aree naturali", "Biodiversita e ecosistemi", "Paesaggio rurale"],
+      "Valorizzazione dell'ambiente": ["Parchi e aree naturali", "Biodiversità ed ecosistemi", "Paesaggio rurale"],
       "Smaltimento rifiuti": ["Raccolta differenziata", "Compostaggio e digestione anaerobica", "Termovalorizzatori"],
     },
   },
-  "Attivita produttive, ricerca e impresa sociale": {
+  "Attività produttive, ricerca e impresa sociale": {
     nace: "M72.19",
     sottosettori: {
       "Ricerca e sviluppo": ["Laboratori e centri di ricerca", "Incubatori di imprese", "Trasferimento tecnologico"],
@@ -41,9 +41,9 @@ const SETTORI_DATA = {
   "Telecomunicazioni e tecnologie informatiche": {
     nace: "J61.10",
     sottosettori: {
-      "Reti a banda larga": ["Fibra ottica FTTH", "Fibra ottica FTTC", "Connettivita rurale e montana"],
+      "Reti a banda larga": ["Fibra ottica FTTH", "Fibra ottica FTTC", "Connettività rurale e montana"],
       "Infrastrutture digitali pubbliche": ["Cloud PA", "Cybersecurity pubblica", "Servizi digitali ai cittadini"],
-      "Smart city": ["Sensori e IoT urbano", "Mobilita connessa", "Illuminazione intelligente"],
+      "Smart city": ["Sensori e IoT urbano", "Mobilità connessa", "Illuminazione intelligente"],
     },
   },
 };
@@ -66,7 +66,7 @@ const DEMO_AUTOFILL = {
   cup: "I17C24000120005",
   descrizione:
     "Realizzazione di un nuovo asilo nido comunale per 100 bambini, con l'obiettivo di aumentare l'offerta di servizi educativi per la prima infanzia, ridurre il divario territoriale nell'accesso ai servizi e favorire la conciliazione lavoro-famiglia.",
-  stato: "In progettazione",
+  stato: "In preparazione",
   settore: "Infrastrutture sociali",
   sotto_settore: "Istruzione e formazione",
   categoria_intervento: "Scuole e asili",
@@ -90,7 +90,7 @@ const OPEX_BENCHMARKS = {
   "Infrastrutture sociali":                         { min: 1.5, avg: 2.5, max: 3.5 },
   "Infrastrutture di trasporto":                    { min: 0.5, avg: 1.2, max: 2.0 },
   "Infrastrutture ambientali e risorse idriche":    { min: 1.5, avg: 2.8, max: 4.0 },
-  "Attivita produttive, ricerca e impresa sociale": { min: 1.0, avg: 2.0, max: 3.0 },
+  "Attività produttive, ricerca e impresa sociale": { min: 1.0, avg: 2.0, max: 3.0 },
   "Telecomunicazioni e tecnologie informatiche":    { min: 2.0, avg: 3.5, max: 5.0 },
 };
 const OPEX_BENCHMARK_DEFAULT = { min: 1.0, avg: 2.0, max: 4.0 };
@@ -99,7 +99,7 @@ const VITA_UTILE_BENCHMARKS = {
   "Infrastrutture sociali":                         { min: 20, avg: 35, max: 50 },
   "Infrastrutture di trasporto":                    { min: 30, avg: 50, max: 80 },
   "Infrastrutture ambientali e risorse idriche":    { min: 25, avg: 40, max: 60 },
-  "Attivita produttive, ricerca e impresa sociale": { min: 10, avg: 20, max: 30 },
+  "Attività produttive, ricerca e impresa sociale": { min: 10, avg: 20, max: 30 },
   "Telecomunicazioni e tecnologie informatiche":    { min:  5, avg: 10, max: 20 },
 };
 const VITA_UTILE_DEFAULT = { min: 15, avg: 25, max: 40 };
@@ -108,7 +108,7 @@ const CAPEX_DEFAULTS = {
   "Infrastrutture sociali":                         5_000_000,
   "Infrastrutture di trasporto":                   20_000_000,
   "Infrastrutture ambientali e risorse idriche":   15_000_000,
-  "Attivita produttive, ricerca e impresa sociale": 3_000_000,
+  "Attività produttive, ricerca e impresa sociale": 3_000_000,
   "Telecomunicazioni e tecnologie informatiche":    8_000_000,
 };
 const CAPEX_DEFAULT_FALLBACK = 10_000_000;
@@ -147,7 +147,7 @@ const PROFILO_TEMPLATES = {
     ],
     stimaCapex: (p) => profiloNum(p.num_alunni) * profiloNum(p.mq_alunno, 20) * profiloNum(p.costo_mq, 1600),
   },
-  "Universita e ricerca": {
+  "Università e ricerca": {
     titolo: "Università e ricerca",
     campi: [
       { id: "num_studenti", label: "Numero di studenti",      unit: "studenti",  placeholder: "es. 2.000" },
@@ -246,7 +246,7 @@ const PROFILO_TEMPLATES = {
     stimaCapex: (p) => profiloNum(p.num_alloggi) * profiloNum(p.mq_alloggio, 80) * profiloNum(p.costo_mq, 1400),
   },
   // ── Strade e trasporto ───────────────────────────────────────────────────────
-  "Nuova viabilita": {
+  "Nuova viabilità": {
     titolo: "Nuova viabilità stradale",
     campi: [
       { id: "km",            label: "Lunghezza strada",       unit: "km",        placeholder: "es. 10" },
@@ -321,7 +321,7 @@ const PROFILO_TEMPLATES = {
     ],
     stimaCapex: (p) => profiloNum(p.ae) * profiloNum(p.costo_ae, 350),
   },
-  "Corpi idrici: Miglioramento della qualita": {
+  "Corpi idrici: Miglioramento della qualità": {
     titolo: "Intervento su corpi idrici",
     campi: [
       { id: "km_rete",       label: "Km di rete/canali interessati", unit: "km", placeholder: "es. 120" },
@@ -376,9 +376,7 @@ const PROFILO_TEMPLATES = {
 };
 
 const STEPS = [
-  { id: "nome",            group: 0, sublabel: "Anagrafica" },
-  { id: "descrizione",     group: 0, sublabel: "Anagrafica" },
-  { id: "stato",           group: 0, sublabel: "Stato" },
+  { id: "anagrafica",      group: 0, sublabel: "Anagrafica e stato" },
   { id: "classificazione", group: 0, sublabel: "Classificazione intervento" },
   { id: "profilo",         group: 1, sublabel: "Caratteristiche fisiche" },
   { id: "durata",          group: 2, sublabel: "Durata del progetto" },
@@ -390,7 +388,7 @@ const STEPS = [
 ];
 
 const GROUPS = [
-  { label: "Profilazione",        sublabels: ["Anagrafica", "Stato", "Classificazione intervento"] },
+  { label: "Profilazione",        sublabels: ["Anagrafica e stato", "Classificazione intervento"] },
   { label: "Profilo progetto",    sublabels: ["Caratteristiche fisiche"] },
   { label: "Contesto operativo",  sublabels: ["Durata del progetto", "Localizzazione"] },
   { label: "Parametri economici", sublabels: ["Anno di attualizzazione", "Capex", "Opex", "Benefici ECBA"] },
@@ -840,6 +838,107 @@ function ClassAccordion({ number, title, selectedLabel, isCompleted, onEdit, chi
   );
 }
 
+function TassoScontoSection({ value, onChange, onConfirm, confirmed, onEdit }) {
+  const [unlocked, setUnlocked] = useState(false);
+
+  if (confirmed) {
+    return (
+      <div className="overflow-hidden border border-ink-100 bg-white">
+        <div className="flex items-center gap-3 px-5 py-4">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-violet text-[12px] font-bold text-white">✓</span>
+          <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-[13px] text-ink-400">Tasso di sconto sociale</p>
+              <p className="mt-0.5 text-[15px] font-semibold text-ink-900">{value}%</p>
+            </div>
+            <button type="button" onClick={() => { setUnlocked(false); onEdit(); }} className="shrink-0 text-[13px] font-medium text-brand-violet hover:underline">
+              Modifica
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="overflow-hidden border border-brand-violet/40 bg-white">
+      <div className="flex items-center gap-3 border-b border-[#ececf1] px-5 py-4">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-violet text-[12px] font-bold text-white">2</span>
+        <p className="text-[13px] font-semibold text-ink-900">Tasso di sconto sociale</p>
+      </div>
+
+      <div className="px-5 pb-5 pt-4">
+        <p className="mb-4 max-w-[680px] text-[13px] leading-[1.55] text-ink-600">
+          Il tasso di sconto sociale misura quanto la collettività preferisce i benefici presenti rispetto a quelli futuri. Per coerenza con le linee guida della Commissione Europea, il valore standard è bloccato al <strong className="text-ink-900">3%</strong>. Modificalo solo se hai una ragione metodologica precisa.
+        </p>
+
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
+          <div>
+            <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-500">Valore impostato</p>
+            <div className="flex items-center gap-3">
+              <div className={`relative max-w-[200px] flex-1 ${unlocked ? "" : "opacity-90"}`}>
+                <input
+                  value={value}
+                  disabled={!unlocked}
+                  onChange={(event) => onChange(event.target.value)}
+                  placeholder={TASSO_DEFAULT}
+                  className={`h-11 w-full border px-3 pr-10 text-[18px] font-semibold focus:outline-none ${
+                    unlocked
+                      ? "border-brand-violet bg-white text-ink-900"
+                      : "border-ink-200 bg-bg-page text-ink-700"
+                  }`}
+                />
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[14px] text-ink-500">%</span>
+              </div>
+              {!unlocked ? (
+                <button
+                  type="button"
+                  onClick={() => setUnlocked(true)}
+                  className="flex items-center gap-1.5 border border-ink-200 bg-white px-3 py-2 text-[12px] font-medium text-ink-700 transition-colors hover:border-brand-violet hover:text-brand-violet"
+                >
+                  <LockIcon className="h-3.5 w-3.5" />
+                  Modifica
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => { onChange(TASSO_DEFAULT); setUnlocked(false); }}
+                  className="text-[12px] text-ink-500 hover:text-ink-900"
+                >
+                  Ripristina 3%
+                </button>
+              )}
+            </div>
+            {!unlocked && (
+              <p className="mt-3 text-[11px] leading-[1.5] text-ink-500">
+                Bloccato sul valore raccomandato. Clicca <span className="font-semibold">Modifica</span> se devi cambiarlo.
+              </p>
+            )}
+          </div>
+
+          <aside className="h-fit border border-[#e8e8ed] bg-[#f7f7fa] p-5">
+            <p className="text-[13px] font-semibold text-ink-900">Riferimenti</p>
+            <div className="mt-3 space-y-2 text-[12px] text-ink-700">
+              <p><strong>2,0%</strong> — scenari di lungo periodo, forte rilevanza pubblica o ambientale</p>
+              <p><strong className="text-brand-violet">3,0%</strong> — riferimento standard UE (raccomandato)</p>
+              <p><strong>5,0%</strong> — ipotesi prudente, condizioni finanziarie restrittive</p>
+            </div>
+          </aside>
+        </div>
+
+        <button
+          type="button"
+          onClick={onConfirm}
+          className="mt-5 flex items-center gap-2 bg-brand-violet px-5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-violet-dark"
+        >
+          Conferma tasso di sconto
+          <span className="text-[16px] leading-none">→</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const MONTHS_IT = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
 const DAY_HEADERS_IT = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
 const PICKER_YEARS = Array.from({ length: 21 }, (_, i) => 2020 + i);
@@ -1010,6 +1109,13 @@ export function Wizard({ initialProject, onClose, onComplete }) {
   const [stepIdx, setStepIdx] = useState(0);
   const [draft, setDraft] = useState(() => buildDraft(initialProject));
   const [categorySearch, setCategorySearch] = useState("");
+  const [anagraficaRevealLevel, setAnagraficaRevealLevel] = useState(() => {
+    const hasAnagrafica = (initialProject?.nome ?? "").trim().length > 0 && (initialProject?.descrizione ?? "").trim().length > 10;
+    const hasStato = STATI.includes(initialProject?.stato);
+    if (hasAnagrafica && hasStato) return 2;
+    if (hasAnagrafica) return 1;
+    return 0;
+  });
   const [classificationMode, setClassificationMode] = useState("guided");
   const [classificationRevealLevel, setClassificationRevealLevel] = useState(() => {
     const conf = initialProject?.configurazione ?? {};
@@ -1311,14 +1417,15 @@ export function Wizard({ initialProject, onClose, onComplete }) {
 
   function autoFillCurrentStep() {
     switch (step.id) {
-      case "nome":
-        setDraft((prev) => ({ ...prev, nome: DEMO_AUTOFILL.nome, cup: DEMO_AUTOFILL.cup }));
-        break;
-      case "descrizione":
-        update("descrizione", DEMO_AUTOFILL.descrizione);
-        break;
-      case "stato":
-        update("stato", DEMO_AUTOFILL.stato);
+      case "anagrafica":
+        setDraft((prev) => ({
+          ...prev,
+          nome: DEMO_AUTOFILL.nome,
+          cup: DEMO_AUTOFILL.cup,
+          descrizione: DEMO_AUTOFILL.descrizione,
+          stato: DEMO_AUTOFILL.stato,
+        }));
+        setAnagraficaRevealLevel(2);
         break;
       case "classificazione":
         setClassificationMode("guided");
@@ -1539,12 +1646,8 @@ export function Wizard({ initialProject, onClose, onComplete }) {
 
   const canProceed = (() => {
     switch (step.id) {
-      case "nome":
-        return draft.nome.trim().length > 0;
-      case "descrizione":
-        return draft.descrizione.trim().length > 10;
-      case "stato":
-        return !!draft.stato;
+      case "anagrafica":
+        return anagraficaRevealLevel >= 2 && draft.nome.trim().length > 0 && draft.descrizione.trim().length > 10 && !!draft.stato;
       case "classificazione":
         return classificationRevealLevel >= 4 && !!draft.settore && !!draft.sotto_settore && !!draft.categoria_intervento && !!draft.tipo_intervento;
       case "profilo": {
@@ -1587,7 +1690,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
 
         <div className="flex-1 overflow-y-auto bg-[#f3f3f3]">
           <div className="px-8 py-8">
-            {["nome", "descrizione", "classificazione", "durata"].includes(step.id) && (
+            {["anagrafica", "classificazione", "durata"].includes(step.id) && (
               <div className="mb-5 flex justify-end">
                 <button
                   type="button"
@@ -1598,46 +1701,88 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                 </button>
               </div>
             )}
-            {step.id === "nome" ? (
+            {step.id === "anagrafica" ? (
               <>
                 <QuestionHeader
-                  title="Per prima cosa: che NOME vorresti dare al tuo progetto?"
-                  description="Ti consigliamo di dare al tuo progetto un nome semplice, riconoscibile, che sia di facile identificazione anche per i tuoi collaboratori. Se ne sei già in possesso, ma non è obbligatorio integrarlo, indica il CUP."
+                  title="Anagrafica e stato del progetto"
+                  description="Inserisci nome, descrizione e stato di avanzamento. Queste informazioni servono a contestualizzare il progetto e a impostare il percorso di valutazione più appropriato."
                 />
-                <div className="max-w-3xl border border-ink-100 bg-white p-6">
-                  <TextInput label="Nome del progetto" hint="Lunghezza massima 70 caratteri" value={draft.nome} onChange={(value) => update("nome", value.slice(0, 70))} placeholder="Inserisci il nome del progetto" />
-                  <TextInput label="Identificativo CUP" hint="Valore alfanumerico" value={draft.cup} onChange={(value) => update("cup", value)} placeholder="Inserisci il codice CUP" optional />
-                </div>
-              </>
-            ) : null}
 
-            {step.id === "descrizione" ? (
-              <>
-                <QuestionHeader
-                  title="Fornisci ora una DESCRIZIONE del progetto"
-                  description="Inserisci in poche righe le finalità, gli ambiti di intervento e gli obiettivi del progetto. Queste informazioni sono utili per contestualizzare la proposta e attivare i percorsi di valutazione più appropriati."
-                />
-                <div className="max-w-3xl border border-ink-100 bg-white p-6">
-                  <div className="mb-2 flex items-baseline justify-between">
-                    <label className="text-[14px] font-semibold text-ink-900">Descrizione del progetto</label>
-                    <span className="text-xs text-ink-400">{draft.descrizione.length}/699 caratteri</span>
-                  </div>
-                  <p className="mb-2 text-xs text-ink-400">Lunghezza massima 699 caratteri</p>
-                  <textarea
-                    value={draft.descrizione}
-                    onChange={(event) => update("descrizione", event.target.value.slice(0, 699))}
-                    rows={7}
-                    placeholder="Inserisci la descrizione del progetto"
-                    className="w-full border border-ink-200 bg-white px-3 py-3 text-[14px] text-ink-900 placeholder:text-ink-300 focus:border-brand-violet focus:outline-none"
-                  />
-                </div>
-              </>
-            ) : null}
+                <div className="max-w-3xl space-y-3">
+                  {/* Section 1: Anagrafica */}
+                  <ClassAccordion
+                    number="1"
+                    title="Anagrafica"
+                    selectedLabel={
+                      anagraficaRevealLevel >= 1
+                        ? `${draft.nome}${draft.cup ? ` · ${draft.cup}` : ""}`
+                        : null
+                    }
+                    isCompleted={anagraficaRevealLevel >= 1}
+                    onEdit={() => setAnagraficaRevealLevel(0)}
+                  >
+                    <TextInput label="Nome del progetto" hint="Lunghezza massima 70 caratteri" value={draft.nome} onChange={(value) => update("nome", value.slice(0, 70))} placeholder="Inserisci il nome del progetto" />
+                    <TextInput label="Identificativo CUP" hint="Valore alfanumerico" value={draft.cup} onChange={(value) => update("cup", value)} placeholder="Inserisci il codice CUP" optional />
 
-            {step.id === "stato" ? (
-              <>
-                <QuestionHeader title="Qual è lo STATO del progetto?" description="Indica la fase in cui si trova il tuo progetto." type="Risposta singola" />
-                <RadioCards options={STATI} value={draft.stato} onChange={(value) => update("stato", value)} descriptions={STATO_DESCRIPTIONS} />
+                    <div className="mt-2">
+                      <div className="mb-2 flex items-baseline justify-between">
+                        <label className="text-[14px] font-semibold text-ink-900">Descrizione del progetto</label>
+                        <span className="text-xs text-ink-400">{draft.descrizione.length}/699 caratteri</span>
+                      </div>
+                      <p className="mb-2 text-xs text-ink-400">Finalità, ambiti di intervento e obiettivi del progetto. Massimo 699 caratteri.</p>
+                      <textarea
+                        value={draft.descrizione}
+                        onChange={(event) => update("descrizione", event.target.value.slice(0, 699))}
+                        rows={6}
+                        placeholder="Inserisci la descrizione del progetto"
+                        className="w-full border border-ink-200 bg-white px-3 py-3 text-[14px] text-ink-900 placeholder:text-ink-300 focus:border-brand-violet focus:outline-none"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={!(draft.nome.trim().length > 0 && draft.descrizione.trim().length > 10)}
+                      onClick={() => setAnagraficaRevealLevel((prev) => Math.max(prev, 1))}
+                      className={`mt-5 flex items-center gap-2 px-5 py-2.5 text-[13px] font-semibold transition-colors ${
+                        draft.nome.trim().length > 0 && draft.descrizione.trim().length > 10
+                          ? "bg-brand-violet text-white hover:bg-brand-violet-dark"
+                          : "cursor-not-allowed bg-ink-100 text-ink-300"
+                      }`}
+                    >
+                      Conferma anagrafica
+                      <span className="text-[16px] leading-none">→</span>
+                    </button>
+                  </ClassAccordion>
+
+                  {/* Section 2: Stato del progetto */}
+                  {anagraficaRevealLevel >= 1 ? (
+                    <ClassAccordion
+                      number="2"
+                      title="Stato del progetto"
+                      selectedLabel={anagraficaRevealLevel >= 2 ? draft.stato : null}
+                      isCompleted={anagraficaRevealLevel >= 2}
+                      onEdit={() => setAnagraficaRevealLevel(1)}
+                    >
+                      <p className="mb-4 text-[13px] leading-[1.5] text-ink-600">
+                        Indica la fase in cui si trova il progetto.
+                      </p>
+                      <RadioCards options={STATI} value={draft.stato} onChange={(value) => update("stato", value)} descriptions={STATO_DESCRIPTIONS} />
+                      <button
+                        type="button"
+                        disabled={!draft.stato}
+                        onClick={() => setAnagraficaRevealLevel(2)}
+                        className={`mt-5 flex items-center gap-2 px-5 py-2.5 text-[13px] font-semibold transition-colors ${
+                          draft.stato
+                            ? "bg-brand-violet text-white hover:bg-brand-violet-dark"
+                            : "cursor-not-allowed bg-ink-100 text-ink-300"
+                        }`}
+                      >
+                        Conferma stato
+                        <span className="text-[16px] leading-none">→</span>
+                      </button>
+                    </ClassAccordion>
+                  ) : null}
+                </div>
               </>
             ) : null}
 
@@ -1805,7 +1950,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
             {step.id === "durata" ? (
               <>
                 <QuestionHeader
-                  title="Perfetto, quale sarà la DURATA del progetto?"
+                  title="Quale sarà la durata del progetto?"
                   description="Indica il periodo previsto dalla fase di avvio lavori alla piena operatività. Questa informazione è importante per programmare correttamente le attività, stimare i costi e valutare la sostenibilità nel tempo e i benefici nel progetto."
                 />
                 <div className="grid max-w-3xl grid-cols-1 gap-5 md:grid-cols-2">
@@ -1901,53 +2046,18 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                     </button>
                   </ClassAccordion>
 
-                  {/* ── Section 2: Tasso di sconto sociale ── */}
+                  {/* ── Section 2: Tasso di sconto sociale (locked al 3%, sbloccabile) ── */}
                   {annoRevealLevel >= 1 ? (
-                    <ClassAccordion
-                      number="2"
-                      title="Tasso di sconto sociale"
-                      selectedLabel={annoRevealLevel >= 2 ? `${draft.tasso_attualizzazione}%` : null}
-                      isCompleted={annoRevealLevel >= 2}
+                    <TassoScontoSection
+                      value={draft.tasso_attualizzazione || TASSO_DEFAULT}
+                      onChange={(value) => update("tasso_attualizzazione", normalizeRateInput(value))}
+                      onConfirm={() => {
+                        if (!draft.tasso_attualizzazione.trim()) update("tasso_attualizzazione", TASSO_DEFAULT);
+                        setAnnoRevealLevel(2);
+                      }}
+                      confirmed={annoRevealLevel >= 2}
                       onEdit={() => setAnnoRevealLevel(1)}
-                    >
-                      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
-                        <div>
-                          <p className="mb-3 text-[13px] leading-[1.5] text-ink-600">
-                            Il tasso di sconto sociale misura quanto la collettività preferisce i benefici presenti rispetto a quelli futuri. Valori più bassi danno maggiore peso alle generazioni future.
-                          </p>
-                          <p className="mb-2 text-[13px] font-semibold text-ink-900">Tasso di sconto (%)</p>
-                          <div className="relative max-w-[200px]">
-                            <input
-                              value={draft.tasso_attualizzazione}
-                              onChange={(event) => update("tasso_attualizzazione", normalizeRateInput(event.target.value))}
-                              placeholder={TASSO_DEFAULT}
-                              className="h-11 w-full border border-ink-200 bg-white px-3 pr-10 text-[14px] text-ink-900 placeholder:text-ink-300 focus:border-brand-violet focus:outline-none"
-                            />
-                            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[14px] text-ink-500">%</span>
-                          </div>
-                        </div>
-                        <aside className="h-fit border border-[#e8e8ed] bg-[#f7f7fa] p-5">
-                          <p className="text-[13px] font-semibold text-ink-900">Guida al tasso</p>
-                          <div className="mt-3 space-y-2 text-[13px] text-ink-800">
-                            <p><strong>2,0%</strong> — scenari di lungo periodo, forte rilevanza pubblica o ambientale</p>
-                            <p><strong>3,0%</strong> — valore di riferimento standard UE (raccomandato)</p>
-                            <p><strong>5,0%</strong> — ipotesi prudente, condizioni finanziarie restrittive</p>
-                          </div>
-                          <div className="mt-4 rounded-sm bg-white px-3 py-2.5 text-[11px] leading-[1.55] text-ink-600">
-                            Un tasso più alto riduce il peso dei benefici lontani nel tempo. Usa il 3% come punto di partenza per analisi standard in linea con le linee guida della Commissione Europea.
-                          </div>
-                        </aside>
-                      </div>
-                      <button
-                        type="button"
-                        disabled={!draft.tasso_attualizzazione.trim()}
-                        onClick={() => setAnnoRevealLevel(2)}
-                        className={`mt-5 flex items-center gap-2 px-5 py-2.5 text-[13px] font-semibold transition-colors ${draft.tasso_attualizzazione.trim() ? "bg-brand-violet text-white hover:bg-brand-violet-dark" : "cursor-not-allowed bg-ink-100 text-ink-300"}`}
-                      >
-                        Conferma tasso di sconto
-                        <span className="text-[16px] leading-none">→</span>
-                      </button>
-                    </ClassAccordion>
+                    />
                   ) : null}
                 </div>
               </>
@@ -2080,8 +2190,8 @@ export function Wizard({ initialProject, onClose, onComplete }) {
             {step.id === "opex" ? (
               <>
                 <QuestionHeader
-                  title="Qual è l'OPEX?"
-                  description="Prima definisci la vita utile del progetto, poi configura il tasso di costo operativo annuale."
+                  title="OPEX annuale"
+                  description="Prima definisci la vita utile del progetto, poi il costo operativo annuale: lo esprimeremo prima in € e poi come quota percentuale del CAPEX."
                 />
                 <div className="grid max-w-5xl gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
                   {/* Main panel — two accordion sections */}
@@ -2147,37 +2257,53 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                       </button>
                     </ClassAccordion>
 
-                    {/* ── Section 2: Tasso OPEX (visible only after vita utile confirmed) ── */}
+                    {/* ── Section 2: OPEX annuale (visible only after vita utile confirmed) ── */}
                     {opexRevealLevel >= 1 ? (
                       <ClassAccordion
                         number="2"
-                        title="Tasso OPEX annuale"
-                        selectedLabel={opexRevealLevel >= 2 ? `${draft.opex_tasso}% del CAPEX / anno` : null}
+                        title="OPEX annuale"
+                        selectedLabel={opexRevealLevel >= 2
+                          ? `${fmt(String(Math.round(opexAnnualAmount)))} €/anno (${draft.opex_tasso}% del CAPEX)`
+                          : null}
                         isCompleted={opexRevealLevel >= 2}
                         onEdit={() => setOpexRevealLevel(1)}
                       >
-                        <p className="mb-2 text-[13px] font-semibold text-ink-900">Tasso OPEX (% del CAPEX / anno)</p>
-                        <div className="flex items-center gap-2">
-                          <button type="button" onClick={() => adjustOpexTasso(-0.1)}
-                            className="flex h-10 w-10 shrink-0 items-center justify-center border border-ink-200 bg-white text-[20px] font-bold text-ink-600 hover:border-ink-400 hover:bg-[#fafafa]">−</button>
-                          <div className="relative w-[120px]">
-                            <input
-                              value={draft.opex_tasso}
-                              onChange={(e) => updateOpexTasso(e.target.value)}
-                              className="h-10 w-full border border-brand-violet px-3 pr-8 text-center text-[16px] font-bold text-ink-900 focus:outline-none"
-                            />
-                            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[13px] text-ink-500">%</span>
-                          </div>
-                          <button type="button" onClick={() => adjustOpexTasso(0.1)}
-                            className="flex h-10 w-10 shrink-0 items-center justify-center border border-brand-violet bg-white text-[20px] font-bold text-brand-violet hover:bg-brand-violet-soft">+</button>
+                        <p className="mb-3 max-w-[640px] text-[13px] leading-[1.5] text-ink-600">
+                          Indica il costo operativo annuale del progetto. Lo esprimiamo prima in valore (€/anno) e poi come quota percentuale sul CAPEX, in linea con le prassi di settore.
+                        </p>
+
+                        {/* Valore annuo — primario */}
+                        <div className="border-l-[3px] border-brand-violet bg-brand-violet-soft px-5 py-4">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-500">OPEX annuale stimato</p>
+                          <p className="mt-1 text-[28px] font-bold leading-none text-ink-900">
+                            {opexAnnualAmount > 0 ? `${fmt(String(Math.round(opexAnnualAmount)))} €` : "—"}
+                          </p>
+                          <p className="mt-1.5 text-[12px] text-ink-500">
+                            Costo operativo medio sostenuto ogni anno della vita utile del progetto.
+                          </p>
                         </div>
 
-                        {opexAnnualAmount > 0 ? (
-                          <div className="mt-4 border-l-[3px] border-brand-violet bg-brand-violet-soft px-4 py-2.5">
-                            <p className="text-[11px] uppercase tracking-wide text-ink-500">Costo operativo annuale</p>
-                            <p className="mt-0.5 text-[18px] font-bold text-ink-900">{fmt(String(Math.round(opexAnnualAmount)))} €</p>
+                        {/* Quota CAPEX — secondario, modificabile */}
+                        <div className="mt-4">
+                          <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-500">Quota annua sul CAPEX</p>
+                          <p className="mb-2 text-[12px] leading-[1.5] text-ink-500">
+                            Esprime l'OPEX annuale come percentuale del CAPEX. Usa i pulsanti per regolarla; il valore in € si aggiorna automaticamente.
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <button type="button" onClick={() => adjustOpexTasso(-0.1)}
+                              className="flex h-10 w-10 shrink-0 items-center justify-center border border-ink-200 bg-white text-[20px] font-bold text-ink-600 hover:border-ink-400 hover:bg-[#fafafa]">−</button>
+                            <div className="relative w-[120px]">
+                              <input
+                                value={draft.opex_tasso}
+                                onChange={(e) => updateOpexTasso(e.target.value)}
+                                className="h-10 w-full border border-brand-violet px-3 pr-8 text-center text-[16px] font-bold text-ink-900 focus:outline-none"
+                              />
+                              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[13px] text-ink-500">%</span>
+                            </div>
+                            <button type="button" onClick={() => adjustOpexTasso(0.1)}
+                              className="flex h-10 w-10 shrink-0 items-center justify-center border border-brand-violet bg-white text-[20px] font-bold text-brand-violet hover:bg-brand-violet-soft">+</button>
                           </div>
-                        ) : null}
+                        </div>
 
                         {/* Per-year override */}
                         <div className="mt-6 border-t border-[#ececf1] pt-5">
@@ -2202,10 +2328,10 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                               }}
                               className="h-4 w-4 accent-[#5b19d6]"
                             />
-                            Personalizza tasso per singolo anno
+                            Personalizza la quota per singolo anno
                           </label>
                           <p className="mt-1 text-[12px] leading-[1.5] text-ink-500">
-                            Imposta un tasso OPEX diverso per singoli anni del progetto.
+                            Imposta una quota OPEX diversa (in % del CAPEX) per singoli anni del progetto.
                           </p>
 
                           {draft.opex_distribuzione_attiva ? (
@@ -2251,7 +2377,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                               : "cursor-not-allowed bg-ink-100 text-ink-300"
                           }`}
                         >
-                          Conferma tasso OPEX
+                          Conferma OPEX annuale
                           <span className="text-[16px] leading-none">→</span>
                         </button>
                       </ClassAccordion>

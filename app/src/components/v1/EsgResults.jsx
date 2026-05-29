@@ -142,7 +142,7 @@ export function EsgResults({ project, esgResults, onBack }) {
               Scarica Report, Metodologia e Fonti
             </button>
             <button type="button" onClick={handleDownload} className="flex items-center gap-1 hover:underline">
-              Scarica excel
+              Scarica Excel
             </button>
           </div>
         </div>
@@ -275,13 +275,13 @@ export function EsgResults({ project, esgResults, onBack }) {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
                   <thead>
-                    <tr className="bg-ink-900 text-white">
-                      <th className="px-4 py-2 text-left font-semibold text-xs">Pilastro</th>
-                      <th className="px-4 py-2 text-left font-semibold text-xs">Rating</th>
-                      <th className="px-4 py-2 text-right font-semibold text-xs">Score</th>
-                      <th className="px-4 py-2 text-right font-semibold text-xs">Allineato</th>
-                      <th className="px-4 py-2 text-right font-semibold text-xs">Parziale</th>
-                      <th className="px-4 py-2 text-right font-semibold text-xs">Non allineato</th>
+                    <tr className="border-b border-ink-100 bg-bg-page text-ink-500">
+                      <th className="px-4 py-2.5 text-left font-mono font-semibold uppercase tracking-[0.1em] text-[11px]">Pilastro</th>
+                      <th className="px-4 py-2.5 text-left font-mono font-semibold uppercase tracking-[0.1em] text-[11px]">Rating</th>
+                      <th className="px-4 py-2.5 text-right font-mono font-semibold uppercase tracking-[0.1em] text-[11px]">Score</th>
+                      <th className="px-4 py-2.5 text-right font-mono font-semibold uppercase tracking-[0.1em] text-[11px]">Allineato</th>
+                      <th className="px-4 py-2.5 text-right font-mono font-semibold uppercase tracking-[0.1em] text-[11px]">Parziale</th>
+                      <th className="px-4 py-2.5 text-right font-mono font-semibold uppercase tracking-[0.1em] text-[11px]">Non allineato</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-ink-100">

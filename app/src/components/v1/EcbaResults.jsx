@@ -137,9 +137,9 @@ export function EcbaResults({ project, ecbaResults, assumptions, onBack }) {
       {/* Intro text */}
       <div className="bg-white border border-ink-100 rounded p-6 mb-6">
         <p className="text-sm text-ink-700 leading-relaxed mb-4">
-          Questa sezione classifica i principali indicatori dell'Analisi Costi-Benefici Economica (ECBA),
-          lo strumento usato per misurare la validità a medio-lungo periodo. L'analisi definisce il valore
-          economico comparando i costi con i benefici (sociali, economici e ambientali) generati per la
+          Questa sezione riassume i principali indicatori dell'Analisi Costi-Benefici Economica (ECBA),
+          lo strumento usato per misurare la validità del progetto nel medio-lungo periodo. L'analisi definisce il valore
+          economico confrontando i costi con i benefici (sociali, economici e ambientali) generati per la
           collettività, offrendo un bilancio del valore netto prodotto.
         </p>
         <p className="text-sm text-ink-700 leading-relaxed">
@@ -154,13 +154,13 @@ export function EcbaResults({ project, ecbaResults, assumptions, onBack }) {
           label="Benefici economici:"
           value={`${fmt(r.benefici_totali)} €`}
           cls="bg-green-50 border border-green-200 text-green-900"
-          note="rappresentano il valore attualizzato degli impatti positivi generali del progetto (es. risparmi energetici, miglioramento della qualità, sicurezza, attrattività territoriale)."
+          note="Rappresentano il valore attualizzato degli impatti positivi generati dal progetto (es. risparmi energetici, miglioramento della qualità, sicurezza, attrattività territoriale)."
         />
         <KpiHighlight
           label="Costi economici:"
           value={`${fmt(r.costi_totali)} €`}
           cls="bg-ink-50 border border-ink-200 text-ink-900"
-          note="Includono i costi sostenuti per realizzare l'intervento, attualizzati sul periodo di analisi."
+          note="Includono i costi sostenuti per realizzare l'intervento, attualizzati sull'orizzonte di analisi."
         />
         <KpiHighlight
           label="VANE:"
@@ -189,7 +189,7 @@ export function EcbaResults({ project, ecbaResults, assumptions, onBack }) {
           </p>
         </div>
         <div className="bg-white border border-ink-100 rounded p-5">
-          <p className="text-xs text-ink-500 mb-1">TIRЕ:</p>
+          <p className="text-xs text-ink-500 mb-1">TIRE:</p>
           <p className="text-2xl font-bold font-mono text-ink-900">{(r.irr ?? 3.86).toFixed(2)}%</p>
           <p className="text-xs text-ink-500 mt-2 leading-relaxed">
             è il tasso interno di rendimento economico, cioè il rendimento annuale implicito del progetto.

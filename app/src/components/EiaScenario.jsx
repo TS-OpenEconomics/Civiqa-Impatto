@@ -165,7 +165,7 @@ export function EiaScenario({ project, initialScenario, onClose, onRun }) {
           onClick={() => onRun(scenario)}
           className="flex items-center justify-between bg-brand-violet px-6 text-[14px] font-medium text-white hover:bg-brand-violet-dark"
         >
-          <span>Esegui l'analisi di impatto</span>
+          <span>Esegui l'Analisi di Impatto</span>
           <IconArrowRight className="h-5 w-5" />
         </button>
       </div>
@@ -176,8 +176,8 @@ export function EiaScenario({ project, initialScenario, onClose, onRun }) {
 function SummaryBlock({ title, children }) {
   return (
     <div className="overflow-hidden border border-ink-100 bg-white">
-      <div className="bg-[#2f2f2f] px-5 py-3">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-white">{title}</p>
+      <div className="border-b border-ink-100 bg-white px-5 py-3">
+        <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">{title}</p>
       </div>
       {children}
     </div>

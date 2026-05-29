@@ -71,7 +71,7 @@ export function Layout({ children }) {
         onSettings={() =>
           toast({
             title: "Impostazioni in arrivo",
-            description: "Questa area verra completata nelle prossime iterazioni.",
+            description: "Questa area verrà completata nelle prossime iterazioni.",
           })
         }
         onOpenProfile={() => { setIsUserMenuOpen(false); setIsProfileOpen(true); }}
@@ -178,7 +178,7 @@ function Header({
               type="text"
               value={searchDraft}
               onChange={(event) => setSearchDraft(event.target.value)}
-              placeholder="Cerca documenti, progetti, pianificazioni..."
+              placeholder="Cerca documenti, progetti, pianificazioni…"
               className="w-full h-[48px] rounded-none border border-ink-300 pl-5 pr-12 bg-white text-[14px] placeholder:text-ink-300 focus:outline-none focus:border-brand-violet"
             />
             <button

@@ -9,7 +9,6 @@ import { PlotlyChart } from "../charts/PlotlyChart";
 import {
   IconArrowLeft,
   IconDownload,
-  IconHelp,
 } from "../ui/Icons";
 import { useToast } from "../../hooks/useToast";
 
@@ -258,7 +257,6 @@ export function EiaResults({ project, analysis, onBack }) {
   const requestedTab = searchParams.get("tab");
   const initialTab = TABS.some((t) => t.id === requestedTab) ? requestedTab : "sintesi";
   const [tab, setTab] = useState(initialTab);
-  const [glossaryOpen, setGlossaryOpen] = useState(false);
   const [metodologiaOpen, setMetodologiaOpen] = useState(false);
   const { showToast } = useToast();
 
@@ -282,7 +280,6 @@ export function EiaResults({ project, analysis, onBack }) {
 
   const handleTabChange = useCallback((nextTab, extra = {}) => {
     setTab(nextTab);
-    setGlossaryOpen(false);
     updateSearch({ tab: nextTab, ...extra });
   }, [updateSearch]);
 
@@ -332,9 +329,6 @@ export function EiaResults({ project, analysis, onBack }) {
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-[18px] font-bold text-ink-900">Analisi di Impatto</h1>
                   <Badge type="EIA" />
-                  <span className="inline-flex border border-ink-200 px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">
-                    Diretti / Indiretti / Indotti
-                  </span>
                 </div>
                 <p className="mt-1 text-sm text-ink-500">
                   Del progetto <span className="font-medium text-ink-900">{project?.nome}</span>
@@ -365,9 +359,9 @@ export function EiaResults({ project, analysis, onBack }) {
           </div>
 
           <div className="grid grid-cols-1 divide-y divide-ink-100 border-t border-ink-100 bg-white text-sm md:grid-cols-3 md:divide-x md:divide-y-0">
-            <MetaField label="Settore" value={project?.configurazione?.settore ?? meta.settore} />
-            <MetaField label="Dataset" value={meta.dataset} />
-            <MetaField label="Metodologia" value={meta.metodologia} />
+            <MetaField label="Categoria di intervento" value={project?.configurazione?.categoria_intervento ?? meta.categoria_intervento ?? "—"} />
+            <MetaField label="Provincia di riferimento" value={project?.configurazione?.nuts_label ?? project?.configurazione?.localizzazione ?? meta.localizzazione ?? "—"} />
+            <MetaField label="Anno di attualizzazione" value={project?.configurazione?.anno_attualizzazione ? String(project.configurazione.anno_attualizzazione) : (meta.anno_attualizzazione ? String(meta.anno_attualizzazione) : "—")} />
           </div>
         </div>
       </div>
@@ -383,27 +377,27 @@ export function EiaResults({ project, analysis, onBack }) {
           />
           <div className="border-t border-ink-100 bg-white px-4 py-6 md:px-6">
             {tab === "sintesi" && (
-              <TabShell title="Sintesi dell'impatto" tab="sintesi" onHelp={() => setGlossaryOpen(true)}>
+              <TabShell title="Sintesi dell'impatto">
                 <TabSintesi updateSearch={updateSearch} searchParams={searchParams} />
               </TabShell>
             )}
             {tab === "componenti" && (
-              <TabShell title="Come si propaga l'impatto" tab="componenti" onHelp={() => setGlossaryOpen(true)}>
+              <TabShell title="Come si propaga l'impatto">
                 <TabComponenti />
               </TabShell>
             )}
             {tab === "geografia" && (
-              <TabShell title="Geografia dell'impatto" tab="geografia" onHelp={() => setGlossaryOpen(true)}>
+              <TabShell title="Geografia dell'impatto">
                 <TabGeografia updateSearch={updateSearch} searchParams={searchParams} onOpenExplore={(config) => handleTabChange("esplora", config)} />
               </TabShell>
             )}
             {tab === "settori" && (
-              <TabShell title="Impatti settoriali" tab="settori" onHelp={() => setGlossaryOpen(true)}>
+              <TabShell title="Impatti settoriali">
                 <TabSettori updateSearch={updateSearch} searchParams={searchParams} onOpenExplore={(config) => handleTabChange("esplora", config)} />
               </TabShell>
             )}
             {tab === "esplora" && (
-              <TabShell title="Approfondimento dati" tab="esplora" onHelp={() => setGlossaryOpen(true)}>
+              <TabShell title="Approfondimento dati">
                 <TabEsplora
                   showToast={showToast}
                   project={project}
@@ -417,7 +411,6 @@ export function EiaResults({ project, analysis, onBack }) {
         </div>
       </div>
 
-      {glossaryOpen && <GlossaryPopover tab={tab} onClose={() => setGlossaryOpen(false)} />}
       {metodologiaOpen && <MetodologiaModal onClose={() => setMetodologiaOpen(false)} />}
     </div>
   );
@@ -452,21 +445,12 @@ function TabBar({ activeTab, previews, onChange }) {
   );
 }
 
-function TabShell({ title, tab, onHelp, children }) {
+function TabShell({ title, children }) {
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Vista</p>
-          <h2 className="mt-1 text-2xl font-bold text-ink-900">{title}</h2>
-        </div>
-        <button
-          onClick={onHelp}
-          className="flex h-9 w-9 shrink-0 items-center justify-center border border-ink-300 text-ink-700 transition-colors hover:border-brand-violet hover:text-brand-violet"
-          title={`Apri glossario ${tab}`}
-        >
-          <IconHelp className="h-4 w-4" />
-        </button>
+      <div>
+        <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Vista</p>
+        <h2 className="mt-1 text-2xl font-bold text-ink-900">{title}</h2>
       </div>
       {children}
     </div>
@@ -509,23 +493,17 @@ function TabSintesi() {
   const regPc = perCapita.region ?? {};
   const natPc = perCapita.national ?? {};
 
-  const summaryText = `L'investimento di ${fmtM(spend)} ha attivato ${fmtM(natGdp)} di PIL, sostenuto ${fmtIT(natEmp, 0)} occupati e generato ${fmtM(natFiscal)} di gettito fiscale, cioè risorse che rientrano nelle casse dello Stato.`;
-
   return (
     <div className="space-y-14">
-      {/* Hero: investimento */}
-      <div className="border-l-4 border-brand-violet bg-brand-violet/5 px-6 py-5">
-        <div className="flex items-center gap-2">
-          <p className="text-[10px] font-mono font-medium uppercase tracking-[0.18em] text-brand-violet">Il punto di partenza</p>
-          <InfoButton slug="sintesi.hero" />
-        </div>
-        <div className="mt-2 flex flex-wrap items-baseline gap-4">
-          <p className="text-[38px] font-bold leading-none text-brand-violet">{fmtM(spend)}</p>
-          <p className="text-[15px] text-ink-700">
-            investiti {isMultiProvince ? "nelle province di" : "nella provincia di"}{" "}
-            <strong>{originProvince}</strong>, distribuiti su {nVoci} voci di spesa
-          </p>
-        </div>
+      {/* Hero: investimento — versione discreta */}
+      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[13px] text-ink-500">
+        <span>Investimento di partenza:</span>
+        <strong className="text-[15px] font-semibold text-ink-900">{fmtM(spend)}</strong>
+        <span>
+          {isMultiProvince ? "nelle province di" : "nella provincia di"}{" "}
+          <strong className="font-medium text-ink-700">{originProvince}</strong>, distribuiti su {nVoci} voci di spesa
+        </span>
+        <InfoButton slug="sintesi.hero" />
       </div>
 
       {/* Cosa ha generato */}
@@ -591,8 +569,6 @@ function TabSintesi() {
         />
       </section>
 
-      <TakeawayBanner text={summaryText} />
-      <DimensionGlossary />
     </div>
   );
 }
@@ -611,15 +587,15 @@ function SintesiSectionHead({ title, subtitle, info }) {
 
 function SintesiKPI({ icon, label, value, valueUnit, caption, info }) {
   return (
-    <div className="border border-ink-100 bg-white p-4">
-      <div className="mb-3 flex items-center gap-2">
+    <div className="border border-ink-100 bg-white p-5">
+      <div className="mb-3 flex items-start gap-3">
         <ImpactIcon
           type={icon}
           label={label}
-          className="h-4 w-4"
-          wrapperClassName="flex h-7 w-7 shrink-0 items-center justify-center bg-brand-violet/10 text-brand-violet"
+          className="h-8 w-8"
+          wrapperClassName="shrink-0 text-brand-violet"
         />
-        <p className="flex-1 text-[11px] font-bold uppercase tracking-[0.1em] text-ink-500">{label}</p>
+        <p className="flex-1 pt-1 text-[11px] font-bold uppercase tracking-[0.1em] text-ink-500">{label}</p>
         {info && <InfoButton slug={info} size="sm" placement="left" />}
       </div>
       <p className="text-[26px] font-bold leading-none text-ink-900">
@@ -664,35 +640,38 @@ function SintesiTerritoryCol({ color, name, pct, gdp, emp }) {
 }
 
 function SintesiMultiplierGrid({ regGdpMult, natGdpMult, regProdMult, natProdMult, regEmpInt, natEmpInt }) {
+  // Placeholder "xx" — la media di settore viene popolata quando i dati di benchmark saranno disponibili.
   const rows = [
-    { icon: "pil",         label: "PIL",                    regVal: `${fmtIT(regGdpMult, 2)}×`,   natVal: `${fmtIT(natGdpMult, 2)}×` },
-    { icon: "produzione",  label: "Valore della Produzione", regVal: `${fmtIT(regProdMult, 2)}×`,  natVal: `${fmtIT(natProdMult, 2)}×` },
-    { icon: "occupazione", label: "Occupazione per M€ speso", regVal: `${fmtIT(regEmpInt, 1)} occupati`, natVal: `${fmtIT(natEmpInt, 1)} occupati` },
+    { icon: "pil",         label: "PIL",                      regVal: `${fmtIT(regGdpMult, 2)}×`,        natVal: `${fmtIT(natGdpMult, 2)}×`,        avgVal: "xx" },
+    { icon: "produzione",  label: "Valore della Produzione",   regVal: `${fmtIT(regProdMult, 2)}×`,       natVal: `${fmtIT(natProdMult, 2)}×`,       avgVal: "xx" },
+    { icon: "occupazione", label: "Occupazione per M€ speso", regVal: `${fmtIT(regEmpInt, 1)} occupati`, natVal: `${fmtIT(natEmpInt, 1)} occupati`, avgVal: "xx" },
   ];
 
   return (
     <div className="overflow-hidden border border-ink-100 bg-white">
-      <div className="grid grid-cols-[1fr_120px_120px] border-b border-ink-100 bg-bg-page px-5 py-2.5">
+      <div className="grid grid-cols-[1fr_110px_110px_110px] border-b border-ink-100 bg-bg-page px-5 py-2.5">
         <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400">Indicatore</p>
         <p className="text-center text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400">Regionale</p>
         <p className="text-center text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400">Nazionale</p>
+        <p className="text-center text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400">Media settore</p>
       </div>
       {rows.map((row, i) => (
         <div
           key={row.label}
-          className={`grid grid-cols-[1fr_120px_120px] items-center px-5 py-4 ${i < rows.length - 1 ? "border-b border-ink-100" : ""}`}
+          className={`grid grid-cols-[1fr_110px_110px_110px] items-center px-5 py-4 ${i < rows.length - 1 ? "border-b border-ink-100" : ""}`}
         >
-          <div className="flex items-center gap-2">
-            <ImpactIcon type={row.icon} label={row.label} className="h-3.5 w-3.5" wrapperClassName="flex h-3.5 w-3.5 items-center justify-center text-brand-violet" />
+          <div className="flex items-center gap-3">
+            <ImpactIcon type={row.icon} label={row.label} className="h-6 w-6" wrapperClassName="shrink-0 text-brand-violet" />
             <p className="text-[13px] font-semibold text-ink-700">{row.label}</p>
           </div>
           <p className="text-center text-[20px] font-bold text-brand-violet">{row.regVal}</p>
           <p className="text-center text-[20px] font-bold text-ink-700">{row.natVal}</p>
+          <p className="text-center text-[16px] font-mono text-ink-400">{row.avgVal}</p>
         </div>
       ))}
       <div className="border-t border-ink-100 bg-bg-page px-5 py-2.5">
         <p className="text-[11px] italic text-ink-400">
-          PIL e produzione indicano euro attivati per ogni euro speso; l'occupazione indica occupati per milione di euro investito.
+          PIL e produzione indicano euro attivati per ogni euro speso; l'occupazione indica occupati per milione di euro investito. La <strong className="not-italic font-semibold">media di settore</strong> è il valore di paragone su progetti simili (placeholder in arrivo).
         </p>
       </div>
     </div>
@@ -707,20 +686,20 @@ function SintesiFiscalReturn({ fiscalPct, natFiscal, spend }) {
         <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400">Ritorno fiscale allo Stato</p>
         <InfoButton slug="sintesi.fiscal" placement="left" />
       </div>
-      <div className="grid grid-cols-1 items-center gap-6 px-5 py-5 md:grid-cols-[auto_1fr]">
-        <div className="flex shrink-0 items-baseline gap-3 md:flex-col md:items-start md:gap-1">
+      <div className="flex flex-col gap-5 px-5 py-5 md:flex-row md:items-center md:gap-7">
+        <div className="flex shrink-0 items-center gap-3">
           <ImpactIcon
             type="gettito"
             label="Gettito fiscale"
-            className="h-4 w-4"
-            wrapperClassName="hidden md:flex h-7 w-7 shrink-0 items-center justify-center bg-brand-violet/10 text-brand-violet"
+            className="h-10 w-10"
+            wrapperClassName="shrink-0 text-brand-violet"
           />
           <div>
             <p className="text-[36px] font-bold leading-none text-brand-violet">{fmtIT(fiscalPct, 1)}%</p>
-            <p className="mt-1.5 text-[11px] uppercase tracking-[0.1em] text-ink-500">della spesa iniziale</p>
+            <p className="mt-1 text-[11px] uppercase tracking-[0.1em] text-ink-500">della spesa iniziale</p>
           </div>
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-[14px] font-bold text-ink-900">
             Quota della spesa che rientra nelle casse dello Stato come imposte e contributi
           </p>
@@ -818,7 +797,7 @@ function DimensionGlossary() {
         className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-bg-page"
       >
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">Cosa misura ogni dimensione</p>
-        <span className="text-xs text-ink-400">{open ? "Chiudi ?" : "Apri ?"}</span>
+        <span className="text-xs text-ink-400">{open ? "Chiudi ▴" : "Apri ▾"}</span>
       </button>
       {open && (
         <div className="border-t border-ink-100">
@@ -1060,15 +1039,8 @@ function PropagazioneFooter({ metricId, metricDef }) {
   const originPct = Math.round((macroSplit.origin?.pct ?? 0.46) * 100);
   const restRegPct = Math.round((macroSplit.rest_of_region?.pct ?? 0.38) * 100);
   const extraPct = 100 - originPct - restRegPct;
-  const stayPct = originPct + restRegPct;
   const dimTotal = byPerimeter.national?.[metricId] ?? 0;
   const dimFmt = metricDef.isMoney ? fmtM : fmtOccupati;
-  const dimPhraseMap = {
-    gdp: "del PIL",
-    production: "del valore della produzione",
-    employment: "dell'occupazione",
-  };
-  const dimPhrase = dimPhraseMap[metricId] ?? `del ${metricDef.label.toLowerCase()}`;
 
   return (
     <div className="space-y-5 pt-2">
@@ -1083,18 +1055,6 @@ function PropagazioneFooter({ metricId, metricDef }) {
         <p className="max-w-[720px] text-[14px] leading-relaxed text-ink-500">
           Su 100€ di valore attivato, una larga maggioranza non lascia {regionName}. Più ci si allontana da {originProvince}, meno valore si attiva.
         </p>
-      </div>
-
-      <div className="rounded-xl p-8" style={{ background: "#EEEDFE", borderLeft: "4px solid #534AB7" }}>
-        <div className="text-[56px] font-medium leading-none" style={{ color: "#26215C", letterSpacing: "-0.02em" }}>
-          {stayPct}%
-        </div>
-        <div className="mt-3 max-w-[720px] text-[17px] leading-relaxed" style={{ color: "#3C3489" }}>
-          {dimPhrase} attivato <strong className="font-medium">resta in {regionName}</strong>:{" "}
-          <strong className="font-medium">{originPct}%</strong> nella provincia di {originProvince},{" "}
-          <strong className="font-medium">{restRegPct}%</strong> nelle altre province della regione. Solo il{" "}
-          <strong className="font-medium">{extraPct}%</strong> si propaga nel resto d'Italia lungo le filiere nazionali.
-        </div>
       </div>
 
       <div className="grid grid-cols-1 items-center gap-10 rounded-xl border border-ink-100 bg-white p-8 xl:grid-cols-[minmax(280px,380px)_1fr]">
@@ -1151,8 +1111,7 @@ function PropagazioneFooter({ metricId, metricDef }) {
                 <div className="text-[13px] leading-relaxed text-ink-500">{item.meaning}</div>
               </div>
               <div className="min-w-[100px] flex-shrink-0 text-right">
-                <div className="text-[26px] font-medium leading-none text-ink-900">{item.pct}%</div>
-                <div className="mt-1 text-[13px] text-ink-500">{item.value}</div>
+                <div className="text-[26px] font-medium leading-none text-ink-900">{item.value}</div>
               </div>
             </div>
           ))}
@@ -2068,7 +2027,7 @@ function TabEsplora({ showToast, searchParams, updateSearch }) {
 
   const summaryText = (() => {
     const eff = effect === "tutti" ? "scomposto per effetto" : `solo effetto ${effect}`;
-    return `Stai vedendo <strong>${metricLabel}</strong> per <strong>${dimLabel2}</strong>, ${eff}. <strong>${sortedRows.length}</strong> riga${sortedRows.length === 1 ? "" : "he"}.`;
+    return `Stai vedendo <strong>${metricLabel}</strong> per <strong>${dimLabel2}</strong>, ${eff}. <strong>${sortedRows.length}</strong> ${sortedRows.length === 1 ? "riga" : "righe"}.`;
   })();
 
   const PRESETS = [
@@ -2515,9 +2474,9 @@ function GlossaryPopover({ tab, onClose }) {
 
   return (
     <div ref={ref} className="fixed right-0 top-0 bottom-0 z-50 flex w-[320px] flex-col border-l border-ink-100 bg-white">
-      <div className="flex items-center justify-between border-b border-ink-100 bg-ink-900 px-5 py-4 text-white">
-        <p className="text-sm font-bold">Come si legge</p>
-        <button onClick={onClose} className="text-white/70 hover:text-white">
+      <div className="flex items-center justify-between border-b-2 border-brand-violet bg-white px-5 py-4">
+        <p className="text-sm font-bold text-ink-900">Come si legge</p>
+        <button onClick={onClose} className="text-ink-500 hover:text-ink-900">
           ×
         </button>
       </div>
@@ -2844,16 +2803,16 @@ function MetodologiaModal({ onClose }) {
   return (
     <div className="fixed inset-0 z-[120] flex items-stretch justify-center bg-ink-900/55 p-0 sm:p-6">
       <div className="flex h-full w-full max-w-6xl flex-col overflow-hidden bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-ink-100 bg-ink-900 px-6 py-4 text-white">
+        <div className="flex items-center justify-between border-b-2 border-brand-violet bg-white px-6 py-4">
           <div>
-            <p className="text-[11px] font-medium tracking-wide text-accent-lime">Nota metodologica</p>
-            <h2 className="mt-1 text-[18px] font-bold">Come è stata costruita l'analisi di impatto</h2>
+            <p className="text-[11px] font-medium tracking-wide text-brand-violet">Nota metodologica</p>
+            <h2 className="mt-1 text-[18px] font-bold text-ink-900">Come è stata costruita l'analisi di impatto</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Chiudi"
-            className="flex h-9 w-9 items-center justify-center border border-white/30 text-white hover:bg-white/10"
+            className="flex h-9 w-9 items-center justify-center border border-ink-200 text-ink-700 hover:border-brand-violet hover:text-brand-violet"
           >
             ×
           </button>
@@ -2901,11 +2860,6 @@ function MetodologiaModal({ onClose }) {
               </section>
             ))}
 
-            <div className="mt-12 border-t border-ink-100 pt-6 text-[12px] text-ink-500">
-              <p>
-                Per i riferimenti accademici e la formulazione matematica completa si rimanda alla nota metodologica integrale OpenEconomics, edizione 2026.
-              </p>
-            </div>
           </div>
         </div>
       </div>

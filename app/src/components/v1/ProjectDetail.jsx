@@ -487,80 +487,81 @@ function DocumentationSection({ ownerName }) {
 
   return (
     <div className="mt-10 pb-10">
-      <h2 className="text-[14px] font-bold text-ink-900">Documentazione di progetto</h2>
+      <h2 className="mb-4 text-[14px] font-bold text-ink-900">Documentazione di progetto</h2>
 
-      {/* Tabs */}
-      <div className="mt-4 flex border-b border-ink-100">
-        {[
-          { id: "caricati", label: "Documenti caricati" },
-          { id: "prodotti", label: "Documenti prodotti da OpenEconomics" },
-        ].map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setDocTab(t.id)}
-            className={`-mb-px border-b-2 px-5 py-2.5 text-[13px] font-medium transition-colors ${
-              docTab === t.id
-                ? "border-brand-violet text-brand-violet"
-                : "border-transparent text-ink-500 hover:text-ink-700"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Toolbar */}
-      <div className="mt-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="rounded border border-ink-100 px-3 py-1.5 text-[12px] text-ink-700 focus:outline-none"
-          >
-            <option value="data">Ordina per: Data</option>
-            <option value="nome">Ordina per: Nome</option>
-            <option value="proprietario">Ordina per: Proprietario</option>
-          </select>
-          <div className="flex overflow-hidden rounded border border-ink-100">
-            {["lista", "griglia"].map((v) => (
-              <button
-                key={v}
-                type="button"
-                onClick={() => setView(v)}
-                className={`px-3 py-1.5 capitalize text-[12px] transition-colors ${
-                  view === v ? "bg-ink-900 text-white" : "bg-white text-ink-500 hover:bg-ink-100/50"
-                }`}
-              >
-                {v === "lista" ? "Lista" : "Griglia"}
-              </button>
-            ))}
-          </div>
+      <div className="overflow-hidden rounded border border-ink-100 bg-white">
+        {/* Tabs */}
+        <div className="flex border-b border-ink-100 px-5">
+          {[
+            { id: "caricati", label: "Documenti caricati" },
+            { id: "prodotti", label: "Documenti prodotti da OpenEconomics" },
+          ].map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setDocTab(t.id)}
+              className={`-mb-px border-b-2 px-4 py-3 text-[13px] font-medium transition-colors ${
+                docTab === t.id
+                  ? "border-brand-violet text-brand-violet"
+                  : "border-transparent text-ink-500 hover:text-ink-700"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
-        <button
-          type="button"
-          onClick={handleUploadClick}
-          className="flex items-center gap-2 rounded bg-brand-violet px-4 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-brand-violet-dark"
-        >
-          + Carica documento
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          className="hidden"
-          onChange={handleFiles}
-        />
-      </div>
 
-      {/* Document list / grid */}
-      <div className="mt-4">
+        {/* Toolbar */}
+        <div className="flex items-center justify-between gap-4 border-b border-ink-100 bg-white px-5 py-3">
+          <div className="flex items-center gap-3">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="rounded border border-ink-200 bg-white px-3 py-1.5 text-[12px] text-ink-700 focus:outline-none"
+            >
+              <option value="data">Ordina per: Data</option>
+              <option value="nome">Ordina per: Nome</option>
+              <option value="proprietario">Ordina per: Proprietario</option>
+            </select>
+            <div className="flex overflow-hidden rounded border border-ink-200">
+              {["lista", "griglia"].map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setView(v)}
+                  className={`px-3 py-1.5 capitalize text-[12px] transition-colors ${
+                    view === v ? "bg-brand-violet text-white" : "bg-white text-ink-500 hover:bg-ink-100/50"
+                  }`}
+                >
+                  {v === "lista" ? "Lista" : "Griglia"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleUploadClick}
+            className="flex items-center gap-2 rounded bg-brand-violet px-4 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-brand-violet-dark"
+          >
+            + Carica documento
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            className="hidden"
+            onChange={handleFiles}
+          />
+        </div>
+
+        {/* Document list / grid */}
+        <div className="px-5 py-4">
         {docTab !== "caricati" ? (
-          <div className="overflow-hidden rounded border border-ink-100 bg-white px-4 py-10 text-center text-[13px] text-ink-400">
+          <div className="px-4 py-10 text-center text-[13px] text-ink-400">
             Nessun documento prodotto da OpenEconomics disponibile.
           </div>
         ) : docs.length === 0 ? (
-          <div className="overflow-hidden rounded border border-dashed border-ink-200 bg-white px-4 py-10 text-center text-[13px] text-ink-500">
+          <div className="rounded border border-dashed border-ink-200 px-4 py-10 text-center text-[13px] text-ink-500">
             Nessun documento caricato. Usa <span className="font-semibold">+ Carica documento</span> per aggiungerne.
           </div>
         ) : view === "griglia" ? (
@@ -597,15 +598,15 @@ function DocumentationSection({ ownerName }) {
             ))}
           </div>
         ) : (
-          <div className="overflow-hidden rounded border border-ink-100 bg-white">
+          <div className="-mx-5 -my-4 overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-ink-100 bg-ink-100/40">
-                  <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-ink-500">Nome</th>
+                <tr className="border-b border-ink-100 bg-white">
+                  <th className="px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-ink-500">Nome</th>
                   <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-ink-500">Data</th>
                   <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-ink-500">Proprietario</th>
                   <th className="px-4 py-2.5 text-center text-[11px] font-semibold uppercase tracking-wide text-ink-500">Scarica</th>
-                  <th className="px-4 py-2.5 text-center text-[11px] font-semibold uppercase tracking-wide text-ink-500">Elimina</th>
+                  <th className="px-5 py-2.5 text-center text-[11px] font-semibold uppercase tracking-wide text-ink-500">Elimina</th>
                 </tr>
               </thead>
               <tbody>
@@ -621,53 +622,54 @@ function DocumentationSection({ ownerName }) {
             </table>
           </div>
         )}
-      </div>
-
-      {/* Pagination */}
-      {docTab === "caricati" && docs.length > 0 && (
-        <div className="mt-4 flex items-center justify-between text-[12px] text-ink-500">
-          <span>
-            Visualizzazione {start + 1}–{Math.min(start + PAGE_SIZE, docs.length)} di {docs.length}{" "}
-            {docs.length === 1 ? "documento" : "documenti"}
-          </span>
-          {totalPages > 1 && (
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={safePage === 1}
-                aria-label="Pagina precedente"
-                className="rounded px-2 py-1 transition-colors hover:bg-ink-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-              >
-                ‹
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => setPage(n)}
-                  className={`rounded px-2.5 py-1 transition-colors ${
-                    n === safePage
-                      ? "bg-brand-violet font-semibold text-white"
-                      : "hover:bg-ink-100"
-                  }`}
-                >
-                  {n}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={safePage === totalPages}
-                aria-label="Pagina successiva"
-                className="rounded px-2 py-1 transition-colors hover:bg-ink-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-              >
-                ›
-              </button>
-            </div>
-          )}
         </div>
-      )}
+
+        {/* Pagination — inside card */}
+        {docTab === "caricati" && docs.length > 0 && (
+          <div className="flex items-center justify-between border-t border-ink-100 bg-white px-5 py-3 text-[12px] text-ink-500">
+            <span>
+              Visualizzazione {start + 1}–{Math.min(start + PAGE_SIZE, docs.length)} di {docs.length}{" "}
+              {docs.length === 1 ? "documento" : "documenti"}
+            </span>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={safePage === 1}
+                  aria-label="Pagina precedente"
+                  className="rounded px-2 py-1 transition-colors hover:bg-ink-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                >
+                  ‹
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setPage(n)}
+                    className={`rounded px-2.5 py-1 transition-colors ${
+                      n === safePage
+                        ? "bg-brand-violet font-semibold text-white"
+                        : "hover:bg-ink-100"
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={safePage === totalPages}
+                  aria-label="Pagina successiva"
+                  className="rounded px-2 py-1 transition-colors hover:bg-ink-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                >
+                  ›
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {confirmDel && (
         <Modal
@@ -820,13 +822,13 @@ export function ProjectDetail({
       </div>
 
       {/* Config block */}
-      <div className="mt-8 overflow-hidden rounded border border-ink-100">
-        <div className="flex items-center justify-between bg-[#2f2f2f] px-5 py-3">
-          <h2 className="text-[13px] font-bold text-white">Dati della configurazione</h2>
+      <div className="mt-8 overflow-hidden rounded border border-ink-100 bg-white">
+        <div className="flex items-center justify-between border-b border-ink-100 bg-white px-5 py-3">
+          <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Dati della configurazione</p>
           <button
             type="button"
             onClick={() => setShowConfigAll((v) => !v)}
-            className="text-[12px] text-white/60 transition-colors hover:text-white"
+            className="text-[12px] font-medium text-brand-violet transition-colors hover:text-brand-violet-dark"
           >
             {showConfigAll ? "Mostra essenziali ↑" : "Vedi maggiori dettagli →"}
           </button>
@@ -860,7 +862,7 @@ export function ProjectDetail({
           ))}
         </div>
         {showConfigAll && (
-          <div className="grid grid-cols-1 gap-x-6 gap-y-3 border-t border-ink-100 bg-bg-page px-5 py-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-3 border-t border-ink-100 bg-white px-5 py-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
               ["NACE", cfg.nace_code],
               ["Tasso attualizzazione", cfg.tasso_attualizzazione != null ? `${cfg.tasso_attualizzazione}%` : null],

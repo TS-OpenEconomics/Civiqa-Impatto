@@ -52,11 +52,13 @@ export function ImpactIcon({ type, label, className = "h-12 w-12", wrapperClassN
     ),
     gettito: (
       <svg {...iconProps}>
-        <circle cx="24" cy="24" r="14.5" />
-        <path d="M18 18h12" />
-        <path d="M18 24h12" />
-        <path d="M18 30h8" />
-        <path d="M31 29l3 3 3-3" />
+        <path d="M9 40h30" />
+        <path d="M11 24l13-12 13 12" />
+        <path d="M11 24h26" />
+        <path d="M15 24v14" />
+        <path d="M21 24v14" />
+        <path d="M27 24v14" />
+        <path d="M33 24v14" />
       </svg>
     ),
   };

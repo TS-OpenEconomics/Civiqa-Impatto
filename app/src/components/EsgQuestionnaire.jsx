@@ -12,8 +12,8 @@ const QUESTIONS = [
     title: "Stiamo cercando di capire se, e quanto, il progetto consuma nuovo suolo o lo rende impermeabile.",
     description: "Rientrano in questa analisi:\n• Le aree che cambiano funzione (es. un prato trasformato in un parcheggio)\n• Le superfici coperte con materiali che impediscono all'acqua di filtrare (es. asfalto, cemento)\n\nDovrai indicare solo ciò che dipende direttamente dal tuo progetto.\nModifiche pregresse o realizzate da altri soggetti non vanno considerate.",
     inputs: [
-      { id: "soil_area_changed", label: "Superficie oggetto di cambiamento d'uso del suolo e/o impermeabilizzata", suffix: "kmq2", hint: "Valore numerico" },
-      { id: "soil_area_total", label: "Superficie totale", suffix: "kmq2", hint: "Valore numerico" },
+      { id: "soil_area_changed", label: "Superficie oggetto di cambiamento d'uso del suolo e/o impermeabilizzata", suffix: "km²", hint: "Valore numerico" },
+      { id: "soil_area_total", label: "Superficie totale", suffix: "km²", hint: "Valore numerico" },
     ],
   },
   {
