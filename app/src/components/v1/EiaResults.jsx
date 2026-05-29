@@ -1258,8 +1258,8 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
         </div>
       )}
 
-      {/* Dual row: spesa | moltiplicatore | impatto | ranking */}
-      <div className="mb-6 grid grid-cols-1 items-stretch gap-3.5 xl:grid-cols-[1fr_auto_1fr_300px]">
+      {/* Dual row: spesa → impatto | ranking */}
+      <div className="mb-3 grid grid-cols-1 items-stretch gap-3.5 xl:grid-cols-[1fr_auto_1fr_300px]">
 
         {/* Spesa map card */}
         <div className="flex flex-col rounded-xl border border-ink-100 bg-white p-5">
@@ -1280,23 +1280,23 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
           </div>
         </div>
 
-        {/* Moltiplicatore (desktop) */}
-        <div className="hidden min-w-[110px] flex-col items-center justify-center px-1 xl:flex">
-          <div className="w-px flex-1" style={{ minHeight: 40, background: "linear-gradient(180deg, transparent, #AFA9EC 50%, #AFA9EC)" }} />
-          <div className="my-3 min-w-[110px] rounded-xl px-[18px] py-[14px] text-center" style={{ background: "#EEEDFE", border: "1px solid #AFA9EC" }}>
-            <div className="mb-1 text-[10px] uppercase tracking-[0.08em]" style={{ color: "#534AB7" }}>Moltiplica</div>
-            <div className="text-[28px] font-medium leading-none" style={{ color: "#534AB7" }}>{multInfo.value}</div>
-            <div className="mt-1.5 text-[11px] leading-tight" style={{ color: "#3C3489" }}>{multInfo.sub}</div>
+        {/* Connettore di progressione tra le due mappe */}
+        <div className="flex items-center justify-center px-1">
+          {/* Desktop: freccia orizzontale */}
+          <div className="hidden flex-col items-center gap-2 xl:flex">
+            <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-ink-400">Propagazione</p>
+            <svg width="48" height="32" viewBox="0 0 48 32" fill="none" aria-hidden="true">
+              <path d="M2 16h40" stroke="#AFA9EC" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M36 8l8 8-8 8" stroke="#534AB7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            </svg>
           </div>
-          <div className="w-px flex-1" style={{ minHeight: 40, background: "linear-gradient(180deg, #AFA9EC, #AFA9EC 50%, transparent)" }} />
-        </div>
-
-        {/* Moltiplicatore (mobile) */}
-        <div className="flex justify-center xl:hidden">
-          <div className="min-w-[110px] rounded-xl px-[18px] py-[14px] text-center" style={{ background: "#EEEDFE", border: "1px solid #AFA9EC" }}>
-            <div className="mb-1 text-[10px] uppercase tracking-[0.08em]" style={{ color: "#534AB7" }}>Moltiplica</div>
-            <div className="text-[28px] font-medium leading-none" style={{ color: "#534AB7" }}>{multInfo.value}</div>
-            <div className="mt-1.5 text-[11px] leading-tight" style={{ color: "#3C3489" }}>{multInfo.sub}</div>
+          {/* Mobile: freccia verticale */}
+          <div className="flex flex-col items-center gap-1 xl:hidden">
+            <svg width="32" height="48" viewBox="0 0 32 48" fill="none" aria-hidden="true">
+              <path d="M16 2v40" stroke="#AFA9EC" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M8 36l8 8 8-8" stroke="#534AB7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            </svg>
+            <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-ink-400">Propagazione</p>
           </div>
         </div>
 
@@ -1398,6 +1398,30 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
         </div>
       </div>
 
+      {/* Moltiplicatore — metrica derivata (sotto le mappe, non in mezzo) */}
+      <div className="mb-6 flex flex-col items-baseline gap-3 rounded-xl border border-ink-100 bg-white px-5 py-4 sm:flex-row sm:items-center sm:gap-5">
+        <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-ink-500">Rapporto osservato</p>
+        <p className="text-[26px] font-medium leading-none" style={{ color: "#534AB7" }}>{multInfo.value}</p>
+        <p className="flex-1 text-[13px] leading-relaxed text-ink-600">
+          {(() => {
+            const dimText = dim === "gdp" ? "PIL" : dimLabel.toLowerCase();
+            const valuePure = multInfo.value.replace("×", "").trim();
+            if (dim === "employment") {
+              return (
+                <>
+                  Per ogni milione di euro speso si sostengono <strong className="text-ink-900">{valuePure}</strong>. È una metrica derivata, calcolata dal rapporto fra impatto occupazionale e spesa.
+                </>
+              );
+            }
+            return (
+              <>
+                Per ogni euro speso si attivano <strong className="text-ink-900">{valuePure} €</strong> di {dimText} ({multInfo.sub}). È una metrica derivata, calcolata dal rapporto fra impatto e spesa.
+              </>
+            );
+          })()}
+        </p>
+      </div>
+
     </div>
   );
 }
@@ -1485,7 +1509,7 @@ function TabSettori({ updateSearch, searchParams, onOpenExplore }) {
         <SectorRankingCard sectors={sorted} dim={dim} isMoney={isMoney} rankView={rankView} />
         {top3.length >= 3 && (
           <SectorInsightBox>
-            <strong className="font-medium">{cleanText(top3[0].ateco_name)}</strong> è il settore più attivato ({fmt(sectorTotal(top3[0], dim))} di {dimLabel.toLowerCase()}), seguito da{" "}
+            <strong className="font-medium">{cleanText(top3[0].ateco_name)}</strong> è il settore più attivato ({fmt(sectorTotal(top3[0], dim))} di {dim === "gdp" ? "PIL" : dimLabel.toLowerCase()}), seguito da{" "}
             <strong className="font-medium">{cleanText(top3[1].ateco_name)}</strong> e{" "}
             <strong className="font-medium">{cleanText(top3[2].ateco_name)}</strong>. Insieme questi tre settori valgono il {top3Pct}% dell'impatto totale.
           </SectorInsightBox>
@@ -2614,7 +2638,7 @@ const METODOLOGIA_SECTIONS = [
     id: "approccio",
     title: "L'analisi di impatto socioeconomico",
     body: [
-      "L'analisi misura come una spesa iniziale si propaga nel sistema economico, traducendosi in PIL, produzione, occupazione, redditi e gettito fiscale aggiuntivi. L'approccio è ex-post: stima l'impatto generato da una spesa data, non la sua redditività finanziaria.",
+      "L'analisi misura come una spesa iniziale si propaga nel sistema economico, traducendosi in PIL, produzione, occupazione, redditi e gettito fiscale aggiuntivi. L'approccio può essere applicato sia ex-ante (a stima, per progetti pianificati o in corso) sia ex-post (a consuntivo, su spese già sostenute): in entrambi i casi misura l'impatto generato dalla spesa, non la sua redditività finanziaria.",
       "Nella sua applicazione attuale, lo strumento valuta progetti di investimento pubblico **localizzati in una singola provincia di origine** e ripartiti su un insieme **specifico di categorie di intervento** del settore di riferimento. Lo shock di domanda esogena è quindi puntuale a livello territoriale e settorializzato lungo le voci di spesa del progetto.",
       "La spesa viene trattata come shock di domanda: si parte dai settori direttamente attivati dalle categorie di intervento e si segue la propagazione lungo le filiere produttive (effetto indiretto) e attraverso la spesa dei redditi distribuiti alle famiglie (effetto indotto).",
     ],
