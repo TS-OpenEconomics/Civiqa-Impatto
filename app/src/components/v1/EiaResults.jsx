@@ -259,6 +259,7 @@ export function EiaResults({ project, analysis, onBack }) {
   const initialTab = TABS.some((t) => t.id === requestedTab) ? requestedTab : "sintesi";
   const [tab, setTab] = useState(initialTab);
   const [glossaryOpen, setGlossaryOpen] = useState(false);
+  const [metodologiaOpen, setMetodologiaOpen] = useState(false);
   const { showToast } = useToast();
 
   const meta = staticResults.metadata ?? {};
@@ -342,6 +343,13 @@ export function EiaResults({ project, analysis, onBack }) {
             </div>
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <button
+                onClick={() => setMetodologiaOpen(true)}
+                className="flex h-9 items-center gap-2 border border-ink-200 bg-white px-4 font-semibold text-ink-700 transition-colors hover:border-brand-violet hover:text-brand-violet"
+              >
+                <IconInfoCircle className="h-4 w-4" />
+                Metodologia
+              </button>
+              <button
                 onClick={() => showToast("Export PDF disponibile nella versione completa.", "info")}
                 className="flex h-9 items-center gap-2 border border-ink-200 bg-white px-4 font-semibold text-ink-700 transition-colors hover:bg-bg-page"
               >
@@ -410,6 +418,7 @@ export function EiaResults({ project, analysis, onBack }) {
       </div>
 
       {glossaryOpen && <GlossaryPopover tab={tab} onClose={() => setGlossaryOpen(false)} />}
+      {metodologiaOpen && <MetodologiaModal onClose={() => setMetodologiaOpen(false)} />}
     </div>
   );
 }
@@ -506,7 +515,10 @@ function TabSintesi() {
     <div className="space-y-14">
       {/* Hero: investimento */}
       <div className="border-l-4 border-brand-violet bg-brand-violet/5 px-6 py-5">
-        <p className="text-[10px] font-mono font-medium uppercase tracking-[0.18em] text-brand-violet">Il punto di partenza</p>
+        <div className="flex items-center gap-2">
+          <p className="text-[10px] font-mono font-medium uppercase tracking-[0.18em] text-brand-violet">Il punto di partenza</p>
+          <InfoButton slug="sintesi.hero" />
+        </div>
         <div className="mt-2 flex flex-wrap items-baseline gap-4">
           <p className="text-[38px] font-bold leading-none text-brand-violet">{fmtM(spend)}</p>
           <p className="text-[15px] text-ink-700">
@@ -518,12 +530,12 @@ function TabSintesi() {
 
       {/* Cosa ha generato */}
       <section className="space-y-4">
-        <SintesiSectionHead title="Cosa ha generato" subtitle="I principali impatti attivati sull'economia italiana" />
+        <SintesiSectionHead title="Cosa ha generato" subtitle="I principali impatti attivati sull'economia italiana" info="sintesi.kpis" />
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <SintesiKPI icon="pil"        label="PIL"                    value={fmtM(natGdp)}         caption="valore aggiunto generato in Italia" />
-          <SintesiKPI icon="produzione" label="Valore della Produzione" value={fmtM(natProd)}        caption="di volume d'affari in Italia" />
-          <SintesiKPI icon="occupazione" label="Occupazione"            value={fmtIT(natEmp, 0)} valueUnit="occupati" caption="posti di lavoro attivati" />
-          <SintesiKPI icon="gettito"    label="Gettito fiscale"         value={fmtM(natFiscal)}      caption="che rientra nelle casse dello Stato" />
+          <SintesiKPI icon="pil"        label="PIL"                    value={fmtM(natGdp)}         caption="valore aggiunto generato in Italia" info="kpi.pil" />
+          <SintesiKPI icon="produzione" label="Valore della Produzione" value={fmtM(natProd)}        caption="di volume d'affari in Italia" info="kpi.produzione" />
+          <SintesiKPI icon="occupazione" label="Occupazione"            value={fmtIT(natEmp, 0)} valueUnit="occupati" caption="posti di lavoro attivati" info="kpi.occupazione" />
+          <SintesiKPI icon="gettito"    label="Gettito fiscale"         value={fmtM(natFiscal)}      caption="che rientra nelle casse dello Stato" info="kpi.gettito" />
         </div>
       </section>
 
@@ -532,6 +544,7 @@ function TabSintesi() {
         <SintesiSectionHead
           title="Quanto resta sul territorio"
           subtitle={`Il ${gdpPcts[0]}% del PIL attivato resta nella provincia di ${originProvince}`}
+          info="sintesi.territory"
         />
         <SintesiTerritoryCard
           provPct={gdpPcts[0]} provGdp={provGdp} provEmp={provEmp}
@@ -545,6 +558,7 @@ function TabSintesi() {
         <SintesiSectionHead
           title="L'effetto moltiplicatore"
           subtitle="PIL e produzione per euro speso; occupazione per milione di euro"
+          info="sintesi.moltiplicatori"
         />
         <SintesiMultiplierGrid
           regGdpMult={regGdpMult} natGdpMult={natGdpMult}
@@ -569,7 +583,7 @@ function TabSintesi() {
 
       {/* Pro capite */}
       <section className="space-y-4">
-        <SintesiSectionHead title="Valori pro capite" subtitle="L'impatto rapportato alla popolazione residente in ciascun perimetro" />
+        <SintesiSectionHead title="Valori pro capite" subtitle="L'impatto rapportato alla popolazione residente in ciascun perimetro" info="sintesi.percapita" />
         <SintesiPerCapita
           provName={originProvince} provGdpPc={provPc.gdp_pc ?? 0} provEmpPc={provPc.employment_pc_per_10k ?? 0} provPop={provPc.population ?? 0}
           regName={regionName} regGdpPc={regPc.gdp_pc ?? 0} regEmpPc={regPc.employment_pc_per_10k ?? 0} regPop={regPc.population ?? 0}
@@ -583,16 +597,19 @@ function TabSintesi() {
   );
 }
 
-function SintesiSectionHead({ title, subtitle }) {
+function SintesiSectionHead({ title, subtitle, info }) {
   return (
     <div>
-      <h3 className="text-[17px] font-bold text-ink-900">{title}</h3>
+      <div className="flex items-center gap-2">
+        <h3 className="text-[17px] font-bold text-ink-900">{title}</h3>
+        {info && <InfoButton slug={info} />}
+      </div>
       {subtitle && <p className="mt-1 text-sm text-ink-500">{subtitle}</p>}
     </div>
   );
 }
 
-function SintesiKPI({ icon, label, value, valueUnit, caption }) {
+function SintesiKPI({ icon, label, value, valueUnit, caption, info }) {
   return (
     <div className="border border-ink-100 bg-white p-4">
       <div className="mb-3 flex items-center gap-2">
@@ -602,7 +619,8 @@ function SintesiKPI({ icon, label, value, valueUnit, caption }) {
           className="h-4 w-4"
           wrapperClassName="flex h-7 w-7 shrink-0 items-center justify-center bg-brand-violet/10 text-brand-violet"
         />
-        <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-ink-500">{label}</p>
+        <p className="flex-1 text-[11px] font-bold uppercase tracking-[0.1em] text-ink-500">{label}</p>
+        {info && <InfoButton slug={info} size="sm" placement="left" />}
       </div>
       <p className="text-[26px] font-bold leading-none text-ink-900">
         {value}
@@ -685,8 +703,9 @@ function SintesiFiscalReturn({ fiscalPct, natFiscal, spend }) {
   const euroPerM = Math.round((fiscalPct / 100) * 1_000_000);
   return (
     <div className="overflow-hidden border border-ink-100 bg-white">
-      <div className="border-b border-ink-100 bg-bg-page px-5 py-2.5">
+      <div className="flex items-center justify-between border-b border-ink-100 bg-bg-page px-5 py-2.5">
         <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400">Ritorno fiscale allo Stato</p>
+        <InfoButton slug="sintesi.fiscal" placement="left" />
       </div>
       <div className="grid grid-cols-1 items-center gap-6 px-5 py-5 md:grid-cols-[auto_1fr]">
         <div className="flex shrink-0 items-baseline gap-3 md:flex-col md:items-start md:gap-1">
@@ -962,7 +981,10 @@ function TabComponenti() {
       <div className="overflow-hidden border border-ink-100 bg-white">
         <div className="flex flex-wrap items-start justify-between gap-3 border-b border-ink-100 px-5 py-4">
           <div>
-            <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400">Composizione in</p>
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400">Composizione in</p>
+              <InfoButton slug="componenti.effetti" />
+            </div>
             <p className="mt-0.5 text-[17px] font-bold text-ink-900">{terrLabel}</p>
           </div>
           <div className="text-right">
@@ -1007,6 +1029,7 @@ function TabComponenti() {
         <SintesiSectionHead
           title="Dove finisce il valore, effetto per effetto"
           subtitle={`I primi tre settori per ciascun effetto in ${terrLabel}`}
+          info="componenti.settori"
         />
         <div className={`mt-4 grid border border-ink-100 bg-white divide-y divide-ink-100 md:divide-y-0 md:divide-x ${effects.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
           {effectItems.map(item => (
@@ -1052,7 +1075,10 @@ function PropagazioneFooter({ metricId, metricDef }) {
       <hr className="border-ink-100" />
 
       <div>
-        <div className="mb-1.5 text-[11px] uppercase tracking-[0.08em] text-ink-400">Quanto valore resta vicino</div>
+        <div className="mb-1.5 flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-ink-400">
+          <span>Quanto valore resta vicino</span>
+          <InfoButton slug="componenti.propagazione" />
+        </div>
         <h2 className="mb-2 text-[22px] font-medium text-ink-900">Il valore si concentra dove parte la spesa</h2>
         <p className="max-w-[720px] text-[14px] leading-relaxed text-ink-500">
           Su 100€ di valore attivato, una larga maggioranza non lascia {regionName}. Più ci si allontana da {originProvince}, meno valore si attiva.
@@ -1225,9 +1251,12 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
 
   return (
     <div>
-      <p className="mb-7 max-w-[720px] text-[15px] leading-relaxed text-ink-500">
-        L'investimento parte da <strong className="text-ink-900">{originProvince}</strong>. La mappa di destra mostra dove si attiva il valore lungo le filiere produttive.
-      </p>
+      <div className="mb-7 flex items-start gap-2">
+        <p className="max-w-[720px] text-[15px] leading-relaxed text-ink-500">
+          L'investimento parte da <strong className="text-ink-900">{originProvince}</strong>. La mappa di destra mostra dove si attiva il valore lungo le filiere produttive.
+        </p>
+        <InfoButton slug="geografia.maps" />
+      </div>
 
       {/* Controls */}
       <div className="mb-5 flex flex-wrap items-end gap-5">
@@ -1345,7 +1374,10 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
 
         {/* Ranking card */}
         <div className="flex flex-col rounded-xl border border-ink-100 bg-white p-5">
-          <div className="mb-3.5 text-[11px] uppercase tracking-[0.08em] text-ink-400">{rankTitle}</div>
+          <div className="mb-3.5 flex items-center justify-between gap-2">
+            <span className="text-[11px] uppercase tracking-[0.08em] text-ink-400">{rankTitle}</span>
+            <InfoButton slug="geografia.ranking" placement="left" />
+          </div>
 
           {rankLeader && (
             <div
@@ -1470,7 +1502,10 @@ function TabSettori({ updateSearch, searchParams, onOpenExplore }) {
       {/* Section 1: Classifica settoriale */}
       <div className="mb-12">
         <div className="mb-5">
-          <div className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "#534AB7" }}>Classifica settoriale</div>
+          <div className="mb-1.5 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "#534AB7" }}>
+            <span>Classifica settoriale</span>
+            <InfoButton slug="settori.classifica" />
+          </div>
           <h2 className="mb-2 text-[20px] font-medium text-ink-900">I settori che ricevono più valore</h2>
           <p className="max-w-[720px] text-[14px] leading-relaxed text-ink-500">
             {rankView === "territorio"
@@ -1503,7 +1538,10 @@ function TabSettori({ updateSearch, searchParams, onOpenExplore }) {
       {/* Section 2: Mappa di calore */}
       <div className="mb-12">
         <div className="mb-5">
-          <div className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "#534AB7" }}>Mappa di calore</div>
+          <div className="mb-1.5 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "#534AB7" }}>
+            <span>Mappa di calore</span>
+            <InfoButton slug="settori.heatmap" />
+          </div>
           <h2 className="mb-2 text-[20px] font-medium text-ink-900">Dove si concentra il valore, settore per settore</h2>
           <p className="max-w-[720px] text-[14px] leading-relaxed text-ink-500">
             Per ogni coppia settore × regione, il colore mostra l'intensità del {dimLabel} attivato. La {regionName} domina sempre: attiva il toggle per scoprire come si distribuisce il valore nel resto d'Italia.
@@ -1543,7 +1581,10 @@ function TabSettori({ updateSearch, searchParams, onOpenExplore }) {
       {/* Section 3: Flussi di attivazione */}
       <div>
         <div className="mb-5">
-          <div className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "#534AB7" }}>Flussi di attivazione</div>
+          <div className="mb-1.5 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "#534AB7" }}>
+            <span>Flussi di attivazione</span>
+            <InfoButton slug="settori.sankey" />
+          </div>
           <h2 className="mb-2 text-[20px] font-medium text-ink-900">Da dove parte il valore, dove arriva</h2>
           <p className="max-w-[720px] text-[14px] leading-relaxed text-ink-500">
             Come la spesa diretta (sinistra) si propaga nei settori attivati per effetto indiretto e indotto (destra). Lo spessore dei flussi è proporzionale al valore attivato.
@@ -2051,7 +2092,10 @@ function TabEsplora({ showToast, searchParams, updateSearch }) {
 
       {/* Query card */}
       <div className="mb-5 border border-ink-100 bg-white p-6">
-        <div className="mb-3 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-400">La tua domanda</div>
+        <div className="mb-3 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-400">
+          <span>La tua domanda</span>
+          <InfoButton slug="esplora.query" />
+        </div>
         <div className="flex flex-wrap items-center gap-2 leading-relaxed text-ink-900" style={{ fontSize: 18 }}>
           <span>Mostrami il</span>
           <ExplorePill label={metricLabel} open={openPill === "metric"} onToggle={(e) => togglePill("metric", e)}>
@@ -2515,6 +2559,356 @@ function LoadingBanner() {
   return (
     <div className="mb-4 border border-ink-100 bg-white px-4 py-3 text-sm text-ink-700">
       L'analisi è in corso.
+    </div>
+  );
+}
+
+// ─── CHART INFO + METHODOLOGY ─────────────────────────────────────────────────
+
+const CHART_INFO = {
+  "sintesi.hero": {
+    title: "Il punto di partenza",
+    body: "La spesa iniziale viene modellata come uno shock di domanda esogena al sistema economico, distribuito tra i settori coinvolti secondo le voci di spesa del progetto. Da qui il modello SAM calcola tutte le ricadute attivate.",
+  },
+  "sintesi.kpis": {
+    title: "Le grandezze attivate",
+    body: "Il modello SAM produce sei grandezze macroeconomiche: il valore della produzione (somma di beni intermedi e finali — la dimensione totale dell'attività generata), il PIL (somma di redditi da lavoro, capitale e imposte indirette nette — la ricchezza nuova), l'occupazione in equivalenti a tempo pieno (ETP), i redditi distribuiti a famiglie e imprese e il gettito fiscale per la finanza pubblica.",
+    extra: "PIL e valore della produzione differiscono perché il PIL conta solo il valore aggiunto in ogni passaggio, mentre il valore della produzione include anche i beni intermedi (e quindi conta più volte lo stesso bene lungo la filiera).",
+  },
+  "kpi.pil": {
+    title: "PIL — valore aggiunto",
+    body: "Somma dei redditi da lavoro, da capitale e delle imposte indirette nette generati dal progetto. Esprime la ricchezza nuova effettivamente creata, evitando il doppio conteggio dei beni intermedi lungo la filiera.",
+  },
+  "kpi.produzione": {
+    title: "Valore della Produzione",
+    body: "Volume complessivo di beni e servizi attivati lungo l'intera filiera, intermedi e finali. Per costruzione è sempre maggiore del PIL perché lo stesso bene viene contato più volte (come prodotto intermedio e poi come parte del bene finale).",
+  },
+  "kpi.occupazione": {
+    title: "Occupazione (ETP)",
+    body: "Equivalenti a tempo pieno: forza lavoro necessaria per sostenere l'incremento di produzione attivato dal progetto. Non corrisponde necessariamente a posizioni lavorative fisiche; le stime sono calcolate ipotizzando un anno di realizzazione.",
+  },
+  "kpi.gettito": {
+    title: "Gettito fiscale",
+    body: "Imposte e contributi attivati lungo la filiera: IVA, IRPEF, IRES e contributi sociali. Riportato solo a livello nazionale, perché le entrate erariali confluiscono al bilancio dello Stato e una loro regionalizzazione non sarebbe metodologicamente robusta.",
+  },
+  "sintesi.territory": {
+    title: "Dove resta il valore",
+    body: "Lo shock parte dalla provincia di origine ma si propaga lungo le catene di fornitura. Più una filiera è locale, più valore resta nel territorio. Qui misuriamo la quota di PIL trattenuta nella provincia di origine, quella che si diffonde nel resto della regione (spillover) e quella che si disperde lungo le filiere nazionali (resto d'Italia).",
+  },
+  "sintesi.moltiplicatori": {
+    title: "Come leggere il moltiplicatore",
+    body: "Il moltiplicatore è il rapporto fra valore attivato e spesa iniziale: indica quanti euro di PIL (o di produzione) vengono generati per ogni euro speso. Per l'occupazione la metrica è l'intensità: numero di occupati attivati per milione di euro investito.",
+    extra: "Il moltiplicatore va letto come effetto lordo: per ottenere un effetto differenziale puro andrebbe nettato di una crescita tendenziale o di investimenti controfattuali.",
+  },
+  "sintesi.fiscal": {
+    title: "Cosa significa il ritorno fiscale",
+    body: "Stima la quota della spesa iniziale che rientra allo Stato come imposte e contributi attivati lungo l'intera filiera (IVA, IRPEF, IRES, contributi sociali). Misura il livello di 'autofinanziamento' che il progetto produce sulle entrate pubbliche.",
+    extra: "Il dato è riportato solo a livello nazionale: le entrate erariali confluiscono al bilancio dello Stato e non sono correttamente regionalizzabili.",
+  },
+  "sintesi.percapita": {
+    title: "Valori pro capite",
+    body: "I valori sono rapportati alla popolazione residente in ciascun perimetro. Servono a confrontare l'intensità dell'impatto fra territori di dimensione molto diversa.",
+    extra: "Attenzione: i valori pro capite non si sommano fra livelli territoriali (provincia, regione, Italia).",
+  },
+  "componenti.effetti": {
+    title: "Diretti, indiretti, indotti",
+    body: "Il modello SAM scompone l'impatto in tre componenti: diretto (valore aggiunto nei settori di primo impatto, dove la spesa avviene fisicamente), indiretto (valore aggiunto attivato lungo le catene di fornitori, scambi B2B di beni intermedi), indotto (effetti generati dai consumi delle famiglie con i redditi attivati nelle prime due fasi).",
+    extra: "L'effetto diretto è presente solo nella provincia di origine; le altre aree ricevono solo gli effetti a cascata (indiretto + indotto).",
+  },
+  "componenti.settori": {
+    title: "Settori per effetto",
+    body: "Per ciascuna componente (diretta, indiretta, indotta) sono mostrati i settori dove finisce maggiormente il valore. Letto insieme alla composizione, indica se l'impatto si concentra nei settori di primo livello o si disperde lungo filiere più lunghe.",
+  },
+  "componenti.propagazione": {
+    title: "Concentrazione territoriale",
+    body: "Su 100 € di valore attivato, una larga maggioranza resta nella regione di origine: la provincia in cui avviene fisicamente la spesa cattura la quota maggiore, il resto della regione segue grazie alle filiere locali, e solo una parte residua si propaga nel resto d'Italia lungo le catene di subfornitura nazionali.",
+  },
+  "geografia.maps": {
+    title: "Mappa spesa vs mappa impatto",
+    body: "A sinistra dove avviene fisicamente la spesa (100 % concentrato nella provincia/regione di origine). A destra dove si attiva l'impatto economico. La differenza è proprio l'effetto di propagazione catturato dalla SAM: le filiere portano valore in aree mai toccate direttamente dalla spesa.",
+  },
+  "geografia.ranking": {
+    title: "Classifica territori",
+    body: "I primi territori per valore di impatto attivato sulla dimensione scelta. In modalità 'pro capite' la classifica può cambiare radicalmente perché si neutralizza l'effetto-dimensione: territori piccoli con filiere intense possono salire in alto.",
+  },
+  "settori.classifica": {
+    title: "Settori più attivati",
+    body: "I 63 settori ATECO della classificazione ISTAT (tavole input-output 2015-2019) ordinati per valore attivato sulla dimensione scelta. La vista 'per territorio' suddivide ogni barra per provincia/regione di destinazione; la vista 'per componente' mostra la quota diretta/indiretta/indotta del singolo settore.",
+  },
+  "settori.heatmap": {
+    title: "Mappa di calore settore × territorio",
+    body: "Per ogni coppia settore × regione, l'intensità del colore mostra il valore attivato. La regione di origine domina sempre; il toggle 'Senza X' rimuove la regione di origine per leggere come si distribuisce il valore residuo nel resto d'Italia.",
+  },
+  "settori.sankey": {
+    title: "Flussi di attivazione",
+    body: "Mostra come la spesa diretta (a sinistra, per settore di impiego iniziale) si propaga verso i settori attivati per effetto indiretto e indotto (a destra). Lo spessore dei flussi è proporzionale al valore attivato; usa i chip in alto per isolare uno o più settori di partenza.",
+  },
+  "esplora.query": {
+    title: "Compositore di domande",
+    body: "Componi una domanda libera scegliendo metrica (cosa misurare), asse di scomposizione (come dividerla), filtro territoriale ed effetto (diretto / indiretto / indotto). Il risultato si aggiorna istantaneamente e può essere esportato.",
+    extra: "Per i settori e per regioni/province è disponibile la scomposizione per effetto. Per il gettito fiscale e i redditi la scomposizione non è disponibile (il dato è aggregato).",
+  },
+};
+
+const METODOLOGIA_SECTIONS = [
+  {
+    id: "approccio",
+    title: "L'analisi di impatto socioeconomico",
+    body: [
+      "L'analisi misura come una spesa iniziale si propaga nel sistema economico, traducendosi in PIL, produzione, occupazione, redditi e gettito fiscale aggiuntivi. L'approccio è ex-post: stima l'impatto generato da una spesa data, non la sua redditività finanziaria.",
+      "Nella sua applicazione attuale, lo strumento valuta progetti di investimento pubblico **localizzati in una singola provincia di origine** e ripartiti su un insieme **specifico di categorie di intervento** del settore di riferimento. Lo shock di domanda esogena è quindi puntuale a livello territoriale e settorializzato lungo le voci di spesa del progetto.",
+      "La spesa viene trattata come shock di domanda: si parte dai settori direttamente attivati dalle categorie di intervento e si segue la propagazione lungo le filiere produttive (effetto indiretto) e attraverso la spesa dei redditi distribuiti alle famiglie (effetto indotto).",
+    ],
+  },
+  {
+    id: "sam",
+    title: "Il modello SAM (Social Accounting Matrix)",
+    body: [
+      "La SAM è una matrice contabile che rappresenta in modo integrato la struttura dell'economia italiana: attività produttive, fattori della produzione (lavoro e capitale), imprese, famiglie, governo, resto del mondo, formazione del capitale.",
+      "Letta per riga descrive i redditi di ciascun aggregato; letta per colonna ne descrive le spese. La SAM cattura quindi non solo gli scambi B2B fra settori (come una tavola input-output tradizionale) ma anche la redistribuzione del reddito fra famiglie, imprese e Stato.",
+      "Disaggregazione: 63 settori ATECO secondo la classificazione ISTAT (tavole input-output 2015-2019), con dettaglio provinciale per l'intero territorio italiano.",
+    ],
+  },
+  {
+    id: "componenti",
+    title: "Impatti diretti, indiretti, indotti",
+    body: [
+      "**Impatto diretto** — valore aggiunto generato nei settori in cui la spesa viene effettivamente realizzata: imprese, lavoratori e fornitori di primo livello.",
+      "**Impatto indiretto** — ricadute a cascata lungo le catene di subfornitura attivate dai settori di primo impatto (scambi B2B di beni e servizi intermedi).",
+      "**Impatto indotto** — effetti generati dai consumi addizionali delle famiglie con i redditi distribuiti nelle prime due fasi.",
+      "Tutti e tre i livelli vengono propagati ricorsivamente dal modello fino a convergenza. La matrice di Leontief L = (I − A)⁻¹ cattura l'effetto di propagazione iterata, dove A è la matrice dei coefficienti tecnici della SAM.",
+    ],
+  },
+  {
+    id: "pil-vs-produzione",
+    title: "PIL vs Valore della produzione",
+    body: [
+      "**Valore della produzione**: somma del valore di tutti i beni prodotti, intermedi e finali. Conta più volte lo stesso bene lungo la catena produttiva, restituendo il volume complessivo dell'attività generata.",
+      "**PIL (valore aggiunto)**: somma di redditi da lavoro, da capitale e imposte indirette nette. Considera solo il valore aggiunto in ciascun passaggio della filiera, evitando il doppio conteggio. È la misura corretta della ricchezza effettivamente creata.",
+      "Per costruzione il PIL è sempre inferiore al valore della produzione. Il rapporto PIL / Produzione misura quanto della filiera attivata si traduce in nuova ricchezza netta.",
+    ],
+  },
+  {
+    id: "moltiplicatori",
+    title: "Moltiplicatori",
+    body: [
+      "Il **moltiplicatore PIL** = PIL attivato / Spesa iniziale: indica quanti euro di PIL vengono generati per ogni euro speso. Stesso schema per la produzione e per i redditi.",
+      "Per l'**occupazione** si usa l'intensità (occupati attivati per milione di euro speso) anziché il rapporto puro, perché numeratore e denominatore sono di natura diversa.",
+      "I moltiplicatori vanno letti come effetto lordo. Per ottenere un effetto differenziale rispetto a un baseline di crescita tendenziale o a un investimento alternativo, il moltiplicatore andrebbe nettato della crescita controfattuale.",
+    ],
+  },
+  {
+    id: "geografia",
+    title: "Geografia: provincia, regione, resto d'Italia",
+    body: [
+      "La spesa è interamente localizzata in **una sola provincia di origine**, quella di esecuzione fisica del progetto. Da lì il modello traccia la propagazione su tre livelli territoriali.",
+      "Gli **effetti diretti** si concentrano nella provincia di origine: cantieri, fornitori di primo livello, lavoratori direttamente coinvolti.",
+      "Le **filiere regionali** catturano spillover nelle altre province della stessa regione attraverso le interdipendenze settoriali locali (resto della regione).",
+      "La **dispersione extra-regionale** segue le catene di subfornitura nazionali: parte dei beni intermedi e dei servizi proviene da fuori regione, generando ricadute nel resto d'Italia.",
+    ],
+  },
+  {
+    id: "gettito",
+    title: "Gettito fiscale",
+    body: [
+      "Il gettito è stimato applicando le aliquote medie effettive ai redditi e ai consumi attivati: comprende IVA, IRPEF, IRES e contributi sociali.",
+      "Viene riportato come gettito complessivo nazionale e non viene disaggregato per area geografica: la componente erariale confluisce al bilancio dello Stato e una sua regionalizzazione non sarebbe metodologicamente rigorosa.",
+      "Il rapporto gettito / spesa indica la quota della spesa iniziale che si 'autofinanzia' attraverso le entrate fiscali generate dall'attività economica attivata.",
+    ],
+  },
+  {
+    id: "limiti",
+    title: "Limiti del modello",
+    body: [
+      "**Linearità** — il modello assume coefficienti tecnici costanti, con risposta proporzionale ai cambiamenti nella domanda.",
+      "**Domanda esogena** — la spesa è considerata aggiuntiva rispetto al baseline. Gli effetti sono al lordo di un eventuale investimento controfattuale.",
+      "**Nessun effetto prezzo** — aumenti della domanda non si traducono in variazioni di prezzo nel modello.",
+      "**Breve–medio termine** — non sono catturati effetti di lungo periodo (innovazione, capitale strutturale, visibilità internazionale, riconfigurazioni della struttura produttiva).",
+      "**Ceteris paribus** — l'analisi non considera shock esterni o azioni di politica fiscale/monetaria concomitanti che possano alterare i risultati.",
+    ],
+  },
+  {
+    id: "fonti",
+    title: "Fonti dati",
+    body: [
+      "ISTAT — Tavole input-output simmetriche per branca produttiva, edizione 2015-2019 (struttura della SAM).",
+      "ISTAT — Dati di occupazione, redditi e popolazione per il dettaglio settoriale e territoriale.",
+      "Aliquote fiscali medie effettive per la stima del gettito (IVA, IRPEF, IRES, contributi sociali).",
+    ],
+  },
+];
+
+function IconInfoCircle({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+  );
+}
+
+function InfoButton({ slug, label = "Spiegazione", placement = "right", size = "md" }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const info = CHART_INFO[slug];
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDown = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  if (!info) return null;
+
+  const popoverPos = placement === "left"
+    ? { right: 0, top: "calc(100% + 6px)" }
+    : { left: 0, top: "calc(100% + 6px)" };
+
+  const dim = size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4";
+
+  return (
+    <span ref={ref} className="relative inline-flex align-middle" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label={label}
+        aria-expanded={open}
+        className={`inline-flex items-center justify-center transition-colors ${
+          open ? "text-brand-violet" : "text-ink-300 hover:text-brand-violet"
+        }`}
+      >
+        <IconInfoCircle className={dim} />
+      </button>
+      {open && (
+        <div
+          className="absolute z-40 w-[340px] border-l-2 border-brand-violet bg-white p-4 shadow-xl normal-case tracking-normal"
+          style={popoverPos}
+        >
+          <p className="text-[13px] font-semibold leading-tight text-ink-900">{info.title}</p>
+          <p className="mt-2 text-[13px] leading-relaxed text-ink-700">{info.body}</p>
+          {info.extra && (
+            <p className="mt-3 border-t border-ink-100 pt-3 text-[12px] leading-relaxed text-ink-500">
+              {info.extra}
+            </p>
+          )}
+        </div>
+      )}
+    </span>
+  );
+}
+
+function renderMethodologyBody(body) {
+  return body.map((line, idx) => {
+    const parts = line.split(/(\*\*[^*]+\*\*)/g);
+    return (
+      <p key={idx} className="text-[14px] leading-relaxed text-ink-700">
+        {parts.map((part, i) => {
+          if (part.startsWith("**") && part.endsWith("**")) {
+            return <strong key={i} className="font-semibold text-ink-900">{part.slice(2, -2)}</strong>;
+          }
+          return <span key={i}>{part}</span>;
+        })}
+      </p>
+    );
+  });
+}
+
+function MetodologiaModal({ onClose }) {
+  const [activeId, setActiveId] = useState(METODOLOGIA_SECTIONS[0].id);
+  const sectionRefs = useRef({});
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  function scrollToSection(id) {
+    const el = sectionRefs.current[id];
+    if (el && scrollRef.current) {
+      scrollRef.current.scrollTo({ top: el.offsetTop - 16, behavior: "smooth" });
+      setActiveId(id);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[120] flex items-stretch justify-center bg-ink-900/55 p-0 sm:p-6">
+      <div className="flex h-full w-full max-w-6xl flex-col overflow-hidden bg-white shadow-2xl">
+        <div className="flex items-center justify-between border-b border-ink-100 bg-ink-900 px-6 py-4 text-white">
+          <div>
+            <p className="text-[11px] font-medium tracking-wide text-accent-lime">Nota metodologica</p>
+            <h2 className="mt-1 text-[18px] font-bold">Come è stata costruita l'analisi di impatto</h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Chiudi"
+            className="flex h-9 w-9 items-center justify-center border border-white/30 text-white hover:bg-white/10"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="flex flex-1 overflow-hidden">
+          <aside className="hidden w-[240px] shrink-0 border-r border-ink-100 bg-bg-page md:block">
+            <nav className="sticky top-0 flex flex-col p-4">
+              {METODOLOGIA_SECTIONS.map((s, i) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => scrollToSection(s.id)}
+                  className={`mb-1 flex items-start gap-2 px-3 py-2 text-left text-[13px] transition-colors ${
+                    activeId === s.id
+                      ? "border-l-2 border-brand-violet bg-white font-semibold text-brand-violet"
+                      : "border-l-2 border-transparent text-ink-600 hover:bg-white"
+                  }`}
+                >
+                  <span className="font-mono text-[10px] text-ink-400">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="leading-snug">{s.title}</span>
+                </button>
+              ))}
+            </nav>
+          </aside>
+
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-8 md:px-10">
+            <div className="mb-6 border-l-4 border-brand-violet bg-brand-violet/5 px-5 py-4 text-[13px] leading-relaxed text-ink-700">
+              Questa nota spiega come l'analisi è stata costruita e come vanno letti i risultati. Il modello di riferimento è una <strong className="text-ink-900">Social Accounting Matrix (SAM)</strong> multiprovinciale italiana a 63 settori ATECO, applicata trattando la spesa del progetto come uno shock di domanda esogena al sistema economico. Il perimetro tipico è un progetto di investimento pubblico <strong className="text-ink-900">localizzato in una singola provincia</strong> e suddiviso in <strong className="text-ink-900">categorie di intervento specifiche</strong> del settore di riferimento.
+            </div>
+
+            {METODOLOGIA_SECTIONS.map((s, i) => (
+              <section
+                key={s.id}
+                ref={(el) => { sectionRefs.current[s.id] = el; }}
+                className="mb-10 scroll-mt-4"
+              >
+                <div className="mb-3 flex items-baseline gap-3">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-brand-violet">{String(i + 1).padStart(2, "0")}</span>
+                  <h3 className="text-[20px] font-bold leading-tight text-ink-900">{s.title}</h3>
+                </div>
+                <div className="space-y-3">
+                  {renderMethodologyBody(s.body)}
+                </div>
+              </section>
+            ))}
+
+            <div className="mt-12 border-t border-ink-100 pt-6 text-[12px] text-ink-500">
+              <p>
+                Per i riferimenti accademici e la formulazione matematica completa si rimanda alla nota metodologica integrale OpenEconomics, edizione 2026.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
