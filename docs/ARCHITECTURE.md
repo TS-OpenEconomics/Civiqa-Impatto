@@ -56,7 +56,8 @@ The project ships with a **portable Node.js** runtime so no global installation 
 
 ```powershell
 # From the project root in PowerShell:
-.\.tools\node-v24.15.0-win-x64\node.exe node_modules\vite\bin\vite.js
+cd app
+..\.tools\node-v24.15.0-win-x64\node.exe node_modules\vite\bin\vite.js
 
 # Or if you have Node installed globally:
 npx vite
@@ -68,15 +69,17 @@ The dev server starts on **http://localhost:5173** with HMR (hot module replacem
 
 ```powershell
 # Build the dist/ folder:
-.\.tools\node-v24.15.0-win-x64\node.exe node_modules\vite\bin\vite.js build
+cd app
+..\.tools\node-v24.15.0-win-x64\node.exe node_modules\vite\bin\vite.js build
 
 # Serve the built dist/:
-.\.tools\node-v24.15.0-win-x64\node.exe serve-dist.js
+cd app
+..\.tools\node-v24.15.0-win-x64\node.exe serve-dist.js
 ```
 
-The `start_poc_portable.ps1` script automates the serve step. It looks for the portable Node at `.tools/node-v24.15.0-win-x64/node.exe` first, falls back to system Node, then runs `serve-dist.js` which serves the pre-built `dist/` folder as a static site.
+The root `start_poc_portable.ps1` script automates the serve step. It looks for the portable Node at `.tools/node-v24.15.0-win-x64/node.exe` first, falls back to system Node, then runs `app/serve-dist.js` from inside `app/`, which serves the pre-built `app/dist/` folder as a static site.
 
-> **Important**: `start_poc_portable.ps1` serves the **pre-built** `dist/`. It does NOT start the Vite dev server. Always run the Vite build first if you changed source code.
+> **Important**: `start_poc_portable.ps1` serves the **pre-built** `app/dist/`. It does NOT start the Vite dev server. Always run the Vite build first if you changed source code.
 
 ### Demo credentials
 

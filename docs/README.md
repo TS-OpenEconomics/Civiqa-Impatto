@@ -6,16 +6,19 @@ POC frontend del flusso di Analisi di Impatto (EIA) per Civiqa, basata sui mocku
 
 La cartella e standalone: puo essere copiata o spostata in un altro percorso senza dipendere da `civiqa-demo` o da cartelle sorelle.
 
-Elementi necessari per eseguirla:
+Struttura principale:
 
-- `src/`, `public/`, `dist/` e i file di configurazione del progetto
-- opzionalmente `.tools/node-v24.15.0-win-x64/` per l'avvio portable senza Node installato
+- `app/`: sorgenti React/Vite, configurazioni, asset, `package.json` e build `dist/`
+- `docs/`: documentazione tecnica
+- `.tools/node-v24.15.0-win-x64/`: runtime opzionale per avvio portable senza Node installato
+- `start_poc_portable.*` e `build_poc_portable.bat`: comandi principali in root
 
-Gli script `start_poc_portable.ps1` e `start_poc_portable.bat` usano prima il runtime locale in `.tools/` se presente, altrimenti fanno fallback al comando `node` disponibile nel `PATH`.
+Gli script in root usano prima il runtime locale in `.tools/` se presente, altrimenti fanno fallback al comando `node` disponibile nel `PATH`.
 
 ## Setup
 
 ```bash
+cd app
 npm install
 npm run dev
 ```
@@ -23,6 +26,7 @@ npm run dev
 L'app gira su `http://localhost:5173`. Apri quella URL nel browser.
 
 ```bash
+cd app
 npm run build      # build di produzione in dist/
 npm run preview    # serve la build di produzione
 ```
@@ -41,7 +45,7 @@ start_poc_portable.bat
 
 ## Navigazione dev
 
-In basso a tutte le viste c'è una barra DEV nera che permette di saltare tra le schermate senza dover completare i flussi. Da rimuovere prima di una demo pubblica eliminando il componente `DevNav` in `src/App.jsx`.
+In basso a tutte le viste c'è una barra DEV nera che permette di saltare tra le schermate senza dover completare i flussi. Da rimuovere prima di una demo pubblica eliminando il componente `DevNav` in `app/src/App.jsx`.
 
 L'ordine "naturale" del flusso è: Login → Lista → Wizard (nuova valutazione) → Dettaglio progetto → Verifica KPI EIA → Analisi in corso → Risultati EIA.
 
@@ -75,7 +79,7 @@ Utility CSS personalizzata: `.dots-violet-bg` per il pattern puntinato del hero 
 ## Struttura
 
 ```
-src/
+app/src/
 ├── App.jsx                          ← routing tra viste con useState
 ├── main.jsx
 ├── index.css                        ← direttive Tailwind + reset

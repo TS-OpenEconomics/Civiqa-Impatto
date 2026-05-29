@@ -95,77 +95,9 @@ const LIST_PRESETS = [
   },
 ];
 
-function SectionIcon() {
-  return (
-    <svg className="h-7 w-7 text-ink-900" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.3">
-      <path d="M16 8c-5.523 0-10 4.477-10 10 0 3.99 2.336 7.434 5.717 9.04" />
-      <path d="M28 8c7.732 0 14 6.268 14 14 0 4.96-2.58 9.316-6.473 11.805" />
-      <circle cx="18" cy="18" r="6" />
-      <circle cx="28" cy="29" r="7" />
-      <path d="M24 12l8-4" />
-      <path d="M21 24l2 7" />
-      <path d="M12 32l8-4" />
-    </svg>
-  );
-}
 
-function CarouselPattern() {
-  const squares = [
-    { left: "2%", top: "42%", size: 30, opacity: 0.48 },
-    { left: "7%", top: "18%", size: 24, opacity: 0.36 },
-    { left: "10%", top: "71%", size: 32, opacity: 0.42 },
-    { left: "15%", top: "84%", size: 24, opacity: 0.4 },
-    { left: "19%", top: "9%", size: 24, opacity: 0.38 },
-    { left: "24%", top: "57%", size: 28, opacity: 0.44 },
-    { left: "29%", top: "29%", size: 26, opacity: 0.36 },
-    { left: "33%", top: "78%", size: 26, opacity: 0.42 },
-    { left: "38%", top: "14%", size: 24, opacity: 0.34 },
-    { left: "43%", top: "66%", size: 34, opacity: 0.46 },
-    { left: "49%", top: "23%", size: 26, opacity: 0.36 },
-    { left: "54%", top: "82%", size: 24, opacity: 0.42 },
-    { left: "58%", top: "8%", size: 30, opacity: 0.34 },
-    { left: "63%", top: "48%", size: 28, opacity: 0.4 },
-    { left: "69%", top: "18%", size: 24, opacity: 0.36 },
-    { left: "73%", top: "77%", size: 28, opacity: 0.44 },
-    { left: "79%", top: "31%", size: 24, opacity: 0.34 },
-    { left: "84%", top: "10%", size: 30, opacity: 0.38 },
-    { left: "88%", top: "63%", size: 26, opacity: 0.4 },
-    { left: "93%", top: "25%", size: 24, opacity: 0.34 },
-    { left: "96%", top: "79%", size: 30, opacity: 0.42 },
-  ];
 
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div
-        className="absolute inset-0"
-        style={{
-          background: "radial-gradient(circle at 50% 44%, #ffffff 0%, #f5f5f5 30%, #e3e3e3 58%, #cfcfcf 82%, #c2c2c2 100%)",
-        }}
-      />
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.08) 35%, rgba(0,0,0,0.03) 100%)",
-        }}
-      />
-      {squares.map((square, index) => (
-        <span
-          key={index}
-          className="absolute bg-[#d9d9d9]"
-          style={{
-            left: square.left,
-            top: square.top,
-            width: square.size,
-            height: square.size,
-            opacity: square.opacity,
-            boxShadow: "26px 26px 0 rgba(217,217,217,0.78), -26px 26px 0 rgba(217,217,217,0.58), 26px -26px 0 rgba(217,217,217,0.42)",
-          }}
-        />
-      ))}
-    </div>
-  );
-}
+
 
 function AnalysisBadges({ active = [], className = "", sizeClass = "px-3 py-1 text-[13px] font-bold" }) {
   const activeSet = new Set(active);

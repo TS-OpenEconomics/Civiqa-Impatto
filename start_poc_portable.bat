@@ -1,8 +1,9 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-if exist ".tools\node-v24.15.0-win-x64\node.exe" (
-  ".tools\node-v24.15.0-win-x64\node.exe" "serve-dist.js"
+cd app
+if exist "..\.tools\node-v24.15.0-win-x64\node.exe" (
+  "..\.tools\node-v24.15.0-win-x64\node.exe" "serve-dist.js"
   exit /b %errorlevel%
 )
 

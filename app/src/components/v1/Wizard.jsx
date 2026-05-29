@@ -877,7 +877,7 @@ function DatePickerField({ label, hint, value, onChange, minDate = null }) {
       setViewMonth(d.getMonth());
       setViewYear(d.getFullYear());
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [value]);
 
   // When minDate advances past the current view, jump to it
@@ -1488,7 +1488,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
       });
       return changed ? { ...prev, profilo_dati: dati } : prev;
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [step.id]);
 
   // Pre-fill capex: prefer profilo estimate, fall back to sector default
@@ -1503,7 +1503,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
         : String(CAPEX_DEFAULTS[prev.settore] ?? CAPEX_DEFAULT_FALLBACK);
       return { ...prev, capex };
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [step.id]);
 
   useEffect(() => {
