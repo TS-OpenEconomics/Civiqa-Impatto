@@ -467,9 +467,9 @@
         insight: "Il valore aggiunto a Palermo deriva quasi interamente dalle imprese che ricevono direttamente l'investimento."
       },
       occupazione: {
-        total: '389 ETP',
+        total: '389 occupati',
         values: { diretto: 378, indiretto: 4, indotto: 7 },
-        unit: 'ETP',
+        unit: 'occupati',
         sectors: {
           diretto:   [['Costruzioni','132'], ['Servizi professionali','57'], ['Materiali da costruzione','45']],
           indiretto: [['Materiali da costruzione','2'], ['Trasporti e logistica','1'], ['Energia e utilities','1']],
@@ -502,9 +502,9 @@
         insight: "Nel resto della Sicilia il valore aggiunto nasce per il 55% dall'indotto: la spesa locale dei lavoratori muove l'economia regionale."
       },
       occupazione: {
-        total: '322 ETP',
+        total: '322 occupati',
         values: { indiretto: 142, indotto: 180 },
-        unit: 'ETP',
+        unit: 'occupati',
         sectors: {
           indiretto: [['Materiali da costruzione','42'], ['Trasporti e logistica','38'], ['Energia e utilities','28']],
           indotto:   [['Commercio','62'], ['Sanità e assistenza','42'], ['Attività immobiliari','38']]
@@ -536,9 +536,9 @@
         insight: "Nel resto d'Italia il PIL generato è in larga parte indotto: l'effetto a catena prosegue ben oltre i confini regionali."
       },
       occupazione: {
-        total: '135 ETP',
+        total: '135 occupati',
         values: { indiretto: 59, indotto: 76 },
-        unit: 'ETP',
+        unit: 'occupati',
         sectors: {
           indiretto: [['Materiali da costruzione','18'], ['Trasporti e logistica','16'], ['Energia e utilities','12']],
           indotto:   [['Commercio','26'], ['Sanità e assistenza','18'], ['Attività immobiliari','16']]
@@ -572,9 +572,9 @@
         insight: "A livello nazionale il PIL si distribuisce tra i tre effetti in modo equilibrato, con l'indotto leggermente prevalente."
       },
       occupazione: {
-        total: '846 ETP',
+        total: '846 occupati',
         values: { diretto: 378, indiretto: 205, indotto: 263 },
-        unit: 'ETP',
+        unit: 'occupati',
         sectors: {
           diretto:   [['Costruzioni','132'], ['Servizi professionali','57'], ['Materiali da costruzione','45']],
           indiretto: [['Materiali da costruzione','62'], ['Trasporti e logistica','55'], ['Energia e utilities','40']],
@@ -588,7 +588,7 @@
   const state = { terr: 'palermo', metric: 'produzione' };
 
   function fmtValue(n, unit) {
-    if (unit === 'ETP') return Math.round(n).toLocaleString('it-IT') + ' ETP';
+    if (unit === 'occupati') return Math.round(n).toLocaleString('it-IT') + ' occupati';
     return n.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' M€';
   }
 

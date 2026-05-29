@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Esplora i dati — Civiqa</title>
+<title>Approfondimento dati — Civiqa</title>
 <style>
   :root {
     --purple-50:  #EEEDFE;
@@ -517,9 +517,9 @@
 </head>
 <body>
 
-<main class="page" aria-label="Esplora i dati">
+<main class="page" aria-label="Approfondimento dati">
 
-  <div class="eyebrow">Esplora i dati</div>
+  <div class="eyebrow">Approfondimento dati</div>
   <h1>Costruisci la tua interrogazione</h1>
   <p class="page-lede">Componi la domanda che ti interessa scegliendo cosa misurare, come scomporlo e per quale territorio. Il risultato si aggiorna istantaneamente e può essere esportato.</p>
 
@@ -595,7 +595,7 @@
   const METRICS = {
     pil:         { label: 'PIL',         unit: 'M€' },
     produzione:  { label: 'Produzione',  unit: 'M€' },
-    occupazione: { label: 'Occupazione', unit: 'ETP' },
+    occupazione: { label: 'Occupazione', unit: 'occupati' },
     redditi:     { label: 'Redditi',     unit: 'M€' },
     gettito:     { label: 'Gettito fiscale', unit: 'M€' }
   };
@@ -720,12 +720,12 @@
      HELPERS
      ============================================ */
   function fmt(v, unit) {
-    if (unit === 'ETP') return Math.round(v).toLocaleString('it-IT');
+    if (unit === 'occupati') return Math.round(v).toLocaleString('it-IT');
     if (v < 0.1) return v.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     return v.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   }
   function fmtFull(v, unit) {
-    if (unit === 'ETP') return fmt(v, unit) + ' ETP';
+    if (unit === 'occupati') return fmt(v, unit) + ' occupati';
     return fmt(v, unit) + ' M€';
   }
 

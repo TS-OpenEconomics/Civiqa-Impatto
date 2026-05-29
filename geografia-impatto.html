@@ -783,7 +783,7 @@
   const DIM_META = {
     produzione:  { label: 'Produzione',  unit: 'M€', impactLabel: 'Produzione attivata', multLabel: 'Produzione / spesa' },
     pil:         { label: 'PIL',         unit: 'M€', impactLabel: 'PIL attivato',         multLabel: 'PIL / spesa' },
-    occupazione: { label: 'Occupazione', unit: 'ETP',impactLabel: 'Occupazione attivata', multLabel: 'ETP / M€ speso' },
+    occupazione: { label: 'Occupazione', unit: 'occupati',impactLabel: 'Occupazione attivata', multLabel: 'occupati / M€ speso' },
     redditi:     { label: 'Redditi',     unit: 'M€', impactLabel: 'Redditi distribuiti',  multLabel: 'Redditi / spesa' }
   };
 
@@ -832,7 +832,7 @@
     },
     occupazione: {
       total: 846,
-      mult: '20,6 ETP',
+      mult: '20,6 occupati',
       regions: {
         sicilia: { name: 'Sicilia', value: 711 }, piemonte: { name: 'Piemonte', value: 18 },
         lombardia: { name: 'Lombardia', value: 15 }, lazio: { name: 'Lazio', value: 13 },
@@ -846,9 +846,9 @@
         molise: { name: 'Molise', value: 2 }, valledaosta: { name: "Valle d'Aosta", value: 2 }
       },
       distribution: {
-        origin: { value: '389 ETP', pct: 46 },
-        region: { value: '322 ETP', pct: 38 },
-        out:    { value: '135 ETP', pct: 16 }
+        origin: { value: '389 occupati', pct: 46 },
+        region: { value: '322 occupati', pct: 38 },
+        out:    { value: '135 occupati', pct: 16 }
       }
     },
     redditi: {
@@ -878,7 +878,7 @@
   const state = { dim: 'pil', level: 'regionale', mode: 'assoluti', selected: null };
 
   function fmt(value, unit) {
-    if (unit === 'ETP') return Math.round(value).toLocaleString('it-IT') + ' ETP';
+    if (unit === 'occupati') return Math.round(value).toLocaleString('it-IT') + ' occupati';
     return value.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' M€';
   }
 

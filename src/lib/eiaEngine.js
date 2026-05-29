@@ -180,9 +180,9 @@ export function buildInsights(results, scenario) {
       text: `Il progetto attiva ${(produzione.totale / 1_000_000).toFixed(1)} M€ di produzione complessiva sul territorio. Ogni euro investito genera ${moltiplicatore.toFixed(2)} € di output nella filiera di "${settore}".`,
     },
     {
-      title: "Occupazione equivalente",
-      value: `${Math.round(fte.totale)} ETP`,
-      text: `Sono attivati circa ${Math.round(fte.totale)} equivalenti a tempo pieno (ETP) considerando effetti diretti, indiretti e indotti lungo l'intera durata del progetto.`,
+      title: "Occupazione",
+      value: `${Math.round(fte.totale)} occupati`,
+      text: `Sono attivati circa ${Math.round(fte.totale)} occupati considerando effetti diretti, indiretti e indotti lungo l'intera durata del progetto.`,
     },
     {
       title: "PIL",

@@ -140,7 +140,7 @@ function stackedBarLayout(nItems, leftMargin = 200, xTitle = "mln €") {
 
 const DIM_META = {
   pil:         { label: "PIL",                     key: "gva",        icon: "pil",         unit: "M€",  fmtVal: fmtM, isMoney: true },
-  occupazione: { label: "Occupazione",             key: "fte",        icon: "occupazione", unit: "ETP", fmtVal: n => fmtIT(n), isMoney: false },
+  occupazione: { label: "Occupazione",             key: "fte",        icon: "occupazione", unit: "occupati", fmtVal: n => fmtIT(n), isMoney: false },
   produzione:  { label: "Valore della Produzione", key: "produzione", icon: "produzione",  unit: "M€",  fmtVal: fmtM, isMoney: true },
   redditi:     { label: "Redditi delle famiglie",  key: "redditi",    icon: "redditi",     unit: "M€",  fmtVal: fmtM, isMoney: true },
 };
@@ -187,7 +187,7 @@ export function EiaResultsLegacy({ project, eiaResults: rawResults, analysis, on
         ["Dimensione", "Diretto", "Indiretto", "Indotto", "Totale", "Unità"],
         ["Valore della Produzione", results.produzione.diretto, results.produzione.indiretto, results.produzione.indotto, results.produzione.totale, "€"],
         ["PIL", results.gva.diretto, results.gva.indiretto, results.gva.indotto, results.gva.totale, "€"],
-        ["Occupazione", results.fte.diretto, results.fte.indiretto, results.fte.indotto, results.fte.totale, "ETP"],
+        ["Occupazione", results.fte.diretto, results.fte.indiretto, results.fte.indotto, results.fte.totale, "occupati"],
         ["Redditi", results.redditi.diretto, results.redditi.indiretto, results.redditi.indotto, results.redditi.totale, "€"],
       ];
       utils.book_append_sheet(wb, utils.aoa_to_sheet(sheet), "Riepilogo");
@@ -356,7 +356,7 @@ function TabRiepilogo({ results }) {
           <div className="space-y-4">
             <BreakdownRow label="Valore della Produzione" icon="produzione"  bd={results.produzione} fmtVal={fmtM} />
             <BreakdownRow label="PIL"                     icon="pil"         bd={results.gva}        fmtVal={fmtM} />
-            <BreakdownRow label="Occupazione"             icon="occupazione" bd={results.fte}        fmtVal={n => `${fmtIT(n)} ETP`} />
+            <BreakdownRow label="Occupazione"             icon="occupazione" bd={results.fte}        fmtVal={n => `${fmtIT(n)} occupati`} />
             <BreakdownRow label="Redditi delle famiglie"  icon="redditi"     bd={results.redditi}    fmtVal={fmtM} />
           </div>
         </div>
@@ -378,8 +378,8 @@ function TabRiepilogo({ results }) {
             text="Misura il valore aggiunto generato dall'investimento, ovvero la differenza tra il valore dei beni prodotti e i costi degli input intermedi. Include effetti diretti, indiretti e indotti." />
           <DefCard icon="produzione"  title="Valore della Produzione"
             text="Valore complessivo della produzione attivata lungo tutta la filiera: beni e servizi prodotti dalle imprese coinvolte, dai fornitori e dalla catena di subappalto." />
-          <DefCard icon="occupazione" title="Occupazione (ETP)"
-            text="Equivalenti a Tempo Pieno attivati: unità di lavoro standardizzate a tempo pieno. Include lavoratori diretti, indiretti (filiera) e indotti (effetto reddito-consumo)." />
+          <DefCard icon="occupazione" title="Occupazione"
+            text="Occupati attivati dal progetto. Include lavoratori diretti, indiretti (filiera) e indotti (effetto reddito-consumo)." />
           <DefCard icon="redditi"     title="Redditi delle Famiglie"
             text="Stima dei redditi da lavoro e da capitale trasferiti alle famiglie: salari, stipendi e redditi misti generati dall'intero ciclo economico attivato dall'investimento." />
         </div>
@@ -545,8 +545,8 @@ function TabDimension({ tab, results }) {
     buildBubble(terrScaled, settoreScaled, meta),
     [terrScaled, settoreScaled, meta]);
 
-  const regBarLayout = useMemo(() => stackedBarLayout(Math.min(terrScaled.length, 10), 170, meta.isMoney ? "mln €" : "ETP"), [terrScaled, meta]);
-  const secBarLayout = useMemo(() => stackedBarLayout(settoreScaled.length, 210, meta.isMoney ? "mln €" : "ETP"), [settoreScaled, meta]);
+  const regBarLayout = useMemo(() => stackedBarLayout(Math.min(terrScaled.length, 10), 170, meta.isMoney ? "mln €" : "occupati"), [terrScaled, meta]);
+  const secBarLayout = useMemo(() => stackedBarLayout(settoreScaled.length, 210, meta.isMoney ? "mln €" : "occupati"), [settoreScaled, meta]);
 
   return (
     <div className="space-y-8">

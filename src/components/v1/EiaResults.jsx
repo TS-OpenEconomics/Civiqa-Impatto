@@ -26,24 +26,24 @@ function fmtM(n) {
   return `${fmtIT(n / 1_000_000, 1)} M€`;
 }
 
-function fmtETP(n) {
-  return `${fmtIT(n, n < 10 ? 1 : 0)} ETP`;
+function fmtOccupati(n) {
+  return `${fmtIT(n, n < 10 ? 1 : 0)} occupati`;
 }
 
 function fmtMoneyPc(n) {
   return `${fmtIT(n, 2)} €/ab`;
 }
 
-function fmtEtpPc(n) {
-  return `${fmtIT(n, 2)} ETP/10k ab.`;
+function fmtOccupatiPc(n) {
+  return `${fmtIT(n, 2)} occupati/10k ab.`;
 }
 
 function formatDimensionValue(dim, value, mode) {
   if (mode === "pc") {
-    if (dim === "employment") return fmtEtpPc(value);
+    if (dim === "employment") return fmtOccupatiPc(value);
     return fmtMoneyPc(value);
   }
-  return dim === "employment" ? fmtETP(value) : fmtM(value);
+  return dim === "employment" ? fmtOccupati(value) : fmtM(value);
 }
 
 function getPerimeterKey(perim) {
@@ -70,10 +70,10 @@ function cleanText(value) {
     .replaceAll("Ã©", "é")
     .replaceAll("Ã¬", "ì")
     .replaceAll("â€”", "—")
-    .replaceAll("â†’", "→")
-    .replaceAll("â†", "←")
-    .replaceAll("â†‘", "↑")
-    .replaceAll("â†“", "↓");
+    .replaceAll("â†’", "?")
+    .replaceAll("â†", "?")
+    .replaceAll("â†‘", "?")
+    .replaceAll("â†“", "?");
 }
 
 const d = staticResults;
@@ -128,7 +128,7 @@ const TABS = [
   { id: "componenti", label: "Propagazione" },
   { id: "geografia", label: "Geografia" },
   { id: "settori", label: "Settori" },
-  { id: "esplora", label: "Esplora" },
+  { id: "esplora", label: "Approfondimento" },
 ];
 
 const TAB_PREVIEWS = {
@@ -136,7 +136,7 @@ const TAB_PREVIEWS = {
   componenti: cleanText(previews.componenti ?? "44% diretto"),
   geografia: cleanText(previews.geografia ?? "84% in regione"),
   settori: cleanText(previews.settori ?? "Costruzioni leader"),
-  esplora: cleanText(previews.esplora ?? "Pivot dati"),
+  esplora: cleanText(previews.esplora ?? "Approfondimento dati"),
 };
 
 const EFFECTS = [
@@ -180,8 +180,8 @@ const EFFECTS = [
       const scope = perimeterText(perim);
       const anni = inp.years_of_realization ?? 1;
       return mode === "pc"
-        ? `Posti di lavoro equivalenti generati ${scope} per abitante, su ${anni} ann${anni === 1 ? "o" : "i"} di realizzazione.`
-        : `Posti di lavoro equivalenti a tempo pieno generati ${scope} su tutta la filiera.`;
+        ? `Occupati generati ${scope} per abitante, su ${anni} ann${anni === 1 ? "o" : "i"} di realizzazione.`
+        : `Occupati generati ${scope} su tutta la filiera.`;
     },
   },
   {
@@ -212,7 +212,7 @@ const EFFECTS = [
 const DIMENSION_DEFS = {
   production: "Volume d'affari totale attivato lungo la filiera, inclusi fornitori di secondo e terzo livello. È sempre superiore alla spesa perché la catena si moltiplica.",
   gdp: "Nuova ricchezza genuinamente creata: differenza tra valore prodotto e costo degli input intermedi. È la misura più accurata dell'impatto economico netto.",
-  employment: "Posti di lavoro equivalenti a tempo pieno attivati nell'economia — diretti, indiretti e indotti — misurati su tutta la durata dell'investimento.",
+  employment: "Occupati attivati nell'economia: diretti, indiretti e indotti lungo tutta la durata dell'investimento.",
   income: "Quota di valore aggiunto distribuita a famiglie e imprese come salari, profitti e rendite.",
   fiscal: "Imposte e contributi attivati dall'attività economica generata. Indica quanta parte della spesa pubblica rientra alle casse pubbliche.",
 };
@@ -227,8 +227,8 @@ const KPI_PILLS = [
     tip: "Per ogni euro speso, si attivano euro di volume d'affari lungo la filiera regionale.",
   },
   {
-    value: `${fmtIT(synthKpis.employment_intensity_per_meur ?? 0, 1)} ETP per milione € speso`,
-    tip: "Posti di lavoro equivalenti a tempo pieno generati ogni milione di euro investito.",
+    value: `${fmtIT(synthKpis.employment_intensity_per_meur ?? 0, 1)} occupati per milione € speso`,
+    tip: "Occupati generati ogni milione di euro investito.",
   },
   {
     value: `${fmtIT((synthKpis.fiscal_autofinanc_pct ?? 0) * 100, 1)}% spesa rientra come gettito`,
@@ -310,9 +310,9 @@ function resolveTerritoryFocus(code) {
 
 function getGeoFmt(dim, mode) {
   if (mode === "pc") {
-    return dim === "employment" ? fmtEtpPc : fmtMoneyPc;
+    return dim === "employment" ? fmtOccupatiPc : fmtMoneyPc;
   }
-  return dim === "employment" ? fmtETP : fmtM;
+  return dim === "employment" ? fmtOccupati : fmtM;
 }
 
 function toPercent(n) {
@@ -430,7 +430,7 @@ export function EiaResults({ project, analysis, onBack }) {
         ["Dimensione", "Totale regionale", "Totale nazionale", "Unità"],
         ["Valore della produzione", byPerimeter.region?.production ?? 0, byPerimeter.national?.production ?? 0, "€"],
         ["PIL", byPerimeter.region?.gdp ?? 0, byPerimeter.national?.gdp ?? 0, "€"],
-        ["Occupazione", byPerimeter.region?.employment ?? 0, byPerimeter.national?.employment ?? 0, "ETP"],
+        ["Occupazione", byPerimeter.region?.employment ?? 0, byPerimeter.national?.employment ?? 0, "occupati"],
         ["Redditi", byPerimeter.region?.income ?? 0, byPerimeter.national?.income ?? 0, "€"],
         ["Gettito", "-", byPerimeter.national?.fiscal ?? 0, "€"],
       ];
@@ -532,7 +532,7 @@ export function EiaResults({ project, analysis, onBack }) {
               </TabShell>
             )}
             {tab === "esplora" && (
-              <TabShell title="Esplora i dati" tab="esplora" onHelp={() => setGlossaryOpen(true)}>
+              <TabShell title="Approfondimento dati" tab="esplora" onHelp={() => setGlossaryOpen(true)}>
                 <TabEsplora
                   showToast={showToast}
                   project={project}
@@ -637,7 +637,7 @@ function TabSintesi() {
   const regPc = perCapita.region ?? {};
   const natPc = perCapita.national ?? {};
 
-  const summaryText = `L'investimento di ${fmtM(spend)} ha attivato ${fmtM(natGdp)} di PIL, sostenuto ${fmtIT(natEmp, 0)} posti di lavoro equivalenti e restituito ${fmtM(natFiscal)} in gettito fiscale.`;
+  const summaryText = `L'investimento di ${fmtM(spend)} ha attivato ${fmtM(natGdp)} di PIL, sostenuto ${fmtIT(natEmp, 0)} occupati e restituito ${fmtM(natFiscal)} in gettito fiscale.`;
 
   return (
     <div className="space-y-14">
@@ -659,7 +659,7 @@ function TabSintesi() {
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <SintesiKPI icon="pil"        label="PIL"                    value={fmtM(natGdp)}         caption="valore aggiunto generato in Italia" />
           <SintesiKPI icon="produzione" label="Valore della Produzione" value={fmtM(natProd)}        caption="di volume d'affari in Italia" />
-          <SintesiKPI icon="occupazione" label="Occupazione"            value={fmtIT(natEmp, 0)} valueUnit="ETP" caption="posti equivalenti a tempo pieno" />
+          <SintesiKPI icon="occupazione" label="Occupazione"            value={fmtIT(natEmp, 0)} valueUnit="occupati" caption="posti di lavoro attivati" />
           <SintesiKPI icon="gettito"    label="Gettito fiscale"         value={fmtM(natFiscal)}      caption="di gettito per lo Stato" />
         </div>
       </section>
@@ -776,7 +776,7 @@ function SintesiTerritoryCol({ color, name, pct, gdp, emp }) {
       </div>
       <p className="text-[28px] font-bold leading-none text-ink-900">{pct}%</p>
       <p className="mt-2 text-[13px] text-ink-600">
-        {fmtM(gdp)} PIL · {fmtIT(emp, emp < 10 ? 1 : 0)} ETP
+        {fmtM(gdp)} PIL · {fmtIT(emp, emp < 10 ? 1 : 0)} occupati
       </p>
     </div>
   );
@@ -786,7 +786,7 @@ function SintesiMultiplierGrid({ regGdpMult, natGdpMult, regProdMult, natProdMul
   const rows = [
     { icon: "pil",         label: "PIL",                    regVal: `${fmtIT(regGdpMult, 2)}×`,   natVal: `${fmtIT(natGdpMult, 2)}×` },
     { icon: "produzione",  label: "Valore della Produzione", regVal: `${fmtIT(regProdMult, 2)}×`,  natVal: `${fmtIT(natProdMult, 2)}×` },
-    { icon: "occupazione", label: "Occupazione",             regVal: `${fmtIT(regEmpInt, 1)} ETP`, natVal: `${fmtIT(natEmpInt, 1)} ETP` },
+    { icon: "occupazione", label: "Occupazione",             regVal: `${fmtIT(regEmpInt, 1)} occupati`, natVal: `${fmtIT(natEmpInt, 1)} occupati` },
     { icon: "gettito",     label: "Gettito fiscale",         regVal: "–",                          natVal: `${fmtIT(fiscalPct, 1)}%` },
   ];
 
@@ -852,7 +852,7 @@ function SintesiPerCapitaCol({ name, pop, gdpPc, empPc, highlight }) {
           </p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-[0.12em] text-ink-400">ETP ogni 10.000 ab.</p>
+          <p className="text-[10px] uppercase tracking-[0.12em] text-ink-400">Occupati ogni 10.000 ab.</p>
           <p className={`mt-1 text-[22px] font-bold leading-none ${highlight ? "text-brand-violet" : "text-ink-900"}`}>
             {fmtIT(empPc, 2)}
           </p>
@@ -895,7 +895,7 @@ function ProvinceBreakdown({ mode }) {
   const restoPct = 100 - regPct;
 
   const fmtMoney = isPC ? fmtMoneyPc : fmtM;
-  const fmtEmpFn = isPC ? fmtEtpPc : fmtETP;
+  const fmtEmpFn = isPC ? fmtOccupatiPc : fmtOccupati;
 
   if (!isPC) {
     const gdpSegments = buildTerritorialSegments("gdp");
@@ -948,7 +948,7 @@ function ProvinceBreakdown({ mode }) {
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-3 border-t border-ink-100 pt-3">
                   <MetricMini label="Produzione" value={fmtM(segment.production)} />
-                  <MetricMini label="Occupazione" value={fmtETP(segment.employment)} />
+                  <MetricMini label="Occupazione" value={fmtOccupati(segment.employment)} />
                   <MetricMini label="Redditi" value={fmtM(segment.income)} />
                 </div>
               </div>
@@ -1012,7 +1012,7 @@ function ProvinceBreakdown({ mode }) {
             {i > 0 && (
               <div className="flex shrink-0 flex-col items-center pt-1">
                 <div className="h-2 w-px bg-ink-200" />
-                <span className="text-[10px] text-ink-300">└</span>
+                <span className="text-[10px] text-ink-300">+</span>
               </div>
             )}
             <div className="flex-1 min-w-0">
@@ -1055,7 +1055,7 @@ function ProvinceBreakdown({ mode }) {
 }
 
 function PerimeterBreakdown({ dim }) {
-  const fmt = dim.isMoney ? fmtM : fmtETP;
+  const fmt = dim.isMoney ? fmtM : fmtOccupati;
   const nationalVal = dim.id === "fiscal"
     ? (byPerimeter.national?.fiscal ?? 0)
     : (byPerimeter.national?.[dim.id] ?? 0);
@@ -1088,7 +1088,7 @@ function PerimeterBreakdown({ dim }) {
             {i > 0 && (
               <div className="flex shrink-0 flex-col items-center pt-1">
                 <div className="h-2 w-px bg-ink-200" />
-                <span className="text-[10px] text-ink-300">└</span>
+                <span className="text-[10px] text-ink-300">+</span>
               </div>
             )}
             <div className="flex-1 min-w-0">
@@ -1157,9 +1157,9 @@ function MultiplierWaterfall() {
       label: "Occupazione",
       multValue: empIntensity,
       multFmt: (v) => fmtIT(v, 1),
-      multSuffix: " ETP",
+      multSuffix: " occupati",
       multNote: "per M€ speso",
-      total: fmtETP(perData?.employment ?? 0),
+      total: fmtOccupati(perData?.employment ?? 0),
     },
     {
       id: "fiscal",
@@ -1275,8 +1275,8 @@ function DimensionGlossary() {
     },
     {
       icon: "occupazione",
-      label: "Occupazione (ETP)",
-      text: "Posti di lavoro equivalenti a tempo pieno generati nell'economia: lavoro diretto nei settori che ricevono la spesa, indiretto presso i fornitori, indotto dai consumi.",
+      label: "Occupazione",
+      text: "Occupati generati nell'economia: lavoro diretto nei settori che ricevono la spesa, indiretto presso i fornitori, indotto dai consumi.",
     },
     {
       icon: "redditi",
@@ -1297,7 +1297,7 @@ function DimensionGlossary() {
         className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-bg-page"
       >
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">Cosa misura ogni dimensione</p>
-        <span className="text-xs text-ink-400">{open ? "Chiudi ↑" : "Apri ↓"}</span>
+        <span className="text-xs text-ink-400">{open ? "Chiudi ?" : "Apri ?"}</span>
       </button>
       {open && (
         <div className="border-t border-ink-100">
@@ -1443,7 +1443,7 @@ function inferDim(effectId) {
 }
 
 function fmtMoneyOrEtp(value, isMoney) {
-  return isMoney ? fmtM(value) : fmtETP(value);
+  return isMoney ? fmtM(value) : fmtOccupati(value);
 }
 
 function perimeterCaption(perim) {
@@ -1516,7 +1516,7 @@ function ComponentBreakdownPanel({ dim }) {
   const indirect = data.indirect ?? 0;
   const induced = data.induced ?? 0;
   const total = direct + indirect + induced || 1;
-  const totalLabel = dim === "employment" ? fmtETP(total) : fmtM(total);
+  const totalLabel = dim === "employment" ? fmtOccupati(total) : fmtM(total);
 
   const items = [
     {
@@ -1568,7 +1568,7 @@ function ComponentBreakdownPanel({ dim }) {
               <div className={`h-full ${item.color}`} style={{ width: `${item.pct}%` }} />
             </div>
             <p className="mt-2 text-xs text-ink-500">
-              {dim === "employment" ? fmtETP(item.value) : fmtM(item.value)} / {cleanText(item.note)}
+              {dim === "employment" ? fmtOccupati(item.value) : fmtM(item.value)} / {cleanText(item.note)}
             </p>
           </div>
         ))}
@@ -1656,7 +1656,7 @@ function TabComponenti() {
   const data = comps[metricId] ?? {};
   const effects = EFFECTS_BY_TERR[terrId] ?? EFFECTS_BY_TERR.national;
   const hasDirect = effects.includes("direct");
-  const fmt = metricDef.isMoney ? fmtM : fmtETP;
+  const fmt = metricDef.isMoney ? fmtM : fmtOccupati;
   const terrLabel = TERR_OPTS.find(t => t.id === terrId)?.label ?? "";
 
   let compValues;
@@ -1819,7 +1819,7 @@ function TabComponenti() {
 }
 
 function SegmentSelector({ dim, selectedSegmentId, onSelectSegment }) {
-  const fmt = dim.isMoney ? fmtM : fmtETP;
+  const fmt = dim.isMoney ? fmtM : fmtOccupati;
   const segments = buildTerritorialSegments(dim.id);
 
   return (
@@ -1852,7 +1852,7 @@ function SegmentSelector({ dim, selectedSegmentId, onSelectSegment }) {
 }
 
 function SelectedSegmentBar({ dim, data, segment }) {
-  const fmt = dim.isMoney ? fmtM : fmtETP;
+  const fmt = dim.isMoney ? fmtM : fmtOccupati;
   const components = buildSegmentComponentValues(data, segment);
   const total = components.direct + components.indirect + components.induced;
   const pcts = roundedPctParts([components.direct, components.indirect, components.induced]);
@@ -1884,7 +1884,7 @@ function SelectedSegmentBar({ dim, data, segment }) {
 
 function PerimeterDiiBreakdown({ dim }) {
   const natTotal = byPerimeter.national?.[dim.id] ?? 0;
-  const fmt = dim.isMoney ? fmtM : fmtETP;
+  const fmt = dim.isMoney ? fmtM : fmtOccupati;
   const data = dim.data ?? {};
   const components = {
     direct: data.direct ?? 0,
@@ -2000,7 +2000,7 @@ function ComponentColumn({ variant, dim, data, segment = null }) {
         <span className={`h-2.5 w-2.5 rounded-full ${accent}`} />
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">{variantLabel}</h3>
       </div>
-      <p className="mt-3 text-[28px] font-bold text-ink-900">{dim.isMoney ? fmtM(value) : fmtETP(value)}</p>
+      <p className="mt-3 text-[28px] font-bold text-ink-900">{dim.isMoney ? fmtM(value) : fmtOccupati(value)}</p>
       <p className="mt-1 text-xs text-ink-500">
         {pct}% del totale in {segmentLabel}
       </p>
@@ -2010,7 +2010,7 @@ function ComponentColumn({ variant, dim, data, segment = null }) {
           items.map((s, idx) => (
             <li key={`${variant}-${idx}`} className="flex items-center justify-between gap-3 text-xs">
               <span className="truncate text-ink-700">{idx + 1}. {s.name}</span>
-              <span className="font-mono font-semibold text-ink-900">{dim.isMoney ? fmtM(s.value) : fmtETP(s.value)}</span>
+              <span className="font-mono font-semibold text-ink-900">{dim.isMoney ? fmtM(s.value) : fmtOccupati(s.value)}</span>
             </li>
           ))
         ) : (
@@ -2045,7 +2045,7 @@ function TerritoryImpactSummary({ territory }) {
   const cards = [
     { key: "production", label: "Produzione", value: territory.production ?? 0, format: fmtM, pc: territory.production_pc ?? 0, pcLabel: "€/ab" },
     { key: "gdp", label: "PIL", value: territory.gdp ?? 0, format: fmtM, pc: territory.gdp_pc ?? 0, pcLabel: "€/ab" },
-    { key: "employment", label: "Occupazione", value: territory.employment ?? 0, format: fmtETP, pc: territory.employment_pc ?? 0, pcLabel: "ETP/10k ab." },
+    { key: "employment", label: "Occupazione", value: territory.employment ?? 0, format: fmtOccupati, pc: territory.employment_pc ?? 0, pcLabel: "occupati/10k ab." },
     { key: "income", label: "Redditi", value: territory.income ?? 0, format: fmtM, pc: territory.income_pc ?? 0, pcLabel: "€/ab" },
   ];
 
@@ -2125,7 +2125,7 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
   const multInfo = (() => {
     if (dim === "production") return { value: `${fmtIT(synthKpis.production_multiplier ?? 0, 2)}×`, sub: "valore produzione / spesa" };
     if (dim === "gdp") return { value: `${fmtIT(synthKpis.gdp_multiplier ?? 0, 2)}×`, sub: "PIL / spesa" };
-    if (dim === "employment") return { value: `${fmtIT(synthKpis.employment_intensity_per_meur ?? 0, 1)} ETP`, sub: "per M€ speso" };
+    if (dim === "employment") return { value: `${fmtIT(synthKpis.employment_intensity_per_meur ?? 0, 1)} occupati`, sub: "per M€ speso" };
     const m = (byPerimeter.region?.income ?? 0) / spendTotal;
     return { value: `${fmtIT(m, 2)}×`, sub: "redditi / spesa" };
   })();
@@ -2149,7 +2149,7 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
   const extraPct = 100 - originPct - restRegPct;
   const stayPct = originPct + restRegPct;
   const dimTotal = byPerimeter.national?.[dim] ?? 0;
-  const dimFmt = dim === "employment" ? fmtETP : fmtM;
+  const dimFmt = dim === "employment" ? fmtOccupati : fmtM;
   const dimLabel = GEO_DIMS.find((g) => g.id === dim)?.label ?? dim;
 
   useEffect(() => {
@@ -2468,7 +2468,7 @@ function TabSettori({ updateSearch, searchParams, onOpenExplore }) {
   useEffect(() => { setDim(searchParams?.get("dim") ?? "gdp"); }, [searchParams]);
 
   const dimLabel = SECTOR_DIMS.find((d) => d.id === dim)?.label ?? dim;
-  const fmt = isMoney ? fmtM : fmtETP;
+  const fmt = isMoney ? fmtM : fmtOccupati;
   const grandTotal = sorted.reduce((s, sec) => s + sectorTotal(sec, dim), 0) || 1;
   const top3 = sorted.slice(0, 3);
   const top3Sum = top3.reduce((s, sec) => s + sectorTotal(sec, dim), 0);
@@ -2607,7 +2607,7 @@ function getSectorComponentMix(sectorName, dim) {
 }
 
 function SectorRankingCard({ sectors, dim, isMoney, rankView = "territorio" }) {
-  const fmt = isMoney ? fmtM : fmtETP;
+  const fmt = isMoney ? fmtM : fmtOccupati;
   const grandTotal = sectors.reduce((s, sec) => s + sectorTotal(sec, dim), 0) || 1;
   const maxTotal = Math.max(...sectors.map((s) => sectorTotal(s, dim)), 1);
   const seg = threeSeg[dim] ?? {};
@@ -2715,7 +2715,7 @@ function SectorHeatmap({ dim, isMoney, excludeOrigin = false, onCellClick }) {
     })
   );
   const max = Math.max(...cells.map((c) => c.value), 1);
-  const fmt = isMoney ? fmtM : fmtETP;
+  const fmt = isMoney ? fmtM : fmtOccupati;
 
   function cellStyle(value) {
     const ratio = value / max;
@@ -2842,7 +2842,7 @@ function SectorSankeyChart({ dim }) {
           target: targets,
           value: values,
           color: linkColors,
-          hovertemplate: "%{source.label} → %{target.label}<extra></extra>",
+          hovertemplate: "%{source.label} ? %{target.label}<extra></extra>",
         },
       },
     ];
@@ -3071,7 +3071,7 @@ function TabEsplora({ showToast, project, searchParams, updateSearch }) {
         <div className="flex items-baseline gap-2.5">
           <span className="text-[13px] text-ink-500">Totale:</span>
           <span className="text-[22px] font-medium" style={{ color: "#534AB7" }}>
-            {metaMeta.isMoney ? fmtM(total) : fmtETP(total)}
+            {metaMeta.isMoney ? fmtM(total) : fmtOccupati(total)}
           </span>
         </div>
         <div className="flex gap-2">
@@ -3102,13 +3102,13 @@ function TabEsplora({ showToast, project, searchParams, updateSearch }) {
 function TerritoryExplorePanel({ territory, dim, level }) {
   const name = cleanText(territory.nome ?? territory.name ?? "");
   const isRegion = level === "regionale";
-  const fmt = dim === "employment" ? fmtETP : fmtM;
+  const fmt = dim === "employment" ? fmtOccupati : fmtM;
   const dimLabel = EXPLORE_DIMS.find((d) => d.id === dim)?.label ?? dim;
 
   const cards = [
     { key: "production", label: "Produzione", value: territory.production ?? 0, format: fmtM, pc: territory.production_pc ?? 0, pcUnit: "€/ab" },
     { key: "gdp", label: "PIL", value: territory.gdp ?? 0, format: fmtM, pc: territory.gdp_pc ?? 0, pcUnit: "€/ab" },
-    { key: "employment", label: "Occupazione", value: territory.employment ?? 0, format: fmtETP, pc: territory.employment_pc ?? 0, pcUnit: "ETP/10k" },
+    { key: "employment", label: "Occupazione", value: territory.employment ?? 0, format: fmtOccupati, pc: territory.employment_pc ?? 0, pcUnit: "occupati/10k" },
     { key: "income", label: "Redditi", value: territory.income ?? 0, format: fmtM, pc: territory.income_pc ?? 0, pcUnit: "€/ab" },
   ];
 
@@ -3132,7 +3132,7 @@ function TerritoryExplorePanel({ territory, dim, level }) {
     <div className="space-y-4 border border-ink-100 bg-white p-5">
       <div className="flex items-start justify-between border-b border-ink-100 pb-4">
         <div>
-          <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Esplora il territorio</p>
+          <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Approfondisci il territorio</p>
           <p className="mt-1 text-xl font-bold text-ink-900">{name}</p>
           {!isRegion && (territory.regione || territory.region_name) && (
             <p className="text-xs text-ink-500">{territory.regione ?? territory.region_name}</p>
@@ -3318,7 +3318,7 @@ function ExplorePillDropdown({ options, selected, onSelect, searchable = false }
           style={selected === opt.id ? { background: "#EEEDFE", color: "#3C3489" } : {}}
         >
           <span>{opt.label}</span>
-          {selected === opt.id && <span style={{ color: "#534AB7", fontWeight: 600, fontSize: 13 }}>✓</span>}
+          {selected === opt.id && <span style={{ color: "#534AB7", fontWeight: 600, fontSize: 13 }}>?</span>}
         </button>
       ))}
     </div>
@@ -3326,7 +3326,7 @@ function ExplorePillDropdown({ options, selected, onSelect, searchable = false }
 }
 
 function ExploreResultTable({ rows, meta, dimKey, effect, maxValue, total, sortKey, sortDir, onSort }) {
-  const fmt = meta.isMoney ? fmtM : fmtETP;
+  const fmt = meta.isMoney ? fmtM : fmtOccupati;
   const showEffectCols = effect === "tutti" && dimKey === "settore" && rows.length > 0 && rows[0]?.directValue != null;
 
   if (rows.length === 1) {
@@ -3358,7 +3358,7 @@ function ExploreResultTable({ rows, meta, dimKey, effect, maxValue, total, sortK
   }
 
   const SortIcon = ({ col }) => (
-    <span className="ml-1 opacity-40 text-[10px]">{sortKey === col ? (sortDir === "asc" ? "↑" : "↓") : "↕"}</span>
+    <span className="ml-1 opacity-40 text-[10px]">{sortKey === col ? (sortDir === "asc" ? "?" : "?") : "?"}</span>
   );
 
   return (
@@ -3470,7 +3470,7 @@ const GLOSSARY = {
   sintesi: [
     { term: "PIL (valore aggiunto)", def: "Ricchezza nuova generata dall'attività economica." },
     { term: "Produzione", def: "Volume d'affari totale della filiera attivata." },
-    { term: "ETP", def: "Equivalente a tempo pieno: misura standard del lavoro." },
+    { term: "Occupati", def: "Posti di lavoro attivati dal progetto lungo la filiera." },
     { term: "Redditi", def: "Quota di valore che torna a famiglie e imprese." },
     { term: "Gettito", def: "Imposte e contributi attivati dal progetto. Solo nazionale." },
     { term: "Moltiplicatore", def: "Euro di effetto generati per ogni euro speso." },
@@ -3570,4 +3570,5 @@ function LoadingBanner() {
     </div>
   );
 }
+
 

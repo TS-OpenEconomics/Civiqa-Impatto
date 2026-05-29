@@ -564,7 +564,7 @@
   const DIM_META = {
     produzione:  { label: 'Produzione',  unit: 'M€' },
     pil:         { label: 'PIL',         unit: 'M€' },
-    occupazione: { label: 'Occupazione', unit: 'ETP' }
+    occupazione: { label: 'Occupazione', unit: 'occupati' }
   };
 
   // Sector ranking: each sector → values per territory
@@ -746,13 +746,13 @@
   };
 
   function fmt(value, unit) {
-    if (unit === 'ETP') return Math.round(value).toLocaleString('it-IT');
+    if (unit === 'occupati') return Math.round(value).toLocaleString('it-IT');
     if (value < 0.1) return value.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     return value.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   }
 
   function fmtFull(value, unit) {
-    if (unit === 'ETP') return fmt(value, unit) + ' ETP';
+    if (unit === 'occupati') return fmt(value, unit) + ' occupati';
     return fmt(value, unit) + ' M€';
   }
 

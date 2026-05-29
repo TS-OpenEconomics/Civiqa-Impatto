@@ -122,7 +122,7 @@ function EiaKpiCards({ eia }) {
     { label: "Spese attivate",          icon: "spese",       value: fmtM(r.shock_totale),       sub: "valore attuale" },
     { label: "Valore della produzione", icon: "produzione",  value: fmtM(r.produzione?.totale), sub: "valore attuale" },
     { label: "PIL",                     icon: "pil",         value: fmtM(r.gva?.totale),        sub: "valore attuale" },
-    { label: "Occupazione",             icon: "occupazione", value: r.fte?.totale ? `${fmtIT(r.fte.totale, 0)} ETP` : "—", sub: "valore attuale" },
+    { label: "Occupazione",             icon: "occupazione", value: r.fte?.totale ? `${fmtIT(r.fte.totale, 0)} occupati` : "—", sub: "valore attuale" },
     { label: "Redditi",                 icon: "redditi",     value: fmtM(r.redditi?.totale),    sub: "valore attuale" },
     { label: "Gettito fiscale",         icon: "gettito",     value: fmtM(r.gettito?.totale),    sub: "valore attuale" },
   ];
