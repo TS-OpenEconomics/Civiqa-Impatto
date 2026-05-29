@@ -1712,37 +1712,51 @@ function SectorHeatmap({ dim, isMoney, excludeOrigin = false, onCellClick }) {
   );
 }
 
-const SANKEY_LEFT_COLORS = ["#4318C2", "#5B21F7", "#7C3AED", "#8B5CF6", "#9E7BFA", "#A78BFA", "#C4B5FD"];
-const SANKEY_RIGHT_COLORS = ["#0F766E", "#0D9488", "#14B8A6", "#0891B2", "#0E7490", "#0284C7", "#0369A1", "#1D4ED8"];
+const SANKEY_LEFT_COLORS = ["#2E0B86", "#4318C2", "#534AB7", "#5B21F7", "#7C3AED", "#9E7BFA", "#AFA9EC"];
+const SANKEY_RIGHT_COLOR = "#A3A3AA";
 
 function SectorSankeyChart({ dim }) {
   const totalSpend = inp.total_spend || 1;
+  const spendSectors = inp.spend_breakdown ?? [];
+  const [selected, setSelected] = useState(() => new Set());
+  const filterActive = selected.size > 0;
+
+  function toggle(i) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  }
 
   const sankeyData = useMemo(() => {
-    const spendSectors = inp.spend_breakdown ?? [];
     const impactSectors = [...sectItems]
       .sort((a, b) => sectorTotal(b, dim) - sectorTotal(a, dim))
       .slice(0, 8);
 
     const nLeft = spendSectors.length;
-    const trunc = (s, n = 22) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
+    const trunc = (s, n = 28) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
+    const isOn = (i) => !filterActive || selected.has(i);
 
     const nodeLabels = [
       ...spendSectors.map((s) => trunc(cleanText(s.ateco_name))),
       ...impactSectors.map((s) => trunc(cleanText(s.ateco_name))),
     ];
     const nodeColors = [
-      ...spendSectors.map((_, i) => SANKEY_LEFT_COLORS[i % SANKEY_LEFT_COLORS.length]),
-      ...impactSectors.map((_, i) => SANKEY_RIGHT_COLORS[i % SANKEY_RIGHT_COLORS.length]),
+      ...spendSectors.map((_, i) => (isOn(i) ? SANKEY_LEFT_COLORS[i % SANKEY_LEFT_COLORS.length] : "#E5E5E8")),
+      ...impactSectors.map(() => SANKEY_RIGHT_COLOR),
     ];
 
     const sources = [], targets = [], values = [], linkColors = [];
 
     spendSectors.forEach((spend, i) => {
+      const active = isOn(i);
       const hex = SANKEY_LEFT_COLORS[i % SANKEY_LEFT_COLORS.length];
       const r = parseInt(hex.slice(1, 3), 16);
       const g = parseInt(hex.slice(3, 5), 16);
       const b = parseInt(hex.slice(5, 7), 16);
+      const alpha = filterActive ? (active ? 0.6 : 0.05) : 0.4;
       const spendShare = spend.amount / totalSpend;
       impactSectors.forEach((impact, j) => {
         const v = sectorTotal(impact, dim) * spendShare;
@@ -1750,7 +1764,7 @@ function SectorSankeyChart({ dim }) {
           sources.push(i);
           targets.push(nLeft + j);
           values.push(v);
-          linkColors.push(`rgba(${r},${g},${b},0.22)`);
+          linkColors.push(`rgba(${r},${g},${b},${alpha})`);
         }
       });
     });
@@ -1761,9 +1775,9 @@ function SectorSankeyChart({ dim }) {
         orientation: "h",
         arrangement: "snap",
         node: {
-          pad: 12,
-          thickness: 20,
-          line: { color: "#E4E4E7", width: 0.5 },
+          pad: 18,
+          thickness: 18,
+          line: { color: "transparent", width: 0 },
           label: nodeLabels,
           color: nodeColors,
           hovertemplate: "%{label}<extra></extra>",
@@ -1773,30 +1787,30 @@ function SectorSankeyChart({ dim }) {
           target: targets,
           value: values,
           color: linkColors,
-          hovertemplate: "%{source.label} ? %{target.label}<extra></extra>",
+          hovertemplate: "%{source.label} → %{target.label}<extra></extra>",
         },
       },
     ];
-  }, [dim, totalSpend]);
+  }, [dim, totalSpend, spendSectors, selected, filterActive]);
 
   const layout = useMemo(
     () => ({
       paper_bgcolor: "white",
       plot_bgcolor: "white",
-      font: { family: "Inter, ui-sans-serif, sans-serif", size: 11, color: "#27272A" },
-      margin: { t: 32, r: 170, b: 16, l: 170 },
+      font: { family: "Inter, ui-sans-serif, sans-serif", size: 12, color: "#0E0E10" },
+      margin: { t: 40, r: 200, b: 16, l: 200 },
       annotations: [
         {
-          x: 0.01, y: 1.06, xref: "paper", yref: "paper",
-          text: "Impiego diretto",
+          x: 0, y: 1.07, xref: "paper", yref: "paper",
+          text: "IMPIEGO DIRETTO",
           showarrow: false, xanchor: "left",
-          font: { size: 10, color: "#6B7280", family: "Inter, ui-sans-serif, sans-serif" },
+          font: { size: 10, color: "#5A5A60", family: "Inter, ui-sans-serif, sans-serif" },
         },
         {
-          x: 0.99, y: 1.06, xref: "paper", yref: "paper",
-          text: "Settori attivati (indiretto + indotto)",
+          x: 1, y: 1.07, xref: "paper", yref: "paper",
+          text: "SETTORI ATTIVATI (INDIRETTO + INDOTTO)",
           showarrow: false, xanchor: "right",
-          font: { size: 10, color: "#6B7280", family: "Inter, ui-sans-serif, sans-serif" },
+          font: { size: 10, color: "#5A5A60", family: "Inter, ui-sans-serif, sans-serif" },
         },
       ],
     }),
@@ -1804,7 +1818,51 @@ function SectorSankeyChart({ dim }) {
   );
 
   return (
-    <div className="border border-ink-100 bg-white shadow-sm">
+    <div className="rounded-xl border border-ink-100 bg-white p-6">
+      <div className="mb-5">
+        <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-500">
+          Filtra per settore di impiego diretto
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setSelected(new Set())}
+            className={`rounded-[6px] border px-3 py-1.5 text-[12px] transition-colors ${
+              !filterActive
+                ? "border-brand-violet bg-brand-violet text-white"
+                : "border-ink-100 bg-white text-ink-700 hover:border-ink-300"
+            }`}
+          >
+            Tutti
+          </button>
+          {spendSectors.map((s, i) => {
+            const active = selected.has(i);
+            return (
+              <button
+                key={s.ateco_code}
+                type="button"
+                onClick={() => toggle(i)}
+                className={`flex items-center gap-2 rounded-[6px] border px-3 py-1.5 text-[12px] transition-colors ${
+                  active
+                    ? "border-brand-violet bg-brand-violet-soft text-ink-900"
+                    : "border-ink-100 bg-white text-ink-700 hover:border-ink-300"
+                }`}
+              >
+                <span
+                  className="h-2.5 w-2.5 flex-shrink-0 rounded-sm"
+                  style={{ background: SANKEY_LEFT_COLORS[i % SANKEY_LEFT_COLORS.length] }}
+                />
+                {cleanText(s.ateco_name)}
+              </button>
+            );
+          })}
+        </div>
+        {filterActive ? (
+          <div className="mt-2 text-[11px] text-ink-500">
+            {selected.size} di {spendSectors.length} settori selezionati · clicca <em>Tutti</em> per ripristinare
+          </div>
+        ) : null}
+      </div>
       <PlotlyChart data={sankeyData} layout={layout} style={{ minHeight: 480 }} />
     </div>
   );
