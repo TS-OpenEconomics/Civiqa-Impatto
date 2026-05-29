@@ -25,6 +25,7 @@ export function Layout({ children }) {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isBellOpen, setIsBellOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
@@ -73,6 +74,7 @@ export function Layout({ children }) {
             description: "Questa area verra completata nelle prossime iterazioni.",
           })
         }
+        onOpenProfile={() => { setIsUserMenuOpen(false); setIsProfileOpen(true); }}
         onLogout={() => logout()}
         user={user}
       />
@@ -82,9 +84,55 @@ export function Layout({ children }) {
       </div>
       {isHelpOpen ? (
         <Modal title="Centro assistenza" onClose={() => setIsHelpOpen(false)}>
-          <p className="text-sm leading-relaxed text-ink-700">
-            Documentazione in arrivo. Nella demo puoi usare il login preconfigurato e completare l'intero flusso di valutazione.
-          </p>
+          <div className="space-y-3 text-sm leading-relaxed text-ink-700">
+            <p>
+              Stai usando la demo Civiqa. Le credenziali preconfigurate sono:
+            </p>
+            <div className="rounded border border-ink-100 bg-bg-page px-3 py-2 font-mono text-[12px]">
+              demo@civiqa.it / civiqa2024
+            </div>
+            <p>
+              Dal menu <strong className="text-ink-900">Valutazione</strong> puoi creare un nuovo progetto e completare l'intero flusso EIA + ECBA + ESG. Le valutazioni sono salvate nel browser.
+            </p>
+            <p className="text-ink-500">
+              Per richieste di supporto puoi scrivere a{" "}
+              <a href="mailto:supporto@openeconomics.eu" className="text-brand-violet hover:underline">
+                supporto@openeconomics.eu
+              </a>.
+            </p>
+          </div>
+        </Modal>
+      ) : null}
+      {isProfileOpen ? (
+        <Modal title="Il tuo profilo" onClose={() => setIsProfileOpen(false)}>
+          <div className="space-y-4 text-sm text-ink-700">
+            <div className="flex items-center gap-4">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-violet text-base font-semibold text-white">
+                {user?.initials || "MR"}
+              </span>
+              <div>
+                <p className="text-base font-semibold text-ink-900">{user?.name || "Mario Rossi"}</p>
+                <p className="text-xs text-ink-500">{user?.role || "Analista"}</p>
+              </div>
+            </div>
+            <div className="space-y-2 border-t border-ink-100 pt-3">
+              <div className="flex justify-between">
+                <span className="text-ink-500">Email</span>
+                <span className="font-medium text-ink-900">{user?.email || "demo@civiqa.it"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-ink-500">Ruolo</span>
+                <span className="font-medium text-ink-900">{user?.role || "Analista"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-ink-500">Organizzazione</span>
+                <span className="font-medium text-ink-900">OpenEconomics S.r.l</span>
+              </div>
+            </div>
+            <p className="text-xs text-ink-500">
+              La modifica delle informazioni del profilo sarà disponibile nella versione completa.
+            </p>
+          </div>
         </Modal>
       ) : null}
     </div>
@@ -100,6 +148,7 @@ function Header({
   onUserMenuToggle,
   isUserMenuOpen,
   onSettings,
+  onOpenProfile,
   onLogout,
   user,
 }) {
@@ -180,7 +229,7 @@ function Header({
                   <p className="text-sm font-semibold">{user?.name || "Mario Rossi"}</p>
                   <p className="mt-1 text-xs text-ink-500">{user?.role || "Analista"}</p>
                 </div>
-                <button type="button" className="block w-full px-4 py-3 text-left text-sm hover:bg-bg-page">
+                <button type="button" onClick={onOpenProfile} className="block w-full px-4 py-3 text-left text-sm hover:bg-bg-page">
                   Profilo
                 </button>
                 <button type="button" onClick={onLogout} className="block w-full px-4 py-3 text-left text-sm font-semibold text-brand-violet hover:bg-bg-page">

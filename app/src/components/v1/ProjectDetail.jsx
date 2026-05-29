@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Skeleton, SkeletonText } from "../ui/Skeleton";
 import { Badge } from "../ui/Badge";
 import { ImpactIcon } from "../ui/ImpactIcon";
+import { Modal } from "../ui/Modal";
+import { useToast } from "../../hooks/useToast";
 
 function assetUrl(path) {
   const base = import.meta.env.BASE_URL ?? "/";
@@ -286,7 +288,7 @@ function EsgSummaryPanel({ esg }) {
 
 // ── Analysis card ─────────────────────────────────────────────────────────────
 
-function AnalysisCard({ id, analysis, results, onOpen }) {
+function AnalysisCard({ id, analysis, results, onOpen, onDownloadReport }) {
   const meta       = ANALYSIS_META[id];
   const hasResults = analysis?.status === "completed";
 
@@ -302,10 +304,15 @@ function AnalysisCard({ id, analysis, results, onOpen }) {
               <Badge type={meta.tag} />
             </div>
             <div className="mt-1.5 flex items-center gap-1.5">
-              <button type="button" className="text-[12px] font-medium text-brand-violet hover:underline">
+              <button
+                type="button"
+                onClick={() => onDownloadReport?.(id)}
+                disabled={!hasResults}
+                className="text-[12px] font-medium text-brand-violet hover:underline disabled:cursor-not-allowed disabled:text-ink-300 disabled:no-underline"
+              >
                 Scarica Report, Metodologia e Fonti
               </button>
-              <svg className="h-3.5 w-3.5 text-brand-violet" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`h-3.5 w-3.5 ${hasResults ? "text-brand-violet" : "text-ink-300"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
             </div>
@@ -361,7 +368,7 @@ const EXT_CLS = {
   xlsx: "bg-green-100 text-green-700",
 };
 
-function DocRow({ doc }) {
+function DocRow({ doc, onDownload, onDelete }) {
   return (
     <tr className="border-b border-ink-100 last:border-0 hover:bg-ink-100/30">
       <td className="px-4 py-3">
@@ -373,12 +380,22 @@ function DocRow({ doc }) {
       <td className="px-4 py-3 text-[12px] text-ink-500">{doc.data}</td>
       <td className="px-4 py-3 text-[12px] text-ink-700">{doc.proprietario}</td>
       <td className="px-4 py-3 text-center">
-        <button type="button" className="text-brand-violet transition-colors hover:text-brand-violet-dark">
+        <button
+          type="button"
+          onClick={() => onDownload(doc)}
+          aria-label={`Scarica ${doc.nome}`}
+          className="text-brand-violet transition-colors hover:text-brand-violet-dark"
+        >
           <IconDownload className="h-4 w-4" />
         </button>
       </td>
       <td className="px-4 py-3 text-center">
-        <button type="button" className="text-ink-300 transition-colors hover:text-red-500">
+        <button
+          type="button"
+          onClick={() => onDelete(doc)}
+          aria-label={`Elimina ${doc.nome}`}
+          className="text-ink-300 transition-colors hover:text-red-500"
+        >
           <IconTrash className="h-4 w-4" />
         </button>
       </td>
@@ -386,9 +403,87 @@ function DocRow({ doc }) {
   );
 }
 
-function DocumentationSection() {
+const PAGE_SIZE = 5;
+
+function todayLabel() {
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}
+
+function extOf(name) {
+  const m = /\.([a-z0-9]+)$/i.exec(name ?? "");
+  return m ? m[1].toLowerCase() : "file";
+}
+
+function DocumentationSection({ ownerName }) {
+  const { toast } = useToast();
+  const fileInputRef = useRef(null);
+  const [docs, setDocs] = useState(MOCK_DOCS);
   const [docTab, setDocTab] = useState("caricati");
   const [view, setView] = useState("lista");
+  const [sortBy, setSortBy] = useState("data");
+  const [page, setPage] = useState(1);
+  const [confirmDel, setConfirmDel] = useState(null);
+
+  function parseItalianDate(s) {
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s ?? "");
+    return m ? new Date(`${m[3]}-${m[2]}-${m[1]}`).getTime() : 0;
+  }
+
+  const sortedDocs = useMemo(() => {
+    const list = [...docs];
+    if (sortBy === "nome") list.sort((a, b) => a.nome.localeCompare(b.nome, "it"));
+    else if (sortBy === "proprietario") list.sort((a, b) => a.proprietario.localeCompare(b.proprietario, "it"));
+    else list.sort((a, b) => parseItalianDate(b.data) - parseItalianDate(a.data));
+    return list;
+  }, [docs, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedDocs.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const start = (safePage - 1) * PAGE_SIZE;
+  const visibleDocs = sortedDocs.slice(start, start + PAGE_SIZE);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [docs, page, totalPages]);
+
+  function handleDownload(doc) {
+    toast({
+      title: "Download non disponibile nella demo",
+      description: `Il documento "${doc.nome}" sarà scaricabile nella versione completa.`,
+    });
+  }
+
+  function handleUploadClick() {
+    fileInputRef.current?.click();
+  }
+
+  function handleFiles(event) {
+    const files = Array.from(event.target.files ?? []);
+    if (!files.length) return;
+    const newDocs = files.map((file, idx) => ({
+      id: `local-${Date.now()}-${idx}`,
+      nome: file.name,
+      data: todayLabel(),
+      proprietario: ownerName || "Utente",
+      ext: extOf(file.name),
+    }));
+    setDocs((prev) => [...newDocs, ...prev]);
+    toast({
+      title: files.length === 1 ? "Documento caricato" : `${files.length} documenti caricati`,
+      tone: "success",
+    });
+    event.target.value = "";
+  }
+
+  function confirmDelete() {
+    if (!confirmDel) return;
+    setDocs((prev) => prev.filter((d) => d.id !== confirmDel.id));
+    toast({ title: "Documento eliminato", tone: "success" });
+    setConfirmDel(null);
+  }
 
   return (
     <div className="mt-10 pb-10">
@@ -418,10 +513,14 @@ function DocumentationSection() {
       {/* Toolbar */}
       <div className="mt-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <select className="rounded border border-ink-100 px-3 py-1.5 text-[12px] text-ink-700 focus:outline-none">
-            <option>Ordina per: Data</option>
-            <option>Ordina per: Nome</option>
-            <option>Ordina per: Proprietario</option>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="rounded border border-ink-100 px-3 py-1.5 text-[12px] text-ink-700 focus:outline-none"
+          >
+            <option value="data">Ordina per: Data</option>
+            <option value="nome">Ordina per: Nome</option>
+            <option value="proprietario">Ordina per: Proprietario</option>
           </select>
           <div className="flex overflow-hidden rounded border border-ink-100">
             {["lista", "griglia"].map((v) => (
@@ -440,21 +539,33 @@ function DocumentationSection() {
         </div>
         <button
           type="button"
+          onClick={handleUploadClick}
           className="flex items-center gap-2 rounded bg-brand-violet px-4 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-brand-violet-dark"
         >
           + Carica documento
         </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          className="hidden"
+          onChange={handleFiles}
+        />
       </div>
 
       {/* Document list / grid */}
       <div className="mt-4">
         {docTab !== "caricati" ? (
-          <div className="overflow-hidden rounded border border-ink-100 bg-white px-4 py-10 text-center text-[13px] text-ink-300">
+          <div className="overflow-hidden rounded border border-ink-100 bg-white px-4 py-10 text-center text-[13px] text-ink-400">
             Nessun documento prodotto da OpenEconomics disponibile.
+          </div>
+        ) : docs.length === 0 ? (
+          <div className="overflow-hidden rounded border border-dashed border-ink-200 bg-white px-4 py-10 text-center text-[13px] text-ink-500">
+            Nessun documento caricato. Usa <span className="font-semibold">+ Carica documento</span> per aggiungerne.
           </div>
         ) : view === "griglia" ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {MOCK_DOCS.map((doc) => (
+            {visibleDocs.map((doc) => (
               <div key={doc.id} className="group flex flex-col gap-3 rounded-xl border border-ink-100 bg-white p-4 transition-shadow hover:shadow-md">
                 <div className={`flex h-12 w-12 items-center justify-center rounded-xl text-[11px] font-bold uppercase ${EXT_CLS[doc.ext] ?? "bg-ink-100 text-ink-500"}`}>
                   {doc.ext}
@@ -465,10 +576,20 @@ function DocumentationSection() {
                   <p className="text-[11px] text-ink-400">{doc.proprietario}</p>
                 </div>
                 <div className="flex items-center justify-between border-t border-ink-100 pt-2">
-                  <button type="button" className="text-brand-violet transition-colors hover:text-brand-violet-dark">
+                  <button
+                    type="button"
+                    onClick={() => handleDownload(doc)}
+                    aria-label={`Scarica ${doc.nome}`}
+                    className="text-brand-violet transition-colors hover:text-brand-violet-dark"
+                  >
                     <IconDownload className="h-4 w-4" />
                   </button>
-                  <button type="button" className="text-ink-300 transition-colors hover:text-red-500">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDel(doc)}
+                    aria-label={`Elimina ${doc.nome}`}
+                    className="text-ink-300 transition-colors hover:text-red-500"
+                  >
                     <IconTrash className="h-4 w-4" />
                   </button>
                 </div>
@@ -488,7 +609,14 @@ function DocumentationSection() {
                 </tr>
               </thead>
               <tbody>
-                {MOCK_DOCS.map((doc) => <DocRow key={doc.id} doc={doc} />)}
+                {visibleDocs.map((doc) => (
+                  <DocRow
+                    key={doc.id}
+                    doc={doc}
+                    onDownload={handleDownload}
+                    onDelete={(d) => setConfirmDel(d)}
+                  />
+                ))}
               </tbody>
             </table>
           </div>
@@ -496,17 +624,62 @@ function DocumentationSection() {
       </div>
 
       {/* Pagination */}
-      {docTab === "caricati" && (
+      {docTab === "caricati" && docs.length > 0 && (
         <div className="mt-4 flex items-center justify-between text-[12px] text-ink-500">
-          <span>Visualizzazione 1–5 di 5 documenti</span>
-          <div className="flex items-center gap-1">
-            <button type="button" className="rounded px-2 py-1 hover:bg-ink-100">‹</button>
-            <button type="button" className="rounded bg-brand-violet px-2.5 py-1 font-semibold text-white">1</button>
-            <button type="button" className="rounded px-2 py-1 hover:bg-ink-100">2</button>
-            <button type="button" className="rounded px-2 py-1 hover:bg-ink-100">3</button>
-            <button type="button" className="rounded px-2 py-1 hover:bg-ink-100">›</button>
-          </div>
+          <span>
+            Visualizzazione {start + 1}–{Math.min(start + PAGE_SIZE, docs.length)} di {docs.length}{" "}
+            {docs.length === 1 ? "documento" : "documenti"}
+          </span>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={safePage === 1}
+                aria-label="Pagina precedente"
+                className="rounded px-2 py-1 transition-colors hover:bg-ink-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+              >
+                ‹
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setPage(n)}
+                  className={`rounded px-2.5 py-1 transition-colors ${
+                    n === safePage
+                      ? "bg-brand-violet font-semibold text-white"
+                      : "hover:bg-ink-100"
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safePage === totalPages}
+                aria-label="Pagina successiva"
+                className="rounded px-2 py-1 transition-colors hover:bg-ink-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+              >
+                ›
+              </button>
+            </div>
+          )}
         </div>
+      )}
+
+      {confirmDel && (
+        <Modal
+          title="Elimina documento"
+          onClose={() => setConfirmDel(null)}
+          onConfirm={confirmDelete}
+          confirmLabel="Elimina"
+        >
+          <p className="text-sm text-ink-700">
+            Vuoi eliminare <span className="font-semibold">{confirmDel.nome}</span>? L'operazione non è reversibile.
+          </p>
+        </Modal>
       )}
     </div>
   );
@@ -514,9 +687,23 @@ function DocumentationSection() {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function ProjectDetail({ project, analyses, results, onBack, onOpenEia, onOpenEcba, onOpenEsg }) {
+export function ProjectDetail({
+  project,
+  analyses,
+  results,
+  onBack,
+  onOpenEia,
+  onOpenEcba,
+  onOpenEsg,
+  onEdit,
+  onDuplicate,
+  onDelete,
+}) {
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [showOptions, setShowOptions] = useState(false);
+  const [showConfigAll, setShowConfigAll] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const p   = project || {};
   const cfg = p.configurazione || {};
 
@@ -524,6 +711,20 @@ export function ProjectDetail({ project, analyses, results, onBack, onOpenEia, o
     const timer = window.setTimeout(() => setIsLoading(false), 650);
     return () => window.clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!showOptions) return undefined;
+    const onDocClick = () => setShowOptions(false);
+    window.addEventListener("click", onDocClick);
+    return () => window.removeEventListener("click", onDocClick);
+  }, [showOptions]);
+
+  function handleDownloadReport(analysisId) {
+    toast({
+      title: "Report non disponibile nella demo",
+      description: `Il report dell'analisi ${analysisId.toUpperCase()} sarà esportabile (PDF + XLSX) nella versione completa.`,
+    });
+  }
 
   const stato = statusLabel(p.stato);
 
@@ -578,28 +779,41 @@ export function ProjectDetail({ project, analyses, results, onBack, onOpenEia, o
         </div>
 
         {/* Options */}
-        <div className="relative shrink-0">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowOptions((o) => !o)}
-              className="flex items-center gap-2 rounded border border-ink-100 px-4 py-2 text-[13px] font-medium text-ink-700 transition-colors hover:bg-ink-100/50"
-            >
-              Opzioni
-              <IconChevronDown className="h-3.5 w-3.5 text-ink-300" />
-            </button>
-            <button
-              type="button"
-              className="flex h-9 w-9 items-center justify-center rounded border border-ink-100 text-[18px] text-ink-500 transition-colors hover:bg-ink-100/50"
-            >
-              ···
-            </button>
-          </div>
+        <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={() => setShowOptions((o) => !o)}
+            className="flex items-center gap-2 rounded border border-ink-100 px-4 py-2 text-[13px] font-medium text-ink-700 transition-colors hover:bg-ink-100/50"
+          >
+            Opzioni
+            <IconChevronDown className="h-3.5 w-3.5 text-ink-300" />
+          </button>
           {showOptions && (
             <div className="absolute right-0 top-full z-10 mt-1 w-48 overflow-hidden rounded border border-ink-100 bg-white shadow-lg">
-              <button type="button" className="w-full px-4 py-2.5 text-left text-[13px] text-ink-700 hover:bg-ink-100/50">Modifica progetto</button>
-              <button type="button" className="w-full px-4 py-2.5 text-left text-[13px] text-ink-700 hover:bg-ink-100/50">Duplica progetto</button>
-              <button type="button" className="w-full border-t border-ink-100 px-4 py-2.5 text-left text-[13px] text-red-600 hover:bg-red-50">Elimina progetto</button>
+              <button
+                type="button"
+                onClick={() => { setShowOptions(false); onEdit?.(); }}
+                disabled={!onEdit}
+                className="w-full px-4 py-2.5 text-left text-[13px] text-ink-700 transition-colors hover:bg-ink-100/50 disabled:cursor-not-allowed disabled:text-ink-300"
+              >
+                Modifica progetto
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowOptions(false); onDuplicate?.(); }}
+                disabled={!onDuplicate}
+                className="w-full px-4 py-2.5 text-left text-[13px] text-ink-700 transition-colors hover:bg-ink-100/50 disabled:cursor-not-allowed disabled:text-ink-300"
+              >
+                Duplica progetto
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowOptions(false); setConfirmDelete(true); }}
+                disabled={!onDelete}
+                className="w-full border-t border-ink-100 px-4 py-2.5 text-left text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:text-ink-300"
+              >
+                Elimina progetto
+              </button>
             </div>
           )}
         </div>
@@ -609,8 +823,12 @@ export function ProjectDetail({ project, analyses, results, onBack, onOpenEia, o
       <div className="mt-8 overflow-hidden rounded border border-ink-100">
         <div className="flex items-center justify-between bg-[#2f2f2f] px-5 py-3">
           <h2 className="text-[13px] font-bold text-white">Dati della configurazione</h2>
-          <button type="button" className="text-[12px] text-white/60 transition-colors hover:text-white">
-            Vedi maggiori dettagli →
+          <button
+            type="button"
+            onClick={() => setShowConfigAll((v) => !v)}
+            className="text-[12px] text-white/60 transition-colors hover:text-white"
+          >
+            {showConfigAll ? "Mostra essenziali ↑" : "Vedi maggiori dettagli →"}
           </button>
         </div>
         <div className="grid grid-cols-1 divide-y divide-ink-100 bg-white sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-3">
@@ -634,13 +852,33 @@ export function ProjectDetail({ project, analyses, results, onBack, onOpenEia, o
             <div key={ci} className="divide-y divide-ink-100">
               {col.map(([label, value]) => (
                 <div key={label} className="px-5 py-3">
-                  <p className="text-[11px] font-medium text-ink-300">{label}</p>
+                  <p className="text-[11px] font-medium text-ink-400">{label}</p>
                   <p className="mt-0.5 text-[13px] font-semibold text-ink-900">{value || "—"}</p>
                 </div>
               ))}
             </div>
           ))}
         </div>
+        {showConfigAll && (
+          <div className="grid grid-cols-1 gap-x-6 gap-y-3 border-t border-ink-100 bg-bg-page px-5 py-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              ["NACE", cfg.nace_code],
+              ["Tasso attualizzazione", cfg.tasso_attualizzazione != null ? `${cfg.tasso_attualizzazione}%` : null],
+              ["NUTS", cfg.nuts_code],
+              ["Latitudine", cfg.lat != null ? Number(cfg.lat).toFixed(4) : null],
+              ["Longitudine", cfg.lon != null ? Number(cfg.lon).toFixed(4) : null],
+              ["Data inizio", cfg.data_inizio],
+              ["Data fine", cfg.data_fine],
+              ["Vita utile", cfg.vita_utile ? `${cfg.vita_utile} anni` : null],
+              ["Tasso OPEX su CAPEX", cfg.opex_tasso != null ? `${cfg.opex_tasso}%` : null],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <p className="text-[11px] font-medium text-ink-500">{label}</p>
+                <p className="mt-0.5 text-[12px] font-mono text-ink-700">{value || "—"}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Analysis cards */}
@@ -652,14 +890,27 @@ export function ProjectDetail({ project, analyses, results, onBack, onOpenEia, o
           </div>
         </div>
         <div className="space-y-4">
-          <AnalysisCard id="eia"  analysis={analyses?.eia}  results={results} onOpen={onOpenEia}  />
-          <AnalysisCard id="ecba" analysis={analyses?.ecba} results={results} onOpen={onOpenEcba} />
-          <AnalysisCard id="esg"  analysis={analyses?.esg}  results={results} onOpen={onOpenEsg}  />
+          <AnalysisCard id="eia"  analysis={analyses?.eia}  results={results} onOpen={onOpenEia}  onDownloadReport={handleDownloadReport} />
+          <AnalysisCard id="ecba" analysis={analyses?.ecba} results={results} onOpen={onOpenEcba} onDownloadReport={handleDownloadReport} />
+          <AnalysisCard id="esg"  analysis={analyses?.esg}  results={results} onOpen={onOpenEsg}  onDownloadReport={handleDownloadReport} />
         </div>
       </div>
 
       {/* Documentation */}
-      <DocumentationSection />
+      <DocumentationSection ownerName={p.proprietario || "Mario Rossi"} />
+
+      {confirmDelete && (
+        <Modal
+          title="Elimina progetto"
+          onClose={() => setConfirmDelete(false)}
+          onConfirm={() => { setConfirmDelete(false); onDelete?.(); }}
+          confirmLabel="Elimina"
+        >
+          <p className="text-sm text-ink-700">
+            Vuoi eliminare il progetto <span className="font-semibold">{p.nome || "senza nome"}</span> e tutte le sue analisi? L'operazione non è reversibile.
+          </p>
+        </Modal>
+      )}
     </div>
   );
 }

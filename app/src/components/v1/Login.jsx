@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import { Modal } from "../ui/Modal";
 import { IconChevronDown, IconEye, IconEyeOff, IconOEBlack, IconOEWhite } from "../ui/Icons";
 
 export function Login() {
@@ -8,12 +9,21 @@ export function Login() {
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [ssoOpen, setSsoOpen] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
-    const ok = await login(email, password);
-    if (!ok) setError("Credenziali non valide. Usa demo@civiqa.it / civiqa2024");
+    setSubmitting(true);
+    try {
+      await login(email, password);
+    } catch (err) {
+      setError(err?.message || "Credenziali non valide. Usa demo@civiqa.it / civiqa2024");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const filled = email.trim() && password.trim();
@@ -104,23 +114,27 @@ export function Login() {
 
               <button
                 type="submit"
-                disabled={!filled}
+                disabled={!filled || submitting}
                 className={`w-full flex items-center justify-between px-5 py-4 text-sm font-semibold transition-colors ${
-                  filled
+                  filled && !submitting
                     ? "bg-brand-violet text-white hover:bg-brand-violet-dark"
-                    : "bg-ink-100 text-ink-300 cursor-not-allowed"
+                    : "bg-ink-100 text-ink-400 cursor-not-allowed"
                 }`}
               >
-                <span>Accedi</span>
-                <span>→</span>
+                <span>{submitting ? "Accesso in corso…" : "Accedi"}</span>
+                <span>{submitting ? "…" : "→"}</span>
               </button>
 
               <div className="flex items-center justify-between text-sm">
-                <button type="button" className="text-brand-violet hover:underline">
+                <button
+                  type="button"
+                  onClick={() => setForgotOpen(true)}
+                  className="text-brand-violet hover:underline"
+                >
                   Password dimenticata?
                 </button>
                 <label className="flex items-center gap-2 text-ink-700 cursor-pointer">
-                  <span className="w-4 h-4 border border-ink-300 shrink-0" />
+                  <input type="checkbox" className="h-4 w-4 accent-brand-violet" />
                   Ricordami
                 </label>
               </div>
@@ -129,6 +143,7 @@ export function Login() {
                 <p className="text-sm text-ink-700 mb-3">Oppure:</p>
                 <button
                   type="button"
+                  onClick={() => setSsoOpen(true)}
                   className="w-full flex items-center justify-between border border-brand-violet px-5 py-4 text-sm font-semibold text-brand-violet hover:bg-brand-violet-light transition-colors"
                 >
                   <span>Accedi con le credenziali aziendali</span>
@@ -139,13 +154,45 @@ export function Login() {
 
             <p className="mt-8 text-center text-sm text-ink-500">
               Per assistenza{" "}
-              <a href="mailto:supporto@mail.com" className="text-brand-violet hover:underline">
-                scrivi a supporto@mail.com
+              <a href="mailto:supporto@openeconomics.eu" className="text-brand-violet hover:underline">
+                scrivi a supporto@openeconomics.eu
               </a>
             </p>
           </div>
         </div>
       </div>
+
+      {forgotOpen && (
+        <Modal title="Recupero password" onClose={() => setForgotOpen(false)}>
+          <div className="space-y-3 text-sm leading-relaxed text-ink-700">
+            <p>
+              Nella versione demo non è disponibile il reset password. Le credenziali preconfigurate sono:
+            </p>
+            <div className="rounded border border-ink-100 bg-bg-page px-3 py-2 font-mono text-[12px]">
+              demo@civiqa.it / civiqa2024
+            </div>
+            <p className="text-ink-500">
+              Per un account dedicato puoi scrivere a{" "}
+              <a href="mailto:supporto@openeconomics.eu" className="text-brand-violet hover:underline">
+                supporto@openeconomics.eu
+              </a>.
+            </p>
+          </div>
+        </Modal>
+      )}
+
+      {ssoOpen && (
+        <Modal title="Accesso aziendale (SSO)" onClose={() => setSsoOpen(false)}>
+          <div className="space-y-3 text-sm leading-relaxed text-ink-700">
+            <p>
+              L'integrazione SSO (SAML/OIDC) con le credenziali aziendali è prevista nella versione completa.
+            </p>
+            <p className="text-ink-500">
+              Nella demo usa le credenziali preconfigurate <span className="font-mono text-[12px]">demo@civiqa.it / civiqa2024</span>.
+            </p>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

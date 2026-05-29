@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useProjects } from "../../contexts/ProjectContext";
+import { useToast } from "../../hooks/useToast";
 import { Badge } from "../ui/Badge";
+import { Modal } from "../ui/Modal";
 import {
   IconArrowLeft,
   IconArrowRight,
@@ -181,21 +183,53 @@ function ToolButton({ children, className = "", ...props }) {
   );
 }
 
-function ProjectAction({ action }) {
+function ProjectAction({ action, onDelete, onDuplicate, onOpen, projectName }) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const close = () => setOpen(false);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, [open]);
+
   if (action === "trash") {
-    return <IconTrash className="h-7 w-7 text-[#d40000]" />;
+    return (
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
+        aria-label={`Elimina ${projectName}`}
+        className="text-[#d40000] transition-opacity hover:opacity-70"
+      >
+        <IconTrash className="h-7 w-7" />
+      </button>
+    );
   }
 
   return (
-    <div className="flex items-center gap-1 text-brand-violet">
-      <span className="h-[5px] w-[5px] rounded-full bg-current" />
-      <span className="h-[5px] w-[5px] rounded-full bg-current" />
-      <span className="h-[5px] w-[5px] rounded-full bg-current" />
+    <div className="relative" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Opzioni progetto"
+        className="flex items-center gap-1 px-1 text-brand-violet transition-opacity hover:opacity-70"
+      >
+        <span className="h-[5px] w-[5px] rounded-full bg-current" />
+        <span className="h-[5px] w-[5px] rounded-full bg-current" />
+        <span className="h-[5px] w-[5px] rounded-full bg-current" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full z-10 mt-1 w-44 overflow-hidden rounded border border-ink-100 bg-white shadow-lg">
+          <button type="button" onClick={() => { setOpen(false); onOpen?.(); }} className="w-full px-4 py-2.5 text-left text-[13px] text-ink-700 hover:bg-ink-100/50">Apri</button>
+          <button type="button" onClick={() => { setOpen(false); onDuplicate?.(); }} className="w-full px-4 py-2.5 text-left text-[13px] text-ink-700 hover:bg-ink-100/50">Duplica</button>
+          <button type="button" onClick={() => { setOpen(false); onDelete?.(); }} className="w-full border-t border-ink-100 px-4 py-2.5 text-left text-[13px] text-red-600 hover:bg-red-50">Elimina</button>
+        </div>
+      )}
     </div>
   );
 }
 
-function ProjectListCard({ project, onOpen }) {
+function ProjectListCard({ project, onOpen, onDelete, onDuplicate }) {
   return (
     <article className="overflow-hidden border border-[#e4e4e4] bg-white">
       <div className="grid border-b border-[#e6e6e6] lg:min-h-[96px] lg:grid-cols-[minmax(0,1fr)_370px_82px]">
@@ -216,7 +250,13 @@ function ProjectListCard({ project, onOpen }) {
             <span className="text-[14px] font-semibold text-ink-900">Analisi</span>
             <AnalysisBadges active={project.analyses || []} />
           </div>
-          <ProjectAction action={project.action} />
+          <ProjectAction
+            action={project.action}
+            projectName={project.nome}
+            onDelete={onDelete}
+            onDuplicate={onDuplicate}
+            onOpen={onOpen}
+          />
         </div>
 
         <button
@@ -287,10 +327,19 @@ function buildDisplayProject(workspace, index) {
   };
 }
 
+const STATUS_OPTIONS = ["Bozza", "In preparazione", "In approvazione", "Approvato"];
+
 export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [showDraftsOnly, setShowDraftsOnly] = useState(false);
   const [showWithoutAnalysisOnly, setShowWithoutAnalysisOnly] = useState(false);
+  const [provinceQuery, setProvinceQuery] = useState("");
+  const [statusFilters, setStatusFilters] = useState([]);
+  const [provinceOpen, setProvinceOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(null);
+  const [showInfo, setShowInfo] = useState(false);
   const featuredRef = useRef(null);
   const {
     projects,
@@ -298,6 +347,8 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
     setSearchTerm,
     setDebouncedSearchTerm,
     setSortMode,
+    duplicateProject,
+    deleteProject,
   } = useProjects();
 
   useEffect(() => {
@@ -305,14 +356,35 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
     return () => window.clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (!provinceOpen && !filterOpen) return undefined;
+    const close = () => { setProvinceOpen(false); setFilterOpen(false); };
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, [provinceOpen, filterOpen]);
+
   const displayProjects = useMemo(() => projects.map((workspace, index) => buildDisplayProject(workspace, index)), [projects]);
 
   const filteredProjects = useMemo(() => {
     const term = uiState.debouncedSearchTerm;
+    const provTerm = provinceQuery.trim().toLowerCase();
     let list = displayProjects.filter((project) => {
       if (!term) return true;
       return `${project.nome} ${project.cup} ${project.proprietario} ${project.settore}`.toLowerCase().includes(term);
     });
+
+    if (provTerm) {
+      list = list.filter((project) => {
+        const ws = projects.find((w) => w.id === project.id);
+        const cfg = ws?.project?.configurazione ?? {};
+        const haystack = `${cfg.localizzazione ?? ""} ${cfg.nuts_label ?? ""}`.toLowerCase();
+        return haystack.includes(provTerm);
+      });
+    }
+
+    if (statusFilters.length) {
+      list = list.filter((project) => statusFilters.includes(project.statoProgetto) || (statusFilters.includes("Bozza") && project.bozza));
+    }
 
     if (showDraftsOnly) {
       list = list.filter((project) => project.bozza);
@@ -327,7 +399,24 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
     }
 
     return list;
-  }, [displayProjects, showDraftsOnly, showWithoutAnalysisOnly, uiState.debouncedSearchTerm, uiState.sortMode]);
+  }, [displayProjects, projects, provinceQuery, statusFilters, showDraftsOnly, showWithoutAnalysisOnly, uiState.debouncedSearchTerm, uiState.sortMode]);
+
+  function toggleStatus(s) {
+    setStatusFilters((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
+  }
+
+  function handleDuplicate(id, name) {
+    const next = duplicateProject(id);
+    if (next) toast({ title: `"${name}" duplicato`, tone: "success" });
+  }
+
+  function handleConfirmDelete() {
+    if (!confirmDel) return;
+    deleteProject(confirmDel.id);
+    toast({ title: `"${confirmDel.nome}" eliminato`, tone: "success" });
+    setConfirmDel(null);
+  }
+
 
   function scrollFeatured(direction) {
     const container = featuredRef.current;
@@ -354,9 +443,13 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
             </div>
             <p className="mt-4 max-w-[900px] text-[14px] leading-[1.5] text-ink-900">
               All&apos;interno di questa sezione potrai configurare i tuoi progetti e consultare le valutazioni gia elaborate. Creando una nuova valutazione ti verra chiesto di definire un progetto, sul quale potrai eseguire analisi di impatto, analisi costi-benefici e analisi ESG.{" "}
-              <a href="#" className="text-brand-violet underline">
+              <button
+                type="button"
+                onClick={() => setShowInfo(true)}
+                className="text-brand-violet underline hover:text-brand-violet-dark"
+              >
                 Approfondisci ulteriormente
-              </a>
+              </button>
             </p>
           </div>
 
@@ -432,22 +525,91 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
           </div>
 
           <div className="mt-10 flex flex-wrap items-center gap-5">
-            <div className="flex items-center gap-4">
+            <div className="relative flex items-center gap-4" onClick={(e) => e.stopPropagation()}>
               <span className="text-[16px] text-ink-900">Cerca per province e comuni:</span>
-              <ToolButton className="w-[52px] px-0">
+              <ToolButton
+                onClick={() => { setProvinceOpen((v) => !v); setFilterOpen(false); }}
+                className={`w-[52px] px-0 ${provinceQuery ? "border-brand-violet bg-brand-violet-soft" : ""}`}
+                aria-label="Filtra per provincia"
+              >
                 <IconPin className="h-5 w-5 text-ink-900" />
               </ToolButton>
+              {provinceOpen && (
+                <div className="absolute left-0 top-full z-20 mt-2 w-[280px] rounded border border-ink-100 bg-white p-4 shadow-lg">
+                  <label className="block text-[12px] font-semibold text-ink-700">Provincia o comune</label>
+                  <input
+                    type="text"
+                    autoFocus
+                    value={provinceQuery}
+                    onChange={(e) => setProvinceQuery(e.target.value)}
+                    placeholder="Es. Napoli, Milano…"
+                    className="mt-2 h-10 w-full border border-ink-200 px-3 text-[13px] focus:border-brand-violet focus:outline-none"
+                  />
+                  <div className="mt-3 flex justify-between">
+                    <button
+                      type="button"
+                      onClick={() => setProvinceQuery("")}
+                      className="text-[12px] text-ink-500 hover:text-ink-900"
+                    >
+                      Pulisci
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setProvinceOpen(false)}
+                      className="text-[12px] font-semibold text-brand-violet hover:underline"
+                    >
+                      Chiudi
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="relative flex items-center gap-4" onClick={(e) => e.stopPropagation()}>
               <span className="text-[16px] text-ink-900">Filtra per:</span>
-              <ToolButton className="w-[52px] px-0">
+              <ToolButton
+                onClick={() => { setFilterOpen((v) => !v); setProvinceOpen(false); }}
+                className={`w-[52px] px-0 ${statusFilters.length ? "border-brand-violet bg-brand-violet-soft" : ""}`}
+                aria-label="Filtra per stato"
+              >
                 <svg className="h-5 w-5 text-ink-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M4 6h16" />
                   <path d="M7 12h10" />
                   <path d="M10 18h4" />
                 </svg>
+                {statusFilters.length > 0 && (
+                  <span className="ml-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-brand-violet px-1 text-[10px] font-semibold text-white">
+                    {statusFilters.length}
+                  </span>
+                )}
               </ToolButton>
+              {filterOpen && (
+                <div className="absolute left-0 top-full z-20 mt-2 w-[260px] rounded border border-ink-100 bg-white p-3 shadow-lg">
+                  <p className="px-1 pb-2 text-[12px] font-semibold text-ink-700">Filtra per stato</p>
+                  <div className="space-y-1">
+                    {STATUS_OPTIONS.map((s) => (
+                      <label key={s} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-[13px] text-ink-700 hover:bg-ink-100/50">
+                        <input
+                          type="checkbox"
+                          checked={statusFilters.includes(s)}
+                          onChange={() => toggleStatus(s)}
+                          className="h-4 w-4 accent-brand-violet"
+                        />
+                        {s}
+                      </label>
+                    ))}
+                  </div>
+                  {statusFilters.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setStatusFilters([])}
+                      className="mt-2 w-full border-t border-ink-100 pt-2 text-[12px] text-ink-500 hover:text-ink-900"
+                    >
+                      Rimuovi tutti i filtri
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-4">
@@ -487,11 +649,51 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
             </div>
           ) : (
             filteredProjects.map((project) => (
-              <ProjectListCard key={project.id} project={project} onOpen={() => onOpenProject(project.id)} />
+              <ProjectListCard
+                key={project.id}
+                project={project}
+                onOpen={() => onOpenProject(project.id)}
+                onDuplicate={() => handleDuplicate(project.id, project.nome)}
+                onDelete={() => setConfirmDel(project)}
+              />
             ))
           )}
         </div>
       </section>
+
+      {showInfo && (
+        <Modal title="Come funziona la sezione Valutazione" onClose={() => setShowInfo(false)}>
+          <div className="space-y-3 text-sm leading-relaxed text-ink-700">
+            <p>
+              Crea una nuova valutazione partendo da un progetto: ti chiederemo le caratteristiche fisiche, la durata, la localizzazione e i parametri economici (CAPEX/OPEX).
+            </p>
+            <p>
+              Su ogni progetto puoi eseguire fino a tre analisi:
+            </p>
+            <ul className="ml-5 list-disc space-y-1">
+              <li><strong className="text-ink-900">EIA</strong> — impatto economico su filiere e territorio</li>
+              <li><strong className="text-ink-900">ECBA</strong> — analisi costi-benefici con VAN, TIR, payback</li>
+              <li><strong className="text-ink-900">ESG</strong> — sostenibilità ambientale, sociale e di governance</li>
+            </ul>
+            <p>
+              Le valutazioni in <strong className="text-ink-900">bozza</strong> sono salvate localmente e puoi riprenderle in qualsiasi momento.
+            </p>
+          </div>
+        </Modal>
+      )}
+
+      {confirmDel && (
+        <Modal
+          title="Elimina valutazione"
+          onClose={() => setConfirmDel(null)}
+          onConfirm={handleConfirmDelete}
+          confirmLabel="Elimina"
+        >
+          <p className="text-sm text-ink-700">
+            Vuoi eliminare <span className="font-semibold">{confirmDel.nome}</span> e tutte le sue analisi? L'operazione non è reversibile.
+          </p>
+        </Modal>
+      )}
     </div>
   );
 }

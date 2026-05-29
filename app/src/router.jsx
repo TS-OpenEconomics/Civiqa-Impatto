@@ -240,6 +240,7 @@ function ConfigurationCompleteRoute() {
 
 function ProjectDetailRoute() {
   const navigate = useNavigate();
+  const { setDraftProject, duplicateProject, deleteProject } = useProjects();
   const workspace = useWorkspace();
   if (!workspace) return <Navigate to="/valutazioni" replace />;
 
@@ -256,6 +257,18 @@ function ProjectDetailRoute() {
       onOpenEia={() => navigateToAnalysis(workspace, "eia", navigate)}
       onOpenEcba={() => navigateToAnalysis(workspace, "ecba", navigate)}
       onOpenEsg={() => navigateToAnalysis(workspace, "esg", navigate)}
+      onEdit={() => {
+        setDraftProject(workspace.project);
+        navigate(`/valutazioni/nuova?editId=${workspace.id}`);
+      }}
+      onDuplicate={() => {
+        const next = duplicateProject(workspace.id);
+        if (next) navigate(`/valutazioni/${next.id}`);
+      }}
+      onDelete={() => {
+        deleteProject(workspace.id);
+        navigate("/valutazioni");
+      }}
     />
   );
 }

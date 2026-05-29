@@ -8,10 +8,25 @@ const DEMO_USER = {
   role: "Analista",
 };
 
+const STORAGE_KEY = "civiqa.auth";
+
+function readInitialAuth() {
+  if (typeof window === "undefined") return { user: null, token: null };
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { user: null, token: null };
+    const parsed = JSON.parse(raw);
+    if (parsed?.token && parsed?.user?.email) return parsed;
+  } catch {
+    /* ignore corrupt payload */
+  }
+  return { user: null, token: null };
+}
+
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [authState, setAuthState] = useState({ user: null, token: null });
+  const [authState, setAuthState] = useState(readInitialAuth);
 
   const value = useMemo(
     () => ({
@@ -31,13 +46,14 @@ export function AuthProvider({ children }) {
         };
         setAuthState(next);
         if (typeof window !== "undefined") {
-          window.localStorage.setItem("auth_token", next.token);
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
         }
         return next.user;
       },
       logout() {
         setAuthState({ user: null, token: null });
         if (typeof window !== "undefined") {
+          window.localStorage.removeItem(STORAGE_KEY);
           window.localStorage.removeItem("auth_token");
         }
       },
