@@ -544,14 +544,14 @@ function TabSintesi() {
       <section className="space-y-4">
         <SintesiSectionHead
           title="L'effetto moltiplicatore"
-          subtitle="PIL e produzione per euro speso; occupazione per milione di euro; gettito come quota della spesa iniziale"
+          subtitle="PIL e produzione per euro speso; occupazione per milione di euro"
         />
         <SintesiMultiplierGrid
           regGdpMult={regGdpMult} natGdpMult={natGdpMult}
           regProdMult={regProdMult} natProdMult={natProdMult}
           regEmpInt={regEmpInt} natEmpInt={natEmpInt}
-          fiscalPct={fiscalPct}
         />
+        <SintesiFiscalReturn fiscalPct={fiscalPct} natFiscal={natFiscal} spend={spend} />
       </section>
 
       {/* Callout sintetico */}
@@ -645,12 +645,11 @@ function SintesiTerritoryCol({ color, name, pct, gdp, emp }) {
   );
 }
 
-function SintesiMultiplierGrid({ regGdpMult, natGdpMult, regProdMult, natProdMult, regEmpInt, natEmpInt, fiscalPct }) {
+function SintesiMultiplierGrid({ regGdpMult, natGdpMult, regProdMult, natProdMult, regEmpInt, natEmpInt }) {
   const rows = [
     { icon: "pil",         label: "PIL",                    regVal: `${fmtIT(regGdpMult, 2)}×`,   natVal: `${fmtIT(natGdpMult, 2)}×` },
     { icon: "produzione",  label: "Valore della Produzione", regVal: `${fmtIT(regProdMult, 2)}×`,  natVal: `${fmtIT(natProdMult, 2)}×` },
     { icon: "occupazione", label: "Occupazione per M€ speso", regVal: `${fmtIT(regEmpInt, 1)} occupati`, natVal: `${fmtIT(natEmpInt, 1)} occupati` },
-    { icon: "gettito",     label: "Gettito fiscale",         regVal: "–",                          natVal: `${fmtIT(fiscalPct, 1)}%` },
   ];
 
   return (
@@ -675,8 +674,41 @@ function SintesiMultiplierGrid({ regGdpMult, natGdpMult, regProdMult, natProdMul
       ))}
       <div className="border-t border-ink-100 bg-bg-page px-5 py-2.5">
         <p className="text-[11px] italic text-ink-400">
-          PIL e produzione indicano euro attivati per ogni euro speso; l'occupazione indica occupati per milione di euro investito; il gettito indica la quota della spesa iniziale che rientra nelle casse dello Stato come entrate fiscali.
+          PIL e produzione indicano euro attivati per ogni euro speso; l'occupazione indica occupati per milione di euro investito.
         </p>
+      </div>
+    </div>
+  );
+}
+
+function SintesiFiscalReturn({ fiscalPct, natFiscal, spend }) {
+  const euroPerM = Math.round((fiscalPct / 100) * 1_000_000);
+  return (
+    <div className="overflow-hidden border border-ink-100 bg-white">
+      <div className="border-b border-ink-100 bg-bg-page px-5 py-2.5">
+        <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400">Ritorno fiscale allo Stato</p>
+      </div>
+      <div className="grid grid-cols-1 items-center gap-6 px-5 py-5 md:grid-cols-[auto_1fr]">
+        <div className="flex shrink-0 items-baseline gap-3 md:flex-col md:items-start md:gap-1">
+          <ImpactIcon
+            type="gettito"
+            label="Gettito fiscale"
+            className="h-4 w-4"
+            wrapperClassName="hidden md:flex h-7 w-7 shrink-0 items-center justify-center bg-brand-violet/10 text-brand-violet"
+          />
+          <div>
+            <p className="text-[36px] font-bold leading-none text-brand-violet">{fmtIT(fiscalPct, 1)}%</p>
+            <p className="mt-1.5 text-[11px] uppercase tracking-[0.1em] text-ink-500">della spesa iniziale</p>
+          </div>
+        </div>
+        <div className="min-w-0">
+          <p className="text-[14px] font-bold text-ink-900">
+            Quota della spesa che rientra nelle casse dello Stato come imposte e contributi
+          </p>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-ink-600">
+            Su <strong className="text-ink-900">{fmtM(spend)}</strong> investiti, lo Stato incassa <strong className="text-ink-900">{fmtM(natFiscal)}</strong> di gettito fiscale lungo la filiera — pari a circa <strong className="text-ink-900">{fmtIT(euroPerM, 0)} €</strong> per ogni milione speso.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -993,6 +1025,113 @@ function TabComponenti() {
           ))}
         </div>
       </div>
+
+      {/* Concentrazione territoriale del valore */}
+      <PropagazioneFooter metricId={metricId} metricDef={metricDef} />
+    </div>
+  );
+}
+
+function PropagazioneFooter({ metricId, metricDef }) {
+  const macroSplit = rawGeo.macro_split ?? {};
+  const originPct = Math.round((macroSplit.origin?.pct ?? 0.46) * 100);
+  const restRegPct = Math.round((macroSplit.rest_of_region?.pct ?? 0.38) * 100);
+  const extraPct = 100 - originPct - restRegPct;
+  const stayPct = originPct + restRegPct;
+  const dimTotal = byPerimeter.national?.[metricId] ?? 0;
+  const dimFmt = metricDef.isMoney ? fmtM : fmtOccupati;
+  const dimPhraseMap = {
+    gdp: "del PIL",
+    production: "del valore della produzione",
+    employment: "dell'occupazione",
+  };
+  const dimPhrase = dimPhraseMap[metricId] ?? `del ${metricDef.label.toLowerCase()}`;
+
+  return (
+    <div className="space-y-5 pt-2">
+      <hr className="border-ink-100" />
+
+      <div>
+        <div className="mb-1.5 text-[11px] uppercase tracking-[0.08em] text-ink-400">Quanto valore resta vicino</div>
+        <h2 className="mb-2 text-[22px] font-medium text-ink-900">Il valore si concentra dove parte la spesa</h2>
+        <p className="max-w-[720px] text-[14px] leading-relaxed text-ink-500">
+          Su 100€ di valore attivato, una larga maggioranza non lascia {regionName}. Più ci si allontana da {originProvince}, meno valore si attiva.
+        </p>
+      </div>
+
+      <div className="rounded-xl p-8" style={{ background: "#EEEDFE", borderLeft: "4px solid #534AB7" }}>
+        <div className="text-[56px] font-medium leading-none" style={{ color: "#26215C", letterSpacing: "-0.02em" }}>
+          {stayPct}%
+        </div>
+        <div className="mt-3 max-w-[720px] text-[17px] leading-relaxed" style={{ color: "#3C3489" }}>
+          {dimPhrase} attivato <strong className="font-medium">resta in {regionName}</strong>:{" "}
+          <strong className="font-medium">{originPct}%</strong> nella provincia di {originProvince},{" "}
+          <strong className="font-medium">{restRegPct}%</strong> nelle altre province della regione. Solo il{" "}
+          <strong className="font-medium">{extraPct}%</strong> si propaga nel resto d'Italia lungo le filiere nazionali.
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 items-center gap-10 rounded-xl border border-ink-100 bg-white p-8 xl:grid-cols-[minmax(280px,380px)_1fr]">
+        <div className="mx-auto flex aspect-square w-full max-w-[380px] items-center justify-center">
+          <svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" className="block h-full w-full">
+            <circle cx="160" cy="160" r="155" fill="#EEEDFE" stroke="#AFA9EC" strokeWidth="1" />
+            <circle cx="160" cy="180" r="118" fill="#AFA9EC" stroke="white" strokeWidth="2" />
+            <circle cx="160" cy="195" r="82" fill="#534AB7" stroke="white" strokeWidth="2" />
+            <text x="160" y="195" textAnchor="middle" fontSize="32" fontWeight="500" fill="white" dominantBaseline="middle">{originPct}%</text>
+            <text x="160" y="215" textAnchor="middle" fontSize="11" fill="white" opacity="0.85" style={{ textTransform: "uppercase", letterSpacing: "0.05em" }}>{originProvince}</text>
+            <text x="160" y="84" textAnchor="middle" fontSize="18" fontWeight="500" fill="#26215C">{restRegPct}%</text>
+            <text x="160" y="101" textAnchor="middle" fontSize="9" fill="#3C3489" style={{ textTransform: "uppercase", letterSpacing: "0.05em" }}>Resto {regionName}</text>
+            <text x="160" y="32" textAnchor="middle" fontSize="14" fontWeight="500" fill="#3C3489">{extraPct}%</text>
+            <text x="160" y="48" textAnchor="middle" fontSize="10" fill="#534AB7" style={{ textTransform: "uppercase", letterSpacing: "0.05em" }}>Resto d'Italia</text>
+          </svg>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          {[
+            {
+              color: "#534AB7",
+              label: "Provincia di origine",
+              name: originProvince,
+              meaning: "Imprese, lavoratori e fornitori della provincia da cui parte la spesa.",
+              pct: originPct,
+              value: dimFmt(dimTotal * (macroSplit.origin?.pct ?? 0.46)),
+            },
+            {
+              color: "#AFA9EC",
+              label: "Resto della regione",
+              name: "Altre province della regione",
+              meaning: "Filiere e consumi che si attivano nelle province vicine grazie all'investimento.",
+              pct: restRegPct,
+              value: dimFmt(dimTotal * (macroSplit.rest_of_region?.pct ?? 0.38)),
+            },
+            {
+              color: "#CECBF6",
+              label: "Fuori regione",
+              name: "Resto d'Italia",
+              meaning: "Effetti sulle filiere nazionali: fornitori, materiali e servizi acquistati fuori dalla regione.",
+              pct: extraPct,
+              value: dimFmt(dimTotal * (macroSplit.extra_region?.pct ?? 0.16)),
+            },
+          ].map((item, idx, arr) => (
+            <div
+              key={item.label}
+              className={`grid items-center gap-4 pb-4 ${idx < arr.length - 1 ? "border-b border-ink-100" : ""}`}
+              style={{ gridTemplateColumns: "auto 1fr auto" }}
+            >
+              <span className="h-3.5 w-3.5 flex-shrink-0 rounded-sm" style={{ background: item.color }} />
+              <div className="min-w-0">
+                <div className="mb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-400">{item.label}</div>
+                <div className="mb-0.5 text-[16px] font-medium text-ink-900">{item.name}</div>
+                <div className="text-[13px] leading-relaxed text-ink-500">{item.meaning}</div>
+              </div>
+              <div className="min-w-[100px] flex-shrink-0 text-right">
+                <div className="text-[26px] font-medium leading-none text-ink-900">{item.pct}%</div>
+                <div className="mt-1 text-[13px] text-ink-500">{item.value}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -1072,15 +1211,6 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
   const rankTitleSuffix = mode === "pc" ? "pro capite" : "per valore";
   const rankTitle = selectedRegion ? `Top province — ${selectedRegion}` : isProvinceView ? `Top province ${rankTitleSuffix}` : `Top regioni ${rankTitleSuffix}`;
   const rankOthersLabel = isProvinceView ? "province" : "regioni";
-
-  // Bottom section
-  const macroSplit = rawGeo.macro_split ?? {};
-  const originPct = Math.round((macroSplit.origin?.pct ?? 0.46) * 100);
-  const restRegPct = Math.round((macroSplit.rest_of_region?.pct ?? 0.38) * 100);
-  const extraPct = 100 - originPct - restRegPct;
-  const stayPct = originPct + restRegPct;
-  const dimTotal = byPerimeter.national?.[dim] ?? 0;
-  const dimFmt = dim === "employment" ? fmtOccupati : fmtM;
   const dimLabel = GEO_DIMS.find((g) => g.id === dim)?.label ?? dim;
 
   useEffect(() => {
@@ -1277,93 +1407,6 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
         </div>
       </div>
 
-      {/* Divisore */}
-      <hr className="my-10 border-ink-100" />
-
-      {/* Bottom header */}
-      <div className="mb-6">
-        <div className="mb-1.5 text-[11px] uppercase tracking-[0.08em] text-ink-400">Quanto valore resta vicino</div>
-        <h2 className="mb-2 text-[22px] font-medium text-ink-900">Il valore si concentra dove parte la spesa</h2>
-        <p className="max-w-[720px] text-[14px] leading-relaxed text-ink-500">
-          Su 100€ di valore attivato, una larga maggioranza non lascia {regionName}. Più ci si allontana da {originProvince}, meno valore si attiva.
-        </p>
-      </div>
-
-      {/* Hero stat */}
-      <div className="mb-6 rounded-xl p-8" style={{ background: "#EEEDFE", borderLeft: "4px solid #534AB7" }}>
-        <div className="text-[56px] font-medium leading-none" style={{ color: "#26215C", letterSpacing: "-0.02em" }}>
-          {stayPct}%
-        </div>
-        <div className="mt-3 max-w-[720px] text-[17px] leading-relaxed" style={{ color: "#3C3489" }}>
-          del {dimLabel.toLowerCase()} attivato <strong className="font-medium">resta in {regionName}</strong>:{" "}
-          <strong className="font-medium">{originPct}%</strong> nella provincia di {originProvince},{" "}
-          <strong className="font-medium">{restRegPct}%</strong> nelle altre province della regione. Solo il{" "}
-          <strong className="font-medium">{extraPct}%</strong> si propaga nel resto d'Italia lungo le filiere nazionali.
-        </div>
-      </div>
-
-      {/* Viz row: cerchi concentrici + breakdown */}
-      <div className="grid grid-cols-1 items-center gap-10 rounded-xl border border-ink-100 bg-white p-8 xl:grid-cols-[minmax(280px,380px)_1fr]">
-        <div className="mx-auto flex aspect-square w-full max-w-[380px] items-center justify-center">
-          <svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" className="block h-full w-full">
-            <circle cx="160" cy="160" r="155" fill="#EEEDFE" stroke="#AFA9EC" strokeWidth="1" />
-            <circle cx="160" cy="180" r="118" fill="#AFA9EC" stroke="white" strokeWidth="2" />
-            <circle cx="160" cy="195" r="82" fill="#534AB7" stroke="white" strokeWidth="2" />
-            <text x="160" y="195" textAnchor="middle" fontSize="32" fontWeight="500" fill="white" dominantBaseline="middle">{originPct}%</text>
-            <text x="160" y="215" textAnchor="middle" fontSize="11" fill="white" opacity="0.85" style={{ textTransform: "uppercase", letterSpacing: "0.05em" }}>{originProvince}</text>
-            <text x="160" y="84" textAnchor="middle" fontSize="18" fontWeight="500" fill="#26215C">{restRegPct}%</text>
-            <text x="160" y="101" textAnchor="middle" fontSize="9" fill="#3C3489" style={{ textTransform: "uppercase", letterSpacing: "0.05em" }}>Resto {regionName}</text>
-            <text x="160" y="32" textAnchor="middle" fontSize="14" fontWeight="500" fill="#3C3489">{extraPct}%</text>
-            <text x="160" y="48" textAnchor="middle" fontSize="10" fill="#534AB7" style={{ textTransform: "uppercase", letterSpacing: "0.05em" }}>Resto d'Italia</text>
-          </svg>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          {[
-            {
-              color: "#534AB7",
-              label: "Provincia di origine",
-              name: originProvince,
-              meaning: "Imprese, lavoratori e fornitori della provincia da cui parte la spesa.",
-              pct: originPct,
-              value: dimFmt(dimTotal * (macroSplit.origin?.pct ?? 0.46)),
-            },
-            {
-              color: "#AFA9EC",
-              label: "Resto della regione",
-              name: "Altre province della regione",
-              meaning: "Filiere e consumi che si attivano nelle province vicine grazie all'investimento.",
-              pct: restRegPct,
-              value: dimFmt(dimTotal * (macroSplit.rest_of_region?.pct ?? 0.38)),
-            },
-            {
-              color: "#CECBF6",
-              label: "Fuori regione",
-              name: "Resto d'Italia",
-              meaning: "Effetti sulle filiere nazionali: fornitori, materiali e servizi acquistati fuori dalla regione.",
-              pct: extraPct,
-              value: dimFmt(dimTotal * (macroSplit.extra_region?.pct ?? 0.16)),
-            },
-          ].map((item, idx, arr) => (
-            <div
-              key={item.label}
-              className={`grid items-center gap-4 pb-4 ${idx < arr.length - 1 ? "border-b border-ink-100" : ""}`}
-              style={{ gridTemplateColumns: "auto 1fr auto" }}
-            >
-              <span className="h-3.5 w-3.5 flex-shrink-0 rounded-sm" style={{ background: item.color }} />
-              <div className="min-w-0">
-                <div className="mb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-400">{item.label}</div>
-                <div className="mb-0.5 text-[16px] font-medium text-ink-900">{item.name}</div>
-                <div className="text-[13px] leading-relaxed text-ink-500">{item.meaning}</div>
-              </div>
-              <div className="min-w-[100px] flex-shrink-0 text-right">
-                <div className="text-[26px] font-medium leading-none text-ink-900">{item.pct}%</div>
-                <div className="mt-1 text-[13px] text-ink-500">{item.value}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
@@ -1904,12 +1947,19 @@ function TabEsplora({ showToast, searchParams, updateSearch }) {
     [metric, axis, level, areaFilter, focus, regionFilt, dimKey]
   );
 
+  const metricHasEffectData = comps[metric]?.direct != null;
+  const supportsEffectBreakdown = metricHasEffectData && ["settore", "regione", "provincia"].includes(dimKey);
+
+  useEffect(() => {
+    if (!supportsEffectBreakdown && effect !== "tutti") setEffect("tutti");
+  }, [supportsEffectBreakdown, effect]);
+
   const effectRows = useMemo(() => {
-    if (effect === "tutti" || dimKey !== "settore") return baseRows;
+    if (effect === "tutti" || !supportsEffectBreakdown) return baseRows;
     return baseRows
       .map((r) => ({ ...r, value: effect === "diretto" ? (r.directValue ?? 0) : effect === "indiretto" ? (r.indirectValue ?? 0) : (r.inducedValue ?? 0) }))
       .filter((r) => r.value > 0);
-  }, [baseRows, effect, dimKey]);
+  }, [baseRows, effect, supportsEffectBreakdown]);
 
   const sortedRows = useMemo(() => {
     const copy = [...effectRows];
@@ -1991,7 +2041,7 @@ function TabEsplora({ showToast, searchParams, updateSearch }) {
 
   const showAreaFilter = areaFilterOptions.length > 0;
   const showFocusPill = focusOptions.length > 1 && dimKey !== "componente" && dimKey !== "totale";
-  const showEffectPill = dimKey === "settore";
+  const showEffectPill = supportsEffectBreakdown;
 
   return (
     <div>
@@ -2137,14 +2187,40 @@ function buildExploreRows({ dim, axis, level, filter, focus, regionFilt }) {
   }
 
   const source = level === "provinciale" ? geo.provinces : geo.regions;
-  let rows = source.map((item) => ({
-    code: item.code,
-    label: item.nome,
-    value: getGeoValue(item, dim, "assoluti"),
-    region: item.regione ?? item.region_name ?? "",
-    regionCode: item.region_code ?? "",
-    perCapita: getGeoValue(item, dim, "pc"),
-  }));
+  const compSrc = comps[dim];
+  const directNat = compSrc?.direct ?? 0;
+  const indirectNat = compSrc?.indirect ?? 0;
+  const inducedNat = compSrc?.induced ?? 0;
+  const spilloverNat = indirectNat + inducedNat;
+  const hasEffectData = spilloverNat > 0 || directNat > 0;
+
+  let rows = source.map((item) => {
+    const value = getGeoValue(item, dim, "assoluti");
+    const isOrigin = level === "provinciale"
+      ? Boolean(item.is_origin)
+      : Boolean(item.is_origin) || item.nuts2_code === originNuts2 || item.nome === regionName;
+
+    let directValue = null, indirectValue = null, inducedValue = null;
+    if (hasEffectData) {
+      const directShare = isOrigin ? Math.min(directNat, value) : 0;
+      const remainder = Math.max(0, value - directShare);
+      directValue = directShare;
+      indirectValue = spilloverNat > 0 ? remainder * (indirectNat / spilloverNat) : 0;
+      inducedValue = spilloverNat > 0 ? remainder * (inducedNat / spilloverNat) : 0;
+    }
+
+    return {
+      code: item.code,
+      label: item.nome,
+      value,
+      region: item.regione ?? item.region_name ?? "",
+      regionCode: item.region_code ?? "",
+      perCapita: getGeoValue(item, dim, "pc"),
+      directValue,
+      indirectValue,
+      inducedValue,
+    };
+  });
   // filter provinces by region when set
   if (level === "provinciale" && regionFilt) {
     rows = rows.filter((r) => r.region === regionFilt || r.regionCode === regionFilt);
@@ -2218,7 +2294,8 @@ function ExplorePillDropdown({ options, selected, onSelect, searchable = false }
 
 function ExploreResultTable({ rows, meta, dimKey, effect, maxValue, total, sortKey, sortDir, onSort }) {
   const fmt = meta.isMoney ? fmtM : fmtOccupati;
-  const showEffectCols = effect === "tutti" && dimKey === "settore" && rows.length > 0 && rows[0]?.directValue != null;
+  const supportsEffect = ["settore", "regione", "provincia"].includes(dimKey);
+  const showEffectCols = effect === "tutti" && supportsEffect && rows.length > 0 && rows[0]?.directValue != null;
 
   if (rows.length === 1) {
     const r = rows[0];

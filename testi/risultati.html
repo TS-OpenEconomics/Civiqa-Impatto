@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analisi d'impatto socioeconomico dell'Azione 17.01 del PST Monte Acuto-Riviera di Gallura · Provincia Gallura Nord-Est | OpenEconomics</title>
+<link rel="icon" type="image/png" id="favicon" href="icons/OE_site_icon_white.png">
+<script>(function(){var f=document.getElementById('favicon'),mq=window.matchMedia('(prefers-color-scheme: dark)');function u(e){f.href=e.matches?'icons/OE_site_icon_white.png':'icons/OE_site_icon_black.png';}u(mq);mq.addEventListener('change',u);})();</script>
+<link href="https://fonts.googleapis.com/css2?family=Hedvig+Letters+Serif:opsz@12..24&family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function(){
+  var icons = {
+    "alert-circle":"<circle cx='12' cy='12' r='10'/><line x1='12' y1='8' x2='12' y2='12'/><line x1='12' y1='16' x2='12.01' y2='16'/>",
+    "bar-chart-2":"<line x1='18' y1='20' x2='18' y2='10'/><line x1='12' y1='20' x2='12' y2='4'/><line x1='6' y1='20' x2='6' y2='14'/>",
+    "bar-chart":"<line x1='12' y1='20' x2='12' y2='10'/><line x1='18' y1='20' x2='18' y2='4'/><line x1='6' y1='20' x2='6' y2='16'/>",
+    "factory":"<path d='M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z'/><path d='M17 18h1'/><path d='M12 18h1'/><path d='M7 18h1'/>",
+    "globe":"<circle cx='12' cy='12' r='10'/><line x1='2' y1='12' x2='22' y2='12'/><path d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/>",
+    "map":"<polygon points='1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6'/><line x1='8' y1='2' x2='8' y2='18'/><line x1='16' y1='6' x2='16' y2='22'/>",
+    "pie-chart":"<path d='M21.21 15.89A10 10 0 1 1 8 2.83'/><path d='M22 12A10 10 0 0 0 12 2v10z'/>",
+    "scatter-chart":"<circle cx='7.5' cy='7.5' r='1.5'/><circle cx='18.5' cy='5.5' r='1.5'/><circle cx='11.5' cy='11.5' r='1.5'/><circle cx='7.5' cy='16.5' r='1.5'/><circle cx='17.5' cy='14.5' r='1.5'/><circle cx='6.5' cy='20.5' r='1.5'/><circle cx='18.5' cy='20.5' r='1.5'/>",
+    "trending-up":"<polyline points='23 6 13.5 15.5 8.5 10.5 1 18'/><polyline points='17 6 23 6 23 12'/>",
+    "trending-down":"<polyline points='23 18 13.5 8.5 8.5 13.5 1 6'/><polyline points='17 18 23 18 23 12'/>",
+    "users":"<path d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M23 21v-2a4 4 0 0 0-3-3.87'/><path d='M16 3.13a4 4 0 0 1 0 7.75'/>",
+    "zap":"<polygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'/>",
+    "shield":"<path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/>",
+    "anchor":"<circle cx='12' cy='5' r='3'/><line x1='12' y1='22' x2='12' y2='8'/><path d='M5 12H2a10 10 0 0 0 20 0h-3'/>",
+    "flame":"<path d='M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z'/>",
+    "download":"<path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/><polyline points='7 10 12 15 17 10'/><line x1='12' y1='15' x2='12' y2='3'/>",
+    "minus-circle":"<circle cx='12' cy='12' r='10'/><line x1='8' y1='12' x2='16' y2='12'/>",
+    "building":"<rect x='4' y='2' width='16' height='20' rx='0'/><path d='M9 22V12h6v10'/><path d='M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01'/>",
+    "landmark":"<line x1='3' y1='22' x2='21' y2='22'/><line x1='6' y1='18' x2='6' y2='11'/><line x1='10' y1='18' x2='10' y2='11'/><line x1='14' y1='18' x2='14' y2='11'/><line x1='18' y1='18' x2='18' y2='11'/><polygon points='12 2 20 7 4 7'/>",
+    "coin":"<circle cx='12' cy='12' r='10'/><path d='M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16 3.95 6.06M14.31 16H2.83M16.62 12 10.88 21.94'/>",
+    "cpu":"<rect x='4' y='4' width='16' height='16' rx='0'/><rect x='9' y='9' width='6' height='6'/><path d='M15 2v2M9 2v2M15 20v2M9 20v2M2 15h2M2 9h2M20 15h2M20 9h2'/>",
+    "heart-pulse":"<path d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z'/><path d='M3.22 12H9.5l1.5-1.5 2 2.5 1.5-2 2 2.5 2-2.5h3.78'/>",
+    "layers":"<path d='m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z'/><path d='m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65'/><path d='m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65'/>",
+    "home":"<path d='m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/><polyline points='9 22 9 12 15 12 15 22'/>",
+    "map-pin":"<path d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/><circle cx='12' cy='10' r='3'/>",
+    "arrow-right":"<line x1='5' y1='12' x2='19' y2='12'/><polyline points='12 5 19 12 12 19'/>",
+    "arrow-left":"<line x1='5' y1='12' x2='19' y2='12'/><polyline points='12 19 5 12 12 5'/>"
+  };
+  function createIcons(){
+    document.querySelectorAll('[data-lucide]').forEach(function(el){
+      var name=el.getAttribute('data-lucide'),paths=icons[name];
+      if(!paths)return;
+      var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+      svg.setAttribute('xmlns','http://www.w3.org/2000/svg');
+      svg.setAttribute('width','24');svg.setAttribute('height','24');
+      svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('fill','none');
+      svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.5');
+      svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');
+      if(el.className)svg.setAttribute('class',el.className);
+      if(el.getAttribute('style'))svg.setAttribute('style',el.getAttribute('style'));
+      svg.innerHTML=paths;el.parentNode.replaceChild(svg,el);
+    });
+  }
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',createIcons);}
+  else{createIcons();}
+  window.lucide={createIcons:createIcons};
+})();
+</script>
+<style>
+:root {
+  --white:#FFFFFF; --black:#000000;
+  --blu-900:#270065; --blu-800:#340088; --blu-700:#4400B3; --blu-500:#6E1AFF; --blu-400:#ae81fd;
+  --lime:#B9FF69; --grey-light:#F5F5F3; --grey-mid:#DDDDDA; --grey-text:#555555;
+  --fd:'Hedvig Letters Serif', Georgia, 'Times New Roman', serif;
+  --fb:'Atkinson Hyperlegible Next', system-ui, -apple-system, sans-serif;
+  --fm:'JetBrains Mono', 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--fb);color:var(--black);background:var(--white);font-variant-ligatures:no-common-ligatures;min-width:1080px;}
+section{scroll-margin-top:calc(62px + 44px);}
+h1,h2,h3,h4{font-family:var(--fd);font-weight:400;}
+p{line-height:1.7;}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--white);height:62px;padding:0 48px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--grey-mid);transition:transform .28s ease,opacity .28s ease;will-change:transform,opacity;}
+.nav::after{content:'';position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--lime);}
+.nav__logo-link{display:flex;align-items:center;gap:12px;text-decoration:none;}
+.nav__logo-img{height:18px;width:auto;display:block;opacity:1;filter:brightness(0);mix-blend-mode:normal;}
+.nav__badge{font-family:var(--fm);font-size:9.5px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--blu-700);border-left:1px solid var(--grey-mid);padding:0 0 0 12px;line-height:1;flex-shrink:0;}
+.nav__links{display:flex;gap:24px;list-style:none;}
+.nav__links a{font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-text);text-decoration:none;transition:color .2s;cursor:pointer;}
+.nav__links a:hover{color:var(--blu-700);}
+.nav__links a.nav-active{color:var(--blu-700);text-decoration:underline;text-underline-offset:4px;}
+
+/* TOC */
+.toc{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:99;display:flex;flex-direction:column;gap:14px;}
+.toc__dot{width:7px;height:7px;background:var(--grey-mid);cursor:pointer;transition:background .25s,transform .25s;position:relative;border-radius:50%;}
+.toc__dot:hover,.toc__dot.active{background:var(--blu-700);transform:scale(1.5);}
+.toc__dot::after{content:attr(data-label);position:absolute;right:18px;top:50%;transform:translateY(-50%);background:var(--blu-900);color:var(--white);font-family:var(--fm);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:5px 10px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;}
+.toc__dot:hover::after{opacity:1;}
+
+/* BREADCRUMB */
+#secCrumb{position:fixed;top:62px;left:0;right:0;z-index:98;background:var(--white);border-bottom:1px solid var(--grey-mid);height:44px;display:flex;align-items:center;padding:0 48px;gap:12px;transform:translateY(-100%);transition:transform .3s;pointer-events:none;}
+#secCrumb.visible{transform:translateY(0);}
+#crumbTag{font-family:var(--fm);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--blu-700);flex-shrink:0;}
+#crumbTitle{font-size:14px;font-weight:700;color:var(--black);flex:1;transition:opacity .12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#crumbTitle.exiting{opacity:0;}
+#crumbTitle.entering{opacity:0;}
+#crumbNum{font-family:var(--fm);font-size:10px;color:var(--grey-text);letter-spacing:.1em;flex-shrink:0;}
+#crumbFill{position:absolute;bottom:0;left:0;height:2px;background:var(--blu-700);width:0%;transition:width .1s linear;}
+
+/* HERO */
+.hero{margin-top:62px;background:var(--blu-900);min-height:72vh;display:grid;grid-template-columns:1fr 1fr;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--lime);z-index:3;}
+.hero__l{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:space-between;padding:60px 64px 44px;}
+.hero__top{display:flex;flex-direction:column;gap:16px;}
+.hero__bottom{display:flex;flex-direction:column;gap:28px;}
+.hero__tag{display:inline-flex;align-items:center;gap:6px;background:var(--lime);color:var(--black);font-family:var(--fm);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;width:fit-content;}
+.hero__sector{font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--white);}
+.hero__title{font-family:var(--fd);font-weight:400;font-size:clamp(32px,3.6vw,56px);line-height:1.1;color:var(--white);margin:24px 0 32px;}
+.hero__title em{font-style:normal;color:var(--lime);}
+.hero__sub{font-size:16px;color:var(--grey-mid);max-width:none;width:100%;line-height:1.75;}
+.hero__meta{display:flex;gap:28px;flex-wrap:wrap;}
+.hero__mi{display:flex;flex-direction:column;gap:2px;}
+.hero__ml{font-family:var(--fm);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--lime);}
+.hero__mv{font-weight:600;font-size:14px;color:var(--grey-light);}
+.hero__r{position:relative;z-index:2;overflow:hidden;background:var(--blu-800);display:flex;align-items:stretch;justify-content:center;}
+.hero__r::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(39,0,101,.08) 0%,rgba(39,0,101,.36) 55%,rgba(39,0,101,.82) 100%);z-index:1;}
+.hero__placeholder{position:relative;width:100%;height:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:20px;padding:40px 36px 118px;background:url('icons/hero_sardegna.webp') center center/cover no-repeat;z-index:2;}
+.hero__placeholder::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(39,0,101,.08) 0%,rgba(39,0,101,.3) 45%,rgba(39,0,101,.88) 100%);}
+.hero__stat-hero,.hero__stat-label,.hero__map-art,.hero__placeholder>div[style]{position:relative;z-index:1;}
+.hero__stat-hero{font-family:var(--fd);font-size:clamp(52px,6vw,92px);color:var(--white);line-height:.92;letter-spacing:-.03em;}
+.hero__stat-label{font-family:var(--fm);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--lime);}
+.hero__cap{position:absolute;bottom:0;left:0;right:0;background:var(--blu-900);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;opacity:.95;z-index:3;}
+.hero__cap span{font-family:var(--fm);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);}
+.hero__cap strong{color:var(--lime);}
+
+/* SECTIONS */
+.s-dark{background:var(--blu-900);padding:72px 64px;}
+.s-light{background:var(--white);padding:72px 64px;}
+.s-grey{background:var(--grey-light);padding:72px 64px;}
+.border-lime{border-top:4px solid var(--lime);}
+
+/* SECTION HEADERS */
+.sh{display:flex;align-items:center;gap:16px;margin-bottom:48px;}
+.sh__bar{width:4px;height:40px;background:var(--lime);flex-shrink:0;}
+.sh__tag{font-family:var(--fm);font-size:16px;letter-spacing:.16em;text-transform:uppercase;color:var(--blu-700);margin-bottom:4px;}
+.sh__title{font-family:var(--fd);font-weight:400;font-size:29px;color:var(--black);}
+.s-dark .sh__tag{color:var(--lime);}
+.s-dark .sh__title{color:var(--white);}
+.section-title{display:flex;align-items:center;gap:18px;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--grey-mid);}
+.section-title__num{font-family:var(--fm);font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--blu-700);white-space:nowrap;}
+.section-title__text{font-family:var(--fd);font-size:46px;line-height:1.04;font-weight:400;color:var(--black);}
+.s-dark .section-title{border-bottom-color:rgba(255,255,255,.2);}
+.s-dark .section-title__num{color:var(--lime);}
+.s-dark .section-title__text{color:var(--white);}
+.section-subtitle{display:flex;align-items:center;gap:14px;font-family:var(--fd);font-size:24px;font-weight:400;line-height:1.25;letter-spacing:0;color:var(--black);max-width:none;width:100%;margin:-6px 0 40px;}
+.section-subtitle span{display:block;}
+.section-subtitle::before{content:'';width:4px;height:34px;background:var(--lime);flex:0 0 auto;}
+.s-dark .section-subtitle{color:var(--lime);}
+.stitle{font-family:var(--fd);font-weight:400;font-size:22px;color:var(--black);margin:48px 0 24px;padding-bottom:12px;border-bottom:2px solid var(--grey-mid);}
+.tx ul{font-family:var(--fb);font-size:15px;line-height:1.7;color:var(--grey-text);margin:8px 0 18px 22px;}
+.tx li{padding-left:4px;margin:4px 0;}
+
+/* MACRO CARDS */
+.mgrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px;}
+.mgrid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;}
+.mc{background:var(--grey-light);padding:32px 20px;display:grid;grid-template-rows:48px 6.8em auto auto 4.8em 1fr;row-gap:8px;cursor:default;transition:background .2s;position:relative;overflow:hidden;}
+.mc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--blu-700);transform:scaleX(0);transform-origin:left;transition:transform .3s;}
+.mc:hover{background:var(--blu-900);}
+.mc:hover::after{transform:scaleX(1);}
+.mc:hover .mci{stroke:var(--lime);}
+.mc:hover .mcl{color:var(--blu-400);}
+.mc:hover .mcv{color:var(--white);}
+.mc:hover .mcu,.mc:hover .mcd,.mc:hover .mcextra{color:var(--grey-mid);}
+.mcw{width:48px;height:48px;display:flex;align-items:center;justify-content:center;grid-row:1;}
+.mci{width:30px;height:30px;stroke:var(--blu-700);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s;display:block;}
+.mc:hover .mci{stroke:var(--lime);}
+.mc-png-icon{width:48px;height:48px;object-fit:contain;display:block;transition:transform .2s,filter .2s;}
+.mc:hover .mc-png-icon{transform:translateY(-1px);filter:brightness(1.08);}
+.mcl{font-family:var(--fm);font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--black);transition:color .2s;font-weight:700;display:flex;align-items:flex-start;grid-row:2;}
+.mcv{font-family:var(--fd);font-weight:400;font-size:40px;color:var(--blu-700);line-height:1;transition:color .2s;grid-row:3;}
+.mcu{font-family:var(--fm);font-size:13px;color:var(--grey-text);transition:color .2s;grid-row:4;}
+.mcextra{font-family:var(--fm);font-size:11px;color:var(--blu-700);letter-spacing:.02em;padding-top:6px;border-top:1px dashed var(--grey-mid);transition:color .2s,border-color .2s;line-height:1.4;grid-row:5;align-self:start;}
+.mcextra strong{font-weight:600;}
+.mc:hover .mcextra{color:var(--lime);border-top-color:rgba(255,255,255,.18);}
+.mcd{font-size:13px;color:var(--grey-text);line-height:1.5;transition:color .2s;grid-row:6;}
+.mc--fiscal{background:var(--white);border:1px dashed var(--blu-700);}
+.mc--fiscal::before{content:'nazionale';position:absolute;top:0;right:0;background:var(--blu-700);color:var(--white);font-family:var(--fm);font-size:9px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;padding:7px 9px;z-index:1;}
+.mc--fiscal::after{background:var(--lime);transform:scaleX(1);}
+.mc--fiscal .mcl{color:var(--blu-700);padding-right:0;flex-direction:column;gap:2px;}
+.mc--fiscal .mcl span{display:block;}
+.mc--fiscal .mcl span:first-child{white-space:nowrap;}
+.mc--fiscal .mcv{color:var(--black);}
+.mc--fiscal .mcextra{color:var(--black);border-top:1px solid var(--blu-700);padding-top:7px;}
+.mc--fiscal .mcd{font-size:13px;line-height:1.5;}
+.mc--fiscal:hover{background:var(--blu-900);}
+.mc--fiscal:hover::before{background:var(--lime);color:var(--black);}
+.mc--fiscal:hover .mcl,.mc--fiscal:hover .mcu,.mc--fiscal:hover .mcd{color:var(--white);}
+.mc--fiscal:hover .mcv{color:var(--lime);}
+.mc--fiscal:hover .mcextra{color:var(--lime);border-top-color:var(--lime);}
+
+/* LAYOUTS */
+.c2{display:grid;grid-template-columns:1fr 1.3fr;gap:64px;align-items:start;}
+.c2eq{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:stretch;}
+.c3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;}
+.c4{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;}
+.ch2{display:grid;grid-template-columns:1fr 1fr;gap:32px;}
+.ch1{display:grid;grid-template-columns:1fr;}
+.sp32{height:12px;}
+.sp48{height:48px;}
+
+/* INFO CARDS */
+.ic{background:var(--grey-light);padding:28px 22px;display:flex;flex-direction:column;gap:10px;transition:background .2s,transform .2s,box-shadow .2s,border-color .2s;cursor:default;border:1px solid var(--grey-mid);}
+.ic:hover{background:var(--black);border-color:var(--black);transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.ic__icon i,.ic__icon svg{width:34px;height:34px;stroke:var(--blu-700);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;display:block;transition:stroke .2s;}
+.ic:hover .ic__icon i,.ic:hover .ic__icon svg{stroke:var(--lime);}
+.ic__lbl{font-family:var(--fm);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--blu-700);transition:color .2s;}
+.ic:hover .ic__lbl{color:var(--white);}
+.ic__val{font-family:var(--fd);font-weight:400;font-size:29px;color:var(--black);line-height:1;transition:color .2s;}
+.ic:hover .ic__val{color:var(--lime);}
+.ic__title{font-weight:600;font-size:14px;color:var(--black);transition:color .2s;}
+.ic:hover .ic__title{color:var(--white);}
+.ic__desc{font-size:13px;color:var(--grey-text);line-height:1.55;transition:color .2s;}
+.ic:hover .ic__desc{color:var(--white);}
+
+/* MOLTIPLICATORI */
+.mult-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-bottom:64px;}
+.mult-card{background:var(--grey-light);padding:40px 32px 36px;display:flex;flex-direction:column;gap:8px;position:relative;transition:background .2s,transform .2s,box-shadow .2s;cursor:default;}
+.mult-card:hover{background:var(--black);transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.25);}
+.mult-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--lime);}
+.mult-card__icon svg{width:26px;height:26px;stroke:var(--blu-700);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;margin-bottom:6px;transition:stroke .2s;}
+.mult-card:hover .mult-card__icon svg{stroke:var(--lime);}
+.mult-card__lbl{font-family:var(--fm);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--blu-700);transition:color .2s;}
+.mult-card:hover .mult-card__lbl{color:var(--white);}
+.mult-card__val{font-family:var(--fd);font-size:54px;line-height:1;color:var(--black);font-weight:400;transition:color .2s;}
+.mult-card:hover .mult-card__val{color:var(--lime);}
+.mult-card__unit{font-family:var(--fm);font-size:12px;color:var(--grey-text);letter-spacing:.04em;transition:color .2s;}
+.mult-card:hover .mult-card__unit{color:var(--white);}
+.mult-card__desc{font-size:13px;color:var(--grey-text);line-height:1.65;margin-top:4px;transition:color .2s;}
+.mult-card:hover .mult-card__desc{color:var(--white);}
+
+/* COMPONENTI */
+.componenti-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-bottom:48px;}
+.componente{background:var(--grey-light);padding:36px 28px 32px;display:flex;flex-direction:column;gap:14px;cursor:pointer;transition:background .2s;position:relative;}
+.componente:hover{background:var(--grey-mid);}
+.componente__header{display:flex;align-items:flex-end;gap:12px;}
+.componente__num{font-family:var(--fd);font-size:52px;line-height:1;font-weight:400;flex-shrink:0;}
+.componente__sep{width:2px;height:36px;background:var(--grey-mid);flex-shrink:0;align-self:flex-end;margin-bottom:4px;transition:background .2s;}
+.componente:hover .componente__sep{background:var(--componente-color);}
+.componente__title{font-family:var(--fd);font-weight:400;font-size:30px;color:var(--black);line-height:1;padding-bottom:4px;transition:color .2s;}
+.componente:hover .componente__title{color:var(--componente-color);}
+.componente__accent{height:3px;width:32px;transition:width .35s ease;}
+.componente:hover .componente__accent{width:100%;}
+.componente__desc{font-size:14px;color:var(--grey-text);line-height:1.75;overflow:hidden;max-height:64px;position:relative;transition:max-height .4s ease;}
+.componente__desc::after{content:"";position:absolute;left:0;right:0;bottom:0;height:28px;background:linear-gradient(to bottom, transparent, var(--grey-light));pointer-events:none;transition:opacity .25s;}
+.componente:hover .componente__desc::after{background:linear-gradient(to bottom, transparent, var(--grey-mid));}
+.componente.is-open .componente__desc{max-height:1200px;}
+.componente.is-open .componente__desc::after{opacity:0;}
+.componente__desc strong{color:var(--black);font-weight:600;}
+.componente__toggle{font-family:var(--fb);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--componente-color);display:flex;align-items:center;gap:6px;margin-top:4px;}
+.componente__toggle::before{content:"+";font-size:16px;line-height:1;font-weight:400;display:inline-block;transition:transform .25s;}
+.componente.is-open .componente__toggle::before{content:"−";}
+
+/* STAT ROW */
+.stat-row{display:flex;gap:2px;margin-bottom:48px;}
+.stat-item{background:var(--grey-light);padding:24px 28px;flex:1;border-top:3px solid var(--grey-mid);transition:border-color .2s;}
+.stat-item:hover{border-color:var(--blu-700);}
+.stat-item__lbl{font-family:var(--fm);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey-text);margin-bottom:6px;}
+.stat-item__val{font-family:var(--fd);font-size:26px;color:var(--blu-700);line-height:1;font-weight:400;}
+.stat-item__sub{font-size:12px;color:var(--grey-text);margin-top:4px;}
+
+/* FLOURISH */
+.cb{display:flex;flex-direction:column;gap:10px;margin-bottom:0;}
+.cb .fl{margin-top:auto;}
+.cb__num{font-family:var(--fm);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--blu-700);}
+.cb__title{font-weight:600;font-size:16px;color:var(--black);line-height:1.3;}
+.cb__desc{font-size:14px;color:var(--grey-text);line-height:1.6;}
+.cb__fonte{font-size:12px;color:var(--grey-text);font-style:italic;}
+.fl{background:var(--grey-light);border:2px solid var(--grey-mid);padding:48px 32px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:300px;text-align:center;transition:border-color .2s;}
+.fl:hover{border-color:var(--blu-700);}
+.fl-icon{width:36px;height:36px;stroke:var(--grey-mid);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;display:block;}
+.fl__tag{font-family:var(--fm);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey-text);margin-top:8px;}
+.fl__title{font-weight:600;font-size:15px;color:var(--grey-text);}
+.fl__desc{font-size:13px;color:var(--grey-text);max-width:260px;line-height:1.5;}
+.s-dark .fl{background:var(--blu-800);border-color:var(--blu-700);}
+.s-dark .fl:hover{border-color:var(--lime);}
+.s-dark .fl-icon{stroke:var(--blu-400);}
+.s-dark .cb__num{color:var(--blu-400);}
+.s-dark .cb__title{color:var(--white);}
+.s-dark .cb__desc{color:var(--grey-mid);}
+
+/* STEPS */
+.steps{display:flex;flex-direction:column;gap:2px;}
+.step{background:var(--blu-800);padding:28px 32px;display:flex;gap:24px;transition:background .2s;cursor:default;}
+.step:hover{background:var(--blu-700);}
+.step__n{font-family:var(--fm);font-size:12px;color:var(--lime);letter-spacing:.1em;flex-shrink:0;padding-top:2px;}
+.step h4{font-weight:600;font-size:15px;color:var(--white);margin-bottom:4px;}
+.step p{font-size:14px;color:var(--grey-mid);line-height:1.55;}
+
+/* TX */
+.tx h3{font-family:var(--fd);font-weight:400;font-size:24px;color:var(--black);margin-bottom:16px;line-height:1.3;}
+.tx p{font-size:15px;color:var(--grey-text);line-height:1.8;margin-bottom:14px;}
+.tx p strong{color:var(--blu-700);font-weight:600;}
+
+/* HIGHLIGHTBOX */
+.hlb{background:var(--lime);padding:24px;display:flex;gap:14px;margin-top:24px;}
+.hlb__bar{width:4px;background:var(--blu-900);flex-shrink:0;}
+.hlb__tx{font-size:15px;color:var(--blu-900);line-height:1.7;}
+.hlb__tx strong{font-weight:600;}
+
+/* INTERVENTI BOX */
+.interventi{display:grid;grid-template-columns:1fr;gap:2px;background:var(--grey-mid);border:1px solid var(--grey-mid);margin:32px 0 8px;}
+.interventi__head{background:var(--blu-900);color:var(--white);padding:24px 28px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:end;}
+.interventi__head__l{display:flex;flex-direction:column;gap:6px;}
+.interventi__head__tag{font-family:var(--fm);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--lime);font-weight:600;}
+.interventi__head__title{font-family:var(--fd);font-size:24px;color:var(--white);line-height:1.15;}
+.interventi__head__r{display:flex;flex-direction:column;gap:2px;align-items:flex-end;text-align:right;}
+.interventi__head__big{font-family:var(--fd);font-size:34px;color:var(--lime);line-height:1;letter-spacing:-.01em;}
+.interventi__head__lbl{font-family:var(--fm);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.7);}
+.interventi__group{background:var(--white);padding:0;}
+.interventi__sub{background:var(--grey-light);padding:12px 28px 10px;border-bottom:1px solid var(--grey-mid);display:flex;justify-content:space-between;align-items:baseline;gap:18px;}
+.interventi__sub__lbl{font-family:var(--fm);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--blu-700);font-weight:700;}
+.interventi__sub__amt{font-family:var(--fm);font-size:12px;color:var(--grey-text);}
+.interventi__row{padding:18px 28px;display:grid;grid-template-columns:1fr 130px 110px;gap:18px;align-items:center;border-bottom:1px solid var(--grey-mid);transition:background .2s;}
+.interventi__row:hover{background:var(--grey-light);}
+.interventi__row:last-child{border-bottom:none;}
+.interventi__row__name{font-size:14px;color:var(--black);line-height:1.4;font-weight:500;}
+.interventi__row__name span{display:block;font-family:var(--fm);font-size:10.5px;color:var(--grey-text);letter-spacing:.06em;text-transform:uppercase;font-weight:400;margin-top:3px;}
+.interventi__row__city{font-family:var(--fm);font-size:11px;color:var(--grey-text);letter-spacing:.06em;text-transform:uppercase;}
+.interventi__row__amt{font-family:var(--fd);font-size:18px;color:var(--blu-700);text-align:right;font-weight:500;}
+@media(max-width:900px){.interventi__head{grid-template-columns:1fr;}.interventi__row{grid-template-columns:1fr;gap:6px;}.interventi__row__amt,.interventi__row__city{text-align:left;}}
+
+/* RSPESA BOX */
+.rspesa{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--grey-mid);overflow:hidden;}
+.rspesa__hero{background:var(--blu-900);color:var(--white);padding:48px 44px;display:flex;flex-direction:column;justify-content:space-between;min-height:320px;position:relative;overflow:hidden;}
+.rspesa__hero::after{content:'';position:absolute;bottom:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(185,255,105,.12) 0%,transparent 70%);pointer-events:none;}
+.rspesa__hero__lbl{font-family:var(--fm);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--lime);font-weight:600;}
+.rspesa__hero__big{font-family:var(--fd);font-size:clamp(80px,9vw,140px);line-height:.85;color:var(--white);font-weight:400;letter-spacing:-.04em;margin:24px 0;}
+.rspesa__hero__name{font-family:var(--fd);font-size:24px;font-weight:600;color:var(--white);}
+.rspesa__hero__amt{font-family:var(--fm);font-size:13px;color:var(--lime);letter-spacing:.08em;margin-top:8px;}
+.rspesa__hero__cap{font-family:var(--fb);font-size:14px;color:rgba(255,255,255,.75);line-height:1.6;margin-top:24px;border-top:1px solid rgba(255,255,255,.18);padding-top:20px;}
+.rspesa__hero__cap strong{color:var(--lime);font-weight:600;}
+.rspesa__list{display:flex;flex-direction:column;}
+.rspesa__row{padding:18px 24px;border-bottom:1px solid var(--grey-mid);display:grid;grid-template-columns:60px 1fr 80px;align-items:center;gap:14px;transition:background .2s;flex:1;min-height:54px;}
+.rspesa__row:last-child{border-bottom:none;}
+.rspesa__row:hover{background:var(--grey-light);}
+.rspesa__row__pct{font-family:var(--fd);font-size:22px;color:var(--blu-700);font-weight:500;line-height:1;}
+.rspesa__row__name{font-family:var(--fb);font-size:14px;color:var(--black);font-weight:500;line-height:1.3;}
+.rspesa__row__amt{font-family:var(--fm);font-size:11px;color:var(--grey-text);text-align:right;}
+@media(max-width:900px){.rspesa{grid-template-columns:1fr;}.rspesa__hero{min-height:auto;}}
+
+/* IMPATTO SOCIALE SECTION */
+.sroi-method{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:48px;}
+.sroi-step{background:var(--grey-light);padding:24px 22px;display:flex;flex-direction:column;gap:8px;border-top:3px solid var(--blu-700);transition:background .2s,border-color .2s;}
+.sroi-step:hover{background:var(--blu-900);border-top-color:var(--lime);}
+.sroi-step:hover .sroi-step__n,.sroi-step:hover .sroi-step__title{color:var(--lime);}
+.sroi-step:hover .sroi-step__desc{color:var(--grey-mid);}
+.sroi-step__n{font-family:var(--fm);font-size:11px;letter-spacing:.18em;color:var(--blu-700);font-weight:700;transition:color .2s;}
+.sroi-step__title{font-family:var(--fd);font-size:18px;color:var(--black);line-height:1.2;transition:color .2s;}
+.sroi-step__desc{font-size:13px;color:var(--grey-text);line-height:1.55;transition:color .2s;}
+@media(max-width:900px){.sroi-method{grid-template-columns:1fr;}}
+
+.sroi-hero{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:36px;}
+.sroi-hero__card{background:var(--blu-900);padding:36px 40px;position:relative;overflow:hidden;}
+.sroi-hero__card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--lime);}
+.sroi-hero__card--alt{background:var(--blu-800);}
+.sroi-hero__lbl{font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--lime);margin-bottom:12px;}
+.sroi-hero__big{font-family:var(--fd);font-size:88px;color:var(--white);line-height:.9;margin-bottom:12px;font-weight:400;letter-spacing:-.02em;}
+.sroi-hero__big--small{font-size:60px;padding-top:14px;}
+.sroi-hero__desc{font-size:14px;color:rgba(255,255,255,.65);line-height:1.55;}
+@media(max-width:900px){.sroi-hero{grid-template-columns:1fr;}}
+
+.sroi-kpi-list{display:flex;flex-direction:column;gap:12px;margin-bottom:36px;}
+.sroi-kpi{background:var(--white);border:1.5px solid var(--grey-mid);padding:22px 26px;display:flex;align-items:center;gap:20px;transition:border-color .2s,box-shadow .2s;}
+.sroi-kpi:hover{border-color:var(--blu-700);box-shadow:0 4px 18px rgba(68,0,179,.12);}
+.sroi-kpi__accent{width:4px;height:48px;flex-shrink:0;}
+.sroi-kpi__main{flex:1;display:flex;flex-direction:column;gap:4px;}
+.sroi-kpi__title{font-size:17px;font-weight:700;color:var(--blu-900);}
+.sroi-kpi__sub{font-size:13px;color:var(--grey-text);line-height:1.55;}
+.sroi-kpi__meta{text-align:right;flex-shrink:0;display:flex;flex-direction:column;gap:2px;}
+.sroi-kpi__pct{font-family:var(--fd);font-size:34px;line-height:1;color:var(--blu-700);font-weight:400;}
+.sroi-kpi__eur{font-family:var(--fm);font-size:13px;font-weight:700;color:var(--grey-text);}
+@media(max-width:900px){.sroi-kpi{flex-wrap:wrap;}.sroi-kpi__meta{text-align:left;}}
+
+.sroi-charts{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;}
+.sroi-chart-card{background:var(--white);border:1px solid var(--grey-mid);padding:28px;display:flex;flex-direction:column;gap:18px;}
+.sroi-chart-title{font-family:var(--fm);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--grey-text);}
+.sroi-chart-canvas{position:relative;width:100%;height:300px;}
+@media(max-width:900px){.sroi-charts{grid-template-columns:1fr;}}
+
+/* FOOTER */
+.footer{background:var(--black);font-family:var(--fb);}
+.footer__top{display:grid;grid-template-columns:1fr 1.35fr;gap:72px;padding:56px 64px 48px;border-bottom:1px solid rgba(255,255,255,.12);}
+.footer__brand-line{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+.footer__logo-link{display:inline-block;text-decoration:none;}
+.footer__logo-img{height:20px;width:auto;display:block;opacity:.9;mix-blend-mode:screen;transition:opacity .2s;}
+.footer__logo-link:hover .footer__logo-img{opacity:1;}
+.footer__badge{font-family:"JetBrains Mono","IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:9.5px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--lime);border-left:1px solid rgba(255,255,255,.18);padding:0 0 0 12px;line-height:1;flex-shrink:0;}
+.footer__tagline{font-size:14px;color:#888;line-height:1.8;max-width:38ch;}
+.footer__right{padding-top:10px;justify-self:start;text-align:left;width:100%;max-width:none;}
+.footer__condizioni-label{font-family:"JetBrains Mono","IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#666;margin-bottom:16px;}
+.footer__condizioni-text{font-size:13px;color:#777;line-height:1.84;max-width:none;width:100%;}
+.footer__bottom{display:flex;align-items:center;justify-content:space-between;padding:20px 64px;gap:16px;}
+.footer__bottom-left{font-family:"JetBrains Mono","IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--lime);text-decoration:none;}
+.footer__bottom-right{font-family:"JetBrains Mono","IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#555;text-align:left;}
+
+/* RESPONSIVE */
+@media(max-width:960px){
+  .hero{grid-template-columns:1fr;min-height:auto;}
+  .hero__r{height:420px;}
+  .hero__l{padding:48px 32px;}
+  .hero__placeholder{padding:28px 24px 96px;}
+  .c2,.c2eq,.ch2,.c3,.c4,.mgrid,.mgrid-3,.componenti-grid,.mult-grid,.stat-row{grid-template-columns:1fr;flex-direction:column;}
+  .section-title{align-items:flex-start;flex-direction:column;gap:8px;}
+  .section-title__text{font-size:34px;}
+  .mc--fiscal .mcl{padding-right:0;}
+  .s-dark,.s-light,.s-grey{padding:48px 32px;}
+  .nav{padding:0 24px;}
+  .nav__links{display:none;}
+  .toc{display:none;}
+  .footer__top{grid-template-columns:1fr;padding:40px 32px 32px;gap:40px;}
+  .footer__bottom{padding:16px 32px;flex-direction:column;gap:8px;align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="https://www.openeconomics.eu" class="nav__logo-link" aria-label="OpenEconomics" target="_blank" rel="noopener noreferrer">
+    <img src="icons/OpenEconomics-LOGO-WHITE.png" alt="OpenEconomics" class="nav__logo-img">
+  </a>
+  <ul class="nav__links">
+    <li><a onclick="navTo('hero')">Home</a></li>
+    <li><a onclick="navTo('inquadramento')">Inquadramento</a></li>
+    <li><a onclick="navTo('summary')">Sintesi</a></li>
+    <li><a onclick="navTo('macro')">Impatto economico</a></li>
+    <li><a onclick="navTo('sroi')">Impatto sociale</a></li>
+    <li><a onclick="navTo('metodologia')">Metodologia</a></li>
+  </ul>
+</nav>
+
+<!-- BREADCRUMB -->
+<div id="secCrumb">
+  <span id="crumbTag">Sezione</span>
+  <span id="crumbTitle"></span>
+  <span id="crumbNum"></span>
+  <div id="crumbFill"></div>
+</div>
+
+<!-- TOC DOTS -->
+<div class="toc">
+  <div class="toc__dot" data-s="hero" data-label="Home" onclick="navTo('hero')"></div>
+  <div class="toc__dot" data-s="inquadramento" data-label="Inquadramento" onclick="navTo('inquadramento')"></div>
+  <div class="toc__dot" data-s="summary" data-label="Sintesi" onclick="navTo('summary')"></div>
+  <div class="toc__dot" data-s="macro" data-label="Impatto economico" onclick="navTo('macro')"></div>
+  <div class="toc__dot" data-s="sroi" data-label="Impatto sociale" onclick="navTo('sroi')"></div>
+  <div class="toc__dot" data-s="metodologia" data-label="Metodologia" onclick="navTo('metodologia')"></div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero__l">
+    <div class="hero__top">
+      <div class="hero__tag">
+        <i data-lucide="landmark" style="width:12px;height:12px;stroke:var(--black);stroke-width:2;"></i>
+        Analisi di Impatto Socioeconomico
+      </div>
+      <div class="hero__sector">Programmazione Territoriale · Regione Sardegna · Provincia Gallura Nord-Est</div>
+    </div>
+    <h1 class="hero__title">Analisi d'impatto<br>socioeconomico<br>dell'Azione 17.01<br><em>PST Monte Acuto-<br>Riviera di Gallura</em></h1>
+    <div class="hero__bottom">
+      <p class="hero__sub">Quando un'amministrazione pubblica investe risorse nella valorizzazione del patrimonio culturale e ambientale, quell'investimento non si esaurisce nel pagamento: attraversa filiere, alimenta redditi, ritorna in gettito. Questo lavoro misura l'<strong>impatto socioeconomico</strong> generato in Sardegna dai <strong>6 interventi FESR 2014-2020 dell'Azione 17.01</strong> — "Valorizzazione turistica delle risorse culturali e ambientali e promozione integrata del territorio" — del <strong>Progetto di Sviluppo Territoriale "Monte Acuto-Riviera di Gallura"</strong>, i cui comuni di attuazione (Padru, Monti, Buddusò, Golfo Aranci, Alà dei Sardi, Oschiri e Berchidda) ricadono nella <strong>Provincia Gallura Nord-Est</strong>. L'analisi utilizza una SAM multiprovinciale italiana a 63 settori che traccia ogni flusso, dai settori di primo impatto fino alle ricadute extraregionali.</p>
+      <div class="hero__meta">
+        <div class="hero__mi">
+          <span class="hero__ml">Livello di analisi</span>
+          <span class="hero__mv">Provinciale (Gallura Nord-Est)</span>
+        </div>
+        <div class="hero__mi">
+          <span class="hero__ml">Modello</span>
+          <span class="hero__mv">SAM multiprovinciale</span>
+        </div>
+        <div class="hero__mi">
+          <span class="hero__ml">Strumento</span>
+          <span class="hero__mv">PST · Azione 17.01 · FESR 2014-2020</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero__r">
+    <div class="hero__placeholder">
+    </div>
+    <div class="hero__cap">
+      <span>Gallura Nord-Est · Beni culturali e ambientali</span>
+      <span>FESR 2014-2020</span>
+    </div>
+  </div>
+</section>
+
+<!-- INQUADRAMENTO PST -->
+<section class="s-light border-lime" id="inquadramento">
+  <div class="section-title">
+    <div class="section-title__num">Sezione 01</div>
+    <div class="section-title__text">Inquadramento</div>
+  </div>
+  <p class="section-subtitle"><span>Il programma territoriale, il perimetro FESR e gli interventi analizzati nella Provincia Gallura Nord-Est.</span></p>
+
+  <div class="tx" style="margin-bottom:8px;">
+    <h3>Il Progetto di Sviluppo Territoriale "Monte Acuto-Riviera di Gallura"</h3>
+    <p>Il <strong>Progetto di Sviluppo Territoriale (PST) PT-CRP 17/INT R</strong> "Monte Acuto-Riviera di Gallura, Territori di eccellenza della Sardegna" è uno strumento della <strong>Programmazione Territoriale</strong> della Regione Autonoma della Sardegna, finalizzato a coordinare in modo unitario gli interventi di sviluppo locale in un'area sub-provinciale a forte vocazione turistico-culturale e ambientale, all'interno della <strong>Provincia Gallura Nord-Est</strong>. L'Accordo di Programma Quadro originario è stato sottoscritto il 13 giugno 2018 tra Regione Sardegna, <strong>Comunità Montana del Monte Acuto</strong>, <strong>Unione dei Comuni Riviera di Gallura</strong> e la Provincia di Sassari, all'epoca ente competente sul comprensorio, e successivamente <strong>rimodulato con la Delib.G.R. n. 14/56 del 22 maggio 2024</strong>.</p>
+    <p>Il programma muove un investimento complessivo di <strong>16,83 milioni di euro</strong> (che arrivano a 17,08 milioni di euro con fondi aggiuntivi della Conferenza Episcopale Sarda), articolato in cinque Azioni (17.01–17.06) e finanziato con risorse FSC 2014-2020 (4,69 mln €), POR FESR 2014-2020 (7,91 mln €) e Fondi Regionali (4,23 mln €). L'analisi qui presentata si concentra su una porzione specifica del programma: gli interventi a valere sul <strong>POR FESR 2014-2020 nell'ambito della sola Azione 17.01</strong>.</p>
+
+    <h3 style="margin-top:32px;">L'Azione 17.01 "Valorizzazione turistica delle risorse culturali e ambientali e promozione integrata del territorio"</h3>
+    <p>L'<strong>Azione 17.01</strong> è la più consistente del PST in termini di mix di fonti di finanziamento: complessivamente 3,625 mln € (2,69 mln € FESR 2014-2020 + 0,935 mln € Fondi Regionali). Si articola in <strong>tre sub-azioni</strong>:</p>
+    <ul>
+      <li>valorizzazione degli attrattori culturali, naturalistici, archeologici e religiosi;</li>
+      <li>recupero del patrimonio culturale e identitario;</li>
+      <li>realizzazione della rete dei centri di accoglienza turistica del territorio.</li>
+    </ul>
+    <p>Gli interventi ricadono nei comuni di Padru, Monti, Buddusò, Golfo Aranci, Alà dei Sardi, Oschiri e Berchidda, tutti oggi parte della <strong>Provincia Gallura Nord-Est</strong>.</p>
+
+    <h3 style="margin-top:32px;">Il perimetro di analisi: i 6 interventi FESR 2014-2020</h3>
+    <p>L'analisi si concentra sui <strong>6 interventi a valere sul POR FESR 2014-2020</strong>, per un investimento complessivo di <strong>2.690.000 €</strong>. Sono esclusi dal perimetro quattro interventi (Restauro Chiesa di Santo Stefano, Chiesa del Rosario, Chiesa Beata Vergine Immacolata e Riqualificazione Auditorium Comunale di Buddusò) che, all'esito della rimodulazione 2024, sono stati riportati su Fondi Regionali e quindi non rientrano più nel finanziamento FESR oggetto di valutazione. Il quadro complessivo degli interventi analizzati è riassunto nel riquadro che segue.</p>
+  </div>
+
+  <div class="interventi">
+    <div class="interventi__head">
+      <div class="interventi__head__l">
+        <div class="interventi__head__tag">PST 17 · Azione 17.01 · POR FESR 2014-2020</div>
+        <div class="interventi__head__title">6 interventi analizzati · Provincia Gallura Nord-Est</div>
+      </div>
+      <div class="interventi__head__r">
+        <div class="interventi__head__big">2,69 mln €</div>
+        <div class="interventi__head__lbl">Investimento complessivo FESR</div>
+      </div>
+    </div>
+
+    <div class="interventi__group">
+      <div class="interventi__sub">
+        <div class="interventi__sub__lbl">Sub-azione 17.01.1 · Valorizzazione attrattori culturali, naturalistici, archeologici e religiosi</div>
+        <div class="interventi__sub__amt">345.000 €</div>
+      </div>
+      <div class="interventi__row">
+        <div class="interventi__row__name">Potenziamento del sistema dei percorsi naturalistici di collegamento all'area archeologica di Santu Miali e di valorizzazione del Monte Nieddu<span>Sentieristica · infrastrutture verdi · valorizzazione naturalistica</span></div>
+        <div class="interventi__row__city">Padru</div>
+        <div class="interventi__row__amt">345.000 €</div>
+      </div>
+    </div>
+
+    <div class="interventi__group">
+      <div class="interventi__sub">
+        <div class="interventi__sub__lbl">Sub-azione 17.01.2 · Recupero del patrimonio culturale e identitario</div>
+        <div class="interventi__sub__amt">425.000 €</div>
+      </div>
+      <div class="interventi__row">
+        <div class="interventi__row__name">Antichi Borghi<span>Recupero edilizio borghi storici · centro identitario</span></div>
+        <div class="interventi__row__city">Padru</div>
+        <div class="interventi__row__amt">240.000 €</div>
+      </div>
+      <div class="interventi__row">
+        <div class="interventi__row__name">Casa del Miele<span>Museo identitario · produzioni tipiche locali</span></div>
+        <div class="interventi__row__city">Monti</div>
+        <div class="interventi__row__amt">185.000 €</div>
+      </div>
+    </div>
+
+    <div class="interventi__group">
+      <div class="interventi__sub">
+        <div class="interventi__sub__lbl">Sub-azione 17.01.3 · Rete dei centri di accoglienza turistica</div>
+        <div class="interventi__sub__amt">1.920.000 €</div>
+      </div>
+      <div class="interventi__row">
+        <div class="interventi__row__name">Centro servizi turistici per il territorio<span>Centro di accoglienza turistica · servizi di prenotazione</span></div>
+        <div class="interventi__row__city">Golfo Aranci</div>
+        <div class="interventi__row__amt">1.285.000 €</div>
+      </div>
+      <div class="interventi__row">
+        <div class="interventi__row__name">Centro Servizi Multimediali per il turismo<span>Piattaforma digitale · servizi di informazione turistica</span></div>
+        <div class="interventi__row__city">Alà dei Sardi</div>
+        <div class="interventi__row__amt">435.000 €</div>
+      </div>
+      <div class="interventi__row">
+        <div class="interventi__row__name">Centro Servizi Turistici Integrato<span>Centro di accoglienza · strutture turistiche</span></div>
+        <div class="interventi__row__city">Oschiri</div>
+        <div class="interventi__row__amt">200.000 €</div>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--grey-text);margin-top:14px;font-style:italic;">Fonte: Allegato B "Quadro Finanziario" alla rimodulazione dell'Accordo di Programma Quadro PST PT-CRP 17/INT R, di cui alla Delib.G.R. n. 14/56 del 22 maggio 2024.</p>
+
+</section>
+
+<!-- SUMMARY IMPATTI ECONOMICI E SOCIALI -->
+<section class="s-grey border-lime" id="summary">
+  <div class="section-title">
+    <div class="section-title__num">Sezione 02</div>
+    <div class="section-title__text">Sintesi</div>
+  </div>
+  <p class="section-subtitle"><span>Una lettura integrata di impatto economico e valore sociale generato dall'Azione 17.01.</span></p>
+
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-bottom:40px;">Lo studio combina due livelli di lettura. Da un lato la <strong>misura economica</strong> dell'intervento, ottenuta con il modello SAM applicato all'Azione 17.01 del PST Monte Acuto-Riviera di Gallura: 2,69 milioni di euro spesi attivano una catena di effetti su PIL, produzione, occupazione e redditi, in larga parte trattenuta in Sardegna. Dall'altro la <strong>valutazione sociale</strong> condotta secondo la logica SROI: i benefici monetizzati per visitatori, residenti e operatori turistici vengono confrontati con il costo dell'intervento a prezzi ombra, restituendo un rapporto sintetico di efficienza dell'investimento.</p>
+
+  <h3 class="stitle" style="margin-top:0;">I due lati dell'impatto</h3>
+  <div class="c2eq" style="margin-bottom:48px;">
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="factory"></i></div>
+      <div class="ic__lbl">Impatto economico · modello SAM</div>
+      <div class="ic__val">3,56 mln €</div>
+      <div class="ic__title">PIL attivato in Sardegna</div>
+      <div class="ic__desc">Da 2,69 mln € di spesa iniziale, l'Azione 17.01 attiva 3,56 mln € di PIL regionale (moltiplicatore 1,32) e 5,97 mln € di valore della produzione lungo la filiera sarda, con 47,1 ETP di occupazione complessivamente generata e 3,49 mln € di redditi distribuiti a famiglie e imprese. A questi si aggiungono 1,12 mln € di gettito fiscale complessivo.</div>
+    </div>
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="pie-chart"></i></div>
+      <div class="ic__lbl">Impatto sociale · valutazione SROI</div>
+      <div class="ic__val">2,50</div>
+      <div class="ic__title">Euro di benefici sociali per ogni euro investito</div>
+      <div class="ic__desc">A fronte di un investimento di 2,43 mln € espresso a prezzi ombra, l'intervento genera 6,08 mln € di benefici sociali monetizzati per visitatori, residenti e sistema turistico locale, con un valore sociale netto residuo di 3,65 mln €. L'effetto è trainato dall'incremento della spesa turistica locale (80,4% dei benefici).</div>
+    </div>
+  </div>
+
+  <h3 class="stitle">Indicatori chiave di sintesi</h3>
+  <div class="c4">
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="landmark"></i></div>
+      <div class="ic__lbl">Autofinanziamento fiscale</div>
+      <div class="ic__val">41,6%</div>
+      <div class="ic__title">Quota di costo rientrata via gettito</div>
+      <div class="ic__desc">Tasso di autofinanziamento dell'intervento: quota del costo nominale che rientra sotto forma di imposte e contributi alla finanza pubblica, riducendo il costo netto per il bilancio pubblico.</div>
+    </div>
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="shield"></i></div>
+      <div class="ic__lbl">Trattenimento regionale</div>
+      <div class="ic__val">84,1%</div>
+      <div class="ic__title">Quota di PIL attivata dentro la Sardegna</div>
+      <div class="ic__desc">Larga parte del valore aggiunto complessivo viene trattenuta nel sistema produttivo regionale: 3,56 mln € su 4,24 mln € totali. Indice di una filiera locale capace di catturare gli effetti dell'intervento.</div>
+    </div>
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="globe"></i></div>
+      <div class="ic__lbl">Dispersione extraregionale</div>
+      <div class="ic__val">15,9%</div>
+      <div class="ic__title">Quota di PIL attivata fuori Sardegna</div>
+      <div class="ic__desc">Effetto di leakage strutturale: 0,67 mln € di PIL complessivo si attivano lungo le filiere di subfornitura nazionali, riflettendo la dipendenza da input intermedi non producibili localmente.</div>
+    </div>
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="heart-pulse"></i></div>
+      <div class="ic__lbl">Benefici sociali</div>
+      <div class="ic__val">6,08 mln €</div>
+      <div class="ic__title">Valore sociale complessivo monetizzato</div>
+      <div class="ic__desc">Benefici generati per visitatori, residenti e sistema turistico locale, valorizzati tramite proxy validate in letteratura e confrontati con il costo dell'intervento a prezzi ombra.</div>
+    </div>
+  </div>
+</section>
+
+<!-- MACRO NUMBERS -->
+<section class="s-light" id="macro" style="padding-top:56px;">
+  <div class="section-title">
+    <div class="section-title__num">Sezione 03</div>
+    <div class="section-title__text">Impatto economico</div>
+  </div>
+  <p class="section-subtitle"><span>Dalla spesa localizzata in Gallura Nord-Est agli effetti attivati in Sardegna su PIL, produzione, lavoro, redditi e gettito.</span></p>
+
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-bottom:40px;">Un investimento concentrato di <strong>2,69 milioni di euro</strong>, una destinazione orientata su lavori di recupero del patrimonio (58,0% costruzioni) e sui servizi turistico-culturali (alloggio e ristorazione, turismo, attività culturali, complessivamente 30,0%): la spesa FESR dell'Azione 17.01 del PST Monte Acuto-Riviera di Gallura attiva una catena di effetti economici che eccede l'impulso iniziale. I numeri che seguono misurano il risultato <strong>generato all'interno della Sardegna</strong> in termini di PIL, valore della produzione, occupazione e redditi; sotto ciascun valore è riportata la quota che si attiva al di fuori dei confini regionali lungo le filiere di subfornitura nazionali. Il gettito fiscale è presentato separatamente: non è una componente territorializzata dello stesso risultato, ma una stima complessiva del rientro di imposte e contributi verso la finanza pubblica.</p>
+
+  <div class="mgrid">
+    <div class="mc">
+      <div class="mcw"><img src="icons/png_spesa.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">Spesa totale in Sardegna</div>
+      <div class="mcv">2,69</div>
+      <div class="mcu">milioni €</div>
+      <div class="mcd">L'impulso iniziale dell'Azione 17.01 nella Provincia Gallura Nord-Est: lavori di valorizzazione, servizi turistici, attività culturali, consulenze e prestazioni informatiche da cui parte la catena di effetti analizzata.</div>
+    </div>
+    <div class="mc">
+      <div class="mcw"><img src="icons/PIL.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">PIL generato in Sardegna</div>
+      <div class="mcv">3,56</div>
+      <div class="mcu">milioni €</div>
+      <div class="mcextra">+ <strong>0,67 mln €</strong> attivati fuori Sardegna</div>
+      <div class="mcd">Per ogni euro speso, l'economia regionale restituisce 1,32 euro di valore aggiunto. Un moltiplicatore intra-regionale sostenuto dalla composizione settoriale dell'intervento, in cui prevalgono attività ad alta intensità di lavoro locale.</div>
+    </div>
+    <div class="mc">
+      <div class="mcw"><img src="icons/Produzione.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">Valore della produzione attivato in Sardegna</div>
+      <div class="mcv">5,97</div>
+      <div class="mcu">milioni €</div>
+      <div class="mcextra">+ <strong>1,21 mln €</strong> attivati fuori Sardegna</div>
+      <div class="mcd">Oltre il doppio dell'importo speso: il volume d'affari generato lungo l'intera filiera dei fornitori operanti in Sardegna, dai cantieri edili ai produttori di servizi turistici, dai fornitori di tecnologia alle attività culturali.</div>
+    </div>
+    <div class="mc">
+      <div class="mcw"><img src="icons/Occupazione.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">Occupazione attivata in Sardegna</div>
+      <div class="mcv">47,1</div>
+      <div class="mcu">unità lavorative (ETP)</div>
+      <div class="mcextra">+ <strong>6,5 ETP</strong> attivati fuori Sardegna</div>
+      <div class="mcd">Oltre 47 posti di lavoro a tempo pieno in Sardegna: 17,5 ETP per ogni milione di euro speso. Gli ETP sono calcolati ipotizzando 1 anno di realizzazione per ciascun progetto.</div>
+    </div>
+    <div class="mc">
+      <div class="mcw"><img src="icons/Redditi.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">Redditi generati in Sardegna</div>
+      <div class="mcv">3,49</div>
+      <div class="mcu">milioni €</div>
+      <div class="mcextra">+ <strong>0,65 mln €</strong> attivati fuori Sardegna</div>
+      <div class="mcd">Stipendi e remunerazioni del capitale distribuiti lungo la catena di filiera regionale (redditi da lavoro 1,55 mln € · redditi da capitale 1,94 mln €). Per ogni euro speso, 1,30 euro tornano alle famiglie e alle imprese sarde sotto forma di reddito.</div>
+    </div>
+    <div class="mc mc--fiscal">
+      <div class="mcw"><img src="icons/Gettito Fiscale.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl"><span>Gettito fiscale</span><span>complessivo</span></div>
+      <div class="mcv">1,12</div>
+      <div class="mcu">milioni €</div>
+      <div class="mcextra">Valore nazionale · <strong>non disaggregabile</strong></div>
+      <div class="mcd">Il valore è riferito al gettito complessivo attivato dall'intervento e non viene disaggregato per area geografica: il gettito erariale (IVA, IRPEF, IRES) confluisce al bilancio dello Stato e non è geograficamente attribuibile alla sola Sardegna.</div>
+    </div>
+  </div>
+
+  <h3 class="stitle" id="componenti">Struttura degli impatti per componente</h3>
+  <p style="font-size:14px;color:var(--grey-text);max-width:none;width:100%;line-height:1.75;margin-bottom:32px;font-style:italic;">I moltiplicatori che seguono sono calcolati sugli effetti generati <strong>all'interno della Sardegna</strong>. Considerando l'intero impatto attivato (Sardegna + dispersione extraregionale), i moltiplicatori complessivi salgono rispettivamente a 1,57 per il PIL, 2,67 per la produzione e 19,93 ETP per milione di euro speso, assumendo 1 anno di realizzazione per ciascun progetto.</p>
+  <div class="mult-grid">
+    <div class="mult-card">
+      <div class="mult-card__icon"><i data-lucide="zap"></i></div>
+      <div class="mult-card__lbl">Moltiplicatore Produzione</div>
+      <div class="mult-card__val">2,22</div>
+      <div class="mult-card__unit">€ di produzione attivati in Sardegna per ogni € di spesa</div>
+      <div class="mult-card__desc">Per ogni euro speso, l'economia regionale mette in movimento 2,22 euro di produzione, considerando l'intera catena di filiera che si attiva all'interno della Sardegna lungo gli effetti diretti, indiretti e indotti.</div>
+    </div>
+    <div class="mult-card">
+      <div class="mult-card__icon"><i data-lucide="trending-up"></i></div>
+      <div class="mult-card__lbl">Moltiplicatore PIL</div>
+      <div class="mult-card__val">1,32</div>
+      <div class="mult-card__unit">€ di valore aggiunto attivati in Sardegna per ogni € di spesa</div>
+      <div class="mult-card__desc">1,32 euro di valore aggiunto generato in Sardegna per ogni euro di spesa dell'Azione 17.01: un moltiplicatore intra-regionale solido, allineato a quello tipico delle politiche pubbliche locali ad alta intensità di lavoro e diversificazione settoriale.</div>
+    </div>
+    <div class="mult-card">
+      <div class="mult-card__icon"><i data-lucide="users"></i></div>
+      <div class="mult-card__lbl">Intensità Occupazionale</div>
+      <div class="mult-card__val">17,50</div>
+      <div class="mult-card__unit">ETP attivati in Sardegna per milione di euro di spesa</div>
+      <div class="mult-card__desc">Oltre 17 unità di lavoro a tempo pieno generate in Sardegna per ogni milione di euro di spesa, assumendo 1 anno di realizzazione per ciascun progetto: un'intensità coerente con il peso delle costruzioni e dei servizi turistici.</div>
+    </div>
+  </div>
+
+  <h3 class="stitle" id="com-spesa-composizione">Composizione della spesa dell'Azione 17.01</h3>
+
+  <div class="rspesa" style="margin-bottom:48px;">
+    <div class="rspesa__hero">
+      <div class="rspesa__hero__lbl">Voce dominante</div>
+      <div>
+        <div class="rspesa__hero__big">58,0%</div>
+        <div class="rspesa__hero__name">Costruzioni</div>
+        <div class="rspesa__hero__amt">1,56 mln € · oltre la metà del totale</div>
+      </div>
+      <div class="rspesa__hero__cap">Quasi sei euro ogni dieci finanziano interventi materiali sul patrimonio culturale e ambientale: lavori di recupero, manutenzione e adeguamento di beni culturali e infrastrutture turistico-ambientali. Subito dopo, <strong>alloggio e ristorazione (13,8%)</strong> e <strong>turismo (11,5%)</strong> compongono il blocco dei servizi turistici, mentre <strong>informatica (7,3%)</strong> e <strong>attività culturali (4,6%)</strong> presidiano la digitalizzazione e la programmazione culturale. Una spesa <strong>focalizzata sull'investimento fisico</strong>, integrata da servizi a supporto della fruizione turistica.</div>
+    </div>
+    <div class="rspesa__list">
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">58,0%</div>
+        <div class="rspesa__row__name">Costruzioni</div>
+        <div class="rspesa__row__amt">1,56 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">13,8%</div>
+        <div class="rspesa__row__name">Alloggio e ristorazione</div>
+        <div class="rspesa__row__amt">0,37 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">11,5%</div>
+        <div class="rspesa__row__name">Turismo</div>
+        <div class="rspesa__row__amt">0,31 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">7,3%</div>
+        <div class="rspesa__row__name">Informatica</div>
+        <div class="rspesa__row__amt">0,20 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">4,6%</div>
+        <div class="rspesa__row__name">Attività culturali</div>
+        <div class="rspesa__row__amt">0,12 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">2,8%</div>
+        <div class="rspesa__row__name">Consulenze</div>
+        <div class="rspesa__row__amt">0,08 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">1,9%</div>
+        <div class="rspesa__row__name">Attività sportive</div>
+        <div class="rspesa__row__amt">0,05 mln €</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tx" style="margin-bottom:32px;">
+    <h3>Decomposizione in impatti diretti, indiretti e indotti</h3>
+    <p>Gli effetti economici generati in Sardegna dalla spesa si articolano in tre componenti distinte. Gli <strong>impatti diretti</strong> (1,57 mln € di PIL, pari al 44,0% del PIL attivato in Sardegna) corrispondono al valore aggiunto generato nei settori di destinazione immediata della spesa: imprese di costruzione che eseguono i lavori, operatori turistici, alberghi e ristoranti, fornitori di servizi informatici e culturali. Gli <strong>impatti indiretti</strong> (0,63 mln €, 17,8%) misurano gli effetti a cascata sulle filiere di subfornitura attivate dai settori di primo impatto. Gli <strong>impatti indotti</strong> (1,36 mln €, 38,2%) catturano i consumi addizionali generati dai redditi da lavoro attivati nelle prime due fasi.</p>
+    <p>Diretti e indotti rappresentano insieme oltre l'<strong>82% del PIL generato in Sardegna</strong>: il dato riflette la natura strutturalmente locale dell'intervento, in cui il primo impatto si manifesta integralmente sul territorio (cantieri, ricettività, attività culturali) e i redditi distribuiti ai lavoratori coinvolti si traducono in consumi di prossimità che restano in larga parte all'interno della regione.</p>
+  </div>
+
+  <div class="c2" style="margin-bottom:48px;">
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <div class="componente" style="--componente-color:var(--blu-700);">
+        <div class="componente__header">
+          <div class="componente__num" style="color:var(--blu-700);">01</div>
+          <div class="componente__sep"></div>
+          <div class="componente__title">Diretti</div>
+        </div>
+        <div class="componente__accent" style="background:var(--blu-700);"></div>
+        <div class="componente__desc">Il primo impatto sul tessuto produttivo: il valore aggiunto generato direttamente nei settori che ricevono la spesa dell'Azione 17.01 — costruzioni (lavori di recupero e valorizzazione del patrimonio), alloggio e ristorazione (servizi ricettivi e di somministrazione), turismo (operatori e agenzie), informatica (piattaforme digitali e promozione integrata), attività culturali (programmazione e fruizione del patrimonio). È la trasformazione "uno-a-uno" della spesa pubblica in produzione, PIL e occupazione, prima che gli effetti si propaghino lungo le filiere.</div>
+        <div class="componente__toggle">Leggi tutto</div>
+      </div>
+      <div class="componente" style="--componente-color:var(--blu-500);">
+        <div class="componente__header">
+          <div class="componente__num" style="color:var(--blu-500);">02</div>
+          <div class="componente__sep"></div>
+          <div class="componente__title">Indiretti</div>
+        </div>
+        <div class="componente__accent" style="background:var(--blu-500);"></div>
+        <div class="componente__desc">La filiera di subfornitura attivata dai settori di primo impatto: fornitori dei costruttori (materiali da costruzione, noleggi, servizi tecnici), filiera dell'ospitalità (forniture per ristorazione e ricettività), servizi finanziari, legali e di supporto alle imprese coinvolte. Comprende anche le attività immobiliari, i servizi di trasporto terrestre e l'energia elettrica utilizzati dai settori di destinazione della spesa. Misura la capacità del progetto di mobilitare attori produttivi che vanno oltre i settori di primo impatto.</div>
+        <div class="componente__toggle">Leggi tutto</div>
+      </div>
+      <div class="componente" style="--componente-color:var(--blu-400);">
+        <div class="componente__header">
+          <div class="componente__num" style="color:var(--blu-400);">03</div>
+          <div class="componente__sep"></div>
+          <div class="componente__title">Indotti</div>
+        </div>
+        <div class="componente__accent" style="background:var(--blu-400);"></div>
+        <div class="componente__desc">I consumi addizionali generati dai redditi da lavoro distribuiti nelle prime due fasi: la spesa al dettaglio degli operai dei cantieri, dei lavoratori del comparto turistico-culturale e dei fornitori di filiera, che alimenta a sua volta <strong>attività immobiliari</strong> (servizi connessi all'abitazione), <strong>alloggio e ristorazione</strong>, <strong>commercio al dettaglio</strong> e servizi alla persona. La presenza dell'immobiliare in cima a questa graduatoria è strutturale e riflette il peso del comparto nell'economia italiana, dove esso rappresenta il primo settore per valore aggiunto. Pesa per il <strong>38,2% del PIL attivato in Sardegna</strong>, quota molto significativa trainata dall'elevata intensità occupazionale delle costruzioni e dei servizi turistici, che immettono nel territorio salari poi spesi prevalentemente in consumi di prossimità.</div>
+        <div class="componente__toggle">Leggi tutto</div>
+      </div>
+    </div>
+    <div class="cb">
+      <div class="cb__num">Grafico 01</div>
+      <div class="cb__title">Impatti diretto, indiretto e indotto per indicatore economico — Sardegna</div>
+      <div class="cb__desc">Decomposizione in impatti diretti, indiretti e indotti generati all'interno della Sardegna dalla spesa dell'Azione 17.01: PIL (1,57 + 0,63 + 1,36 = 3,56 mln €), valore della produzione (5,97 mln €), occupazione (47,1 ETP, calcolati assumendo 1 anno di realizzazione per progetto) e redditi da lavoro e da capitale (3,49 mln €). I dati extra-regionali sono trattati separatamente nelle sezioni successive.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+<iframe src='https://flo.uri.sh/visualisation/28666707/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:400px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati PST Monte Acuto-Riviera di Gallura e ISTAT 2024.</div>
+    </div>
+  </div>
+
+  <h3 class="stitle" id="geo-pil">Distribuzione geografica degli impatti sul PIL</h3>
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-bottom:24px;">Le due mappe seguenti tracciano la <strong>geografia provinciale del PIL attivato</strong> dalla spesa dell'Azione 17.01 sull'intero territorio nazionale, pari a 4,24 mln €. La prima legge i flussi in valori assoluti, mostrando dove si depositano fisicamente i milioni; la seconda li normalizza per popolazione, restituendo l'intensità relativa dell'impatto su ciascun territorio. Il dato strutturale: <strong>il 46,0% del PIL generato (1,95 mln € su 4,24 mln €) resta nella Provincia Gallura Nord-Est</strong>, dove si concentrano integralmente gli effetti diretti della spesa; un ulteriore <strong>23,0% (0,97 mln €) si attiva nella Città metropolitana di Sassari</strong> attraverso le filiere indirette e indotte che si appoggiano al suo sistema produttivo. Complessivamente l'<strong>84,1% del PIL (3,56 mln €) si trattiene in Sardegna</strong>, mentre la dispersione extra-regionale (15,9%, ovvero 0,67 mln €) si distribuisce principalmente su Roma e Milano attraverso le filiere di subfornitura nazionali. Va precisato che la disaggregazione fra le province sarde presentata in queste mappe è una <strong>rielaborazione dei risultati del modello SAM</strong>, costruito su dati statistici riferiti alla precedente classificazione provinciale.</p>
+  <div class="ch2" style="margin-bottom:48px;">
+    <div class="cb">
+      <div class="cb__num">Grafico 02</div>
+      <div class="cb__title">Distribuzione del PIL attivato per provincia: valori assoluti</div>
+      <div class="cb__desc">Mappa delle province italiane con intensità di colore proporzionale al PIL (mln €) attivato in ciascun territorio dalla spesa dell'Azione 17.01, localizzata in Gallura Nord-Est. La concentrazione è marcatamente locale e poi regionale: la <strong>Provincia Gallura Nord-Est riceve 1,95 mln €</strong>, seguita dalla <strong>Città metropolitana di Sassari (0,97 mln €)</strong>, raggiunta attraverso le filiere indirette e indotte. Le altre province sarde (Cagliari 0,29 mln €, Nuoro 0,11, Oristano 0,11, Ogliastra 0,05, Medio Campidano 0,04, Sulcis Iglesiente 0,04) assorbono complessivamente 0,64 mln €. Fuori dalla Sardegna, Roma intercetta la quota più rilevante, seguita da Milano, Firenze e Torino. Il resto si distribuisce in misura ridotta e diffusa lungo le catene di subfornitura nazionali.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+<iframe src='https://flo.uri.sh/visualisation/28666709/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:700px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati PST Monte Acuto-Riviera di Gallura e ISTAT 2024.</div>
+    </div>
+    <div class="cb">
+      <div class="cb__num">Grafico 03</div>
+      <div class="cb__title">Distribuzione del PIL attivato per provincia: valori pro capite</div>
+      <div class="cb__desc">Stessa base dati della mappa precedente, ma con i valori espressi in euro per abitante. Questa rappresentazione neutralizza l'effetto delle dimensioni demografiche e rivela l'intensità relativa dell'impatto sul territorio. La Gallura Nord-Est emerge nettamente in vetta alla classifica nazionale per impatto pro capite dell'Azione 17.01, riflettendo la forte localizzazione della spesa sul territorio di origine e la dimensione demografica contenuta della provincia. Anche la Città metropolitana di Sassari si posiziona su valori pro capite significativi grazie allo spillover indiretto e indotto. Le altre province sarde restano largamente in coda, e la dispersione extra-regionale, una volta normalizzata per popolazione, si rivela molto contenuta.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+<iframe src='https://flo.uri.sh/visualisation/28666712/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:700px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati PST Monte Acuto-Riviera di Gallura e ISTAT 2024.</div>
+    </div>
+  </div>
+
+  <h3 class="stitle" id="geo-settori">Impatti settoriali e dispersione extraregionale</h3>
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-bottom:24px;">I due grafici che seguono scompongono la distribuzione settoriale dell'impatto socioeconomico generato dalla spesa dell'Azione 17.01. Il primo mostra come si distribuiscono PIL, valore della produzione e occupazione <strong>attivati in Sardegna</strong> nei principali settori per impatto: <strong>costruzioni</strong> (29,9% del PIL sardo), <strong>alloggio e ristorazione</strong> (15,3%), <strong>attività immobiliari</strong> (9,0%), <strong>commercio al dettaglio</strong> (4,5%) e <strong>informatica</strong> (3,3%) concentrano la maggior parte degli effetti regionali. La presenza delle attività immobiliari fra i primi settori per impatto attivato è strutturale e coerente con la composizione dell'economia italiana, dove il comparto immobiliare è il primo per valore aggiunto: ogni shock di domanda finale lo attiva fortemente attraverso il canale dei consumi indotti, in particolare attraverso la componente dei servizi connessi all'abitazione. Il secondo grafico affianca, per ciascun settore, l'<strong>attivazione regionale disaggregata per provincia</strong> (Gallura Nord-Est, Città metropolitana di Sassari e le altre province sarde) e quella <strong>extra-regionale</strong>: una lettura che rivela contemporaneamente la geografia interna del beneficio e la dispersione fisiologica lungo le filiere di subfornitura nazionali.</p>
+  <div class="ch2" style="margin-bottom:48px;">
+    <div class="cb">
+      <div class="cb__num">Grafico 04</div>
+      <div class="cb__title">Impatti per settore in Sardegna: PIL, valore della produzione e occupazione</div>
+      <div class="cb__desc">Decomposizione settoriale (classificazione ATECO) degli impatti su PIL, valore della produzione e occupazione attivati in Sardegna dalla spesa dell'Azione 17.01, localizzata nella Provincia Gallura Nord-Est. Evidenzia i settori sardi con maggiore capacità di assorbimento e propagazione: costruzioni, alloggio e ristorazione, attività immobiliari, commercio al dettaglio e informatica. La presenza di rilievo del comparto immobiliare riflette la sua peculiarità strutturale nell'economia italiana — è il primo settore per valore aggiunto a livello nazionale — e l'attivazione che riceve attraverso il canale degli impatti indotti.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28666715/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:600px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati PST Monte Acuto-Riviera di Gallura e ISTAT 2024.</div>
+    </div>
+    <div class="cb">
+      <div class="cb__num">Grafico 05</div>
+      <div class="cb__title">Dispersione e distribuzione provinciale: PIL trattenuto in Sardegna vs. attivato fuori regione</div>
+      <div class="cb__desc">Confronto, per ciascun settore economico, tra il PIL attivato all'interno della Sardegna (barra sinistra) e quello disperso fuori regione lungo le filiere di subfornitura (barra destra). Il dato regionale è inoltre disaggregato per provincia (Gallura Nord-Est, Città metropolitana di Sassari e le altre province sarde), mostrando come l'attivazione si distribuisca all'interno della regione: i settori ad alta intensità di lavoro locale (costruzioni, alloggio e ristorazione, attività culturali, turismo) presentano una concentrazione molto forte sulla Gallura Nord-Est — dove avviene fisicamente la spesa — e una dispersione extra-regionale minima, mentre la Città metropolitana di Sassari intercetta una quota significativa attraverso le filiere indirette e indotte. Al contrario, <strong>attività immobiliari</strong>, <strong>servizi finanziari</strong> e <strong>servizi finanziari ausiliari</strong> — che insieme spiegano oltre il 53% della dispersione totale — mostrano una distribuzione più diffusa verso l'esterno, coerentemente con la struttura nazionale di questi comparti i cui centri di competenza sono concentrati in poche aree del Paese.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28666716/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:600px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati PST Monte Acuto-Riviera di Gallura e ISTAT 2024.</div>
+    </div>
+  </div>
+
+  <div class="hlb" style="margin-bottom:48px;">
+    <div class="hlb__bar"></div>
+    <div class="hlb__tx"><strong>La struttura settoriale degli impatti riflette la natura locale dell'intervento.</strong> Dei 4,24 mln € di PIL complessivamente attivati, <strong>3,56 mln € si generano all'interno della Sardegna</strong> (84,1%) e solo 0,67 mln € si disperdono fuori regione (15,9%). Sul versante intra-regionale, il baricentro è la <strong>Provincia Gallura Nord-Est</strong> (1,95 mln €, 54,8% del PIL sardo), che assorbe l'intero impatto diretto e una parte rilevante di quello indiretto e indotto; segue la <strong>Città metropolitana di Sassari</strong> (0,97 mln €, 27,3% del PIL sardo), che intercetta attraverso lo spillover una quota significativa di filiere indirette e indotte appoggiate al suo sistema produttivo. I settori che alimentano l'attivazione intra-regionale coincidono con i comparti i cui beni e servizi sono <em>non ricollocabili</em>, cioè devono essere erogati o realizzati dove la spesa viene effettuata: <strong>costruzioni</strong> (lavori di valorizzazione del patrimonio culturale e ambientale, eseguiti necessariamente in loco), <strong>alloggio e ristorazione</strong> (ricettività turistica legata fisicamente al territorio), <strong>attività culturali</strong> e <strong>turismo</strong> (servizi di fruizione ed erogazione legati ai beni culturali oggetto della valorizzazione). Sul fronte opposto, oltre la metà della dispersione extra-regionale è concentrata su tre soli comparti: <strong>attività immobiliari</strong> (30,3% della dispersione), <strong>servizi finanziari</strong> (16,1%) e <strong>servizi finanziari ausiliari</strong> (6,8%) — insieme oltre il 53%. Si tratta di settori la cui presenza tra i primi attivatori è strutturale e coerente con la struttura dell'economia italiana — il comparto immobiliare è il primo per valore aggiunto a livello nazionale, e l'attivazione che riceve attraverso il canale dei consumi indotti tende a defluire in parte fuori regione attraverso la geografia degli operatori del comparto. Si tratta in larga parte di attivazioni indotte, non di spesa diretta.<br><br>Per la programmazione regionale, il dato suggerisce che gli investimenti del PST Monte Acuto-Riviera di Gallura sulla valorizzazione culturale e ambientale presentano una <strong>elevata ritenzione territoriale per costruzione</strong>: la composizione della spesa è già fortemente orientata su settori non delocalizzabili, e il margine di miglioramento della ritenzione passa per il rafforzamento dei servizi avanzati locali (finanziari, immobiliari, legali, di supporto alle imprese) che oggi vengono in parte importati lungo le filiere indirette e indotte.</div>
+  </div>
+
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-top:48px;margin-bottom:24px;">I due grafici che seguono mostrano, in formato <strong>scatter plot</strong>, come si distribuisce il valore attivato dalla spesa dell'Azione 17.01 sui principali settori ATECO e sulle province di destinazione: ogni punto rappresenta una coppia provincia-settore, con la dimensione proporzionale al valore selezionato. Il primo grafico riporta i valori assoluti, il secondo normalizza per popolazione provinciale. La lettura combinata permette di identificare le coppie provincia-settore che concentrano l'impatto e quelle che assumono maggior rilievo in termini di intensità relativa per abitante.</p>
+  <div class="ch2">
+    <div class="cb">
+      <div class="cb__num">Grafico 06</div>
+      <div class="cb__title">Posizionamento settoriale delle province: valori assoluti</div>
+      <div class="cb__desc">Lo scatter plot incrocia i principali settori ATECO con le province di destinazione del PIL attivato dalla spesa dell'Azione 17.01: ogni punto rappresenta il valore (PIL o valore della produzione, selezionabili) attivato in quella coppia provincia-settore in valori assoluti. La concentrazione è netta sulla Gallura Nord-Est, in cui costruzioni, alloggio e ristorazione e attività culturali esprimono i volumi più elevati. La Città metropolitana di Sassari intercetta volumi significativi soprattutto su attività immobiliari, commercio al dettaglio e servizi, riflesso del canale degli impatti indotti alimentato dai redditi distribuiti ai lavoratori coinvolti nei cantieri e nei servizi turistico-culturali.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28666719/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:600px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati PST Monte Acuto-Riviera di Gallura e ISTAT 2024.</div>
+    </div>
+    <div class="cb">
+      <div class="cb__num">Grafico 07</div>
+      <div class="cb__title">Posizionamento settoriale delle province: valori pro capite</div>
+      <div class="cb__desc">Lo stesso scatter plot in valori pro capite: ogni punto è normalizzato per la popolazione della provincia corrispondente. La rappresentazione rivela l'intensità relativa dell'attivazione settoriale al netto delle dimensioni demografiche. La Gallura Nord-Est si conferma in vetta nei settori principali — grazie anche alla popolazione provinciale più contenuta — mentre la dispersione extra-regionale appare ulteriormente compressa una volta normalizzata per la popolazione delle province di destinazione.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28666721/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:600px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati PST Monte Acuto-Riviera di Gallura e ISTAT 2024.</div>
+    </div>
+  </div>
+
+  <div class="hlb" style="margin-top:32px;">
+    <div class="hlb__bar"></div>
+    <div class="hlb__tx"><strong>Lo scatter plot conferma quanto emerge dalle mappe: la spesa dell'Azione 17.01 attiva un impatto socioeconomico fortemente ancorato al territorio della Gallura Nord-Est, sia in valori assoluti sia pro capite.</strong> Le coppie provincia-settore di maggior dimensione si concentrano nella provincia di origine, dove costruzioni, ricettività turistica e attività culturali guidano il valore attivato. La <strong>Città metropolitana di Sassari</strong> rappresenta la principale destinazione di spillover regionale, intercettando quote rilevanti soprattutto sulle filiere indirette e indotte (attività immobiliari, commercio al dettaglio, supporto alle imprese, servizi). Le altre province sarde — Cagliari, Nuoro, Oristano, Ogliastra, Medio Campidano, Sulcis Iglesiente — ricevono quote minori ma non trascurabili, prevalentemente attraverso filiere indirette e indotte. Fuori dalla Sardegna, i punti si rarefanno e si concentrano su pochi comparti a forte concentrazione nazionale: in particolare <strong>attività immobiliari e servizi finanziari</strong>, che riflettono la struttura ordinaria della filiera produttiva italiana — in cui il comparto immobiliare è il primo settore per valore aggiunto nazionale — non un'inefficienza specifica dell'intervento. La <strong>localizzazione del beneficio economico</strong> è quindi una caratteristica strutturale dell'Azione 17.01, non un esito casuale o migliorabile attraverso una diversa allocazione territoriale della spesa.</div>
+  </div>
+
+</section>
+
+<!-- KEY TAKEAWAYS -->
+<section class="s-grey" id="takeaways">
+  <div class="sh">
+    <div class="sh__bar"></div>
+    <div>
+      <div class="sh__tag">Sintesi analitica · PST Azione 17.01</div>
+      <div class="sh__title">Risultati principali</div>
+    </div>
+  </div>
+
+  <div class="c3">
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="shield"></i></div>
+      <div class="ic__lbl">PIL trattenuto in Sardegna</div>
+      <div class="ic__val">84,1%</div>
+      <div class="ic__title">Quota di valore aggiunto che resta nell'isola</div>
+      <div class="ic__desc">Dei 4,24 mln € di PIL complessivamente attivati, <strong>3,56 mln € si generano all'interno della Sardegna</strong>. Il dato segnala una capacità di trattenimento elevata: la spesa parte dalla Provincia Gallura Nord-Est, ma viene assorbita in larga misura da filiere produttive regionali, soprattutto costruzioni, ricettività, attività culturali e servizi locali.</div>
+    </div>
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="globe"></i></div>
+      <div class="ic__lbl">Dispersione contenuta</div>
+      <div class="ic__val">15,9%</div>
+      <div class="ic__title">PIL attivato fuori dalla Sardegna</div>
+      <div class="ic__desc">Solo 0,67 mln € di PIL su 4,24 totali si attivano <strong>al di fuori della Sardegna</strong>, principalmente verso Roma e Milano. La quota extra-regionale riflette la struttura ordinaria delle filiere nazionali, non un'inefficienza dell'intervento, e resta limitata rispetto alla forte capacità di trattenimento osservata nel sistema produttivo regionale.</div>
+    </div>
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="home"></i></div>
+      <div class="ic__lbl">PIL nella Gallura Nord-Est</div>
+      <div class="ic__val">46,0%</div>
+      <div class="ic__title">Del PIL complessivo attivato dall'intervento</div>
+      <div class="ic__desc">Sul totale nazionale di 4,24 mln € di PIL generato, <strong>1,95 mln € restano nella Provincia Gallura Nord-Est</strong>, dove avviene fisicamente la spesa. La concentrazione locale è strutturale: l'impatto diretto si manifesta integralmente sul territorio di destinazione, e una quota rilevante degli effetti indiretti e indotti resta nelle filiere edili, ricettive, culturali e dei servizi alle imprese della provincia.</div>
+    </div>
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="map"></i></div>
+      <div class="ic__lbl">Spillover regionale</div>
+      <div class="ic__val">45,2%</div>
+      <div class="ic__title">Del PIL sardo attivato fuori dalla Gallura Nord-Est</div>
+      <div class="ic__desc">Oltre alla quota concentrata nella provincia di esecuzione, la spesa attiva <strong>1,61 mln € di PIL nel resto della Sardegna</strong>: 0,97 mln € confluiscono nella Città metropolitana di Sassari, 0,29 mln € a Cagliari, 0,11 a Nuoro, 0,11 a Oristano e quote minori nelle altre province sarde (Ogliastra, Medio Campidano, Sulcis Iglesiente). Sono flussi indiretti e indotti che attraversano la filiera regionale e mostrano che l'intervento non si esaurisce nei confini della provincia di origine.</div>
+    </div>
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="building"></i></div>
+      <div class="ic__lbl">Occupazione regionale</div>
+      <div class="ic__val">47,1</div>
+      <div class="ic__title">ETP attivati lungo la filiera sarda</div>
+      <div class="ic__desc">L'investimento genera <strong>47,1 equivalenti a tempo pieno</strong> in Sardegna, considerando gli effetti diretti, indiretti e indotti. L'impatto occupazionale si concentra nei comparti più legati al territorio: costruzioni, ricettività, attività culturali, commercio e servizi alle imprese.</div>
+    </div>
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="landmark"></i></div>
+      <div class="ic__lbl">Autofinanziamento fiscale</div>
+      <div class="ic__val">41,6%</div>
+      <div class="ic__title">Gettito recuperato sulla spesa iniziale</div>
+      <div class="ic__desc">Il gettito fiscale indotto complessivo (1,12 mln €) ammonta al 41,6% della spesa iniziale: <strong>oltre quattro decimi di euro su uno</strong> tornano alle casse pubbliche sotto forma di IVA, IRPEF, IRES e contributi previdenziali. Il valore è metodologicamente non scomponibile per area geografica e va letto come parametro complessivo dell'intervento.</div>
+    </div>
+  </div>
+
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-top:40px;margin-bottom:0;">Sei indicatori sintetizzano l'impatto socioeconomico dell'Azione 17.01 sulla Sardegna: <strong>l'84,1% del PIL complessivo attivato resta nell'isola</strong>, la dispersione extra-regionale resta contenuta al <strong>15,9%</strong>, il <strong>46,0% del PIL totale</strong> si concentra nella Provincia Gallura Nord-Est dove avviene fisicamente la spesa, il <strong>45,2% del PIL sardo</strong> raggiunge il resto del territorio regionale attraverso filiere indirette e indotte (con la Città metropolitana di Sassari come prima destinazione di spillover), l'intervento genera <strong>47,1 ETP in Sardegna</strong> e il gettito indotto copre il <strong>41,6% della spesa iniziale</strong>.</p>
+</section>
+
+<!-- IMPATTO SOCIALE -->
+<section class="s-light border-lime" id="sroi">
+  <div class="section-title">
+    <div class="section-title__num">Sezione 04</div>
+    <div class="section-title__text">Impatto sociale</div>
+  </div>
+  <p class="section-subtitle"><span>La monetizzazione dei benefici per visitatori, residenti e sistema turistico locale.</span></p>
+
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-bottom:40px;">Accanto all'impatto economico misurato attraverso il modello SAM, la sezione quantifica i <strong>benefici sociali</strong> generati dagli interventi dell'Azione 17.01 sulla collettività. La logica è semplice: tradurre in termini monetari i benefici che il programma produce per i diversi stakeholder — visitatori, comunità residenti, sistema turistico locale — e confrontarli con il costo dell'intervento espresso a <em>prezzi ombra</em>, ottenendo un indicatore sintetico di efficienza dell'investimento sociale.</p>
+
+  <h3 class="stitle" style="margin-top:0;">Approccio metodologico</h3>
+  <div class="sroi-method">
+    <div class="sroi-step">
+      <div class="sroi-step__n">01 · Stakeholder</div>
+      <div class="sroi-step__title">Identificazione</div>
+      <div class="sroi-step__desc">Individuazione dei portatori di interesse raggiunti dall'intervento: visitatori dei siti culturali e ambientali, residenti dei comuni interessati, sistema turistico-ricettivo locale.</div>
+    </div>
+    <div class="sroi-step">
+      <div class="sroi-step__n">02 · Benefici</div>
+      <div class="sroi-step__title">Mappatura</div>
+      <div class="sroi-step__desc">Selezione dei cambiamenti materiali generati per ciascuno stakeholder: incremento della spesa turistica, miglioramento del benessere psicofisico dei visitatori, valore identitario per i residenti.</div>
+    </div>
+    <div class="sroi-step">
+      <div class="sroi-step__n">03 · Proxy</div>
+      <div class="sroi-step__title">Monetizzazione</div>
+      <div class="sroi-step__desc">Attribuzione di valore monetario ai benefici tramite proxy validate in letteratura: spesa turistica media giornaliera, costo di mercato di un incontro mindfulness, disponibilità a pagare per fruizione culturale.</div>
+    </div>
+    <div class="sroi-step">
+      <div class="sroi-step__n">04 · SROI</div>
+      <div class="sroi-step__title">Calcolo</div>
+      <div class="sroi-step__desc">Rapporto tra il valore sociale complessivo dei benefici e il costo economico dell'intervento espresso a prezzi ombra. Valori &gt; 1 indicano un ritorno sociale positivo.</div>
+    </div>
+  </div>
+
+  <h3 class="stitle">Risultati</h3>
+  <div class="sroi-hero">
+    <div class="sroi-hero__card">
+      <div class="sroi-hero__lbl">Impatto sociale</div>
+      <div class="sroi-hero__big">2,50</div>
+      <div class="sroi-hero__desc">Per ogni euro investito nell'Azione 17.01, la collettività riceve <strong style="color:var(--lime);">2,50 euro di benefici sociali</strong> complessivi.</div>
+    </div>
+    <div class="sroi-hero__card sroi-hero__card--alt">
+      <div class="sroi-hero__lbl">Benefici sociali complessivi</div>
+      <div class="sroi-hero__big sroi-hero__big--small">6,08 mln €</div>
+      <div class="sroi-hero__desc">Al netto dell'investimento espresso a prezzi ombra (2,43 mln €), il valore sociale netto residuo è <strong style="color:var(--lime);">3,65 mln €</strong>.</div>
+    </div>
+  </div>
+
+  <div class="sroi-kpi-list">
+    <div class="sroi-kpi">
+      <div class="sroi-kpi__accent" style="background:var(--blu-700);"></div>
+      <div class="sroi-kpi__main">
+        <div class="sroi-kpi__title">Incremento della spesa turistica locale</div>
+        <div class="sroi-kpi__sub">Valore aggiuntivo immesso nell'economia locale dall'incremento delle presenze turistiche attribuibile agli interventi di valorizzazione dei siti.</div>
+      </div>
+      <div class="sroi-kpi__meta">
+        <div class="sroi-kpi__pct">80,4%</div>
+        <div class="sroi-kpi__eur">4,89 mln €</div>
+      </div>
+    </div>
+
+    <div class="sroi-kpi">
+      <div class="sroi-kpi__accent" style="background:var(--blu-500);"></div>
+      <div class="sroi-kpi__main">
+        <div class="sroi-kpi__title">Benessere psicofisico dei visitatori</div>
+        <div class="sroi-kpi__sub">Miglioramento del benessere percepito dai visitatori dei siti culturali e ambientali, valorizzato attraverso il costo di mercato di interventi analoghi (mindfulness).</div>
+      </div>
+      <div class="sroi-kpi__meta">
+        <div class="sroi-kpi__pct">18,5%</div>
+        <div class="sroi-kpi__eur">1,12 mln €</div>
+      </div>
+    </div>
+
+    <div class="sroi-kpi">
+      <div class="sroi-kpi__accent" style="background:var(--blu-400);"></div>
+      <div class="sroi-kpi__main">
+        <div class="sroi-kpi__title">Legacy culturale e identitaria per i residenti</div>
+        <div class="sroi-kpi__sub">Valore attribuito dai residenti dei comuni interessati al rafforzamento dell'identità e del senso di appartenenza generato dal recupero del patrimonio.</div>
+      </div>
+      <div class="sroi-kpi__meta">
+        <div class="sroi-kpi__pct">1,2%</div>
+        <div class="sroi-kpi__eur">0,07 mln €</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sroi-charts">
+    <div class="sroi-chart-card">
+      <div class="sroi-chart-title">Composizione dei Benefici Sociali</div>
+      <div class="sroi-chart-canvas"><canvas id="sroi-pie"></canvas></div>
+    </div>
+    <div class="sroi-chart-card">
+      <div class="sroi-chart-title">Da Investimento a Valore Sociale</div>
+      <div class="sroi-chart-canvas"><canvas id="sroi-waterfall"></canvas></div>
+    </div>
+  </div>
+
+  <p style="font-size:12px;color:var(--grey-text);font-style:italic;margin-top:14px;">Fonti delle proxy monetarie: Banca d'Italia, ISTAT e letteratura generica. Investimento a prezzi ombra: fattore di conversione 0,9036.</p>
+</section>
+
+<!-- METODOLOGIA -->
+<section class="s-dark" id="metodologia">
+  <div class="section-title">
+    <div class="section-title__num">Sezione 05</div>
+    <div class="section-title__text">Metodologia</div>
+  </div>
+  <p class="section-subtitle"><span>Approccio analitico, fonti, ipotesi di stima e limiti interpretativi.</span></p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step__n">01</div>
+      <div>
+        <h4>Definizione del perimetro e raccolta dati di spesa</h4>
+        <p>Il perimetro dell'analisi corrisponde ai <strong>6 interventi a valere sul POR FESR 2014-2020 dell'Azione 17.01</strong> "Valorizzazione turistica delle risorse culturali e ambientali e promozione integrata del territorio", del <strong>Progetto di Sviluppo Territoriale (PST) PT-CRP 17/INT R "Monte Acuto-Riviera di Gallura, Territori di eccellenza della Sardegna"</strong>, localizzati nei comuni di Padru, Monti, Golfo Aranci, Alà dei Sardi e Oschiri (Provincia Gallura Nord-Est), per un investimento complessivo di 2,69 mln €. I dati di spesa sono stati ricavati dal Quadro Finanziario (Allegato B) dell'Accordo di Programma Quadro rimodulato di cui alla Delib.G.R. n. 14/56 del 22 maggio 2024, e riclassificati per voce ATECO secondo la classificazione ISTAT delle attività economiche (ATECO prevalente: F.41.00 Costruzioni — 58,0%; I.55 Alloggio e ristorazione — 13,8%; O.79 Agenzie di viaggio e tour operator — 11,5%; K.63.00 Servizi informatici — 7,3%; S.90-91 Attività culturali — 4,6%; N.71 Studi di architettura e ingegneria — 2,8%; S.93 Attività sportive — 1,9%). Anno di riferimento dell'analisi: 2024.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__n">02</div>
+      <div>
+        <h4>SAM multiprovinciale italiana a 63 settori</h4>
+        <p>L'analisi di impatto economico è condotta mediante una <strong>SAM (Social Accounting Matrix) multiprovinciale italiana a 63 settori</strong>, che codifica i flussi economici tra settori produttivi, istituzioni, fattori di produzione e province per l'intero sistema produttivo nazionale. La struttura multiprovinciale consente di interrogarla per il territorio di spesa, stimando gli effetti moltiplicativi su produzione, valore aggiunto, occupazione e redditi e distinguendo tra impatti interni alla provincia di esecuzione, spillover verso le altre province sarde e dispersione extraregionale. <strong>La SAM è costruita su dati statistici riferiti alla precedente classificazione provinciale della Sardegna</strong>: la disaggregazione fra <strong>Provincia Gallura Nord-Est</strong> e <strong>Città metropolitana di Sassari</strong> presentata nelle mappe e nei grafici è dunque una <strong>rielaborazione coerente dei risultati del modello</strong>, ottenuta riallocando i flussi sull'attuale geometria amministrativa. I macro-aggregati regionali (Sardegna vs. dispersione extraregionale) restano invece direttamente confrontabili con la versione precedente del modello. Anno di riferimento del modello: 2022.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__n">03</div>
+      <div>
+        <h4>Stima degli impatti diretti, indiretti e indotti</h4>
+        <p>Gli <strong>impatti diretti</strong> corrispondono alla produzione, al PIL e all'occupazione generati nei settori in cui la spesa viene effettuata. Gli <strong>impatti indiretti</strong> misurano gli effetti a cascata sulle filiere di subfornitura (effetto backward linkage). Gli <strong>impatti indotti</strong> catturano i consumi addizionali generati dai redditi da lavoro attivati nelle prime due fasi. Tutti e tre i componenti sono aggregati per ottenere l'impatto totale.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__n">04</div>
+      <div>
+        <h4>Stima del gettito fiscale e analisi di autofinanziamento</h4>
+        <p>Il gettito fiscale indotto è stimato applicando le aliquote medie effettive all'attività economica attivata. La stima è condotta in termini di gettito erariale e contributivo, al netto delle aliquote agevolate. Il rapporto gettito/spesa (41,6%) indica la quota della spesa pubblica iniziale che si "autofinanzia" attraverso le entrate fiscali generate dall'attività economica attivata dall'intervento. Il valore è riportato come <strong>gettito complessivo</strong> e non viene disaggregato per area geografica: la componente erariale (IVA, IRPEF, IRES) confluisce al bilancio dello Stato e non è correttamente attribuibile su base territoriale; una sua regionalizzazione produrrebbe una stima non rigorosa dal punto di vista metodologico.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__n">05</div>
+      <div>
+        <h4>Perimetro di lettura regionale dell'impatto socioeconomico</h4>
+        <p>L'analisi presenta gli impatti su PIL, valore della produzione, occupazione e redditi <strong>in chiave regionale</strong>: i valori di riferimento riportati nelle card iniziali e nei moltiplicatori sintetici sono quelli generati <em>all'interno della Sardegna</em> dalla spesa dell'Azione 17.01, localizzata nella Provincia Gallura Nord-Est. La quota di ciascun indicatore che si attiva al di fuori dei confini regionali — lungo le filiere di subfornitura nazionali — è esplicitata separatamente sotto ciascun valore principale e analizzata nelle sezioni dedicate alla distribuzione geografica e settoriale. Questa scelta consente una lettura più nitida del beneficio effettivamente trattenuto dal territorio regionale, separandolo dalla componente di dispersione fisiologica delle catene di fornitura nazionali.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__n">06</div>
+      <div>
+        <h4>Disaggregazione geografica: impatti interni, spillover regionale e dispersione extraregionale</h4>
+        <p>L'analisi distingue tre destinazioni geografiche per gli impatti generati dalla spesa: (i) la <strong>Provincia Gallura Nord-Est</strong>, dove avviene fisicamente la spesa e dove si concentrano gli effetti diretti e una parte di quelli indiretti e indotti; (ii) il <strong>resto della Sardegna</strong> — Città metropolitana di Sassari (prima destinazione di spillover) e le altre province sarde (Cagliari, Nuoro, Oristano, Ogliastra, Medio Campidano, Sulcis Iglesiente) — raggiunte dallo <em>spillover interprovinciale</em> attraverso le filiere regionali; (iii) le <strong>regioni esterne alla Sardegna</strong> (principalmente Lazio e Lombardia), destinatarie della <em>dispersione extraregionale</em> lungo le catene di subfornitura nazionali. La ricostruzione dei flussi si fonda sulla struttura della SAM multiprovinciale, che codifica le interdipendenze settoriali e geografiche del sistema produttivo italiano a 63 settori. Si ricorda che la disaggregazione fra Gallura Nord-Est e Città metropolitana di Sassari è una <strong>rielaborazione</strong> dei risultati del modello, originariamente costruito sulla precedente classificazione provinciale.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__n">07</div>
+      <div>
+        <h4>Limiti dell'analisi e avvertenze interpretative</h4>
+        <p>I risultati vanno interpretati come stime puntuali basate su coefficienti tecnici medi. Il modello assume coefficienti di produzione costanti nel breve periodo e non incorpora effetti di prezzo o capacità produttiva. Le stime di occupazione sono espresse in equivalenti a tempo pieno (ETP), non corrispondono necessariamente a posizioni lavorative fisiche e sono calcolate ipotizzando 1 anno di realizzazione per ciascun progetto. Le stime sono riferite al perimetro di spesa dell'Azione 17.01 sulla Provincia Gallura Nord-Est e non sono trasferibili ad altri progetti, azioni o territori del PST Monte Acuto-Riviera di Gallura senza una specifica analisi. Va inoltre tenuto presente che la <strong>disaggregazione provinciale</strong> degli impatti fra Provincia Gallura Nord-Est e Città metropolitana di Sassari deriva da una <strong>rielaborazione dei risultati di un modello SAM costruito su dati statistici riferiti alla precedente classificazione provinciale</strong>: pur garantendo coerenza con i macro-aggregati regionali, tale ripartizione va letta come stima orientativa.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer__top">
+    <div class="footer__left">
+      <div class="footer__brand-line">
+        <a href="https://www.openeconomics.eu" class="footer__logo-link" aria-label="OpenEconomics" target="_blank" rel="noopener noreferrer">
+          <img src="icons/OpenEconomics-LOGO-WHITE.png" alt="OpenEconomics" class="footer__logo-img">
+        </a>
+      </div>
+      <p class="footer__tagline">Soluzioni integrate per l'analisi d'impatto socioeconomico e la gestione di finanziamenti pubblici, sostenendo imprese e PA nella mitigazione dei rischi finanziari, sociali e climatici.</p>
+    </div>
+    <div class="footer__right">
+      <div class="footer__condizioni-label">Condizioni d'uso</div>
+      <p class="footer__condizioni-text">Il presente sito web e tutte le informazioni in esso contenute possono essere divulgati, a condizione che la distribuzione avvenga citando OpenEconomics come fonte. Le informazioni sono fornite a scopo puramente informativo e non implicano alcuna garanzia o impegno da parte di OpenEconomics. Le analisi economiche contenute nel sito web sono state elaborate sulla base di fonti pubbliche autorevoli e fornitori di dati specialistici, con l'obiettivo di offrire una valutazione professionale, oggettiva e prudenziale in linea con le prassi metodologiche di comparto. Al sito web e ai suoi contenuti si applicano il copyright e le norme in materia di protezione dei dati personali.</p>
+    </div>
+  </div>
+  <div class="footer__bottom">
+    <a href="https://www.openeconomics.eu" target="_blank" rel="noopener" class="footer__bottom-left">www.openeconomics.eu ↗</a>
+    <div class="footer__bottom-right">Copyright &copy; OpenEconomics SRL 2026</div>
+  </div>
+</footer>
+
+<script>
+// SCROLL TO ID
+function navTo(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const offset = id === 'hero' ? 0 : NAV_H + CRUMB_H + 16;
+  const top = el.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({top: Math.max(0, top), behavior:'smooth'});
+  setActiveDot(id);
+}
+
+// COMPONENTI COLLASSABILI (Diretti / Indiretti / Indotti)
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('.componente').forEach(card=>{
+    card.addEventListener('click', function(){
+      this.classList.toggle('is-open');
+      const tg = this.querySelector('.componente__toggle');
+      if(tg) tg.textContent = this.classList.contains('is-open') ? 'Mostra meno' : 'Leggi tutto';
+    });
+  });
+});
+
+// TOC dot active + breadcrumb
+const NAV_H = 62, CRUMB_H = 44;
+const SECTIONS = [
+  { id: 'inquadramento', tag: 'Sezione 01', title: 'Inquadramento del PST' },
+  { id: 'summary', tag: 'Sezione 02', title: 'Sintesi impatti economici e sociali' },
+  { id: 'macro', tag: 'Sezione 03', title: 'Impatto economico' },
+  { id: 'sroi', tag: 'Sezione 04', title: 'Impatto sociale' },
+  { id: 'metodologia', tag: 'Sezione 05', title: 'Nota metodologica' }
+];
+
+function setActiveDot(id){
+  document.querySelectorAll('.toc__dot').forEach(d=>{
+    d.classList.toggle('active', d.getAttribute('data-s')===id);
+  });
+}
+
+const crumb = document.getElementById('secCrumb');
+const crumbTag = document.getElementById('crumbTag');
+const crumbTitle = document.getElementById('crumbTitle');
+const crumbNum = document.getElementById('crumbNum');
+const crumbFill = document.getElementById('crumbFill');
+
+function showCrumb(visible){
+  if(!crumb) return;
+  crumb.classList.toggle('visible', visible);
+}
+function setCrumbContent(sec){
+  if(!crumb || !sec) return;
+  crumbTag.textContent = sec.tag;
+  crumbTitle.textContent = sec.title;
+  const idx = SECTIONS.findIndex(s=>s.id===sec.id);
+  crumbNum.textContent = (idx+1).toString().padStart(2,'0') + ' / ' + SECTIONS.length.toString().padStart(2,'0');
+}
+function updateProgress(){
+  if(!crumbFill) return;
+  const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = scrollable > 0 ? Math.max(0, Math.min(100, (window.scrollY / scrollable) * 100)) : 0;
+  crumbFill.style.width = pct + '%';
+}
+
+const sectionEls = SECTIONS.map(s => ({...s, el: document.getElementById(s.id)})).filter(s => s.el);
+const tocTargets = [{ id: 'hero', el: document.getElementById('hero') }]
+  .concat(sectionEls.map(s => ({ id: s.id, el: s.el })))
+  .filter(s => s.el);
+
+function updateNavState(){
+  const marker = window.scrollY + NAV_H + CRUMB_H + 24;
+  let active = tocTargets[0] ? tocTargets[0].id : null;
+  tocTargets.forEach(target => {
+    const top = target.el.getBoundingClientRect().top + window.scrollY;
+    if (top <= marker) active = target.id;
+  });
+  if(active) setActiveDot(active);
+
+  const currentSec = sectionEls.slice().reverse().find(sec => {
+    const top = sec.el.getBoundingClientRect().top + window.scrollY;
+    return top <= marker;
+  });
+  if(currentSec) setCrumbContent(currentSec);
+}
+
+let rafId = null;
+window.addEventListener('scroll', () => {
+  if (rafId) return;
+  rafId = requestAnimationFrame(() => {
+    rafId = null;
+    const firstSection = sectionEls[0] ? sectionEls[0].el : null;
+    const threshold = firstSection ? firstSection.offsetTop - NAV_H : 200;
+    showCrumb(window.scrollY > threshold);
+    updateProgress();
+    updateNavState();
+  });
+}, { passive: true });
+
+document.addEventListener('DOMContentLoaded', function(){
+  updateProgress();
+  updateNavState();
+});
+</script>
+
+<script>
+/* IMPATTO SOCIALE CHARTS */
+(function(){
+  if(typeof Chart === 'undefined') return;
+  function fmt(v){ return v.toFixed(2).replace('.',','); }
+  var COL_LIME = '#B9FF69';
+  var COL_BLU500 = '#6E1AFF';
+  var COL_BLU400 = '#ae81fd';
+  var COL_BLU700 = '#4400B3';
+  var COL_BLU900 = '#270065';
+  var COL_GREY = '#E8E8E4';
+  var FONT = "'Atkinson Hyperlegible Next',Arial,sans-serif";
+
+  function initSroiCharts(){
+    var pieEl = document.getElementById('sroi-pie');
+    if(pieEl){
+      var pieLabels = ['Spesa turistica', 'Benessere psicofisico', 'Legacy culturale'];
+      var pieData = [4.89, 1.12, 0.07];
+      var pieColors = [COL_LIME, COL_BLU500, COL_BLU900];
+      new Chart(pieEl.getContext('2d'), {
+        type: 'doughnut',
+        data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: pieColors, borderColor: '#fff', borderWidth: 3, hoverOffset: 10 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '58%',
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { family: FONT, size: 12 }, color: '#1a1a2e', padding: 14, usePointStyle: true, pointStyle: 'circle', pointStyleWidth: 12, boxWidth: 12, boxHeight: 12 } },
+            tooltip: { callbacks: { label: function(c){ var t = c.dataset.data.reduce(function(a,b){return a+b;},0); return ' '+c.label+': '+fmt(c.parsed)+' mln € ('+(c.parsed/t*100).toFixed(1).replace('.',',')+'%)'; } } }
+          }
+        }
+      });
+    }
+
+    var wfEl = document.getElementById('sroi-waterfall');
+    if(wfEl){
+      var wfInv = 2.43;
+      var wfBenTot = 6.08;
+      var wfVane = wfBenTot - wfInv; /* 3.65 */
+      new Chart(wfEl.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: ['Benefici sociali','Investimento a prezzi ombra','Valore sociale netto'],
+          datasets: [
+            { /* spacer trasparente per far galleggiare Investimento */
+              data: [0, wfVane, 0],
+              backgroundColor: 'rgba(0,0,0,0)',
+              stack: 'wf',
+              borderSkipped: false,
+              barPercentage: 0.6
+            },
+            {
+              data: [wfBenTot, wfInv, wfVane],
+              backgroundColor: [COL_LIME, COL_GREY, COL_BLU700],
+              stack: 'wf',
+              borderSkipped: false,
+              barPercentage: 0.6
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          layout: { padding: { top: 18 } },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              filter: function(item){ return item.datasetIndex !== 0; },
+              callbacks: { label: function(c){ return ' '+fmt(c.parsed.y)+' mln €'; } }
+            }
+          },
+          scales: {
+            x: { stacked: true, grid: { display: false }, ticks: { font: { family: FONT, size: 10, weight: '600' }, maxRotation: 0, color: '#1a1a2e' } },
+            y: { stacked: true, min: 0, grid: { color: 'rgba(0,0,0,.06)' }, ticks: { font: { family: FONT, size: 11 }, callback: function(v){ return String(v).replace('.',',') + ' mln €'; } } }
+          }
+        }
+      });
+    }
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initSroiCharts);
+  } else {
+    initSroiCharts();
+  }
+})();
+</script>
+</body>
+</html>

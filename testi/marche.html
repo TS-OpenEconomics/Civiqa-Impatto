@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Footprint della spesa comunale delle Marche 2024 | OpenEconomics</title>
+<link rel="icon" type="image/png" media="(prefers-color-scheme: light)" href="../../icons/OE_site_icon_black.png">
+<link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="../../icons/OE_site_icon_white.png">
+<link href="https://fonts.googleapis.com/css2?family=Hedvig+Letters+Serif:opsz@12..24&family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+(function(){
+  var icons = {
+    "alert-circle":"<circle cx='12' cy='12' r='10'/><line x1='12' y1='8' x2='12' y2='12'/><line x1='12' y1='16' x2='12.01' y2='16'/>",
+    "bar-chart-2":"<line x1='18' y1='20' x2='18' y2='10'/><line x1='12' y1='20' x2='12' y2='4'/><line x1='6' y1='20' x2='6' y2='14'/>",
+    "bar-chart":"<line x1='12' y1='20' x2='12' y2='10'/><line x1='18' y1='20' x2='18' y2='4'/><line x1='6' y1='20' x2='6' y2='16'/>",
+    "factory":"<path d='M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z'/><path d='M17 18h1'/><path d='M12 18h1'/><path d='M7 18h1'/>",
+    "globe":"<circle cx='12' cy='12' r='10'/><line x1='2' y1='12' x2='22' y2='12'/><path d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/>",
+    "map":"<polygon points='1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6'/><line x1='8' y1='2' x2='8' y2='18'/><line x1='16' y1='6' x2='16' y2='22'/>",
+    "pie-chart":"<path d='M21.21 15.89A10 10 0 1 1 8 2.83'/><path d='M22 12A10 10 0 0 0 12 2v10z'/>",
+    "scatter-chart":"<circle cx='7.5' cy='7.5' r='1.5'/><circle cx='18.5' cy='5.5' r='1.5'/><circle cx='11.5' cy='11.5' r='1.5'/><circle cx='7.5' cy='16.5' r='1.5'/><circle cx='17.5' cy='14.5' r='1.5'/><circle cx='6.5' cy='20.5' r='1.5'/><circle cx='18.5' cy='20.5' r='1.5'/>",
+    "trending-up":"<polyline points='23 6 13.5 15.5 8.5 10.5 1 18'/><polyline points='17 6 23 6 23 12'/>",
+    "trending-down":"<polyline points='23 18 13.5 8.5 8.5 13.5 1 6'/><polyline points='17 18 23 18 23 12'/>",
+    "users":"<path d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M23 21v-2a4 4 0 0 0-3-3.87'/><path d='M16 3.13a4 4 0 0 1 0 7.75'/>",
+    "zap":"<polygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'/>",
+    "shield":"<path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/>",
+    "anchor":"<circle cx='12' cy='5' r='3'/><line x1='12' y1='22' x2='12' y2='8'/><path d='M5 12H2a10 10 0 0 0 20 0h-3'/>",
+    "flame":"<path d='M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z'/>",
+    "download":"<path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/><polyline points='7 10 12 15 17 10'/><line x1='12' y1='15' x2='12' y2='3'/>",
+    "minus-circle":"<circle cx='12' cy='12' r='10'/><line x1='8' y1='12' x2='16' y2='12'/>",
+    "building":"<rect x='4' y='2' width='16' height='20' rx='0'/><path d='M9 22V12h6v10'/><path d='M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01'/>",
+    "landmark":"<line x1='3' y1='22' x2='21' y2='22'/><line x1='6' y1='18' x2='6' y2='11'/><line x1='10' y1='18' x2='10' y2='11'/><line x1='14' y1='18' x2='14' y2='11'/><line x1='18' y1='18' x2='18' y2='11'/><polygon points='12 2 20 7 4 7'/>",
+    "coin":"<circle cx='12' cy='12' r='10'/><path d='M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16 3.95 6.06M14.31 16H2.83M16.62 12 10.88 21.94'/>",
+    "cpu":"<rect x='4' y='4' width='16' height='16' rx='0'/><rect x='9' y='9' width='6' height='6'/><path d='M15 2v2M9 2v2M15 20v2M9 20v2M2 15h2M2 9h2M20 15h2M20 9h2'/>",
+    "heart-pulse":"<path d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z'/><path d='M3.22 12H9.5l1.5-1.5 2 2.5 1.5-2 2 2.5 2-2.5h3.78'/>",
+    "layers":"<path d='m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z'/><path d='m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65'/><path d='m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65'/>",
+    "home":"<path d='m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/><polyline points='9 22 9 12 15 12 15 22'/>",
+    "map-pin":"<path d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/><circle cx='12' cy='10' r='3'/>",
+    "arrow-right":"<line x1='5' y1='12' x2='19' y2='12'/><polyline points='12 5 19 12 12 19'/>",
+    "arrow-left":"<line x1='5' y1='12' x2='19' y2='12'/><polyline points='12 19 5 12 12 5'/>"
+  };
+  function createIcons(){
+    document.querySelectorAll('[data-lucide]').forEach(function(el){
+      var name=el.getAttribute('data-lucide'),paths=icons[name];
+      if(!paths)return;
+      var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+      svg.setAttribute('xmlns','http://www.w3.org/2000/svg');
+      svg.setAttribute('width','24');svg.setAttribute('height','24');
+      svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('fill','none');
+      svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.5');
+      svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');
+      if(el.className)svg.setAttribute('class',el.className);
+      if(el.getAttribute('style'))svg.setAttribute('style',el.getAttribute('style'));
+      svg.innerHTML=paths;el.parentNode.replaceChild(svg,el);
+    });
+  }
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',createIcons);}
+  else{createIcons();}
+  window.lucide={createIcons:createIcons};
+})();
+</script>
+<link rel="stylesheet" href="regionali.css">
+<style>
+:root{--regional-hero-image:url('../../icons/hero_marche.jpg');}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="../../home.html" class="nav__logo-link" aria-label="OpenEconomics Studies">
+    <img src="../../icons/OpenEconomics-LOGO-WHITE.png" alt="OpenEconomics" class="nav__logo-img">
+    <span class="nav__badge">Studies</span>
+  </a>
+  <ul class="nav__links">
+    <li><a id="nav-home" onclick="hideAllViews()">Home</a></li>
+    <li><a data-view="regionale" onclick="showView('regionale')">Spesa regionale</a></li>
+    <li><a data-view="comunale" onclick="showView('comunale')">Spesa comunale</a></li>
+    <li><a data-view="province" onclick="showView('province')">Spesa provinciale</a></li>
+    <li><a onclick="navTo('metodologia')">Metodologia</a></li>
+  </ul>
+  <a class="nav__download" href="#download" onclick="navTo('download');return false;"><span>Download</span><i data-lucide="download"></i></a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero__l">
+    <div class="hero__top">
+      <div class="hero__tag">
+        <i data-lucide="landmark" style="width:12px;height:12px;stroke:var(--black);stroke-width:2;"></i>
+        Analisi di Impatto Economico
+      </div>
+      <div class="hero__sector">Pubblica Amministrazione · Regione Marche</div>
+    </div>
+    <h1 class="hero__title">Footprint della spesa pubblica<br>nelle <em>Marche</em>:<br>regione, comuni<br>e province</h1>
+    <div class="hero__bottom">
+      <p class="hero__sub">Quando un'amministrazione pubblica spende un euro, quell'euro non si esaurisce nel pagamento: attraversa filiere, alimenta redditi, ritorna in gettito. Questo lavoro misura il footprint economico generato dalla spesa pubblica nelle Marche su tre livelli paralleli, la spesa diretta della Regione, la spesa cumulata dei 235 comuni e l'analisi separata per ciascuna delle cinque province, utilizzando una SAM multiprovinciale italiana a 63 settori che traccia ogni flusso, dai settori di primo impatto fino alle ricadute extraregionali.</p>
+      <div class="hero__meta">
+        <div class="hero__mi">
+          <span class="hero__ml">Anno di riferimento</span>
+          <span class="hero__mv">2024</span>
+        </div>
+        <div class="hero__mi">
+          <span class="hero__ml">Livello di analisi</span>
+          <span class="hero__mv">Regioni e province</span>
+        </div>
+        <div class="hero__mi">
+          <span class="hero__ml">Modello</span>
+          <span class="hero__mv">SAM multiprovinciale</span>
+        </div>
+        <div class="hero__mi">
+          <span class="hero__ml">Perimetro</span>
+          <span class="hero__mv">Regionale e comunale</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero__r">
+    <div class="hero__placeholder">
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================== -->
+<!-- ===== HUB: INTRO + NUMERI + VIEW CHOOSER ===== -->
+<!-- ====================================================== -->
+<section class="hub" id="hub">
+
+  <!-- Dark intro header -->
+  <div class="hub__hd">
+    <div class="hub__eyebrow">Footprint della spesa pubblica · Marche 2024</div>
+    <h2 class="hub__title">Tre sguardi sulla <em>spesa pubblica</em>:<br>Ente Regione · comuni aggregati · comuni per provincia</h2>
+    <p class="hub__lead">Tre <strong>perimetri distinti e non additivi</strong>, una sola domanda: dove va a finire davvero la spesa pubblica marchigiana? Le tre analisi rispondono da angolazioni diverse. L'<strong>Ente Regione Marche</strong> concentra quasi quattro quinti del bilancio sulla sanità. La <strong>spesa cumulata di tutti i comuni</strong> distribuisce le risorse su funzioni amministrative e infrastrutture locali, con una lettura degli impatti per provincia. Le <strong>cinque analisi indipendenti per singola provincia</strong> trattano separatamente la spesa dei comuni di ciascun territorio, restituendo un mosaico policentrico dove nessuna provincia domina e ognuna contribuisce in modo distinto. Lo strumento è lo stesso: una SAM multiprovinciale italiana a 63 settori che ricostruisce, fino all'ultimo flusso di subfornitura, gli effetti economici attivati.</p>
+  </div>
+
+  <!-- View chooser -->
+  <div class="hub__chooser-wrap" id="hub-chooser">
+    <div class="hub__chooser-lbl">Seleziona un'analisi per esplorarla</div>
+    <div class="chooser">
+
+      <div class="chooser__col">
+        <a class="chooser__card" data-view="regionale" onclick="showView('regionale')">
+          <div class="chooser__icon"><i data-lucide="globe"></i></div>
+          <div class="chooser__step">Livello più generale</div>
+          <div class="chooser__title">Spesa dell'<em>Ente Regione Marche</em></div>
+          <div class="chooser__desc">Una struttura di spesa fortemente verticale: il 79% va alla sanità. L'analisi mostra perché questo non equivalga a poca diffusione territoriale, ma anzi generi la più alta ritenzione locale di tutte e tre le viste.</div>
+          <div class="chooser__meta">
+            <div class="chooser__meta__row"><span class="chooser__meta__lbl">Perimetro spesa:</span>Spesa diretta dell'Ente Regione Marche</div>
+            <div class="chooser__meta__row"><span class="chooser__meta__lbl">Perimetro analisi:</span>Regionale</div>
+          </div>
+          <div class="chooser__cta">Apri l'analisi</div>
+          <div class="chooser__connector-inner"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v8M6 9L2 5M6 9l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </a>
+        <div class="chooser__arrow-down"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4v10M10 14L5 9M10 14l5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="chooser__stat">
+          <div class="chooser__stat__lbl">Spesa regionale analizzata</div>
+          <div class="chooser__stat__val">4.759 mln €</div>
+          <div class="chooser__stat__desc">Genera 7.197 mln € di PIL e 103 mila ETP, con un moltiplicatore di 1,51. Quasi 6 euro su 10 del valore aggiunto restano dentro le Marche: la concentrazione sanitaria non penalizza il territorio.</div>
+        </div>
+      </div>
+
+      <div class="chooser__col">
+        <a class="chooser__card" data-view="comunale" onclick="showView('comunale')">
+          <div class="chooser__icon"><i data-lucide="layers"></i></div>
+          <div class="chooser__step">Livello aggregato</div>
+          <div class="chooser__title">Spesa cumulata di <em>tutti i comuni marchigiani</em></div>
+          <div class="chooser__desc">Una spesa più diversificata, pubblica amministrazione, costruzioni, macchinari, che attiva filiere più ampie ma fa uscire dalla regione il 44,4% del PIL generato. Il prezzo strutturale di un'economia aperta.</div>
+          <div class="chooser__meta">
+            <div class="chooser__meta__row"><span class="chooser__meta__lbl">Perimetro spesa:</span>Spesa cumulata di tutti i comuni delle Marche</div>
+            <div class="chooser__meta__row"><span class="chooser__meta__lbl">Perimetro analisi:</span>Regionale con visione provinciale</div>
+          </div>
+          <div class="chooser__cta">Apri l'analisi</div>
+          <div class="chooser__connector-inner"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v8M6 9L2 5M6 9l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </a>
+        <div class="chooser__arrow-down"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4v10M10 14L5 9M10 14l5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="chooser__stat">
+          <div class="chooser__stat__lbl">Spesa comunale aggregata</div>
+          <div class="chooser__stat__val">2.097 mln €</div>
+          <div class="chooser__stat__desc">Una spesa più frammentata ma con moltiplicatore PIL più elevato (1,57): attiva 47 mila ETP e ridistribuisce capacità produttiva su filiere territoriali più diversificate.</div>
+        </div>
+      </div>
+
+      <div class="chooser__col">
+        <a class="chooser__card" data-view="province" onclick="showView('province')">
+          <div class="chooser__icon"><i data-lucide="map-pin"></i></div>
+          <div class="chooser__step">Livello più dettagliato</div>
+          <div class="chooser__title">Spesa dei comuni <em>per singola provincia</em></div>
+          <div class="chooser__desc">Cinque modelli diversi di trasformazione della spesa in valore: Ancona la più "chiusa" (trattiene il 55,7% del proprio impatto), Fermo la più aperta (39,4%). Stessa regione, geografie produttive opposte.</div>
+          <div class="chooser__meta">
+            <div class="chooser__meta__row"><span class="chooser__meta__lbl">Perimetro spesa:</span>Spesa dei comuni di ciascuna provincia, analizzata separatamente</div>
+            <div class="chooser__meta__row"><span class="chooser__meta__lbl">Perimetro analisi:</span>Provinciale · 5 analisi indipendenti</div>
+          </div>
+          <div class="chooser__cta">Apri l'analisi</div>
+          <div class="chooser__connector-inner"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v8M6 9L2 5M6 9l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </a>
+        <div class="chooser__arrow-down"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4v10M10 14L5 9M10 14l5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="chooser__stat">
+          <div class="chooser__stat__lbl">Analisi indipendenti per provincia</div>
+          <div class="chooser__stat__val">5 analisi</div>
+          <div class="chooser__stat__desc">Cinque interrogazioni separate del modello, una per provincia. Ne emerge un'integrazione regionale modesta: solo il 7,5% del PIL circola tra province marchigiane.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+
+<!-- ====================================================== -->
+<!-- ===== VISTA 1 — SPESA REGIONALE ===== -->
+<!-- ====================================================== -->
+<div id="view-regionale" class="view">
+
+<!-- STICKY VIEW HEADER -->
+<div class="vsw">
+  <div class="vsw__inner">
+    <div class="vsw__id">
+      <div class="vsw__id__lbl">Analisi 01 di 03 · Stai esplorando</div>
+      <div class="vsw__id__title">Spesa diretta dell'<em>Ente Regione Marche</em></div>
+    </div>
+    <a class="vsw__back" onclick="hideAllViews()"><i data-lucide="arrow-left"></i> Cambia analisi</a>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- ===== SEZIONE 1 — SPESA REGIONALE ===== -->
+<!-- ====================================================== -->
+<section class="s-light border-lime" id="regionale">
+  <div class="sh">
+    <div class="sh__bar"></div>
+    <div>
+      <div class="sh__tag">Spesa dell'Ente Regione</div>
+      <div class="sh__title">Footprint della spesa diretta dell'Ente Regione Marche: impatti attivati</div>
+    </div>
+  </div>
+
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-bottom:40px;">Una <strong>regione che destina 3,7 miliardi su 4,8 totali a un solo comparto</strong>: la sanità. È questa la cifra che governa la prima delle tre analisi e ne determina ogni esito a valle. La spesa diretta della Regione Marche, ricostruita sui <strong>rendiconti regionali 2024 per missione</strong> e riclassificata secondo la classificazione ATECO a 63 settori, ha una struttura quasi monolitica, molto più verticale di quella comunale (distribuita invece su funzioni amministrative e infrastrutturali); ed è proprio questa concentrazione a determinare un footprint dalle caratteristiche peculiari: minore diversificazione settoriale, ma maggiore capacità di trattenere valore aggiunto sul territorio. I numeri che seguono raccontano questa prima dimensione del footprint pubblico marchigiano e la confrontano, dove rilevante, con la spesa dei comuni.</p>
+
+  <div class="mgrid">
+    <div class="mc">
+      <div class="mcw"><img src="../../icons/png_spesa.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">Spesa totale</div>
+      <div class="mcv">4.759</div>
+      <div class="mcu">milioni €</div>
+      <div class="mcd">L'impulso iniziale: ogni euro di questa cifra è il punto di partenza della catena di effetti analizzata. La sanità ne assorbe l'80%.</div>
+    </div>
+    <div class="mc">
+      <div class="mcw"><img src="../../icons/PIL.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">PIL generato</div>
+      <div class="mcv">7.197</div>
+      <div class="mcu">milioni €</div>
+      <div class="mcd">Per ogni euro speso, la Regione genera 1,51 euro di valore aggiunto sull'economia italiana: 51 centesimi di moltiplicazione che si distribuiscono lungo filiere e consumi.</div>
+    </div>
+    <div class="mc">
+      <div class="mcw"><img src="../../icons/Produzione.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">Valore della produzione attivato</div>
+      <div class="mcv">14.302</div>
+      <div class="mcu">milioni €</div>
+      <div class="mcd">Il volume d'affari mosso dall'intera catena di filiera: tre volte la spesa iniziale. Comprende le forniture nazionali alle aziende sanitarie, farmaceutiche e logistiche.</div>
+    </div>
+    <div class="mc">
+      <div class="mcw"><img src="../../icons/Occupazione.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">Occupazione attivata</div>
+      <div class="mcv">102.974</div>
+      <div class="mcu">unità lavorative (ETP)</div>
+      <div class="mcd">Una grande parte è composta dal personale sanitario regionale, ma la spesa attiva anche occupazione lungo le filiere: 21,6 ETP per ogni milione speso.</div>
+    </div>
+    <div class="mc">
+      <div class="mcw"><img src="../../icons/Redditi.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">Redditi generati</div>
+      <div class="mcv">6.983</div>
+      <div class="mcu">milioni €</div>
+      <div class="mcd">Quasi 7 miliardi tra redditi da lavoro (3.398 mln €) e da capitale (3.585 mln €): un trasferimento concreto di potere d'acquisto verso famiglie e imprese del territorio nazionale.</div>
+    </div>
+    <div class="mc">
+      <div class="mcw"><img src="../../icons/Gettito Fiscale.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">Gettito fiscale generato</div>
+      <div class="mcv">1.952</div>
+      <div class="mcu">milioni €</div>
+      <div class="mcd">Quasi un euro su due torna allo Stato come imposte e contributi. Significa che la spesa regionale si autofinanzia per il 41% attraverso il gettito che essa stessa genera.</div>
+    </div>
+  </div>
+
+  <h3 class="stitle" id="reg-componenti">Struttura degli impatti per componente</h3>
+
+  <div class="mult-grid">
+    <div class="mult-card">
+      <div class="mult-card__icon"><i data-lucide="zap"></i></div>
+      <div class="mult-card__lbl">Moltiplicatore Produzione</div>
+      <div class="mult-card__val">3,00</div>
+      <div class="mult-card__unit">€ di produzione per ogni € di spesa</div>
+      <div class="mult-card__desc">Tre euro di valore della produzione attivati per ogni euro speso: la spesa regionale muove un volume d'affari complessivo tre volte superiore al proprio importo iniziale, lungo l'intera filiera nazionale.</div>
+    </div>
+    <div class="mult-card">
+      <div class="mult-card__icon"><i data-lucide="trending-up"></i></div>
+      <div class="mult-card__lbl">Moltiplicatore PIL</div>
+      <div class="mult-card__val">1,51</div>
+      <div class="mult-card__unit">€ di valore aggiunto per ogni € di spesa</div>
+      <div class="mult-card__desc">Su ogni euro speso, l'economia restituisce un PIL pari a 1,51 euro: un risultato leggermente inferiore alla spesa comunale (1,57), ma compensato da una più alta ritenzione locale del valore aggiunto.</div>
+    </div>
+    <div class="mult-card">
+      <div class="mult-card__icon"><i data-lucide="users"></i></div>
+      <div class="mult-card__lbl">Intensità Occupazionale</div>
+      <div class="mult-card__val">21,64</div>
+      <div class="mult-card__unit">ETP per milione di euro di spesa</div>
+      <div class="mult-card__desc">Quasi 22 posti di lavoro a tempo pieno per ogni milione di spesa: un'intensità leggermente inferiore a quella comunale (22,56), conseguenza della maggiore presenza di consumi intermedi sanitari rispetto al lavoro pubblico locale.</div>
+    </div>
+  </div>
+
+  <h3 class="stitle" id="reg-spesa-composizione">Composizione della spesa diretta della Regione</h3>
+
+  <div class="rspesa" style="margin-bottom:48px;">
+    <div class="rspesa__hero">
+      <div class="rspesa__hero__lbl">Voce dominante</div>
+      <div>
+        <div class="rspesa__hero__big">79,2%</div>
+        <div class="rspesa__hero__name">Servizi sanitari</div>
+        <div class="rspesa__hero__amt">3.770 mln € · quasi quattro quinti del totale</div>
+      </div>
+      <div class="rspesa__hero__cap">Una sola voce di bilancio definisce di fatto la spesa regionale: la sanità assorbe <strong>3,7 miliardi sui 4,8 totali</strong>. È un tratto comune a tutte le regioni italiane, ma nelle Marche assume un peso particolarmente concentrato: 80 centesimi di ogni euro speso. Tutto ciò che la Regione fa al di là della sanità si distribuisce su una decina di voci minori: trasporti, amministrazione, assistenza sociale, istruzione, ricerca. Comprendere questa verticalità è la chiave per leggere ogni risultato che segue.</div>
+    </div>
+    <div class="rspesa__list">
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">5,9%</div>
+        <div class="rspesa__row__name">Trasporti terrestri</div>
+        <div class="rspesa__row__amt">279 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">4,4%</div>
+        <div class="rspesa__row__name">Pubblica amministrazione</div>
+        <div class="rspesa__row__amt">207 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">2,4%</div>
+        <div class="rspesa__row__name">Commercio all'ingrosso</div>
+        <div class="rspesa__row__amt">116 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">1,7%</div>
+        <div class="rspesa__row__name">Assistenza sociale</div>
+        <div class="rspesa__row__amt">80 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">1,3%</div>
+        <div class="rspesa__row__name">Istruzione</div>
+        <div class="rspesa__row__amt">61 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">1,2%</div>
+        <div class="rspesa__row__name">Ricerca</div>
+        <div class="rspesa__row__amt">59 mln €</div>
+      </div>
+      <div class="rspesa__minor">
+        <div class="rspesa__minor__lbl">Altre voci · 3,9% del totale</div>
+        <div class="rspesa__minor__list">Servizi idrici <strong>1,2%</strong> · Agricoltura <strong>1,0%</strong> · Attività immobiliari <strong>0,5%</strong> · Alloggio e ristorazione <strong>0,5%</strong> · Attività culturali <strong>0,4%</strong> · Energia elettrica <strong>0,2%</strong> · Sportive <strong>0,1%</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tx" style="margin-bottom:32px;">
+    <h3>Tre onde di attivazione economica</h3>
+    <p>Ogni euro che la Regione spende in sanità arriva sì all'ospedale o al medico, ma da lì in avanti continua a viaggiare. Compra forniture, paga stipendi, e quegli stipendi diventano consumo nei bar, nei negozi, negli affitti. Il modello SAM scompone questo viaggio in tre <strong>ondate sequenziali</strong>: gli effetti <strong>diretti</strong>, dove la spesa atterra per prima (sanità, trasporti, PA); gli effetti <strong>indiretti</strong>, lungo le catene di approvvigionamento dei fornitori; gli effetti <strong>indotti</strong>, che nascono dai consumi dei lavoratori coinvolti in tutta la filiera.</p>
+    <p>Rispetto alla spesa comunale, qui la prima ondata pesa di più (36,2% vs 32,7%): sanità e PA sono attività ad alta intensità di lavoro, dove buona parte del valore aggiunto si crea nel momento stesso dell'erogazione del servizio. Ma è la <strong>terza ondata</strong>, l'effetto indotto dai consumi dei lavoratori (42,9%), a restare protagonista, sostenuta dalle decine di migliaia di stipendi che il sistema sanitario marchigiano distribuisce ogni mese sul territorio.</p>
+  </div>
+
+  <div class="c2" style="margin-bottom:48px;">
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <div class="componente" style="--componente-color:var(--blu-700);">
+        <div class="componente__header">
+          <div class="componente__num" style="color:var(--blu-700);">01</div>
+          <div class="componente__sep"></div>
+          <div class="componente__title">Diretti</div>
+        </div>
+        <div class="componente__accent" style="background:var(--blu-700);"></div>
+        <div class="componente__desc">L'impronta immediata della spesa: il valore aggiunto che si crea nei settori in cui il bilancio regionale viene effettivamente destinato, sanità (79,2%), trasporto terrestre (5,9%), pubblica amministrazione (4,4%), commercio all'ingrosso (2,4%), assistenza sociale (1,7%). La sanità e la PA sono attività ad alto contenuto di servizio: producono valore "qui e ora" senza bisogno di lunghe filiere produttive. Per questo la quota diretta della spesa regionale (36,2%) è significativamente più alta di quella comunale (32,7%).</div>
+        <div class="componente__toggle">Leggi tutto</div>
+      </div>
+      <div class="componente" style="--componente-color:var(--blu-500);">
+        <div class="componente__header">
+          <div class="componente__num" style="color:var(--blu-500);">02</div>
+          <div class="componente__sep"></div>
+          <div class="componente__title">Indiretti</div>
+        </div>
+        <div class="componente__accent" style="background:var(--blu-500);"></div>
+        <div class="componente__desc">La filiera dietro le quinte: forniture mediche e farmaceutiche, logistica ospedaliera, servizi finanziari e amministrativi che gli ospedali e le strutture sanitarie acquistano per funzionare. È la componente più contenuta delle tre (20,8%), meno di quella della spesa comunale, perché la sanità ha catene di subfornitura intrinsecamente meno profonde dei settori dell'edilizia e della manifattura, dove un cantiere o una fabbrica trascinano dietro di sé materiali, componenti e servizi specializzati molto più articolati.</div>
+        <div class="componente__toggle">Leggi tutto</div>
+      </div>
+      <div class="componente" style="--componente-color:var(--blu-400);">
+        <div class="componente__header">
+          <div class="componente__num" style="color:var(--blu-400);">03</div>
+          <div class="componente__sep"></div>
+          <div class="componente__title">Indotti</div>
+        </div>
+        <div class="componente__accent" style="background:var(--blu-400);"></div>
+        <div class="componente__desc">Lo stipendio di un'infermiera, di un autista, di un funzionario: una volta in tasca, diventa spesa al supermercato, affitto, pranzo al bar, abbonamento ai trasporti. Questa terza ondata raccoglie l'intero ciclo dei consumi attivati dai redditi distribuiti dalla spesa regionale, e nelle Marche, con un sistema sanitario pubblico che impiega decine di migliaia di lavoratori, è la componente <strong>dominante</strong> (42,9%). È il principale canale attraverso cui la spesa regionale si fa sentire sul tessuto economico locale, dal commercio al dettaglio alla ristorazione, dall'immobiliare ai servizi alla persona.</div>
+        <div class="componente__toggle">Leggi tutto</div>
+      </div>
+    </div>
+    <div class="cb">
+      <div class="cb__num">Grafico R-01</div>
+      <div class="cb__title">Impatti diretto, indiretto e indotto per indicatore economico</div>
+      <div class="cb__desc">Grafico a barre raggruppate: decomposizione in diretti, indiretti e indotti per PIL (2.608 + 1.499 + 3.090 mln €), valore della produzione (14.302 mln €), occupazione (102.974 ETP) e redditi da lavoro e da capitale (6.983 mln €). La componente diretta pesa di più rispetto alla spesa comunale per via della concentrazione su sanità e PA.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28718247/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:400px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+  </div>
+
+  <div class="hlb" style="margin-bottom:48px;">
+    <div class="hlb__bar"></div>
+    <div class="hlb__tx"><strong>Un moltiplicatore più basso non significa meno efficacia.</strong> A prima vista può sembrare un punto a sfavore: il moltiplicatore PIL della Regione (1,51) è inferiore a quello dei comuni (1,57). Ma la differenza è interamente <em>tecnica</em>, non di efficienza. Il moltiplicatore SAM misura il PIL generato sull'<em>intera economia italiana</em>, e quindi non è influenzato dalla geografia del valore aggiunto: se molto va fuori regione, il moltiplicatore non cambia. Quel piccolo gap di sei punti dipende solo dalla composizione settoriale: la sanità, 79% della spesa regionale, attiva filiere strutturalmente meno profonde rispetto al mix di costruzioni, ICT, trasporti e servizi locali tipico dei comuni. Il vero indicatore dell'impatto territoriale è altrove: il <strong>58,9% del PIL generato dalla spesa regionale resta nelle Marche</strong>, contro il 55,6% di quella comunale. La sanità, paradossalmente, è uno dei settori più "marchigiani" del footprint pubblico, proprio perché si eroga sul territorio, non si compra a distanza.</div>
+  </div>
+
+  <h3 class="stitle" id="reg-geo-pil">Distribuzione geografica degli impatti sul PIL</h3>
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-bottom:24px;">Una spesa regionale, ma un impatto che non si ferma ai confini regionali. Le due mappe seguenti mostrano <strong>dove si deposita davvero il PIL attivato dalla spesa della Regione Marche</strong>, su tutte le regioni italiane (a livello regionale, non provinciale, perché la spesa è regionale). La prima legge i flussi in valori assoluti, la seconda li normalizza per popolazione: due letture che, insieme, raccontano sia il peso assoluto delle filiere attivate, sia l'intensità sproporzionata dell'effetto sul territorio marchigiano.</p>
+  <div class="ch2">
+    <div class="cb">
+      <div class="cb__num">Grafico R-02</div>
+      <div class="cb__title">PIL attivato (valori assoluti, mln €)</div>
+      <div class="cb__desc">Le Marche assorbono il 58,9% del PIL attivato (4.240 mln €). Tra le altre regioni, Lazio (648 mln €) ed Emilia-Romagna (470 mln €) intercettano la quota maggiore della dispersione extraregionale, seguite da Toscana (348), Lombardia (288), Abruzzo (286), Veneto (214) e Umbria (196): la geografia della dispersione segue il peso economico delle regioni limitrofe e dei grandi poli produttivi nazionali.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28719044/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:700px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+    <div class="cb">
+      <div class="cb__num">Grafico R-03</div>
+      <div class="cb__title">PIL pro capite attivato per regione (€ per abitante)</div>
+      <div class="cb__desc">In termini pro capite le Marche registrano 2.863 €/ab di PIL attivato dalla spesa regionale, lontane da qualsiasi altra regione italiana (la seconda è il Molise con 87 €/ab, seguita da Abruzzo con 226 e Lazio con 113). Il divario di oltre venti volte rispetto alla seconda regione per PIL attivato testimonia la fortissima concentrazione locale dell'effetto.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28719460/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:700px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+  </div>
+
+  <h3 class="stitle" id="reg-settori">Impatti settoriali e dispersione extraregionale</h3>
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-bottom:24px;">I due grafici che seguono scompongono il footprint settoriale della spesa regionale. Il primo mostra come si distribuiscono PIL, valore della produzione e occupazione nei primi 15 settori per impatto (su 63 comparti ATECO totali): la sanità domina gli impatti diretti, mentre attività immobiliari e manifattura amplificano la ricaduta nella catena indiretta e indotta. Il secondo affianca a ciascun settore la sua <strong>impronta geografica</strong>: quanto PIL resta nelle Marche e quanto si attiva nelle altre regioni attraverso le filiere di approvvigionamento.</p>
+  <div class="ch2">
+    <div class="cb">
+      <div class="cb__num">Grafico R-04</div>
+      <div class="cb__title">Impatti per settore: PIL, valore della produzione, occupazione</div>
+      <div class="cb__desc">Decomposizione settoriale (classificazione ATECO) degli impatti generati dalla spesa diretta regionale. Il settore di gran lunga più rilevante è la sanità (2.307 mln € di PIL attivato, in larga parte effetti diretti), seguito da attività immobiliari (929 mln €, quasi tutto via effetti indotti dai consumi dei lavoratori), commercio all'ingrosso (308 mln €), trasporti terrestri (298 mln €), commercio al dettaglio (296 mln €), alloggio e ristorazione (263 mln €) e pubblica amministrazione (204 mln €).</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28718258/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:700px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+    <div class="cb">
+      <div class="cb__num">Grafico R-05</div>
+      <div class="cb__title">Dispersione extraregionale: PIL trattenuto nelle Marche vs. attivato fuori regione</div>
+      <div class="cb__desc">Per ciascun settore, confronto tra PIL che resta nelle Marche e PIL attivato in altre regioni. La sanità mostra la più alta ritenzione locale (91,8% del PIL resta nelle Marche), perché si eroga sul territorio; seguono pubblica amministrazione (73,2%), trasporti terrestri (61,2%), istruzione (60%) e i comparti manifatturieri legati al territorio (mobili, tessile, farmaceutica). All'estremo opposto, servizi finanziari, energia elettrica, gestione rifiuti, magazzinaggio, supporto alle imprese, informatica e attività legali presentano dispersioni superiori all'80%, dato che le filiere relative hanno centri di competenza concentrati altrove (in particolare Lazio e Lombardia).</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28718259/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:700px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+  </div>
+
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-top:48px;margin-bottom:24px;">I due grafici che seguono mostrano, in formato <strong>scatter plot</strong>, dove si deposita il valore attivato dalla spesa dell'Ente Regione sui <strong>15 settori ATECO principali</strong>: per ciascun settore sono rappresentate le Marche e le prime 4 regioni italiane per impatto ricevuto, con la dimensione del punto proporzionale al valore selezionato. Il primo usa valori assoluti (PIL e valore della produzione); il secondo li normalizza per la <strong>popolazione</strong> di ciascuna destinazione, mostrando come l'impatto si diluisca drasticamente nel resto d'Italia per effetto della sua grande massa demografica, anche quando una quota significativa di valore fuoriesce dalla regione.</p>
+  <div class="ch2">
+    <div class="cb">
+      <div class="cb__num">Grafico R-06</div>
+      <div class="cb__title">Posizionamento settoriale delle regioni: valori assoluti</div>
+      <div class="cb__desc">Lo scatter plot mostra i 15 settori ATECO principali per impatto: per ciascun settore sono rappresentate le Marche e le prime 4 regioni italiane per impatto ricevuto, con la dimensione del punto proporzionale al PIL o al valore della produzione (selezionabili). Le Marche concentrano i punti più grandi su quasi tutti i settori; Lazio, Emilia-Romagna e Toscana figurano tra le principali destinazioni extraregionali.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28718262/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:600px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+    <div class="cb">
+      <div class="cb__num">Grafico R-07</div>
+      <div class="cb__title">Posizionamento settoriale delle regioni: valori pro capite</div>
+      <div class="cb__desc">Lo stesso scatter plot in valori pro capite: ogni punto è normalizzato per la popolazione della regione corrispondente. Anche quando una quota consistente di valore raggiunge le altre regioni, il confronto pro capite mostra che l'impatto si diluisce drasticamente per effetto della loro grande massa demografica. La concentrazione nell'home region rimane strutturalmente dominante.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28718264/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:600px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+  </div>
+
+  <div class="hlb" style="margin-top:32px;">
+    <div class="hlb__bar"></div>
+    <div class="hlb__tx"><strong>I 2.957 milioni che escono dalle Marche raccontano la geografia della filiera sanitaria nazionale.</strong> Il 41,1% del PIL attivato dalla spesa regionale (2.957 mln € su 7.197) si genera fuori dai confini marchigiani, e la geografia degli impatti non è casuale. <strong>Lazio (648 mln €), Emilia-Romagna (470), Toscana (348), Lombardia (288), Abruzzo (286)</strong>: insieme assorbono oltre due terzi della dispersione. Non è un esito imprevisto, è il riflesso strutturale di ciò che sta dietro la sanità, il comparto che da solo pesa il 79% della spesa regionale: case farmaceutiche e produttori di dispositivi medici concentrati tra Lombardia ed Emilia-Romagna, servizi specialistici e amministrativi nel Lazio, logistica e trasporti distribuiti lungo l'asse adriatico. Non è dispersione "sprecata": è il prezzo strutturale di un sistema sanitario regionale che, come ovunque in Italia, si appoggia su poche filiere produttive nazionali concentrate in pochi territori.<br><br>Il confronto con la spesa comunale rende la cosa ancora più chiara: la spesa regionale, concentrata, ha sì una <strong>dispersione del 41,1%</strong>, ma una <strong>ritenzione locale (58,9%) più alta di quella della spesa comunale (55,6%)</strong>. È un risultato controintuitivo che si spiega con un fatto semplice: la sanità si eroga sul posto. Personale, ambulatori, ricoveri restano fisicamente dove vive il paziente. La spesa comunale, più diversificata, attiva sì più filiere, ma molte di queste (servizi finanziari, energia, supporto alle imprese) sono per natura centralizzate fuori regione. <strong>Concentrazione settoriale e ritenzione territoriale non sono in contraddizione</strong>: la sanità, paradossalmente, è uno dei comparti più "marchigiani" del footprint pubblico regionale.</div>
+  </div>
+
+</section>
+
+<!-- ===== SEZIONE 1 - TAKEAWAYS REGIONALI ===== -->
+<section class="s-grey" id="regionale-takeaways">
+  <div class="sh">
+    <div class="sh__bar"></div>
+    <div>
+      <div class="sh__tag">Sintesi analitica · Spesa regionale</div>
+      <div class="sh__title">Risultati principali</div>
+    </div>
+  </div>
+
+
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-bottom:40px;">Tre numeri sintetizzano l'identità del footprint regionale: una <strong>concentrazione settoriale</strong> verticale verso la sanità, una <strong>ritenzione territoriale</strong> sorprendentemente alta proprio grazie a quella concentrazione, e una <strong>componente indotta</strong> trainata dai redditi del personale sanitario che funge da principale moltiplicatore sull'economia locale.</p>
+
+  <div class="c3">
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="anchor"></i></div>
+      <div class="ic__lbl">Ritenzione territoriale</div>
+      <div class="ic__val">58,9%</div>
+      <div class="ic__title">PIL che resta nelle Marche</div>
+      <div class="ic__desc">4.240 mln € sui 7.197 mln € di PIL attivato dalla spesa regionale rimangono entro i confini delle Marche: <strong>2.863 € pro capite</strong> di valore aggiunto generato sul territorio. È un valore <strong>oltre venti volte superiore</strong> a quello della seconda regione per PIL attivato (Molise, 87 €/ab). Detto altrimenti: nessun'altra regione italiana intercetta nemmeno un quinto di ciò che la Regione Marche restituisce al proprio territorio per ogni cittadino. La spesa diretta regionale è dunque un fattore strutturale dell'economia locale, non un'esternalità marginale.</div>
+    </div>
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="heart-pulse"></i></div>
+      <div class="ic__lbl">Concentrazione settoriale</div>
+      <div class="ic__val">79,2%</div>
+      <div class="ic__title">Spesa regionale destinata alla sanità</div>
+      <div class="ic__desc">3.770 mln € su 4.759 totali: la sanità da sola pesa quanto tutto il resto della spesa regionale moltiplicato per quattro. A distanza enorme seguono trasporti terrestri (5,9%), pubblica amministrazione (4,4%), commercio all'ingrosso (2,4%) e assistenza sociale (1,7%). È una struttura di spesa <strong>quasi monolitica</strong>, che orienta tutto il footprint economico verso le filiere sanitarie e logistiche, con tutto ciò che ne consegue in termini di tipologie di lavoro attivate, geografia delle subforniture e composizione dei consumi indotti.</div>
+    </div>
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="layers"></i></div>
+      <div class="ic__lbl">Componente indotta</div>
+      <div class="ic__val">42,9%</div>
+      <div class="ic__title">PIL generato dai consumi dei lavoratori</div>
+      <div class="ic__desc">L'effetto indotto (3.090 mln €) supera in peso sia il diretto (2.608 mln €, 36,2%) sia l'indiretto (1.499 mln €, 20,8%). Tradotto: la quota più rilevante dell'impatto regionale <strong>non nasce dalla spesa, ma da ciò che i lavoratori fanno con i propri stipendi</strong>. Spesa al supermercato, affitti, pranzi al bar, abbonamenti ai trasporti: sono questi consumi a moltiplicare l'effetto e a costituire il principale canale di amplificazione territoriale.</div>
+    </div>
+  </div>
+
+  </section>
+
+<div class="next-analysis">
+  <div class="next-analysis__lbl">Continua l'esplorazione</div>
+  <button class="next-analysis__btn" onclick="goToNextAnalysis('comunale')">
+    <span class="next-analysis__btn__title">
+      <span class="next-analysis__btn__eyebrow">Analisi 02 di 03</span>
+      <span class="next-analysis__btn__name">Spesa comunale aggregata</span>
+    </span>
+    <i data-lucide="arrow-right"></i>
+  </button>
+</div>
+
+</div><!-- /view-regionale -->
+
+<!-- ====================================================== -->
+<!-- ===== VISTA 2 — SPESA COMUNALE AGGREGATA ===== -->
+<!-- ====================================================== -->
+<div id="view-comunale" class="view">
+
+<!-- STICKY VIEW HEADER -->
+<div class="vsw">
+  <div class="vsw__inner">
+    <div class="vsw__id">
+      <div class="vsw__id__lbl">Analisi 02 di 03 · Stai esplorando</div>
+      <div class="vsw__id__title">Spesa cumulata di tutti i <em>comuni marchigiani</em> · visione provinciale</div>
+    </div>
+    <a class="vsw__back" onclick="hideAllViews()"><i data-lucide="arrow-left"></i> Cambia analisi</a>
+  </div>
+</div>
+
+<!-- MACRO NUMBERS -->
+<section class="s-light border-lime" id="macro">
+  <div class="sh">
+    <div class="sh__bar"></div>
+    <div>
+      <div class="sh__tag">Spesa cumulata · tutti i comuni</div>
+      <div class="sh__title">Footprint della spesa cumulata di tutti i comuni marchigiani: impatti attivati</div>
+    </div>
+  </div>
+
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-bottom:40px;"><strong>235 comuni</strong>, oltre 2 miliardi di euro di spesa annua, una struttura di destinazione completamente diversa da quella regionale: la spesa comunale aggregata fotografa l'altra faccia del bilancio pubblico marchigiano. Qui non c'è una sanità che assorbe l'80% del totale: c'è una pubblica amministrazione locale che paga personale e servizi (64,4%), un'edilizia pubblica che apre cantieri e rifà strade (21,4%), e acquisti di macchinari, informatica, telecomunicazioni che digitalizzano gli enti. È una spesa <strong>più diversificata</strong>, e questa diversificazione produce un footprint economico con caratteristiche proprie, moltiplicatore PIL più alto, ma anche maggiore dispersione fuori regione. I numeri che seguono ne misurano l'impatto complessivo, prima della disaggregazione provinciale presentata nella vista successiva.</p>
+
+  <div class="mgrid">
+    <div class="mc">
+      <div class="mcw"><img src="../../icons/png_spesa.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">Spesa totale</div>
+      <div class="mcv">2.097</div>
+      <div class="mcu">milioni €</div>
+      <div class="mcd">L'impulso iniziale dei 235 comuni marchigiani: l'aggregato di tutti gli acquisti, gli stipendi e i lavori pubblici da cui parte la catena di effetti analizzata.</div>
+    </div>
+    <div class="mc">
+      <div class="mcw"><img src="../../icons/PIL.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">PIL generato</div>
+      <div class="mcv">3.290</div>
+      <div class="mcu">milioni €</div>
+      <div class="mcd">Per ogni euro di spesa comunale, l'economia restituisce 1,57 euro di valore aggiunto: è il moltiplicatore più alto delle tre analisi, conseguenza della maggiore diversificazione settoriale rispetto alla spesa regionale.</div>
+    </div>
+    <div class="mc">
+      <div class="mcw"><img src="../../icons/Produzione.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">Valore della produzione attivato</div>
+      <div class="mcv">6.790</div>
+      <div class="mcu">milioni €</div>
+      <div class="mcd">Più di tre volte l'importo speso: il volume d'affari generato lungo l'intera filiera dei fornitori, dai cantieri ai produttori di macchinari, dai servizi informatici alle utilities.</div>
+    </div>
+    <div class="mc">
+      <div class="mcw"><img src="../../icons/Occupazione.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">Occupazione attivata</div>
+      <div class="mcv">47.312</div>
+      <div class="mcu">unità lavorative (ETP)</div>
+      <div class="mcd">Quasi 50.000 posti di lavoro a tempo pieno: 22,5 ETP per ogni milione di euro speso, un'intensità leggermente superiore a quella regionale grazie al peso del lavoro pubblico locale e dei cantieri.</div>
+    </div>
+    <div class="mc">
+      <div class="mcw"><img src="../../icons/Redditi.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">Redditi generati</div>
+      <div class="mcv">3.192</div>
+      <div class="mcu">milioni €</div>
+      <div class="mcd">Quasi 3,2 miliardi tra stipendi e remunerazioni del capitale, distribuiti lungo la catena di filiera. Per ogni euro speso, 1,53 euro tornano alle famiglie e alle imprese sotto forma di reddito.</div>
+    </div>
+    <div class="mc">
+      <div class="mcw"><img src="../../icons/Gettito Fiscale.png" alt="" class="mc-png-icon"></div>
+      <div class="mcl">Gettito fiscale generato</div>
+      <div class="mcv">892</div>
+      <div class="mcu">milioni €</div>
+      <div class="mcd">Quasi un euro su due torna nelle casse pubbliche come imposte e contributi. La spesa comunale si autofinanzia per il 42,6%, un tasso di recupero fiscale leggermente superiore a quello della spesa regionale.</div>
+    </div>
+  </div>
+
+  <h3 class="stitle" id="componenti">Struttura degli impatti per componente</h3>
+  <div class="mult-grid">
+    <div class="mult-card">
+      <div class="mult-card__icon"><i data-lucide="zap"></i></div>
+      <div class="mult-card__lbl">Moltiplicatore Produzione</div>
+      <div class="mult-card__val">3,24</div>
+      <div class="mult-card__unit">€ di produzione per ogni € di spesa</div>
+      <div class="mult-card__desc">Per ogni euro speso, l'economia mette in movimento 3,24 euro di produzione complessiva. Una capacità di attivazione di filiera leggermente superiore a quella regionale, conseguenza di un mix più ricco di costruzioni e manifattura.</div>
+    </div>
+    <div class="mult-card">
+      <div class="mult-card__icon"><i data-lucide="trending-up"></i></div>
+      <div class="mult-card__lbl">Moltiplicatore PIL</div>
+      <div class="mult-card__val">1,57</div>
+      <div class="mult-card__unit">€ di valore aggiunto per ogni € di spesa</div>
+      <div class="mult-card__desc">1,57 euro di valore aggiunto per ogni euro di spesa comunale: il moltiplicatore più alto delle tre analisi, sostenuto dall'ampia diversificazione settoriale e dal peso dei servizi locali.</div>
+    </div>
+    <div class="mult-card">
+      <div class="mult-card__icon"><i data-lucide="users"></i></div>
+      <div class="mult-card__lbl">Intensità Occupazionale</div>
+      <div class="mult-card__val">22,56</div>
+      <div class="mult-card__unit">ETP per milione di euro di spesa</div>
+      <div class="mult-card__desc">22,5 ETP per milione di spesa: la spesa comunale è leggermente più intensiva in occupazione di quella regionale, riflesso del peso del lavoro pubblico locale e dell'attività di cantiere ad alta intensità di manodopera.</div>
+    </div>
+  </div>
+
+  <h3 class="stitle" id="com-spesa-composizione">Composizione della spesa cumulata dei comuni</h3>
+
+  <div class="rspesa" style="margin-bottom:48px;">
+    <div class="rspesa__hero">
+      <div class="rspesa__hero__lbl">Voce dominante</div>
+      <div>
+        <div class="rspesa__hero__big">64,4%</div>
+        <div class="rspesa__hero__name">Pubblica amministrazione</div>
+        <div class="rspesa__hero__amt">1.350 mln € · quasi due terzi del totale</div>
+      </div>
+      <div class="rspesa__hero__cap">Quasi due euro ogni tre vanno alla macchina amministrativa locale: stipendi del personale comunale, servizi generali, funzioni di governo dei <strong>235 comuni marchigiani</strong>. Subito dopo, costruzioni e lavori pubblici (21,4%) e macchinari (8,4%) compongono il blocco degli investimenti materiali, strade, edifici pubblici, attrezzature. Una spesa <strong>più larga e meno verticale</strong> di quella regionale, distribuita su funzioni di prossimità che restano fisicamente sul territorio.</div>
+    </div>
+    <div class="rspesa__list">
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">64,4%</div>
+        <div class="rspesa__row__name">Pubblica amministrazione</div>
+        <div class="rspesa__row__amt">1.350 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">21,4%</div>
+        <div class="rspesa__row__name">Costruzioni</div>
+        <div class="rspesa__row__amt">450 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">8,4%</div>
+        <div class="rspesa__row__name">Macchinari</div>
+        <div class="rspesa__row__amt">176 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">2,8%</div>
+        <div class="rspesa__row__name">Informatica</div>
+        <div class="rspesa__row__amt">58 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">1,4%</div>
+        <div class="rspesa__row__name">Industria autoveicoli</div>
+        <div class="rspesa__row__amt">30 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">0,6%</div>
+        <div class="rspesa__row__name">Telecomunicazioni</div>
+        <div class="rspesa__row__amt">12 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">0,5%</div>
+        <div class="rspesa__row__name">Elettronica</div>
+        <div class="rspesa__row__amt">11 mln €</div>
+      </div>
+      <div class="rspesa__row">
+        <div class="rspesa__row__pct">0,5%</div>
+        <div class="rspesa__row__name">Ricerca e sviluppo</div>
+        <div class="rspesa__row__amt">10 mln €</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tx" style="margin-bottom:32px;">
+    <h3>Tre onde di attivazione economica</h3>
+    <p>Quando un comune apre un cantiere o paga uno stipendio, mette in moto una cascata sequenziale di effetti. La <strong>prima ondata</strong> sono i settori di destinazione immediata: la pubblica amministrazione che paga il personale, le imprese di costruzione che vincono gli appalti, i fornitori di macchinari. La <strong>seconda</strong> raggiunge i fornitori dei fornitori: chi vende cemento al cantiere, chi noleggia attrezzature, chi presta servizi finanziari. La <strong>terza</strong> nasce dai consumi dei lavoratori coinvolti nelle prime due fasi: la spesa al supermercato, la rata del mutuo, il pranzo al bar.</p>
+    <p>Nella spesa comunale è proprio questa <strong>terza ondata a fare la parte del leone</strong>: 43,1% del PIL totale viene generato dai consumi indotti dei lavoratori. Un dato che rovescia l'intuizione comune sul "dove va a finire" la spesa pubblica: il canale principale di amplificazione non è il pagamento iniziale, ma la diffusione dei redditi nell'economia di prossimità. La componente diretta pesa il 32,7%, l'indiretta il 24,3%.</p>
+  </div>
+
+  <div class="c2" style="margin-bottom:48px;">
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <div class="componente" style="--componente-color:var(--blu-700);">
+        <div class="componente__header">
+          <div class="componente__num" style="color:var(--blu-700);">01</div>
+          <div class="componente__sep"></div>
+          <div class="componente__title">Diretti</div>
+        </div>
+        <div class="componente__accent" style="background:var(--blu-700);"></div>
+        <div class="componente__desc">Il primo impatto sul tessuto produttivo: il valore aggiunto generato direttamente dai settori che ricevono la spesa comunale, pubblica amministrazione (stipendi del personale comunale), costruzioni (lavori pubblici, manutenzioni stradali, edilizia scolastica), informatica, attività legali e di supporto, trasporti terrestri ed energia elettrica. È la trasformazione "uno-a-uno" della spesa pubblica in produzione, PIL e occupazione, prima che gli effetti si propaghino lungo le filiere.</div>
+        <div class="componente__toggle">Leggi tutto</div>
+      </div>
+      <div class="componente" style="--componente-color:var(--blu-500);">
+        <div class="componente__header">
+          <div class="componente__num" style="color:var(--blu-500);">02</div>
+          <div class="componente__sep"></div>
+          <div class="componente__title">Indiretti</div>
+        </div>
+        <div class="componente__accent" style="background:var(--blu-500);"></div>
+        <div class="componente__desc">La filiera invisibile dietro ogni cantiere e ogni acquisto pubblico: i fornitori dei costruttori che acquistano cemento e materiali, i grossisti che riforniscono la PA, i servizi finanziari, di magazzinaggio, agricoli che alimentano l'intero sistema. È la dimensione "di filiera" della spesa comunale e ne rivela la capacità di mobilitare attori produttivi che vanno ben oltre i settori di primo impatto, anche se buona parte di questi attori si trova fuori dalle Marche.</div>
+        <div class="componente__toggle">Leggi tutto</div>
+      </div>
+      <div class="componente" style="--componente-color:var(--blu-400);">
+        <div class="componente__header">
+          <div class="componente__num" style="color:var(--blu-400);">03</div>
+          <div class="componente__sep"></div>
+          <div class="componente__title">Indotti</div>
+        </div>
+        <div class="componente__accent" style="background:var(--blu-400);"></div>
+        <div class="componente__desc">L'economia della prossimità: lo stipendio dell'impiegato comunale, dell'operaio del cantiere, del tecnico informatico, una volta in tasca, diventa spesa al supermercato sotto casa, affitto, pranzo al bar, abbonamento alla palestra. È la <strong>componente più rilevante</strong> della spesa comunale (43,1% del PIL) e raccoglie l'intera ricaduta dei consumi attivati lungo la filiera, in commercio al dettaglio, alloggio e ristorazione, attività immobiliari e servizi alla persona.</div>
+        <div class="componente__toggle">Leggi tutto</div>
+      </div>
+    </div>
+    <div class="cb">
+      <div class="cb__num">Grafico 01</div>
+      <div class="cb__title">Impatti diretto, indiretto e indotto per indicatore economico</div>
+      <div class="cb__desc">Grafico a barre raggruppate che mostra la decomposizione in diretti, indiretti e indotti per PIL (1.075,0 + 798,1 + 1.417,3 mln €), valore della produzione (6.790 mln €), occupazione (47.312 ETP) e redditi da lavoro e da capitale (3.192 mln €).</div>
+      <div class="sp32"></div>
+      <div class="fl">
+<iframe src='https://flo.uri.sh/visualisation/28662354/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:400px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+  </div>
+
+  <h3 class="stitle" id="geo-pil">Distribuzione geografica degli impatti sul PIL</h3>
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-bottom:24px;">Le due mappe seguenti tracciano la <strong>geografia provinciale del PIL attivato</strong> dalla spesa comunale marchigiana sull'intero territorio nazionale. La prima legge i flussi in valori assoluti, mostrando dove si depositano fisicamente i milioni; la seconda li normalizza per popolazione, e qui emerge il dato più nitido: <strong>le cinque province marchigiane occupano le prime cinque posizioni nazionali</strong>, con un divario di oltre sei volte rispetto alla sesta provincia (Rimini). La spesa comunale, pur diversificandosi più della regionale, resta fortemente ancorata al proprio territorio.</p>
+  <div class="ch2" style="margin-bottom:48px;">
+    <div class="cb">
+      <div class="cb__num">Grafico 02</div>
+      <div class="cb__title">Distribuzione del PIL attivato per provincia: valori assoluti</div>
+      <div class="cb__desc">Mappa delle province italiane con intensità di colore proporzionale al PIL (mln €) attivato in ciascun territorio dalla spesa dei comuni marchigiani. La concentrazione è nettamente marchigiana: Ancona riceve 568 mln €, Pesaro Urbino 436, Macerata 393, Ascoli Piceno 252, Fermo 179. Il resto si distribuisce, in misura ridotta ma diffusa, nelle regioni limitrofe (Lazio, Emilia-Romagna, Umbria, Abruzzo, Toscana) attraverso le catene di subfornitura. In questo contesto spicca Roma (253 mln €), che per peso economico e vicinanza geografica intercetta la quota più rilevante della dispersione extraregionale.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+<iframe src='https://flo.uri.sh/visualisation/28662360/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:700px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+    <div class="cb">
+      <div class="cb__num">Grafico 03</div>
+      <div class="cb__title">Distribuzione del PIL attivato per provincia: valori pro capite</div>
+      <div class="cb__desc">Stessa base dati della mappa precedente, ma con i valori espressi in euro per abitante. Questa rappresentazione neutralizza l'effetto delle dimensioni demografiche e rivela l'intensità relativa dell'impatto: le cinque province marchigiane occupano le prime cinque posizioni nazionali, con Macerata a 1.301 € pro capite, Ascoli Piceno a 1.260, Pesaro Urbino a 1.247, Ancona a 1.230 e Fermo a 1.072. Al sesto posto si colloca Rimini con soli 192 € pro capite, un divario di oltre sei volte rispetto al vertice, che segnala la forte localizzazione dell'impatto sul territorio di origine.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+<iframe src='https://flo.uri.sh/visualisation/28662358/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:700px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+  </div>
+
+  <h3 class="stitle" id="geo-settori">Impatti settoriali e dispersione extraregionale</h3>
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-bottom:24px;">I due grafici che seguono scompongono il footprint settoriale della spesa comunale aggregata. Il primo mostra come si distribuiscono PIL, valore della produzione e occupazione nei primi 15 settori per impatto (su 63 comparti ATECO totali): pubblica amministrazione, costruzioni e macchinari concentrano la quasi totalità degli effetti diretti, con la manifattura marchigiana che qui pesa più che altrove. Il secondo affianca a ciascun settore la sua <strong>impronta geografica</strong>: quanto PIL resta nelle Marche e quanto si attiva fuori regione attraverso le filiere di subfornitura.</p>
+  <div class="ch2" style="margin-bottom:48px;">
+    <div class="cb">
+      <div class="cb__num">Grafico 04</div>
+      <div class="cb__title">Impatti per settore: PIL, valore della produzione e occupazione</div>
+      <div class="cb__desc">Decomposizione settoriale (classificazione ATECO) degli impatti su PIL, valore della produzione e occupazione attivati dalla spesa comunale marchigiana. Evidenzia i settori con maggiore capacità di assorbimento e propagazione della spesa pubblica locale.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28662344/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:700px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+    <div class="cb">
+      <div class="cb__num">Grafico 05</div>
+      <div class="cb__title">Dispersione extraregionale: PIL trattenuto nelle Marche vs. attivato fuori regione</div>
+      <div class="cb__desc">Confronto, per ciascun settore economico, tra il PIL che resta entro i confini regionali e quello che si attiva in altre regioni attraverso le catene di subfornitura (principalmente Lazio, Emilia-Romagna, Toscana, Umbria, Abruzzo). Settori ad alta intensità di lavoro pubblico (pubblica amministrazione, costruzioni) e manifatturieri locali (macchinari) mostrano la maggiore ritenzione territoriale; gestione rifiuti, servizi finanziari, energia elettrica, agricoltura e supporto alle imprese presentano la dispersione più ampia.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28662356/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:700px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+  </div>
+
+  <div class="hlb" style="margin-bottom:48px;">
+    <div class="hlb__bar"></div>
+    <div class="hlb__tx"><strong>Esistono due Marche, e si distinguono per la natura di ciò che producono.</strong> Letti insieme, i due grafici raccontano un fenomeno strutturale dell'economia regionale: la spesa pubblica si divide tra <strong>settori che restano sul territorio</strong> e <strong>settori che escono dalla regione</strong>, e la linea di separazione non è casuale, coincide con la natura del bene o servizio. Da una parte i comparti che producono beni e servizi <em>non ricollocabili</em>, che devono cioè essere erogati o realizzati dove la spesa viene effettuata: pubblica amministrazione (ritenzione 95,6%), macchinari (91,7%, un'eccezione marchigiana che riflette la robusta presenza manifatturiera locale), costruzioni (78,8%), commercio al dettaglio (52,6%), informatica (51,1%). Dall'altra i comparti i cui servizi sono <em>scambiabili a distanza</em> e le cui filiere hanno centri di competenza concentrati altrove (soprattutto Lazio e Lombardia): gestione rifiuti (92,3% di dispersione), servizi finanziari (91,1%), energia elettrica (91,1%), agricoltura (86,9%), supporto alle imprese (84,9%), attività legali (81,4%), trasporti terrestri (73,4%).<br><br>C'è un secondo elemento che cambia la lettura. Nei settori ad alta dispersione, il PIL attivato non viene quasi mai dalla spesa diretta del comune: nasce dagli effetti indiretti e indotti, cioè dalle catene di subfornitura e dai consumi dei lavoratori. Detto altrimenti: la <strong>spesa diretta dei comuni marchigiani è molto concentrata</strong> (i primi 5 settori assorbono il 69,5% del PIL generato; i primi 3, pubblica amministrazione, costruzioni e macchinari, il 97,8% del PIL diretto), ma <strong>diventa diffusa a valle</strong>, e parte di questa diffusione esce dalla regione. Per chi programma la spesa pubblica locale è un'indicazione operativa precisa: aumentare la ritenzione territoriale non è questione di volumi, ma di filiere. Servirebbe rafforzare i servizi avanzati in regione (finanziari, legali, di supporto alle imprese, di gestione rifiuti) per intercettare a livello locale anche i flussi indiretti e indotti che oggi sfuggono.</div>
+  </div>
+
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-top:48px;margin-bottom:24px;">I due grafici che seguono mostrano, in formato <strong>scatter plot</strong>, come si distribuisce il valore attivato tra le cinque province marchigiane sui <strong>15 settori ATECO principali</strong>: ogni punto rappresenta una coppia provincia-settore, con la dimensione proporzionale al valore selezionato. Il primo usa valori assoluti; il secondo normalizza per la popolazione di ciascuna provincia. In valori assoluti Ancona guida (seguita da Pesaro Urbino, Macerata, Ascoli Piceno, Fermo); sul pro capite la gerarchia si ricompone con Macerata al primo posto seguita da Ascoli Piceno, Pesaro Urbino, Ancona e Fermo.</p>
+  <div class="ch2">
+    <div class="cb">
+      <div class="cb__num">Grafico 06</div>
+      <div class="cb__title">Posizionamento settoriale delle province: valori assoluti</div>
+      <div class="cb__desc">Lo scatter plot incrocia i 15 settori ATECO principali con le 5 province marchigiane: ogni punto rappresenta il valore attivato (PIL o valore della produzione, selezionabili) in quella coppia provincia-settore in valori assoluti. Pubblica amministrazione e costruzioni dominano in tutte le cinque province, con Ancona che esprime i volumi più elevati. Il comparto manifatturiero (macchinari, industria alimentare) emerge chiaramente a Pesaro Urbino e Ancona, coerentemente con la vocazione industriale di queste province.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28662341/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:600px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+    <div class="cb">
+      <div class="cb__num">Grafico 07</div>
+      <div class="cb__title">Posizionamento settoriale delle province: valori pro capite</div>
+      <div class="cb__desc">Lo stesso scatter plot in valori pro capite: ogni punto è normalizzato per la popolazione della provincia corrispondente. La struttura si riassesta rispetto ai valori assoluti: Macerata, Ascoli Piceno e Fermo guadagnano posizioni grazie a una spesa pro capite più elevata (1.597, 1.614 e 1.463 €/ab rispettivamente), mentre Ancona, che in valori assoluti è in vetta, scende in quarta posizione (1.230 €/ab) per effetto della maggiore popolazione provinciale.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28662337/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:600px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+  </div>
+
+  <div class="hlb" style="margin-top:32px;">
+    <div class="hlb__bar"></div>
+    <div class="hlb__tx"><strong>Quando si passa dai valori assoluti al pro capite, la classifica si ribalta, e racconta un'altra storia.</strong> In valori assoluti Ancona domina perché ha più abitanti (462.000, il 31% della popolazione regionale): è una logica di scala. Ma quando si normalizza per popolazione il quadro cambia: Ascoli Piceno (1.614 €/ab) e Macerata (1.597 €/ab) salgono in vetta, Ancona scende al quarto posto (1.181 €/ab). <strong>Le province più piccole spendono di più per ogni cittadino</strong>, e ricevono in proporzione un impatto più intenso. Eppure, ed è qui il dato strutturale, la spesa pro capite delle cinque province resta <strong>distribuita in modo notevolmente omogeneo</strong>: la forbice è di circa 430 euro per abitante, una dispersione molto inferiore a quella che si osserva in altre regioni italiane. Questo spiega perché i punti dello scatter pro capite restino addensati in una banda ristretta, pur riordinandosi rispetto alla distribuzione assoluta. La lettura congiunta dei due grafici restituisce un ritratto coerente: <strong>le Marche sono una regione policentrica</strong>, in cui nessuna provincia sovra-concentra spesa e impatto in modo anomalo. Non c'è un capoluogo che assorbe sproporzionatamente, non c'è una periferia abbandonata.</div>
+  </div>
+
+</section>
+
+<!-- KEY TAKEAWAYS -->
+<section class="s-grey" id="takeaways">
+  <div class="sh">
+    <div class="sh__bar"></div>
+    <div>
+      <div class="sh__tag">Sintesi analitica · Spesa comunale</div>
+      <div class="sh__title">Risultati principali</div>
+    </div>
+  </div>
+
+
+
+  <div class="c3">
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="trending-up"></i></div>
+      <div class="ic__lbl">Effetto di propagazione</div>
+      <div class="ic__val">67%</div>
+      <div class="ic__title">PIL generato dopo la spesa diretta</div>
+      <div class="ic__desc">Solo un terzo del PIL attivato (1.075 mln € su 3.290) nasce dal primo impatto della spesa. Gli altri <strong>due terzi</strong> arrivano dopo: 798 mln € lungo le filiere di subfornitura, 1.417 mln € dai consumi dei lavoratori coinvolti. La spesa comunale, tradotto in pratica, <strong>vale tre volte il proprio impatto immediato</strong>, perché si propaga ben oltre i settori di destinazione, attivando filiere locali e alimentando commercio, ristorazione e servizi alla persona attraverso il potere d'acquisto distribuito.</div>
+    </div>
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="globe"></i></div>
+      <div class="ic__lbl">Dispersione extraregionale</div>
+      <div class="ic__val">44,4%</div>
+      <div class="ic__title">PIL attivato al di fuori delle Marche</div>
+      <div class="ic__desc">Quasi metà del PIL generato dalla spesa comunale (1.461 mln € su 3.290) si produce <strong>al di fuori delle Marche</strong>, lungo catene di subfornitura che attraversano Lazio, Emilia-Romagna, Umbria, Abruzzo, Toscana. Non va letta come un'inefficienza, ma come una misura strutturale dell'apertura commerciale dell'economia marchigiana: la dispersione comunale (44,4%) è leggermente superiore a quella regionale (41,1%), coerentemente con la maggiore diversificazione settoriale dei comuni rispetto alla concentrazione sanitaria della Regione.</div>
+    </div>
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="shield"></i></div>
+      <div class="ic__lbl">Autofinanziamento fiscale</div>
+      <div class="ic__val">42,6%</div>
+      <div class="ic__title">Gettito recuperato sulla spesa iniziale</div>
+      <div class="ic__desc">Il gettito fiscale indotto (892 mln €) ammonta al 42,6% della spesa iniziale: <strong>quasi un euro su due torna nelle casse pubbliche</strong> sotto forma di IVA, IRPEF, IRES e contributi previdenziali. La spesa comunale, in altre parole, è un investimento che si autofinanzia per quasi metà attraverso l'attività economica che essa stessa attiva, un dato spesso sottovalutato nel dibattito sul costo della spesa pubblica locale.</div>
+    </div>
+  </div>
+
+    <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-bottom:40px;">Tre numeri raccontano la natura della spesa comunale aggregata: una <strong>propagazione</strong> molto più ampia rispetto al primo impatto, una <strong>dispersione extraregionale</strong> che è il prezzo strutturale dell'apertura dell'economia marchigiana, e un <strong>tasso di autofinanziamento fiscale</strong> che restituisce alle casse pubbliche quasi metà di quanto è stato speso.</p>
+</section>
+
+<div class="next-analysis">
+  <div class="next-analysis__lbl">Continua l'esplorazione</div>
+  <button class="next-analysis__btn" onclick="goToNextAnalysis('province')">
+    <span class="next-analysis__btn__title">
+      <span class="next-analysis__btn__eyebrow">Analisi 03 di 03</span>
+      <span class="next-analysis__btn__name">Spesa per singola provincia</span>
+    </span>
+    <i data-lucide="arrow-right"></i>
+  </button>
+</div>
+
+</div><!-- /view-comunale -->
+
+<!-- ====================================================== -->
+<!-- ===== VISTA 3 — SPESA PER PROVINCIA ===== -->
+<!-- ====================================================== -->
+<div id="view-province" class="view">
+
+<!-- STICKY VIEW HEADER -->
+<div class="vsw">
+  <div class="vsw__inner">
+    <div class="vsw__id">
+      <div class="vsw__id__lbl">Analisi 03 di 03 · Stai esplorando</div>
+      <div class="vsw__id__title">Spesa dei comuni per <em>singola provincia</em> · 5 analisi indipendenti</div>
+    </div>
+    <a class="vsw__back" onclick="hideAllViews()"><i data-lucide="arrow-left"></i> Cambia analisi</a>
+  </div>
+</div>
+
+<!-- ANALISI PROVINCIALE -->
+<section class="s-grey border-lime" id="province">
+  <div class="sh">
+    <div class="sh__bar"></div>
+    <div>
+      <div class="sh__tag">Spesa dei comuni per singola provincia</div>
+      <div class="sh__title">Footprint della spesa dei comuni per singola provincia: analisi indipendenti</div>
+    </div>
+  </div>
+
+    <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-bottom:40px;">Qui non si tratta di una semplice ripartizione del totale regionale: ogni provincia è stata analizzata <strong>come se fosse un'economia a sé</strong>. Il modello SAM multiprovinciale è stato interrogato <strong>cinque volte separatamente</strong>, una per ciascuna provincia (Ancona, Pesaro Urbino, Macerata, Ascoli Piceno, Fermo): per ognuna, la spesa comunale aggregata è trattata come un singolo impulso di domanda, e il modello ne stima l'intera catena di effetti, su PIL, valore della produzione, occupazione, redditi, gettito fiscale e moltiplicatori. I totali nei pannelli sommano i risultati delle cinque analisi, ma ciascuna provincia esprime una propria funzione di risposta: i numeri non sono ripartizioni del cumulato regionale, sono <strong>cinque storie distinte</strong> che si sovrappongono. Selezionare una metrica dal menu per confrontarle.</p>
+
+  <div style="display:flex;align-items:flex-start;gap:12px;background:var(--grey-light);border-left:4px solid var(--blu-700);padding:16px 20px;margin-bottom:24px;font-size:13px;color:var(--grey-text);line-height:1.65;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blu-700)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span><strong style="color:var(--blu-700);">5 analisi distinte, una per provincia.</strong> I valori di spesa, PIL, valore della produzione e occupazione in ciascun pannello provengono da cinque interrogazioni separate della SAM multiprovinciale, non da una ripartizione del cumulato regionale presentato nella sezione precedente. Ogni provincia genera la propria catena di impatti indipendentemente dalle altre.</span>
+  </div>
+
+  <div class="prov-tabs">
+    <button class="ptab" data-v="spesa" onclick="switchVal('spesa')">Spesa</button>
+    <button class="ptab active" data-v="pil" onclick="switchVal('pil')">PIL generato</button>
+    <button class="ptab" data-v="produzione" onclick="switchVal('produzione')">Valore della produzione</button>
+    <button class="ptab" data-v="occupazione" onclick="switchVal('occupazione')">Occupazione</button>
+    <button class="ptab" data-v="redditi" onclick="switchVal('redditi')">Redditi</button>
+    <button class="ptab" data-v="gettito" onclick="switchVal('gettito')">Gettito fiscale</button>
+    <button class="ptab" data-v="moltiplicatori" onclick="switchVal('moltiplicatori')">Moltiplicatori</button>
+  </div>
+
+  <!-- Spesa panel -->
+  <div class="prov-panel" id="v-spesa">
+    <div class="pmini-grid-5">
+      <div class="pmini">
+        <div class="pmini__lbl">Ancona</div>
+        <div class="pmini__val">545,24</div>
+        <div class="pmini__unit">mln €,26,0% del totale</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Pesaro Urbino</div>
+        <div class="pmini__val">488,24</div>
+        <div class="pmini__unit">mln €,23,3% del totale</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Macerata</div>
+        <div class="pmini__val">490,35</div>
+        <div class="pmini__unit">mln €,23,4% del totale</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Ascoli Piceno</div>
+        <div class="pmini__val">324,49</div>
+        <div class="pmini__unit">mln €,15,5% del totale</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Fermo</div>
+        <div class="pmini__val">248,76</div>
+        <div class="pmini__unit">mln €,11,9% del totale</div>
+      </div>
+    </div>
+    <div class="hlb">
+      <div class="hlb__bar"></div>
+      <div class="hlb__tx"><strong>Spesa comunale aggregata: 2.097 mln € su tutta la regione.</strong> Le Marche si confermano una <strong>regione policentrica</strong>: Ancona, capoluogo e provincia più popolosa, concentra il 26,0% della spesa regionale, ma Pesaro Urbino (23,3%) e Macerata (23,4%) esprimono quote quasi equivalenti. Ascoli Piceno (15,5%) e Fermo (11,9%) chiudono. Quando si normalizza per popolazione, il quadro si capovolge: la spesa pro capite varia da 1.181 €/ab ad Ancona a 1.614 €/ab ad Ascoli Piceno, e sono <strong>le province meno popolose a spendere mediamente di più per cittadino</strong>, un pattern coerente con la geografia istituzionale italiana, dove i comuni piccoli hanno costi fissi amministrativi più elevati per abitante.</div>
+    </div>
+  </div>
+
+  <!-- PIL panel -->
+  <div class="prov-panel active" id="v-pil">
+    <div class="pmini-grid-5">
+      <div class="pmini">
+        <div class="pmini__lbl">Ancona</div>
+        <div class="pmini__val">865,9</div>
+        <div class="pmini__unit">mln €,26,3% del totale</div>
+        <div class="pmini__note">Dir.: 324,0 · Ind.: 403,4 · Ind.to: 756,5</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Pesaro Urbino</div>
+        <div class="pmini__val">776,1</div>
+        <div class="pmini__unit">mln €,23,6% del totale</div>
+        <div class="pmini__note">Dir.: 257,2 · Ind.: 178,2 · Ind.to: 340,6</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Macerata</div>
+        <div class="pmini__val">759,2</div>
+        <div class="pmini__unit">mln €,23,1% del totale</div>
+        <div class="pmini__note">Dir.: 231,4 · Ind.: 201,7 · Ind.to: 326,0</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Ascoli Piceno</div>
+        <div class="pmini__val">509,5</div>
+        <div class="pmini__unit">mln €,15,5% del totale</div>
+        <div class="pmini__note">Dir.: 153,8 · Ind.: 137,8 · Ind.to: 217,9</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Fermo</div>
+        <div class="pmini__val">379,6</div>
+        <div class="pmini__unit">mln €,11,5% del totale</div>
+        <div class="pmini__note">Dir.: 108,5 · Ind.: 110,9 · Ind.to: 160,3</div>
+      </div>
+    </div>
+    <div class="hlb">
+      <div class="hlb__bar"></div>
+      <div class="hlb__tx"><strong>PIL totale generato: 3.290 mln €.</strong> La distribuzione del PIL fra province <strong>ricalca quasi esattamente quella della spesa</strong>: Ancona 26,3%, Pesaro Urbino 23,6%, Macerata 23,1%, Ascoli Piceno 15,5%, Fermo 11,5%. Un allineamento così stretto tra quote di input e quote di output racconta un'<strong>efficienza allocativa omogenea</strong> tra territori: nessuna provincia "spreca" la propria spesa, nessuna ne ricava un effetto sproporzionato. A livello di moltiplicatore, Ancona e Pesaro Urbino guidano (entrambe a 1,59), Fermo chiude (1,53). Ma il dato saliente è l'assenza di anomalie: la spesa pubblica, in questa regione, lavora con la stessa resa ovunque venga effettuata.</div>
+    </div>
+  </div>
+
+  <!-- Produzione panel -->
+  <div class="prov-panel" id="v-produzione">
+    <div class="pmini-grid-5">
+      <div class="pmini">
+        <div class="pmini__lbl">Ancona</div>
+        <div class="pmini__val">1.705</div>
+        <div class="pmini__unit">mln €,mol. produz. 3,13×</div>
+        <div class="pmini__note">Il più basso tra le province</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Pesaro Urbino</div>
+        <div class="pmini__val">1.582</div>
+        <div class="pmini__unit">mln €,mol. produz. 3,24×</div>
+        <div class="pmini__note">In linea con la media</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Macerata</div>
+        <div class="pmini__val">1.604</div>
+        <div class="pmini__unit">mln €,mol. produz. 3,27×</div>
+        <div class="pmini__note">Sopra la media regionale</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Ascoli Piceno</div>
+        <div class="pmini__val">1.068</div>
+        <div class="pmini__unit">mln €,mol. produz. 3,29×</div>
+        <div class="pmini__note">Sopra la media regionale</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Fermo</div>
+        <div class="pmini__val">830</div>
+        <div class="pmini__unit">mln €,mol. produz. 3,34×</div>
+        <div class="pmini__note">Il più alto tra le province</div>
+      </div>
+    </div>
+    <div class="hlb">
+      <div class="hlb__bar"></div>
+      <div class="hlb__tx"><strong>Valore della produzione totale attivato: 6.790 mln €.</strong> Qui emerge una <strong>geografia produttiva differenziata</strong>: il moltiplicatore di valore della produzione varia da 3,13 (Ancona) a 3,34 (Fermo), e l'ordine è quasi opposto a quello della dimensione provinciale. Fermo, la provincia con la spesa più contenuta, esprime il moltiplicatore di produzione più alto della regione, coerente con il peso dei comparti manifatturieri locali, in particolare calzaturiero e cappelleria, che sono filiere lunghe e moltiplicano a valle ogni euro di spesa pubblica iniziale. Più ci si sposta verso ovest e verso l'entroterra, più la spesa pubblica attiva catene produttive di filiera; più ci si avvicina al capoluogo, più diventa servizio.</div>
+    </div>
+  </div>
+
+  <!-- Occupazione panel -->
+  <div class="prov-panel" id="v-occupazione">
+    <div class="pmini-grid-5">
+      <div class="pmini">
+        <div class="pmini__lbl">Ancona</div>
+        <div class="pmini__val">12.840</div>
+        <div class="pmini__unit">ETP,27,1% del totale</div>
+        <div class="pmini__note">Dir.: 6.403 · Ind.: 2.351 · Ind.ta: 4.085</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Pesaro Urbino</div>
+        <div class="pmini__val">10.920</div>
+        <div class="pmini__unit">ETP,23,1% del totale</div>
+        <div class="pmini__note">Dir.: 5.034 · Ind.: 2.445 · Ind.ta: 3.441</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Macerata</div>
+        <div class="pmini__val">10.805</div>
+        <div class="pmini__unit">ETP,22,8% del totale</div>
+        <div class="pmini__note">Dir.: 4.445 · Ind.: 2.801 · Ind.ta: 3.559</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Ascoli Piceno</div>
+        <div class="pmini__val">7.336</div>
+        <div class="pmini__unit">ETP,15,5% del totale</div>
+        <div class="pmini__note">Dir.: 2.984 · Ind.: 1.913 · Ind.ta: 2.438</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Fermo</div>
+        <div class="pmini__val">5.411</div>
+        <div class="pmini__unit">ETP,11,4% del totale</div>
+        <div class="pmini__note">Dir.: 2.092 · Ind.: 1.529 · Ind.ta: 1.790</div>
+      </div>
+    </div>
+    <div class="hlb">
+      <div class="hlb__bar"></div>
+      <div class="hlb__tx"><strong>Occupazione totale attivata: 47.312 ETP.</strong> L'intensità occupazionale media è di 22,6 ETP per milione di euro di spesa, con Ancona al valore più alto (23,5 ETP/mln) e Fermo al più basso (21,8 ETP/mln). Ancona concentra il 27,1% dei posti di lavoro attivati, in linea con la sua quota di spesa. C'è poi un dato più sottile: il <strong>peso della componente diretta nell'occupazione</strong> varia molto fra province, ad Ancona il 50% dei posti attivati nasce direttamente dalla spesa, a Fermo solo il 39%. Tradotto: ad Ancona la spesa pubblica crea lavoro <em>pubblico</em>; a Fermo crea lavoro <em>privato</em> attraverso le filiere manifatturiere attivate.</div>
+    </div>
+  </div>
+
+  <!-- Redditi panel -->
+  <div class="prov-panel" id="v-redditi">
+    <div class="pmini-grid-5">
+      <div class="pmini">
+        <div class="pmini__lbl">Ancona</div>
+        <div class="pmini__val">839,1</div>
+        <div class="pmini__unit">mln €,mol. redditi 1,54</div>
+        <div class="pmini__note">26,3% del totale regionale</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Pesaro Urbino</div>
+        <div class="pmini__val">751,6</div>
+        <div class="pmini__unit">mln €,mol. redditi 1,54</div>
+        <div class="pmini__note">23,5% del totale regionale</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Macerata</div>
+        <div class="pmini__val">737,1</div>
+        <div class="pmini__unit">mln €,mol. redditi 1,50</div>
+        <div class="pmini__note">23,1% del totale regionale</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Ascoli Piceno</div>
+        <div class="pmini__val">494,9</div>
+        <div class="pmini__unit">mln €,mol. redditi 1,53</div>
+        <div class="pmini__note">15,5% del totale regionale</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Fermo</div>
+        <div class="pmini__val">368,9</div>
+        <div class="pmini__unit">mln €,mol. redditi 1,48</div>
+        <div class="pmini__note">11,6% del totale regionale</div>
+      </div>
+    </div>
+    <div class="hlb">
+      <div class="hlb__bar"></div>
+      <div class="hlb__tx"><strong>Redditi totali generati: 3.192 mln €.</strong> Il moltiplicatore dei redditi varia in una banda stretta, da 1,48 (Fermo) a 1,54 (Ancona e Pesaro Urbino), con una media regionale di 1,52. Le differenze, pur contenute, non sono casuali: dipendono dalla composizione settoriale della spesa e dalla struttura dei redditi da lavoro e da capitale nelle diverse economie provinciali. <strong>Le province con maggior peso di impiego pubblico diretto trasformano più rapidamente la spesa in redditi da lavoro trattenuti localmente</strong>, un risultato coerente con quanto visto sull'occupazione: chi assume direttamente, distribuisce direttamente.</div>
+    </div>
+  </div>
+
+  <!-- Gettito fiscale panel -->
+  <div class="prov-panel" id="v-gettito">
+    <div class="pmini-grid-5">
+      <div class="pmini">
+        <div class="pmini__lbl">Ancona</div>
+        <div class="pmini__val">231,2</div>
+        <div class="pmini__unit">mln €,mol. fiscale 0,42</div>
+        <div class="pmini__note">25,9% del gettito regionale</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Pesaro Urbino</div>
+        <div class="pmini__val">208,3</div>
+        <div class="pmini__unit">mln €,mol. fiscale 0,43</div>
+        <div class="pmini__note">23,3% del gettito regionale</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Macerata</div>
+        <div class="pmini__val">207,1</div>
+        <div class="pmini__unit">mln €,mol. fiscale 0,42</div>
+        <div class="pmini__note">23,2% del gettito regionale</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Ascoli Piceno</div>
+        <div class="pmini__val">140,6</div>
+        <div class="pmini__unit">mln €,mol. fiscale 0,43</div>
+        <div class="pmini__note">15,8% del gettito regionale</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Fermo</div>
+        <div class="pmini__val">105,1</div>
+        <div class="pmini__unit">mln €,mol. fiscale 0,42</div>
+        <div class="pmini__note">11,8% del gettito regionale</div>
+      </div>
+    </div>
+    <div class="hlb">
+      <div class="hlb__bar"></div>
+      <div class="hlb__tx"><strong>Gettito fiscale totale indotto: 892 mln €.</strong> Il gettito recuperato ammonta al 42,6% della spesa iniziale. Il dato sorprendente è la <strong>stabilità</strong>: il moltiplicatore fiscale è praticamente identico in tutte e cinque le province (da 0,422 a 0,433). Significa che il sistema fiscale italiano applicato all'attività economica attivata ha un'<strong>efficienza di recupero stabile e indipendente dalla struttura economica provinciale</strong>: la spesa comunale aggregata si autofinanzia per il 42,6%, con valori provinciali compresi tra 0,422 e 0,433. È una buona notizia per la sostenibilità fiscale della spesa pubblica locale, perché rende il rapporto costo/beneficio fiscale prevedibile e indipendente dalle scelte allocative territoriali.</div>
+    </div>
+  </div>
+
+  <!-- Moltiplicatori panel -->
+  <div class="prov-panel" id="v-moltiplicatori">
+    <div class="pmini-grid-5">
+      <div class="pmini">
+        <div class="pmini__lbl">Ancona</div>
+        <div class="pmini__val">1,59</div>
+        <div class="pmini__unit">mol. PIL,tra i più alti</div>
+        <div class="pmini__note">Prod.: 3,13× · OCC: 23,5 ETP/mln</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Pesaro Urbino</div>
+        <div class="pmini__val">1,59</div>
+        <div class="pmini__unit">mol. PIL,tra i più alti</div>
+        <div class="pmini__note">Prod.: 3,24× · OCC: 22,4 ETP/mln</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Macerata</div>
+        <div class="pmini__val">1,55</div>
+        <div class="pmini__unit">mol. PIL,in linea con la media</div>
+        <div class="pmini__note">Prod.: 3,27× · OCC: 22,0 ETP/mln</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Ascoli Piceno</div>
+        <div class="pmini__val">1,57</div>
+        <div class="pmini__unit">mol. PIL,in linea con la media</div>
+        <div class="pmini__note">Prod.: 3,29× · OCC: 22,6 ETP/mln</div>
+      </div>
+      <div class="pmini">
+        <div class="pmini__lbl">Fermo</div>
+        <div class="pmini__val">1,53</div>
+        <div class="pmini__unit">mol. PIL,il più contenuto</div>
+        <div class="pmini__note">Prod.: 3,34× · OCC: 21,8 ETP/mln</div>
+      </div>
+    </div>
+    <div class="hlb">
+      <div class="hlb__bar"></div>
+      <div class="hlb__tx"><strong>Una relazione inversa che rivela due modelli economici opposti.</strong> Ancona ha il moltiplicatore di PIL più alto (1,59) ma quello di valore della produzione più basso (3,13): la sua spesa <strong>genera più valore aggiunto per unità di produzione attivata</strong>, coerente con un'economia provinciale dove pesano servizi e pubblica amministrazione ad elevato rapporto VA/produzione. Fermo è esattamente all'opposto: moltiplicatore di produzione più alto della regione (3,34), ma moltiplicatore PIL più contenuto (1,53), la sua spesa attiva <strong>più catene manifatturiere</strong>, ma con un rapporto VA/produzione strutturalmente inferiore. Due modelli economici che convivono in una stessa regione, riflesso fedele di due strutture produttive complementari.</div>
+    </div>
+  </div>
+
+  <h3 class="stitle" id="interprovinciali">Effetti interprovinciali: dove si articolano gli impatti della spesa di ciascuna provincia</h3>
+  <div style="margin-bottom:32px;display:grid;grid-template-columns:1fr;gap:32px;">
+    <div class="cb">
+      <div class="cb__num">Grafico 08</div>
+      <div class="cb__title">Destinazione geografica degli impatti diretti, indiretti e indotti per provincia di origine</div>
+      <div class="cb__desc">Per ciascuna provincia marchigiana considerata come "origine" della spesa, il grafico scompone PIL, valore della produzione e occupazione in tre destinazioni: la stessa provincia (effetto interno), le altre province marchigiane (spillover interprovinciale) e la dispersione extraregionale. Gli effetti diretti si concentrano esclusivamente nella provincia di spesa, mentre quelli indiretti e indotti si propagano lungo filiere che attraversano confini provinciali e regionali.</div>
+      <div class="sp32"></div>
+      <div class="fl" style="padding:24px 16px;align-items:stretch;justify-content:flex-start;overflow-x:auto;">
+        <div style="width:1100px;min-width:1100px;margin:0 auto;">
+          <iframe src='https://flo.uri.sh/visualisation/28662361/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:1050px;height:500px;display:block;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+        </div>
+      </div>
+      <div class="cb__fonte" style="margin-bottom:12px;">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+    <div class="cb" style="grid-column:1 / -1;">
+      <div class="tx" style="padding-top:8px;">
+        <h3>Come leggere i flussi interprovinciali</h3>
+        <p>La spesa di una provincia <strong>non resta nei suoi confini</strong>. Una parte si attiva nelle altre quattro province marchigiane, una parte fuoriesce dalla regione. Capire come si distribuiscono questi flussi è essenziale per cogliere la natura sistemica della spesa pubblica locale: nessuna provincia è un'isola, e nessun comune può programmare la propria spesa ignorando ciò che accade a valle.</p>
+        <p>Il modello distingue due tipi di propagazione. Gli <strong>effetti diretti</strong> restano nella provincia in cui la spesa è stata effettuata: sono i settori che si attivano immediatamente, pubblica amministrazione, costruzioni, servizi professionali, macchinari, ed è qui che si "vede" l'investimento pubblico. Gli <strong>effetti indiretti e indotti</strong>, invece, si distribuiscono lungo filiere che attraversano i confini provinciali e regionali: fornitori in altre province marchigiane, consumi dei lavoratori che risiedono altrove, input provenienti soprattutto da Lazio, Emilia-Romagna, Umbria e Abruzzo.</p>
+        <p>Il risultato finale racconta una <strong>regione a geometrie variabili</strong>: Ancona trattiene il 55,7% del PIL sul proprio territorio, mentre Fermo si ferma al 39,4%. Sedici punti percentuali di differenza che riflettono strutture produttive con diversi gradi di autosufficienza, Ancona ha più imprese, più servizi, più filiere "in casa"; Fermo deve appoggiarsi a fornitori esterni più frequentemente. Complessivamente, il <strong>7,5% del PIL totale (248 mln €) viene attivato da province marchigiane in altre province marchigiane</strong>: un valore contenuto, che indica filiere regionali con un'integrazione modesta tra territori. La spesa pubblica fluisce, ma fluisce poco trasversalmente, più verso fuori che dentro la regione.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="stitle" id="spillover-mappe">Risultati geografici delle analisi singole: spillover per provincia e per metrica</h3>
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-bottom:16px;">Le tre mappe che seguono raccontano <strong>dove finisce davvero la spesa di ciascuna provincia, una volta uscita dal proprio territorio</strong>. Ogni mappa corrisponde a una metrica diversa (PIL, valore della produzione, occupazione) ed è navigabile per provincia di origine tramite il selettore interno. <strong>L'impatto sulla provincia di provenienza è posto a zero</strong>: una scelta metodologica necessaria per isolare correttamente lo spillover esterno, evitando che l'effetto interno della provincia di origine, di gran lunga il più grande, oscuri visivamente i flussi verso gli altri territori. Quello che la mappa mostra è dunque l'impatto netto che la spesa di ciascuna provincia attiva <em>al di fuori</em> dei propri confini.</p>
+  <div style="display:flex;align-items:flex-start;gap:12px;background:var(--grey-light);border-left:4px solid var(--blu-700);padding:16px 20px;margin-bottom:32px;font-size:13px;color:var(--grey-text);line-height:1.65;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blu-700)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span><strong style="color:var(--blu-700);">Come leggere le mappe.</strong> Selezionare una provincia nel menu della mappa: il territorio evidenziato mostra dove si attivano gli impatti di quella singola analisi provinciale. Il valore della provincia di origine è sempre zero: non perché non generi impatti al proprio interno, ma perché quella componente è già documentata nei pannelli precedenti e viene soppressa qui per rendere leggibili gli effetti sugli altri territori.</span>
+  </div>
+  <div class="c3">
+    <div class="cb">
+      <div class="cb__num">Grafico 09</div>
+      <div class="cb__title">Spillover sul PIL</div>
+      <div class="cb__desc">Risultati sul PIL delle cinque analisi provinciali distinte. Selezionare la provincia di origine nel menu interno: la mappa mostra la distribuzione geografica del PIL attivato al di fuori di quella provincia, con l'impatto sulla provincia di provenienza posto a zero per rendere leggibile lo spillover verso gli altri territori italiani.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+      <iframe src='https://flo.uri.sh/visualisation/28662350/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:600px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+    <div class="cb">
+      <div class="cb__num">Grafico 10</div>
+      <div class="cb__title">Spillover sul valore della produzione</div>
+      <div class="cb__desc">Risultati sul valore della produzione delle cinque analisi provinciali distinte. Selezionare la provincia di origine nel menu interno: la mappa visualizza la rete di subfornitura interprovinciale e interregionale attivata al di fuori della provincia selezionata, con il valore della provincia di provenienza posto a zero.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28662349/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:600px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+    <div class="cb">
+      <div class="cb__num">Grafico 11</div>
+      <div class="cb__title">Spillover sull'occupazione</div>
+      <div class="cb__desc">Risultati sull'occupazione delle cinque analisi provinciali distinte. Selezionare la provincia di origine nel menu interno: la mappa mostra gli ETP attivati al di fuori della provincia selezionata, con il valore di origine posto a zero. Tra le tre metriche è quella con la ritenzione territoriale più alta (63,0% resta nelle Marche): il lavoro si localizza dove si svolge l'attività produttiva.</div>
+      <div class="sp32"></div>
+      <div class="fl">
+        <iframe src='https://flo.uri.sh/visualisation/28662348/embed' title='Interactive or visual content' class='flourish-embed-iframe' frameborder='0' scrolling='no' style='width:100%;height:600px;' sandbox='allow-same-origin allow-forms allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'></iframe>
+      </div>
+      <div class="cb__fonte">Fonte: elaborazione OpenEconomics su dati ISTAT 2024.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== SEZIONE 3 - TAKEAWAYS PROVINCE ===== -->
+<section class="s-grey" id="province-takeaways">
+  <div class="sh">
+    <div class="sh__bar"></div>
+    <div>
+      <div class="sh__tag">Sintesi analitica · Spesa per provincia</div>
+      <div class="sh__title">Risultati principali</div>
+    </div>
+  </div>
+
+  <p style="font-size:15px;color:var(--grey-text);max-width:none;width:100%;line-height:1.8;margin-bottom:40px;">Le cinque analisi provinciali raccontano una <strong>regione coerente ma plurale</strong>: nessuna anomalia allocativa, ma forti differenze nei modelli produttivi sottostanti. Tre numeri sintetizzano l'identità del footprint provinciale, il livello di integrazione tra province, l'allineamento tra spesa e impatto, e la diversa specializzazione tra economie di servizio ed economie manifatturiere.</p>
+
+  <div class="c3">
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="map"></i></div>
+      <div class="ic__lbl">Spillover interprovinciale</div>
+      <div class="ic__val">7,5%</div>
+      <div class="ic__title">PIL che circola tra province marchigiane</div>
+      <div class="ic__desc">Solo 248 mln € su 3.290 vengono attivati da una provincia in un'altra provincia marchigiana: una quota <strong>contenuta</strong>, che indica filiere regionali con un'integrazione modesta tra territori. Le province parlano più con il resto d'Italia che tra di loro. Ancona è la più "chiusa", trattiene il 55,7% del proprio impatto sul territorio, Fermo la più aperta (39,4%). È il segno di gradi diversi di autosufficienza produttiva: dove ci sono più filiere locali (Ancona), la spesa resta in casa; dove l'economia si appoggia di più all'esterno (Fermo), gli effetti scappano oltre confine.</div>
+    </div>
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="landmark"></i></div>
+      <div class="ic__lbl">Distribuzione equilibrata</div>
+      <div class="ic__val">26,3%</div>
+      <div class="ic__title">Quota PIL della Provincia di Ancona</div>
+      <div class="ic__desc">Ancona genera il 26,3% del PIL regionale comunale, in <strong>stretta corrispondenza</strong> con la sua quota di spesa (26,0%). Le prime tre province (Ancona, Pesaro Urbino, Macerata) si collocano in una fascia 23–26%, Ascoli Piceno e Fermo attorno al 15% e al 12%: <strong>la distribuzione segue il peso demografico, senza anomalie allocative</strong>. Nessuna provincia "ruba" impatto alle altre, nessuna spreca la propria spesa. Un risultato non scontato, che attesta una distribuzione efficiente della spesa pubblica locale nel territorio marchigiano.</div>
+    </div>
+    <div class="ic">
+      <div class="ic__icon"><i data-lucide="trending-up"></i></div>
+      <div class="ic__lbl">Eterogeneità produttiva</div>
+      <div class="ic__val">3,13 – 3,34×</div>
+      <div class="ic__title">Range del moltiplicatore di produzione</div>
+      <div class="ic__desc">Ai due estremi della regione, due modelli economici opposti. Ancona ha il moltiplicatore di PIL più alto (1,59) ma quello di produzione più basso (3,13): <strong>più valore aggiunto per unità di produzione</strong>, coerente con un peso elevato di servizi e amministrazione. Fermo è all'opposto (PIL 1,53, produzione 3,34): <strong>più catene manifatturiere attivate</strong>, ma con minore VA unitario. La spesa pubblica, in altre parole, si trasforma diversamente in valore a seconda del tessuto economico che attiva, servizi ad Ancona, manifattura a Fermo.</div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /view-province -->
+
+
+<!-- METODOLOGIA -->
+<section class="s-dark" id="metodologia">
+  <div class="sh">
+    <div class="sh__bar"></div>
+    <div>
+      <div class="sh__tag">Nota metodologica</div>
+      <div class="sh__title">Approccio analitico e fonti</div>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step__n">01</div>
+      <div>
+        <h4>Definizione del perimetro e raccolta dati di spesa</h4>
+        <p>Il perimetro dell'analisi include tutti i comuni della Regione Marche, disaggregati per le cinque province (Ancona, Pesaro Urbino, Macerata, Ascoli Piceno, Fermo). I dati di spesa comunale per voce ATECO sono stati raccolti e strutturati secondo la classificazione ISTAT delle attività economiche. Anno di riferimento: 2024. Fonte primaria: Ministero dell'Interno, rendiconti di bilancio comunali.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__n">02</div>
+      <div>
+        <h4>SAM multiprovinciale italiana a 63 settori</h4>
+        <p>L'analisi di impatto economico è condotta mediante una <strong>SAM (Social Accounting Matrix) multiprovinciale italiana a 63 settori</strong>, che codifica i flussi economici tra settori produttivi, istituzioni, fattori di produzione e province per l'intero sistema produttivo nazionale. La struttura multiprovinciale consente di interrogarla separatamente per ciascuna provincia di origine della spesa, stimando gli effetti moltiplicativi su produzione, valore aggiunto, occupazione e redditi e distinguendo tra impatti interni alla provincia, spillover verso le altre province marchigiane e dispersione extraregionale. Anno di riferimento del modello: 2022.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__n">03</div>
+      <div>
+        <h4>Stima degli impatti diretti, indiretti e indotti</h4>
+        <p>Gli <strong>impatti diretti</strong> corrispondono alla produzione, al PIL e all'occupazione generati nei settori in cui la spesa viene effettuata. Gli <strong>impatti indiretti</strong> misurano gli effetti a cascata sulle filiere di subfornitura (effetto backward linkage). Gli <strong>impatti indotti</strong> catturano i consumi addizionali generati dai redditi da lavoro attivati nelle prime due fasi. Tutti e tre i componenti sono aggregati per ottenere l'impatto totale.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__n">04</div>
+      <div>
+        <h4>Stima del gettito fiscale e analisi di autofinanziamento</h4>
+        <p>Il gettito fiscale indotto è stimato applicando le aliquote medie effettive all'attività economica attivata. La stima è condotta in termini di gettito erariale e contributivo, al netto delle aliquote agevolate. Il rapporto gettito/spesa indica la quota della spesa pubblica iniziale che si "autofinanzia" attraverso le entrate fiscali generate.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__n">05</div>
+      <div>
+        <h4>Disaggregazione geografica: impatti interni, spillover e dispersione extraregionale</h4>
+        <p>L'analisi distingue tre destinazioni geografiche per gli impatti generati dalla spesa di ciascuna provincia: (i) la <strong>provincia di origine</strong>, dove si concentrano gli effetti diretti e una parte di quelli indiretti e indotti; (ii) le <strong>altre province marchigiane</strong>, raggiunte dallo <em>spillover interprovinciale</em> attraverso le filiere regionali; (iii) le <strong>regioni esterne alle Marche</strong> (principalmente Lazio, Emilia-Romagna, Umbria, Abruzzo, Toscana), destinatarie della <em>dispersione extraregionale</em> lungo le catene di subfornitura nazionali. La ricostruzione dei flussi si fonda sulla struttura della SAM multiprovinciale, che codifica le interdipendenze settoriali e geografiche del sistema produttivo italiano a 63 settori.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__n">06</div>
+      <div>
+        <h4>Limiti dell'analisi e avvertenze interpretative</h4>
+        <p>I risultati vanno interpretati come stime puntuali basate su coefficienti tecnici medi. Il modello assume coefficienti di produzione costanti nel breve periodo e non incorpora effetti di prezzo o capacità produttiva. Le stime di occupazione sono espresse in equivalenti a tempo pieno (ETP) e non corrispondono necessariamente a posizioni lavorative fisiche.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOADS -->
+<section class="download-section" id="download">
+  <div>
+    <div class="download-section__tag">Download</div>
+    <h2 class="download-section__title">Scarica l'analisi per Marche</h2>
+    <p class="download-section__text">Sono disponibili una versione HTML in file unico, pensata per la consultazione offline degli asset locali, e un PDF riassuntivo con i principali risultati dell'analisi.</p>
+  </div>
+  <div class="download-section__actions">
+    <a class="dl-btn" href="marche_embedded.html" download>
+      <svg class="dl-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>Scarica HTML embedded</span>
+    </a>
+    <a class="dl-btn" href="../../pdf/Footprint_Marche_2024.pdf" download>
+      <svg class="dl-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>Scarica PDF riassuntivo</span>
+    </a>
+  </div>
+</section>
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer__top">
+    <div class="footer__left">
+      <div class="footer__brand-line">
+        <a href="../../home.html" class="footer__logo-link" aria-label="OpenEconomics Studies">
+          <img src="../../icons/OpenEconomics-LOGO-WHITE.png" alt="OpenEconomics" class="footer__logo-img">
+        </a>
+        <span class="footer__badge">Studies</span>
+      </div>
+      <p class="footer__tagline">Soluzioni integrate per l'analisi d'impatto socioeconomico e la gestione di finanziamenti pubblici, sostenendo imprese e PA nella mitigazione dei rischi finanziari, sociali e climatici.</p>
+    </div>
+    <div class="footer__right">
+      <div class="footer__condizioni-label">Condizioni d'uso</div>
+      <p class="footer__condizioni-text">Il presente sito web e tutte le informazioni in esso contenute possono essere divulgati, a condizione che la distribuzione avvenga citando OpenEconomics come fonte. Le informazioni sono fornite a scopo puramente informativo e non implicano alcuna garanzia o impegno da parte di OpenEconomics. Le analisi economiche contenute nel sito web sono state elaborate sulla base di fonti pubbliche autorevoli e fornitori di dati specialistici, con l'obiettivo di offrire una valutazione professionale, oggettiva e prudenziale in linea con le prassi metodologiche di comparto. Al sito web e ai suoi contenuti si applicano il copyright e le norme in materia di protezione dei dati personali.</p>
+    </div>
+  </div>
+  <div class="footer__bottom">
+    <a href="https://www.openeconomics.eu" target="_blank" rel="noopener" class="footer__bottom-left">www.openeconomics.eu ↗</a>
+    <div class="footer__bottom-right">Copyright &copy; OpenEconomics SRL 2026</div>
+  </div>
+</footer>
+
+<script>
+// SCROLL TO ID
+function navTo(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+
+function setNavVisible(visible){
+  document.body.classList.toggle('nav-hidden', !visible);
+}
+
+// VIEW CHOOSER: mostra una vista alla volta, evidenzia link nav attivo
+var _initializedViews={};
+function showView(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const target=document.getElementById('view-'+view);
+  if(target){
+    target.classList.add('active');
+    document.querySelectorAll('.nav__links a[data-view]').forEach(a=>a.classList.remove('nav-active'));
+    const homeLink=document.getElementById('nav-home');
+    if(homeLink) homeLink.classList.remove('nav-active');
+    const navLink=document.querySelector('.nav__links a[data-view="'+view+'"]');
+    if(navLink) navLink.classList.add('nav-active');
+    document.querySelectorAll('.chooser__card').forEach(c=>c.classList.remove('active'));
+    const card=document.querySelector('.chooser__card[data-view="'+view+'"]');
+    if(card) card.classList.add('active');
+    if(!_initializedViews[view]){
+      _initializedViews[view]=true;
+      setTimeout(function(){
+        target.querySelectorAll('iframe').forEach(function(f){
+          var s=f.src; f.src='about:blank'; setTimeout(function(){ f.src=s; },50);
+        });
+      },100);
+    }
+    setTimeout(()=>{
+      const firstSec=target.querySelector('section');
+      // 62px nav + 44px vsw sticky bar
+      const top=(firstSec||target).getBoundingClientRect().top + window.scrollY - 106;
+      window.scrollTo({top, behavior:'smooth'});
+    }, 30);
+    if(window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+  }
+}
+function hideAllViews(){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav__links a[data-view]').forEach(a=>a.classList.remove('nav-active'));
+  document.querySelectorAll('.chooser__card').forEach(c=>c.classList.remove('active'));
+  const homeLink=document.getElementById('nav-home');
+  if(homeLink) homeLink.classList.add('nav-active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.addEventListener('DOMContentLoaded',function(){
+  const homeLink=document.getElementById('nav-home');
+  if(homeLink) homeLink.classList.add('nav-active');
+});
+
+// PROVINCE TABS
+function switchVal(v){
+  document.querySelectorAll('.ptab[data-v]').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.prov-panel[id^="v-"]').forEach(panel=>panel.classList.remove('active'));
+  const btn=document.querySelector(`.ptab[data-v="${v}"]`);
+  if(btn)btn.classList.add('active');
+  const panel=document.getElementById('v-'+v);
+  if(panel)panel.classList.add('active');
+}
+
+// COMPONENTI COLLASSABILI (Diretti / Indiretti / Indotti)
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('.componente').forEach(card=>{
+    card.addEventListener('click', function(){
+      this.classList.toggle('is-open');
+      const tg = this.querySelector('.componente__toggle');
+      if(tg) tg.textContent = this.classList.contains('is-open') ? 'Mostra meno' : 'Leggi tutto';
+    });
+  });
+});
+
+// VAI ALLA PROSSIMA ANALISI
+function goToNextAnalysis(next){
+  showView(next);
+}
+</script>
+</body>
+</html>
