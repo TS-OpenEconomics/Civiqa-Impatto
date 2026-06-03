@@ -122,6 +122,26 @@ function levelFromScore(score) {
   return "non";
 }
 
+// Scala di rating usata dalla UI (11 livelli, dal peggiore al migliore)
+const RATING_SCALE = ["D", "CC", "C", "BB", "B", "BBB", "A", "A+", "AA", "AA+", "AAA"];
+
+export function ratingFromScore(score) {
+  const s = Number(score) || 0;
+  const idx = Math.max(0, Math.min(RATING_SCALE.length - 1, Math.round((s / 100) * (RATING_SCALE.length - 1))));
+  return RATING_SCALE[idx];
+}
+
+// Conta gli item per livello di allineamento (allineato / parziale / non)
+function countLivelli(items) {
+  let aligned = 0, partial = 0, non_aligned = 0;
+  (items || []).forEach((it) => {
+    if (it.livello === "allineato") aligned += 1;
+    else if (it.livello === "parziale") partial += 1;
+    else non_aligned += 1;
+  });
+  return { aligned, partial, non_aligned };
+}
+
 // ── Criteria items ──────────────────────────────────────────────────────────
 
 function buildEItems(answers, sectorType) {
@@ -219,6 +239,14 @@ export function computeEsg(answers, settore, eiaResults) {
   const benchmark = BENCHMARK[sectorType] ?? BENCHMARK.generic;
   const sdgAligned = computeSDGAlignment(answers, sectorType);
 
+  const itemsE = buildEItems(answers, sectorType);
+  const itemsS = buildSItems(answers, sectorType, fteEia);
+  const itemsG = buildGItems(answers);
+
+  const cE = countLivelli(itemsE);
+  const cS = countLivelli(itemsS);
+  const cG = countLivelli(itemsG);
+
   return {
     globale,
     E: { score: scoreE, label: scoreLabel(scoreE) },
@@ -227,9 +255,27 @@ export function computeEsg(answers, settore, eiaResults) {
     weights,
     sdgAligned,
     benchmark,
-    itemsE: buildEItems(answers, sectorType),
-    itemsS: buildSItems(answers, sectorType, fteEia),
-    itemsG: buildGItems(answers),
+    itemsE,
+    itemsS,
+    itemsG,
     meta: { settore, sectorType },
+
+    // ── Campi vista allineati alla UI (EsgResults, ProjectDetail) ──────────────
+    score: globale,
+    rating: ratingFromScore(globale),
+    environmental_score: scoreE,
+    environmental_rating: ratingFromScore(scoreE),
+    social_score: scoreS,
+    social_rating: ratingFromScore(scoreS),
+    governance_score: scoreG,
+    governance_rating: ratingFromScore(scoreG),
+    aligned_count: cE.aligned + cS.aligned + cG.aligned,
+    partial_count: cE.partial + cS.partial + cG.partial,
+    non_aligned_count: cE.non_aligned + cS.non_aligned + cG.non_aligned,
+    pillars: {
+      environmental: { score: scoreE, rating: ratingFromScore(scoreE), ...cE },
+      social: { score: scoreS, rating: ratingFromScore(scoreS), ...cS },
+      governance: { score: scoreG, rating: ratingFromScore(scoreG), ...cG },
+    },
   };
 }

@@ -77,6 +77,10 @@ export function computeEcba(project, eiaResults, setup) {
     bc,
     tir,
     payback: paybackRow?.anno ?? null,
+    // Alias allineati ai nomi attesi dalla UI (EcbaResults, ProjectDetail)
+    bcr: bc,
+    irr: tir,
+    payback_period: paybackRow?.anno ?? null,
     benefici_totali: Math.round(pvBenefici),
     costi_totali: Math.round(pvCosti),
     annual_benefits: Math.round(annualBenefits),
