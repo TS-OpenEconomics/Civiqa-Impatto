@@ -20,7 +20,7 @@ export function ItalyMap({ data, tone = "violet", onRegionClick, selectedRegion,
 
   useEffect(() => {
     if (cachedGeojson) return;
-    fetch("/nuts2_italy.geojson").then(r => r.json()).then(gj => { cachedGeojson = gj; setGeojson(gj); });
+    fetch(`${import.meta.env.BASE_URL}nuts2_italy.geojson`).then(r => r.json()).then(gj => { cachedGeojson = gj; setGeojson(gj); });
   }, []);
 
   useEffect(() => {

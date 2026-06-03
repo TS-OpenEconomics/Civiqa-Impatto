@@ -13,7 +13,7 @@ export function ProvinceMap({ nuts2Code, data, minHeight = 220, className = "" }
 
   useEffect(() => {
     if (cachedNuts3) return;
-    fetch("/nuts3_italy.geojson").then(r => r.json()).then(gj => { cachedNuts3 = gj; setGeojson(gj); });
+    fetch(`${import.meta.env.BASE_URL}nuts3_italy.geojson`).then(r => r.json()).then(gj => { cachedNuts3 = gj; setGeojson(gj); });
   }, []);
 
   useEffect(() => {
