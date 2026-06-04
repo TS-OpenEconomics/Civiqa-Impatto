@@ -1,0 +1,428 @@
+html.hl-home-locked,
+body.hl-home-locked {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Entrance animation ─────────────────────────────────── */
+@keyframes hl-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Root shell ─────────────────────────────────────────── */
+.hl-root {
+  position: fixed;
+  inset: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: oklch(98.2% 0.005 290);
+  font-family: var(--font-family-body);
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.hl-header {
+  height: 80px;
+  background-color: oklch(99.5% 0.003 290);
+  border-bottom: 1px solid oklch(91% 0.012 290);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-l);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.hl-logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--type-body-l-size, 24px);
+  font-family: var(--font-family-1);
+  font-weight: var(--type-weight-bold, 700);
+  color: var(--color-text-primary);
+  letter-spacing: -0.025em;
+  white-space: nowrap;
+  user-select: none;
+  text-decoration: none;
+}
+
+.hl-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.hl-stemma { height: 26px; width: auto; opacity: 0.85; }
+
+.hl-ente {
+  font-family: var(--font-family-1);
+  font-size: var(--type-body-xs-size, 12px);
+  font-weight: 500;
+  color: var(--color-text-primary-lighter);
+  white-space: nowrap;
+}
+
+.hl-avatar {
+  width: 32px;
+  height: 32px;
+  background-color: var(--color-background-primary);
+  color: var(--color-text-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family-1);
+  font-size: var(--type-body-xs-size, 12px);
+  font-weight: var(--type-weight-bold, 700);
+  border-radius: var(--radius-circle);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+/* ── Accent bar (replica AppShell) ─────────────────────── */
+.hl-accent {
+  height: 4px;
+  background-color: var(--color-background-accent);
+  flex-shrink: 0;
+}
+
+/* ── Separatore e username nel header ───────────────────── */
+.hl-separator {
+  color: var(--color-border-secondary);
+  font-weight: 300;
+  font-size: var(--type-body-l-size, 18px);
+  line-height: 1;
+  user-select: none;
+}
+
+.hl-username {
+  font-family: var(--font-family-1);
+  font-size: var(--type-body-s-size, 14px);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+/* ── Main ───────────────────────────────────────────────── */
+.hl-main {
+  flex: 1;
+  min-height: 0;
+  max-width: 1120px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 88px var(--spacing-l);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Phase grid ─────────────────────────────────────────── */
+.hl-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+/* ── Base tile ──────────────────────────────────────────── */
+.hl-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 0;
+  padding: 28px 24px;
+  border-radius: var(--radius-smooth);
+  overflow: hidden;
+  color: var(--color-text-inverse);
+  animation: hl-enter 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+  box-shadow: 0 12px 24px oklch(20% 0.03 285 / 0.12);
+  transform-origin: center bottom;
+  transition:
+    transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hl-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, oklch(100% 0 0 / 0.08) 0%, transparent 45%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hl-tile:hover,
+.hl-tile:focus-within {
+  transform: translateY(-4px) scale(1.015);
+  box-shadow: 0 20px 40px oklch(20% 0.03 285 / 0.18);
+  filter: saturate(1.04) brightness(1.03);
+}
+
+.hl-tile:focus-within {
+  box-shadow:
+    0 0 0 3px var(--color-border-focus),
+    0 20px 40px oklch(20% 0.03 285 / 0.18);
+}
+
+.hl-tile:hover::after,
+.hl-tile:focus-within::after {
+  opacity: 1;
+}
+
+/* Gradient per fase */
+.hl-tile--prog  { background: linear-gradient(150deg, #1e1b4b 0%, #3730a3 100%); }
+.hl-tile--prog2 { background: linear-gradient(150deg, #4c1d95 0%, #7c3aed 100%); }
+.hl-tile--exec  { background: linear-gradient(150deg, #6d28d9 0%, #a78bfa 100%); }
+
+/* Tile cliccabili — overlay link pattern */
+.hl-tile-link {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-smooth);
+}
+
+.hl-tile-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(110, 26, 255, 0.55);
+}
+
+/* ── Numero watermark (absolute, non occupa spazio) ─────── */
+.hl-tile-num {
+  position: absolute;
+  top: 18px;
+  right: 16px;
+  font-family: var(--font-family-mono);
+  font-size: 88px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -5px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.12;
+  user-select: none;
+  pointer-events: none;
+  color: var(--color-text-inverse);
+}
+
+/* ── Contenuto testuale tile ────────────────────────────── */
+.hl-tile-top {
+  position: relative;
+  z-index: 1;
+  padding-top: 20px;
+}
+
+.hl-tile-phase {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 8px;
+}
+
+.hl-tile-title {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.4px;
+  margin-bottom: 12px;
+  white-space: nowrap;
+}
+
+.hl-tile-desc {
+  font-size: 13.5px;
+  line-height: 1.6;
+  opacity: 0.82;
+}
+
+/* ── Moduli ─────────────────────────────────────────────── */
+.hl-tile-modules {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  position: relative;
+  z-index: 1;
+}
+
+.hl-module {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-smooth);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-inverse);
+  text-decoration: none;
+  transition: background-color 140ms ease;
+}
+
+.hl-module--active {
+  background-color: oklch(100% 0 0 / 0.18);
+  cursor: pointer;
+}
+
+.hl-module--active:hover {
+  background-color: oklch(100% 0 0 / 0.26);
+}
+
+.hl-module--active:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(110, 26, 255, 0.55);
+}
+
+.hl-module--soon {
+  background-color: oklch(100% 0 0 / 0.06);
+  opacity: 0.5;
+  cursor: default;
+}
+
+.hl-module--preview {
+  cursor: pointer;
+}
+
+.hl-module--preview:hover {
+  background-color: oklch(100% 0 0 / 0.1);
+  opacity: 0.72;
+}
+
+.hl-module--preview:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(110, 26, 255, 0.55);
+  opacity: 0.72;
+}
+
+.hl-module-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hl-module-soon-label {
+  font-size: 10px;
+  font-weight: 500;
+  font-style: italic;
+  white-space: nowrap;
+  opacity: 0.8;
+}
+
+/* ── Scenari strip ──────────────────────────────────────── */
+.hl-scenari {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px var(--spacing-l);
+  border: 1px solid oklch(87% 0.015 290);
+  border-radius: var(--radius-smooth);
+  text-decoration: none;
+  color: inherit;
+  background-color: transparent;
+  transition: background-color 140ms ease, border-color 140ms ease;
+  animation: hl-enter 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+.hl-scenari:hover {
+  background-color: oklch(96.5% 0.006 290);
+  border-color: var(--color-border-primary);
+}
+
+.hl-scenari:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(110, 26, 255, 0.55);
+}
+
+.hl-scenari-left {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-m);
+}
+
+.hl-scenari-eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: oklch(60% 0.01 290);
+  white-space: nowrap;
+}
+
+.hl-scenari-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: oklch(14% 0.01 290);
+  letter-spacing: -0.015em;
+}
+
+.hl-scenari-desc {
+  font-size: 12px;
+  color: oklch(46% 0.012 290);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hl-scenari-arrow {
+  color: oklch(55% 0.01 290);
+  flex-shrink: 0;
+  margin-left: var(--spacing-l);
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hl-scenari:hover .hl-scenari-arrow { transform: translate(2px, -2px); }
+
+/* ── Reduced motion ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .hl-tile,
+  .hl-scenari { animation: none; opacity: 1; transform: none; }
+  .hl-tile { transition: none; }
+  .hl-tile:hover,
+  .hl-tile:focus-within {
+    transform: none;
+    filter: none;
+    box-shadow: 0 12px 24px oklch(20% 0.03 285 / 0.12);
+  }
+  .hl-tile:focus-within {
+    box-shadow:
+      0 0 0 3px var(--color-border-focus),
+      0 12px 24px oklch(20% 0.03 285 / 0.12);
+  }
+  .hl-tile::after { transition: none; }
+  .hl-module { transition: none; }
+  .hl-scenari { transition: none; }
+  .hl-scenari-arrow { transition: none; }
+}
+
+/* ── Responsive — tablet ────────────────────────────────── */
+@media (max-width: 900px) {
+  .hl-main { padding: 40px var(--spacing-m); }
+  .hl-grid { grid-template-columns: 1fr; }
+  .hl-tile-title { font-size: 22px; }
+}
+
+/* ── Responsive — mobile ────────────────────────────────── */
+@media (max-width: 640px) {
+  .hl-header { padding: 0 var(--spacing-m); }
+  .hl-main   { padding: 24px var(--spacing-m); }
+  .hl-ente      { display: none; }
+  .hl-separator { display: none; }
+  .hl-username  { display: none; }
+  .hl-username { display: none; }
+  .hl-scenari-desc { display: none; }
+  .hl-tile-title { font-size: 20px; }
+  .hl-tile-num   { font-size: 64px; }
+}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Plotly from "plotly.js-dist-min";
+import { useTheme } from "../../hooks/useTheme";
 
 const REGION_TO_NUTS = {
   "Piemonte":["ITC1"],"Valle d'Aosta":["ITC2"],"Liguria":["ITC3"],"Lombardia":["ITC4"],
@@ -17,6 +18,7 @@ let cachedGeojson = null;
 export function ItalyMap({ data, tone = "violet", onRegionClick, selectedRegion, minHeight = 280, className = "" }) {
   const ref = useRef(null);
   const [geojson, setGeojson] = useState(cachedGeojson);
+  const theme = useTheme();
 
   useEffect(() => {
     if (cachedGeojson) return;
@@ -46,7 +48,7 @@ export function ItalyMap({ data, tone = "violet", onRegionClick, selectedRegion,
       type:"choropleth", geojson, featureidkey:"properties.NUTS_ID",
       locations, z, text, colorscale, zmin:0, zmax:1, showscale:false,
       hovertemplate:"<b>%{text}</b><extra></extra>",
-      marker:{ line:{ color:"white", width:1.5 } },
+      marker:{ line:{ color: theme === "dark" ? "#161618" : "white", width:1.5 } },
     }];
 
     if (selectedRegion) {
@@ -61,8 +63,8 @@ export function ItalyMap({ data, tone = "violet", onRegionClick, selectedRegion,
     }
 
     Plotly.react(element, traces, {
-      geo:{ fitbounds:"geojson", visible:false, projection:{type:"mercator"}, bgcolor:"white" },
-      paper_bgcolor:"white", plot_bgcolor:"white",
+      geo:{ fitbounds:"geojson", visible:false, projection:{type:"mercator"}, bgcolor:"rgba(0,0,0,0)" },
+      paper_bgcolor:"rgba(0,0,0,0)", plot_bgcolor:"rgba(0,0,0,0)",
       margin:{ t:0, b:0, l:0, r:0 },
     }, { responsive:true, displayModeBar:false });
 
@@ -77,7 +79,7 @@ export function ItalyMap({ data, tone = "violet", onRegionClick, selectedRegion,
     }
 
     return () => { Plotly.purge(element); };
-  }, [geojson, data, tone, onRegionClick, selectedRegion]);
+  }, [geojson, data, tone, onRegionClick, selectedRegion, theme]);
 
   if (!geojson) return (
     <div className="flex items-center justify-center" style={{ minHeight }}>

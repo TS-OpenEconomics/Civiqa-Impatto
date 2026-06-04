@@ -1,18 +1,23 @@
 import { useEffect, useRef } from "react";
 import { useResizeObserver } from "../../hooks/useResizeObserver";
+import { useTheme } from "../../hooks/useTheme";
 
 // plotly.js-dist-min è importato staticamente perché questo modulo
 // viene caricato solo da EiaResults (che è lazy-loaded nel router)
 import Plotly from "plotly.js-dist-min";
 
-const BASE_LAYOUT = {
-  paper_bgcolor: "white",
-  plot_bgcolor:  "white",
-  font: { family: "Inter, ui-sans-serif, sans-serif", size: 11, color: "#27272A" },
+const baseLayout = (theme) => ({
+  paper_bgcolor: "rgba(0,0,0,0)",
+  plot_bgcolor: "rgba(0,0,0,0)",
+  font: {
+    family: "Inter, ui-sans-serif, sans-serif",
+    size: 11,
+    color: theme === "dark" ? "#D1D1D6" : "#27272A",
+  },
   margin: { t: 20, r: 10, b: 50, l: 60 },
   legend: { orientation: "h", x: 0, y: -0.2 },
   colorway: ["#7C3AED", "#A78BFA", "#DDD6FE", "#84CC16", "#4ADE80"],
-};
+});
 
 const BASE_CONFIG = {
   responsive: true,
@@ -22,6 +27,7 @@ const BASE_CONFIG = {
 
 export function PlotlyChart({ data, layout = {}, config = {}, style }) {
   const ref = useRef(null);
+  const theme = useTheme();
 
   useEffect(() => {
     const element = ref.current;
@@ -29,10 +35,10 @@ export function PlotlyChart({ data, layout = {}, config = {}, style }) {
     Plotly.react(
       element,
       data,
-      { ...BASE_LAYOUT, ...layout },
+      { ...baseLayout(theme), ...layout },
       { ...BASE_CONFIG, ...config },
     );
-  }, [data, layout, config]);
+  }, [data, layout, config, theme]);
 
   useEffect(() => {
     const element = ref.current;

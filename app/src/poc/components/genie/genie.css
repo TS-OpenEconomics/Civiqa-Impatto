@@ -1,0 +1,678 @@
+/* ============================================================
+   Genie Chat — Redesigned Component Styles
+   Aesthetic: Document transcript + command bar
+   DS Civiqa tokens only — zero hardcoded values
+   ============================================================ */
+
+
+/* ------------------------------------------------------------
+   KEYFRAMES
+   ------------------------------------------------------------ */
+
+@keyframes genie-entry-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes genie-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+
+@keyframes genie-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+
+
+/* ------------------------------------------------------------
+   CHAT WINDOW — outer flex shell
+   ------------------------------------------------------------ */
+
+.genie-chat-window {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background-color: var(--color-background-inverse);
+}
+
+
+/* ------------------------------------------------------------
+   HEADER — compact top bar
+   ------------------------------------------------------------ */
+
+.genie-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-inset-m);
+  height: 52px;
+  flex-shrink: 0;
+  border-bottom: var(--border-base) solid var(--color-border-secondary-light);
+}
+
+.genie-header-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-inline-xs);
+}
+
+.genie-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-circle);
+  background-color: var(--color-background-accent);
+  flex-shrink: 0;
+  transition: background-color 0.3s ease;
+}
+
+.genie-status-dot--loading {
+  background-color: var(--color-background-primary);
+  animation: genie-pulse 1.2s ease-in-out infinite;
+}
+
+.genie-header-wordmark {
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-xs-size);
+  font-weight: var(--type-weight-bold);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.genie-header-sep {
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-xxs-size);
+  color: var(--color-text-disable);
+  letter-spacing: 0;
+}
+
+.genie-header-subtitle {
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-xxs-size);
+  color: var(--color-text-disable);
+  letter-spacing: 0.04em;
+}
+
+.genie-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-inline-xxs);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  background: transparent;
+  border: var(--border-base) solid var(--color-border-secondary-light);
+  border-radius: var(--radius-smooth);
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-xxs-size);
+  font-weight: var(--type-weight-regular);
+  color: var(--color-text-primary-lighter);
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease;
+  outline: none;
+}
+
+.genie-reset-btn:hover:not(:disabled) {
+  border-color: var(--color-border-secondary);
+  color: var(--color-text-primary);
+}
+
+.genie-reset-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(110, 26, 255, 0.55);
+}
+
+.genie-reset-btn:disabled {
+  pointer-events: none;
+  color: var(--color-text-disable);
+  border-color: var(--color-border-secondary-light);
+}
+
+
+/* ------------------------------------------------------------
+   EMPTY STATE — centered prompt
+   ------------------------------------------------------------ */
+
+.genie-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: var(--spacing-stack-m);
+  padding: var(--spacing-inset-m);
+  text-align: center;
+}
+
+.genie-empty-heading {
+  font-family: var(--font-family-body);
+  font-size: var(--type-h2-desktop-size);
+  font-weight: var(--type-h2-desktop-weight);
+  line-height: var(--type-h2-desktop-lh);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.genie-empty-heading em {
+  font-style: normal;
+  color: var(--color-text-secondary);
+}
+
+.genie-empty-prompts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack-xs);
+  width: 100%;
+  max-width: 520px;
+}
+
+.genie-empty-prompt {
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+  color: var(--color-text-primary-lighter);
+  padding: var(--spacing-xs) var(--spacing-s);
+  border: var(--border-base) solid var(--color-border-secondary-light);
+  border-radius: var(--radius-smooth);
+  cursor: pointer;
+  text-align: left;
+  background: transparent;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  outline: none;
+}
+
+.genie-empty-prompt:hover:not(:disabled) {
+  background-color: var(--color-background-secondary-lighter);
+  border-color: var(--color-border-secondary);
+  color: var(--color-text-primary);
+}
+
+.genie-empty-prompt:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(110, 26, 255, 0.55);
+}
+
+.genie-empty-prompt:disabled {
+  pointer-events: none;
+  color: var(--color-text-disable);
+}
+
+
+/* ------------------------------------------------------------
+   MESSAGES LIST — scrollable transcript area
+   ------------------------------------------------------------ */
+
+.genie-messages-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--spacing-stack-m);
+  overflow-y: auto;
+  padding: var(--spacing-inset-m);
+  min-height: 0;
+}
+
+
+/* ------------------------------------------------------------
+   TRANSCRIPT ENTRY — wraps label + content
+   ------------------------------------------------------------ */
+
+.genie-entry {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  animation: genie-entry-in 0.18s ease-out both;
+}
+
+.genie-entry--user {
+  align-items: flex-end;
+}
+
+.genie-entry--assistant {
+  align-items: flex-start;
+}
+
+
+/* ------------------------------------------------------------
+   ENTRY LABEL — "TU" or "GENIE"
+   ------------------------------------------------------------ */
+
+.genie-entry-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-inline-xxs);
+  margin-bottom: var(--spacing-xxs);
+}
+
+.genie-entry-label-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-circle);
+  flex-shrink: 0;
+}
+
+.genie-entry-label-dot--user {
+  background-color: var(--color-background-accent);
+}
+
+.genie-entry-label-dot--assistant {
+  background-color: var(--color-background-primary);
+}
+
+.genie-entry-label-text {
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-xxs-size);
+  font-weight: var(--type-weight-bold);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.genie-entry-label-text--user {
+  color: var(--color-text-primary-lighter);
+}
+
+.genie-entry-label-text--assistant {
+  color: var(--color-text-secondary);
+}
+
+
+/* ------------------------------------------------------------
+   ENTRY BODY — user text
+   ------------------------------------------------------------ */
+
+.genie-entry-body--user {
+  max-width: 64%;
+  text-align: right;
+  word-break: break-word;
+}
+
+.genie-entry-body--user p {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+  color: var(--color-text-primary);
+  font-style: italic;
+}
+
+
+/* ------------------------------------------------------------
+   ENTRY BODY — assistant content
+   ------------------------------------------------------------ */
+
+.genie-entry-body--assistant {
+  width: 100%;
+}
+
+.genie-assistant-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack-xs);
+  margin: 0 0 var(--spacing-stack-xs);
+}
+
+.genie-assistant-content:last-child {
+  margin-bottom: 0;
+}
+
+.genie-assistant-content p {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+  color: var(--color-text-primary);
+  max-width: 72ch;
+}
+
+.genie-assistant-content ul {
+  margin: 0;
+  padding-left: var(--spacing-m);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+}
+
+.genie-assistant-content li {
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+  color: var(--color-text-primary);
+  max-width: 72ch;
+}
+
+.genie-assistant-content strong {
+  font-weight: var(--type-weight-bold);
+  color: var(--color-text-primary);
+}
+
+
+/* ------------------------------------------------------------
+   LOADING — shimmer bar replacing animated dots
+   ------------------------------------------------------------ */
+
+.genie-loading-state {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  padding: var(--spacing-xxs) 0;
+}
+
+.genie-loading-bar-track {
+  width: 180px;
+  height: 2px;
+  background-color: var(--color-background-secondary-light);
+  border-radius: 1px;
+  overflow: hidden;
+  position: relative;
+}
+
+.genie-loading-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 35%;
+  background-color: var(--color-background-primary);
+  animation: genie-shimmer 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.genie-loading-text {
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-xxs-size);
+  color: var(--color-text-disable);
+  font-style: italic;
+}
+
+
+/* ------------------------------------------------------------
+   ERROR — inline error row
+   ------------------------------------------------------------ */
+
+.genie-error-message {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--spacing-inline-xxs);
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
+  color: var(--color-text-error);
+}
+
+
+/* ------------------------------------------------------------
+   SQL BLOCK — dark terminal-style code container
+   ------------------------------------------------------------ */
+
+.genie-sql-block {
+  margin: var(--spacing-stack-xs) 0;
+  border-radius: var(--radius-smooth);
+  overflow: hidden;
+  background-color: var(--color-background-secondary-dark);
+}
+
+.genie-sql-block summary {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-inline-xs);
+  padding: var(--spacing-xs) var(--spacing-s);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+
+.genie-sql-block summary::-webkit-details-marker {
+  display: none;
+}
+
+.genie-sql-block summary:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--color-border-focus);
+}
+
+.genie-sql-label-tag {
+  font-family: var(--font-family-mono);
+  font-size: var(--type-body-xxs-size);
+  font-weight: var(--type-weight-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-background-accent);
+  background-color: color-mix(in srgb, var(--color-background-accent) 18%, transparent);
+  padding: 2px var(--spacing-xxs);
+  border-radius: var(--radius-smooth);
+  flex-shrink: 0;
+}
+
+.genie-sql-description {
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-xxs-size);
+  color: color-mix(in srgb, var(--color-text-inverse) 50%, transparent);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.genie-sql-chevron {
+  font-family: var(--font-family-mono);
+  font-size: var(--type-body-xs-size);
+  color: color-mix(in srgb, var(--color-text-inverse) 30%, transparent);
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+
+.genie-sql-block[open] .genie-sql-chevron {
+  transform: rotate(90deg);
+}
+
+.genie-sql-block pre {
+  margin: 0;
+  padding: var(--spacing-s);
+  border-top: var(--border-base) solid color-mix(in srgb, var(--color-text-inverse) 10%, transparent);
+  font-family: var(--font-family-mono);
+  font-size: var(--type-body-xxs-size);
+  line-height: 1.65;
+  color: var(--color-background-accent);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+
+/* ------------------------------------------------------------
+   QUERY TABLE — results data table
+   ------------------------------------------------------------ */
+
+.genie-query-table-wrapper {
+  overflow-x: auto;
+  margin-top: var(--spacing-stack-s);
+  border: var(--border-base) solid var(--color-border-secondary-light);
+  border-radius: var(--radius-smooth);
+}
+
+.genie-query-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-family-mono);
+  font-size: var(--type-body-xxs-size);
+}
+
+.genie-query-table th {
+  text-align: left;
+  font-weight: var(--type-weight-bold);
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-xxs-size);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-text-primary-lighter);
+  padding: var(--spacing-xs) var(--spacing-s);
+  background-color: var(--color-background-secondary-lighter);
+  border-bottom: var(--border-base) solid var(--color-border-secondary-light);
+  white-space: nowrap;
+}
+
+.genie-query-table td {
+  padding: var(--spacing-xs) var(--spacing-s);
+  border-bottom: var(--border-base) solid var(--color-border-secondary-lighter);
+  color: var(--color-text-primary);
+  line-height: var(--type-body-xs-lh);
+  vertical-align: top;
+}
+
+.genie-query-table tr:last-child td {
+  border-bottom: none;
+}
+
+.genie-query-table tbody tr:hover td {
+  background-color: var(--color-background-secondary-lighter);
+}
+
+.genie-query-table-overflow {
+  font-family: var(--font-family-body);
+  font-style: italic;
+  font-size: var(--type-body-xxs-size);
+  color: var(--color-text-primary-lighter);
+  margin-top: var(--spacing-stack-xs);
+}
+
+
+/* ------------------------------------------------------------
+   CHART CONTAINER — wraps Recharts output
+   ------------------------------------------------------------ */
+
+.genie-chart-container {
+  margin: var(--spacing-stack-s) 0;
+  width: 100%;
+  background-color: var(--color-background-secondary-lighter);
+  border-radius: var(--radius-smooth);
+  padding: var(--spacing-inset-s) var(--spacing-inset-s) var(--spacing-xs);
+}
+
+
+/* ------------------------------------------------------------
+   INPUT BAR — command bar composer
+   ------------------------------------------------------------ */
+
+.genie-input-bar {
+  flex-shrink: 0;
+  padding: var(--spacing-s);
+  border-top: var(--border-base) solid var(--color-border-secondary-light);
+  background-color: var(--color-background-inverse);
+}
+
+.genie-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-inline-xs);
+  padding: var(--spacing-xs) var(--spacing-s);
+  border: var(--border-base) solid var(--color-border-secondary);
+  border-radius: var(--radius-smooth);
+  background-color: var(--color-background-inverse);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.genie-input-row:focus-within {
+  border-color: var(--color-border-primary);
+  box-shadow: 0 0 0 1px rgba(110, 26, 255, 0.55);
+}
+
+.genie-input-prompt {
+  font-family: var(--font-family-mono);
+  font-size: var(--type-body-m-size);
+  font-weight: var(--type-weight-bold);
+  color: var(--color-text-secondary);
+  line-height: var(--type-body-s-lh);
+  padding-bottom: 3px;
+  flex-shrink: 0;
+  user-select: none;
+  pointer-events: none;
+}
+
+.genie-input-textarea {
+  flex-grow: 1;
+  resize: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+  color: var(--color-text-primary);
+  background: transparent;
+  outline: none;
+}
+
+.genie-input-textarea::placeholder {
+  color: var(--color-text-disable);
+  font-style: italic;
+}
+
+.genie-input-textarea:disabled {
+  color: var(--color-text-disable);
+  pointer-events: none;
+}
+
+.genie-send-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background-color: var(--color-background-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--radius-smooth);
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.15s ease;
+}
+
+.genie-send-btn:hover:not(:disabled) {
+  background-color: var(--color-background-primary-hover);
+}
+
+.genie-send-btn:active:not(:disabled) {
+  background-color: var(--color-background-primary-active);
+}
+
+.genie-send-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(110, 26, 255, 0.55);
+}
+
+.genie-send-btn:disabled {
+  pointer-events: none;
+  background-color: var(--color-background-disable);
+}
+
+.genie-send-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.genie-input-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-inline-xs);
+  margin-top: var(--spacing-xxs);
+  padding: 0 var(--spacing-xxs);
+}
+
+.genie-input-hint-text {
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-xxs-size);
+  color: var(--color-text-disable);
+}
+
+.genie-input-hint-sep {
+  font-size: var(--type-body-xxs-size);
+  color: var(--color-border-secondary-light);
+}

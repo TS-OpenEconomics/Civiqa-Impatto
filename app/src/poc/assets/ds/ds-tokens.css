@@ -1,0 +1,463 @@
+/* ============================================================
+   Design System — Token CSS
+   Fonte: tokens_1.json (semantic lightMode + darkMode)
+   Figma file: ULFrjRJzopTyLKczdJLJkn
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   PRIMITIVE PALETTE — valori grezzi (non usare direttamente)
+   ------------------------------------------------------------ */
+:root {
+  /* Bluette (brand primary) */
+  --palette-bluette-50:  #efe5ff;
+  --palette-bluette-100: #d9c1ff;
+  --palette-bluette-200: #b991ff;
+  --palette-bluette-300: #a16aff;
+  --palette-bluette-400: #8742ff;
+  --palette-bluette-500: #6e1aff;
+  --palette-bluette-600: #5902ee;
+  --palette-bluette-700: #4400b3;
+  --palette-bluette-800: #340088;
+  --palette-bluette-900: #270065;
+
+  /* Neutral / Black scale */
+  --palette-black-50:  #ffffff;
+  --palette-black-100: #f1f1f1;
+  --palette-black-200: #e7e7e7;
+  --palette-black-300: #d2d2d2;
+  --palette-black-400: #afafaf;
+  --palette-black-500: #999999;
+  --palette-black-600: #6e6e6e;
+  --palette-black-700: #545454;
+  --palette-black-800: #2c2c2c;
+  --palette-black-900: #000000;
+
+  /* Green (success) */
+  --palette-green-50:  #f4fffa;
+  --palette-green-100: #defff0;
+  --palette-green-200: #c9ffe6;
+  --palette-green-300: #7cffc2;
+  --palette-green-400: #3fffa5;
+  --palette-green-500: #00ff88;
+  --palette-green-600: #00e279;
+  --palette-green-700: #007840;
+  --palette-green-800: #00572e;
+  --palette-green-900: #00331b;
+
+  /* Orange (warning) */
+  --palette-orange-50:  #ffeecc;
+  --palette-orange-100: #ffdd99;
+  --palette-orange-200: #ffcc66;
+  --palette-orange-300: #ffba33;
+  --palette-orange-400: #ffa900;
+  --palette-orange-500: #ca8600;
+  --palette-orange-600: #996500;
+  --palette-orange-700: #664400;
+  --palette-orange-800: #4d3300;
+  --palette-orange-900: #332200;
+
+  /* Red (error) */
+  --palette-red-50:  #ffe5e5;
+  --palette-red-100: #ffcccc;
+  --palette-red-200: #ff9999;
+  --palette-red-300: #ff6666;
+  --palette-red-400: #ff3333;
+  --palette-red-500: #ff0000;
+  --palette-red-600: #cc0000;
+  --palette-red-700: #990000;
+  --palette-red-800: #660000;
+  --palette-red-900: #4d0000;
+
+  /* Lime (accent) */
+  --palette-lime-50:  #efffdc;
+  --palette-lime-100: #dfffbb;
+  --palette-lime-200: #d5ffa4;
+  --palette-lime-300: #c9ff8c;
+  --palette-lime-400: #b9ff69;
+  --palette-lime-500: #91ff15;
+  --palette-lime-600: #7ff100;
+  --palette-lime-700: #67c300;
+  --palette-lime-800: #458300;
+  --palette-lime-900: #315c01;
+
+  /* Blue (focus ring / data set 2) */
+  --palette-blue-600: #0000ff;
+  --palette-blue-700: #0000a1;
+
+  /* Cyan (data set 3) */
+  --palette-cyan-700: #00d4d4;
+  --palette-cyan-800: #007878;
+
+  /* Magenta (data set 1) */
+  --palette-magenta-700: #c300c3;
+  --palette-magenta-800: #920092;
+}
+
+
+/* ------------------------------------------------------------
+   SEMANTIC TOKENS — LIGHT MODE (default)
+   ------------------------------------------------------------ */
+:root,
+[data-theme="light"] {
+
+  /* --- BACKGROUND --- */
+  --color-background-primary:           #4400b3;
+  --color-background-primary-hover:     #340088;
+  --color-background-primary-active:    #270065;
+  --color-background-primary-light:     #b991ff;
+  --color-background-primary-lighter:   #efe5ff;
+  --color-background-emphasis:          #6e1aff;
+
+  --color-background-secondary:         #545454;
+  --color-background-secondary-dark:    #2c2c2c;
+  --color-background-secondary-darker:  #000000;
+  --color-background-secondary-medium:  #d2d2d2;
+  --color-background-secondary-light:   #e7e7e7;
+  --color-background-secondary-lighter: #f1f1f1;
+  --color-background-secondary-hover:   #2c2c2c;
+  --color-background-secondary-active:  #000000;
+
+  --color-background-accent:            #b9ff69;
+  --color-background-accent-hover:      #c9ff8c;
+  --color-background-accent-active:     #d5ffa4;
+  --color-background-accent-light:      #dfffbb;
+  --color-background-accent-lighter:    #efffdc;
+
+  --color-background-inverse:           #ffffff;
+  --color-background-disable:           #e7e7e7;
+
+  --color-background-success:           #007840;
+  --color-background-success-hover:     #00572e;
+  --color-background-success-active:    #00331b;
+  --color-background-success-light:     #c9ffe6;
+  --color-background-success-lighter:   #defff0;
+
+  --color-background-warning:           #ca8600;
+  --color-background-warning-hover:     #996500;
+  --color-background-warning-active:    #4d3300;
+  --color-background-warning-light:     #ffcc66;
+  --color-background-warning-lighter:   #ffeecc;
+
+  --color-background-error:             #cc0000;
+  --color-background-error-hover:       #990000;
+  --color-background-error-active:      #660000;
+  --color-background-error-light:       #ff9999;
+  --color-background-error-lighter:     #ffe5e5;
+
+  /* --- TEXT --- */
+  --color-text-primary:                 #000000;
+  --color-text-primary-hover:           #2c2c2c;
+  --color-text-primary-active:          #000000;
+  --color-text-primary-light:           #545454;
+  --color-text-primary-lighter:         #6e6e6e;
+
+  --color-text-secondary:               #4400b3;
+  --color-text-secondary-hover:         #340088;
+  --color-text-secondary-active:        #270065;
+  --color-text-secondary-light:         #6e1aff;
+
+  --color-text-inverse:                 #ffffff;
+  --color-text-accent:                  #b9ff69;
+  --color-text-accent-hover:            #458300;
+  --color-text-accent-active:           #315c01;
+  --color-text-disable:                 #999999;
+
+  --color-text-success:                 #007840;
+  --color-text-success-hover:           #00572e;
+  --color-text-success-active:          #00331b;
+
+  --color-text-warning:                 #ca8600;
+  --color-text-warning-hover:           #996500;
+  --color-text-warning-active:          #4d3300;
+
+  --color-text-error:                   #cc0000;
+  --color-text-error-hover:             #990000;
+  --color-text-error-active:            #660000;
+
+  /* --- ICON --- */
+  --color-icon-primary:                 #000000;
+  --color-icon-primary-hover:           #2c2c2c;
+  --color-icon-primary-active:          #000000;
+  --color-icon-primary-light:           #545454;
+  --color-icon-primary-lighter:         #6e6e6e;
+
+  --color-icon-secondary:               #4400b3;
+  --color-icon-secondary-hover:         #340088;
+  --color-icon-secondary-active:        #270065;
+  --color-icon-secondary-light:         #6e1aff;
+
+  --color-icon-inverse:                 #ffffff;
+  --color-icon-accent:                  #b9ff69;
+  --color-icon-accent-hover:            #458300;
+  --color-icon-accent-active:           #315c01;
+  --color-icon-disable:                 #999999;
+
+  --color-icon-success:                 #007840;
+  --color-icon-success-hover:           #00572e;
+  --color-icon-success-active:          #00331b;
+
+  --color-icon-warning:                 #ca8600;
+  --color-icon-warning-hover:           #996500;
+  --color-icon-warning-active:          #4d3300;
+
+  --color-icon-error:                   #cc0000;
+  --color-icon-error-hover:             #990000;
+  --color-icon-error-active:            #660000;
+
+  /* --- BORDER --- */
+  --color-border-primary:               #4400b3;
+  --color-border-primary-hover:         #340088;
+  --color-border-primary-active:        #270065;
+  --color-border-primary-light:         #6e1aff;
+
+  --color-border-secondary:             #545454;
+  --color-border-secondary-hover:       #2c2c2c;
+  --color-border-secondary-active:      #000000;
+  --color-border-secondary-light:       #e7e7e7;
+  --color-border-secondary-lighter:     #f1f1f1;
+
+  --color-border-inverse:               #ffffff;
+  --color-border-disabled:              #999999;
+  --color-border-focus:                 #0000ff;
+
+  --color-border-accent:                #b9ff69;
+  --color-border-accent-hover:          #458300;
+  --color-border-accent-active:         #315c01;
+  --color-border-accent-light:          #d5ffa4;
+  --color-border-accent-lighter:        #efffdc;
+
+  --color-border-success:               #007840;
+  --color-border-success-hover:         #00572e;
+  --color-border-success-active:        #00331b;
+  --color-border-success-light:         #defff0;
+  --color-border-success-lighter:       #f4fffa;
+
+  --color-border-warning:               #ca8600;
+  --color-border-warning-hover:         #996500;
+  --color-border-warning-active:        #4d3300;
+  --color-border-warning-light:         #ffdd99;
+  --color-border-warning-lighter:       #ffeecc;
+
+  --color-border-error:                 #cc0000;
+  --color-border-error-hover:           #990000;
+  --color-border-error-active:          #660000;
+  --color-border-error-light:           #ffcccc;
+  --color-border-error-lighter:         #ffe5e5;
+
+  /* --- DATA VISUALIZATION --- */
+  --color-data-set-01-10: #ffe2ff;
+  --color-data-set-01-40: #ff8dff;
+  --color-data-set-01-80: #920092;
+  --color-data-set-01-hover: #790079;
+
+  --color-data-set-02-10: #d5d5ff;
+  --color-data-set-02-40: #6161ff;
+  --color-data-set-02-50: #3a3aff;
+  --color-data-set-02-60: #0000ff;
+  --color-data-set-02-hover: #000035;
+
+  --color-data-set-03-10: #ddffff;
+  --color-data-set-03-40: #83ffff;
+  --color-data-set-03-80: #007878;
+  --color-data-set-03-hover: #005b5b;
+}
+
+
+/* ------------------------------------------------------------
+   SEMANTIC TOKENS — DARK MODE
+   ------------------------------------------------------------ */
+[data-theme="dark"],
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background-primary:           #a16aff;
+    --color-background-primary-hover:     #374d84;
+    --color-background-primary-active:    #1c2743;
+    --color-background-primary-light:     #340088;
+    --color-background-primary-lighter:   #dee4f1;
+    --color-background-emphasis:          #e3e7eb;
+
+    --color-background-secondary:         #ffffff;
+    --color-background-secondary-dark:    #252c34;
+    --color-background-secondary-darker:  #252c34;
+    --color-background-secondary-medium:  #c7cfd7;
+    --color-background-secondary-light:   #c7cfd7;
+    --color-background-secondary-lighter: #e3e7eb;
+    --color-background-secondary-hover:   #37434e;
+    --color-background-secondary-active:  #252c34;
+
+    --color-background-accent:            #06797f;
+    --color-background-accent-hover:      #045155;
+    --color-background-accent-active:     #033c40;
+    --color-background-accent-light:      #a4f6fb;
+    --color-background-accent-lighter:    #d2fbfd;
+
+    --color-background-inverse:           #222222;
+    --color-background-disable:           #e3e7eb;
+
+    --color-background-success:           #00ff88;
+    --color-background-success-hover:     #7cffc2;
+    --color-background-success-active:    #c9ffe6;
+    --color-background-success-light:     #defff0;
+    --color-background-success-lighter:   #f4fffa;
+
+    --color-background-warning:           #fff300;
+    --color-background-warning-hover:     #fff97b;
+    --color-background-warning-active:    #f4e900;
+    --color-background-warning-light:     #fffdc9;
+    --color-background-warning-lighter:   #fffeec;
+
+    --color-background-error:             #ff6666;
+    --color-background-error-hover:       #ff9999;
+    --color-background-error-active:      #cc0000;
+    --color-background-error-light:       #ffcccc;
+    --color-background-error-lighter:     #ffe5e5;
+
+    --color-text-primary:                 #ffffff;
+    --color-text-primary-hover:           #ffffff;
+    --color-text-primary-active:          #ffffff;
+    --color-text-primary-light:           #e7e7e7;
+    --color-text-primary-lighter:         #d2d2d2;
+
+    --color-text-secondary:               #4a5968;
+    --color-text-secondary-hover:         #37434e;
+    --color-text-secondary-active:        #252c34;
+    --color-text-secondary-light:         #4a5968;
+
+    --color-text-inverse:                 #ffffff;
+    --color-text-accent:                  #06797f;
+    --color-text-accent-hover:            #045155;
+    --color-text-accent-active:           #033c40;
+    --color-text-disable:                 #abb7c3;
+
+    --color-text-success:                 #00ff88;
+    --color-text-success-hover:           #7cffc2;
+    --color-text-success-active:          #c9ffe6;
+
+    --color-text-warning:                 #fff300;
+    --color-text-warning-hover:           #fff97b;
+    --color-text-warning-active:          #c9c000;
+
+    --color-text-error:                   #ff6666;
+    --color-text-error-hover:             #ff9999;
+    --color-text-error-active:            #cc0000;
+
+    --color-icon-primary:                 #1c2743;
+    --color-icon-primary-hover:           #0f1524;
+    --color-icon-primary-active:          #0f1524;
+    --color-icon-primary-light:           #1c2743;
+    --color-icon-primary-lighter:         #1c2743;
+
+    --color-icon-secondary:               #4a5968;
+    --color-icon-secondary-hover:         #37434e;
+    --color-icon-secondary-active:        #252c34;
+    --color-icon-secondary-light:         #4a5968;
+
+    --color-icon-inverse:                 #ffffff;
+    --color-icon-accent:                  #06797f;
+    --color-icon-accent-hover:            #045155;
+    --color-icon-accent-active:           #033c40;
+    --color-icon-disable:                 #abb7c3;
+
+    --color-icon-success:                 #00ff88;
+    --color-icon-success-hover:           #7cffc2;
+    --color-icon-success-active:          #c9ffe6;
+
+    --color-icon-warning:                 #fff300;
+    --color-icon-warning-hover:           #fff97b;
+    --color-icon-warning-active:          #fffba3;
+
+    --color-icon-error:                   #ff6666;
+    --color-icon-error-hover:             #ff9999;
+    --color-icon-error-active:            #cc0000;
+
+    --color-border-primary:               #2a3a64;
+    --color-border-primary-hover:         #374d84;
+    --color-border-primary-active:        #1c2743;
+    --color-border-primary-light:         #2a3a64;
+
+    --color-border-secondary:             #ffffff;
+    --color-border-secondary-hover:       #454545;
+    --color-border-secondary-active:      #2e2e2e;
+    --color-border-secondary-light:       #c7cfd7;
+    --color-border-secondary-lighter:     #e3e7eb;
+
+    --color-border-inverse:               #000000;
+    --color-border-disabled:              #e3e7eb;
+    --color-border-focus:                 #1c2743;
+
+    --color-border-success:               #00ff88;
+    --color-border-success-hover:         #7cffc2;
+    --color-border-success-active:        #c9ffe6;
+
+    --color-border-warning:               #fff300;
+    --color-border-warning-hover:         #fff97b;
+    --color-border-warning-active:        #f4e900;
+
+    --color-border-error:                 #ff6666;
+    --color-border-error-hover:           #ff9999;
+    --color-border-error-active:          #cc0000;
+  }
+}
+
+
+/* ------------------------------------------------------------
+   SPACING
+   ------------------------------------------------------------ */
+:root {
+  --spacing-xxs:        4px;
+  --spacing-xs:         8px;
+  --spacing-s:          16px;
+  --spacing-m:          24px;
+  --spacing-l:          32px;
+  --spacing-xl:         40px;
+  --spacing-2xl:        48px;
+  --spacing-3xl:        64px;
+
+  /* Stack (vertical rhythm) */
+  --spacing-stack-xs:   8px;
+  --spacing-stack-s:    16px;
+  --spacing-stack-m:    24px;
+  --spacing-stack-l:    32px;
+  --spacing-stack-xl:   40px;
+  --spacing-stack-2xl:  48px;
+  --spacing-stack-3xl:  64px;
+
+  /* Inline (horizontal gaps) */
+  --spacing-inline-xxs: 4px;
+  --spacing-inline-xs:  8px;
+  --spacing-inline-s:   16px;
+  --spacing-inline-m:   24px;
+  --spacing-inline-l:   32px;
+  --spacing-inline-xl:  40px;
+  --spacing-inline-2xl: 48px;
+
+  /* Inset (padding interno componenti) */
+  --spacing-inset-xs:   8px;
+  --spacing-inset-s:    16px;
+  --spacing-inset-m:    24px;
+  --spacing-inset-l:    32px;
+  --spacing-inset-xl:   40px;
+  --spacing-inset-2xl:  48px;
+}
+
+
+/* ------------------------------------------------------------
+   BORDER WIDTH
+   ------------------------------------------------------------ */
+:root {
+  --border-base:   1px;
+  --border-double: 2px;
+  --border-thick:  4px;
+  --border-broad:  8px;
+}
+
+
+/* ------------------------------------------------------------
+   BORDER RADIUS
+   ------------------------------------------------------------ */
+:root {
+  --radius-none:    0px;
+  --radius-smooth:  2px;   /* default per tutti i componenti */
+  --radius-rounded: 40px;  /* pill, badge */
+  --radius-circle:  80px;  /* avatar, dot */
+}

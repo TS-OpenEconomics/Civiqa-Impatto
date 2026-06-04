@@ -1,0 +1,99 @@
+@import './ds-tokens.css';
+
+/* Google Fonts: Atkinson Hyperlegible Next */
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
+/* Bunny Fonts: Atkinson Hyperlegible Mono (not on Google Fonts) */
+@import url('https://fonts.bunny.net/css?family=atkinson-hyperlegible-mono:400,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── OE Design System: global border-radius reset ───────────────────────────
+   Border-radius = 0 is a core brand identity rule. No exceptions.
+   ─────────────────────────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    border-radius: 0 !important;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+    background-color: #E7E7E7;
+    color: #2C2C2C;
+  }
+
+  /* Headings → Atkinson Hyperlegible Next medium */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+    font-weight: 500;
+  }
+}
+
+/* ─── OE Design System: table styling ────────────────────────────────────────
+   Applies to ALL tables in the app. Rules per DS spec:
+   - thead: bg viola brand pieno, testo bianco, font medium
+   - tbody: zebra striping bianco / grigio chiaro
+   - celle: padding generoso, separatori orizzontali sottili
+   - border-radius: 0 (already covered by global reset)
+   ─────────────────────────────────────────────────────────────────────────── */
+/* DS table: apply to simple data tables. Complex comparison tables
+   (e.g. DetailView) use per-cell semantic colors and opt out. */
+@layer utilities {
+  .ds-table {
+    @apply w-full border-collapse text-sm;
+  }
+
+  /* Header: viola brand pieno, testo bianco */
+  .ds-table thead th {
+    background-color: #4400B3 !important; /* bluette-700 */
+    color: white !important;
+    @apply font-semibold text-left px-4 py-3;
+  }
+
+  /* Body: zebra striping */
+  .ds-table tbody tr {
+    @apply border-b border-gray-200;
+  }
+
+  .ds-table tbody tr:nth-child(even) td {
+    @apply bg-gray-100;
+  }
+
+  .ds-table tbody tr:nth-child(odd) td {
+    @apply bg-white;
+  }
+
+  .ds-table tbody td {
+    @apply px-4 py-3 text-gray-700;
+  }
+
+  .ds-table tbody tr:hover td {
+    @apply bg-bluette-50;
+  }
+}
+
+/* ─── Utility classes ──────────────────────────────────────────────────────── */
+
+/* Monospaced numbers, monetary values, data */
+.font-mono-data {
+  font-family: 'Atkinson Hyperlegible Mono', 'Courier New', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Explicit display override (for elements that are not h1-h6) */
+.font-serif {
+  font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  font-weight: 500;
+}
+@media print {
+  body { background: white; }
+  nav, header, aside, .no-print { display: none !important; }
+  main { margin: 0 !important; padding: 0 !important; }
+  .sticky { position: static !important; }
+  nav { display: none !important; }
+  .print\:hidden { display: none !important; }
+  .print\:block { display: block !important; }
+  textarea { border: none !important; outline: none !important; }
+}

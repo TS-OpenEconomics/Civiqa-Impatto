@@ -15,6 +15,10 @@ import {
   IconChart,
   IconLogo,
   IconCollapse,
+  IconFile,
+  IconList,
+  IconGrid,
+  IconDiamond,
 } from "./ui/Icons";
 
 const SIDEBAR_STORAGE_KEY = "civiqa.sidebar.collapsed";
@@ -252,7 +256,7 @@ function Sidebar({ isCollapsed, onToggle }) {
         <SidebarItem
           icon={<IconDashboard className="w-5 h-5" />}
           label="Dashboard"
-          to="/valutazioni"
+          to="/impatti/dashboard"
           collapsed={isCollapsed}
         />
         <SidebarItem
@@ -264,7 +268,7 @@ function Sidebar({ isCollapsed, onToggle }) {
       </nav>
 
       <div className={`${isCollapsed ? "px-2" : "px-4"} py-5 border-t border-ink-100`}>
-        <p className="text-[11px] uppercase tracking-tight text-ink-500">Valutazioni</p>
+        <p className="text-[11px] uppercase tracking-tight text-ink-500">Impatti</p>
       </div>
 
       <nav className="flex flex-col">
@@ -274,6 +278,43 @@ function Sidebar({ isCollapsed, onToggle }) {
           to="/valutazioni"
           collapsed={isCollapsed}
           emphasize
+        />
+        <SidebarItem
+          icon={<IconFile className="w-5 h-5" />}
+          label="DOCFAP"
+          to="/impatti/docfap"
+          collapsed={isCollapsed}
+        />
+        <SidebarItem
+          icon={<IconList className="w-5 h-5" />}
+          label="Pianificazione"
+          to="/impatti/pianificazione"
+          collapsed={isCollapsed}
+        />
+      </nav>
+
+      <div className={`${isCollapsed ? "px-2" : "px-4"} py-5 border-t border-ink-100`}>
+        <p className="text-[11px] uppercase tracking-tight text-ink-500">Strumenti</p>
+      </div>
+
+      <nav className="flex flex-col">
+        <SidebarItem
+          icon={<IconDiamond className="w-5 h-5" />}
+          label="Genie"
+          to="/genie"
+          collapsed={isCollapsed}
+        />
+        <SidebarItem
+          icon={<IconGrid className="w-5 h-5" />}
+          label="Data Room"
+          to="/data-room"
+          collapsed={isCollapsed}
+        />
+        <SidebarItem
+          icon={<IconList className="w-5 h-5" />}
+          label="Risorse"
+          to="/risorse"
+          collapsed={isCollapsed}
         />
       </nav>
 

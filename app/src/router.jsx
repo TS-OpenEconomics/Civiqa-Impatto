@@ -2,7 +2,6 @@ import { lazy, Suspense } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
 import { useProjects } from "./contexts/ProjectContext";
-import { Layout } from "./components/Layout";
 import { Login } from "./components/v1/Login";
 import { ValutazioniList } from "./components/v1/ValutazioniList";
 import { Wizard } from "./components/v1/Wizard";
@@ -33,14 +32,30 @@ import { createEmptyDraftProject } from "./lib/projectState";
 import { EsgQuestionnaire } from "./components/EsgQuestionnaire";
 import { EcbaSetup } from "./components/EcbaSetup";
 import { Skeleton, SkeletonText } from "./components/ui/Skeleton";
+// --- Civiqa_POC sections, ported and re-skinned (see INTEGRAZIONE_CIVIQA.md) ---
+import {
+  AppShell,
+  HomeLauncher,
+  PocPage,
+  ImpattDashboard,
+  DocfapList,
+  DocfapDetail,
+  PianificazioneModule,
+  DataRoomPage,
+  RisorsePage,
+  ComposingPlaceholder,
+  GeniePlaceholder,
+} from "./poc";
 
 export function AppRouter() {
   return (
     <Routes>
       <Route path="/login" element={<LoginScreen />} />
       <Route element={<ProtectedRoute />}>
-        <Route element={<LayoutRoute />}>
-          <Route path="/" element={<Navigate to="/valutazioni" replace />} />
+        {/* Home — launcher a 3 fasi, a tutto schermo (fuori dall'AppShell) */}
+        <Route path="/" element={<HomeLauncher />} />
+        {/* Tutte le sezioni prodotto condividono l'AppShell (TopNav + SideNav) */}
+        <Route element={<AppShell />}>
           <Route path="/valutazioni" element={<ValutazioniListRoute />} />
           <Route path="/valutazioni/nuova/intro" element={<ValutazioneIntroRoute />} />
           <Route path="/valutazioni/nuova" element={<WizardRoute />} />
@@ -57,9 +72,24 @@ export function AppRouter() {
           <Route path="/valutazioni/:id/esg" element={<EsgFormRoute />} />
           <Route path="/valutazioni/:id/esg/running" element={<EsgRunningRoute />} />
           <Route path="/valutazioni/:id/esg/results" element={<EsgResultsRoute />} />
+
+          {/* ── Sezioni Impatti (ex Civiqa_POC) — chrome di app/, contenuto POC ── */}
+          <Route path="/impatti" element={<Navigate to="/impatti/dashboard" replace />} />
+          <Route path="/impatti/dashboard" element={<PocPage><ImpattDashboard /></PocPage>} />
+          <Route path="/impatti/docfap" element={<PocPage><DocfapList /></PocPage>} />
+          <Route path="/impatti/docfap/detail" element={<PocPage><DocfapDetail /></PocPage>} />
+          <Route path="/impatti/pianificazione" element={<PocPage><PianificazioneModule /></PocPage>} />
+          <Route path="/impatti/composing" element={<PocPage><ComposingPlaceholder /></PocPage>} />
+          {/* La "Valutazione" della POC è sostituita dal modulo impatto di app/ */}
+          <Route path="/impatti/valutazione" element={<Navigate to="/valutazioni" replace />} />
+
+          {/* ── Strumenti ── */}
+          <Route path="/genie" element={<GeniePlaceholder />} />
+          <Route path="/data-room" element={<PocPage><DataRoomPage /></PocPage>} />
+          <Route path="/risorse" element={<PocPage><RisorsePage /></PocPage>} />
         </Route>
       </Route>
-      <Route path="*" element={<Navigate to="/valutazioni" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
@@ -75,20 +105,12 @@ function ProtectedRoute() {
   return <Outlet />;
 }
 
-function LayoutRoute() {
-  return (
-    <Layout>
-      <Outlet />
-    </Layout>
-  );
-}
-
 function LoginScreen() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
 
   if (isAuthenticated) {
-    return <Navigate to={location.state?.from || "/valutazioni"} replace />;
+    return <Navigate to={location.state?.from || "/"} replace />;
   }
 
   return <Login />;
@@ -122,7 +144,7 @@ function ValutazioneIntroRoute() {
 
 function WizardRoute() {
   const navigate = useNavigate();
-  const { draftProject, setDraftProject } = useProjects();
+  const { draftProject, setDraftProject, addProject, saveProjectConfig } = useProjects();
   const editId = new URLSearchParams(window.location.search).get("editId");
 
   return (
@@ -132,6 +154,16 @@ function WizardRoute() {
       onComplete={(nextProject) => {
         setDraftProject(nextProject);
         navigate(`/valutazioni/nuova/riepilogo${editId ? `?editId=${editId}` : ""}`);
+      }}
+      onSaveDraft={(draftAsProject) => {
+        const bozza = { ...draftAsProject, stato: draftAsProject.stato || "In preparazione" };
+        if (editId) {
+          saveProjectConfig(editId, bozza);
+        } else {
+          addProject(bozza);
+        }
+        setDraftProject(null);
+        navigate("/valutazioni");
       }}
     />
   );
