@@ -1,0 +1,246 @@
+/* ============================================================
+   POC re-skin — maps the Civiqa_POC Design System onto the
+   app/ visual identity (violet #5B21F7 / lime #C7F03A / Inter).
+
+   Token VALUE overrides live on :root so they also re-skin the
+   CHROME (AppShell / TopNav / SideNav / HomeLauncher), which
+   renders OUTSIDE .poc-scope. This is safe: app/'s own pages
+   style with Tailwind utilities, NOT these --color-* vars.
+
+   The STRUCTURAL resets (border-radius:0, grey surface) stay
+   confined to `.poc-scope` so they never touch app/'s own
+   EIA/ECBA/ESG pages.
+   ============================================================ */
+
+@import "./ds-tokens.css";
+
+/* ---- Semantic token remap (violet/lime) — GLOBAL, re-skins chrome too ---- */
+:root {
+  /* BACKGROUND — brand primary → violet */
+  --color-background-primary: #5b21f7;
+  --color-background-primary-hover: #4a18d6;
+  --color-background-primary-active: #2e0b86;
+  --color-background-primary-light: #9e7bfa;
+  --color-background-primary-lighter: #e8defc;
+
+  --color-background-secondary: #43434a;
+  --color-background-secondary-dark: #1c1c1f;
+  --color-background-secondary-light: #e5e5e8;
+  --color-background-secondary-lighter: #eeeef0;
+  --color-background-secondary-hover: #1c1c1f;
+
+  --color-background-accent: #c7f03a;
+  --color-background-inverse: #ffffff;
+  --color-background-disable: #e5e5e8;
+
+  /* TEXT */
+  --color-text-primary: #0e0e10;
+  --color-text-primary-light: #43434a;
+  --color-text-primary-lighter: #5a5a60;
+  --color-text-secondary: #5b21f7;
+  --color-text-secondary-hover: #4a18d6;
+  --color-text-link: #5b21f7;
+
+  /* ICON */
+  --color-icon-primary: #0e0e10;
+  --color-icon-primary-lighter: #5a5a60;
+  --color-icon-secondary: #5b21f7;
+
+  /* BORDER */
+  --color-border-primary: #5b21f7;
+  --color-border-primary-hover: #4a18d6;
+  --color-border-primary-light: #9e7bfa;
+  --color-border-secondary: #43434a;
+  --color-border-secondary-light: #e5e5e8;
+  --color-border-focus: #5b21f7;
+
+  /* FONTS — Atkinson → Inter / JetBrains Mono */
+  --font-family-1: "Inter", system-ui, sans-serif;
+  --font-family-body: "Inter", system-ui, sans-serif;
+  --font-family-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* spacing alias some wizard components reference */
+  --spacing-inset-squish-s: 8px 16px;
+}
+
+/* ---- POC content scope: structural resets confined here ---- */
+.poc-scope {
+  font-family: "Inter", system-ui, sans-serif;
+  color: var(--color-text-primary);
+  background-color: #eeeef0;
+}
+
+/* POC brand identity: zero border-radius — scoped to POC content only */
+.poc-scope,
+.poc-scope *,
+.poc-scope *::before,
+.poc-scope *::after {
+  border-radius: 0 !important;
+  box-sizing: border-box;
+}
+
+.poc-scope h1,
+.poc-scope h2,
+.poc-scope h3,
+.poc-scope h4,
+.poc-scope h5,
+.poc-scope h6 {
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 600;
+}
+
+/* ---- Utility classes ported from POC index.css (re-skinned) ---- */
+.font-serif {
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 600;
+}
+
+.font-mono-data {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* DS data table — header violet, zebra striping */
+.poc-scope .ds-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.poc-scope .ds-table thead th {
+  background-color: #5b21f7 !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.75rem 1rem;
+}
+.poc-scope .ds-table tbody tr {
+  border-bottom: 1px solid #e7e7e7;
+}
+.poc-scope .ds-table tbody tr:nth-child(even) td {
+  background-color: #f1f1f1;
+}
+.poc-scope .ds-table tbody tr:nth-child(odd) td {
+  background-color: #ffffff;
+}
+.poc-scope .ds-table tbody td {
+  padding: 0.75rem 1rem;
+  color: #545454;
+}
+.poc-scope .ds-table tbody tr:hover td {
+  background-color: #f3eefe;
+}
+
+/* ---- Skip link (WCAG) shared by HomeLauncher / AppShell ---- */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 1000;
+  padding: 8px 16px;
+  background: #5b21f7;
+  color: #fff;
+  font-weight: 600;
+}
+.skip-link:focus {
+  left: 8px;
+  top: 8px;
+}
+
+/* ============================================================
+   DARK MODE — token value overrides (chrome + POC content).
+   Activated by [data-theme="dark"] on <html>.
+   ============================================================ */
+[data-theme="dark"] {
+  --color-background-primary: #7c4dff;
+  --color-background-primary-hover: #8b5cff;
+  --color-background-primary-active: #5b21f7;
+  --color-background-primary-light: #4a2da0;
+  --color-background-primary-lighter: #2a1f52;
+
+  --color-background-secondary: #c7c7cd;
+  --color-background-secondary-dark: #e2e2e6;
+  --color-background-secondary-light: #161618;
+  --color-background-secondary-lighter: #26262c;
+  --color-background-secondary-hover: #2e2e34;
+
+  --color-background-accent: #c7f03a;
+  --color-background-inverse: #1f1f24;
+  --color-background-disable: #2a2a30;
+
+  --color-text-primary: #f3f3f5;
+  --color-text-primary-light: #c7c7cd;
+  --color-text-primary-lighter: #a0a0a8;
+  --color-text-secondary: #b39dfb;
+  --color-text-secondary-hover: #c9b8fc;
+  --color-text-inverse: #ffffff;
+  --color-text-disable: #6a6a72;
+  --color-text-link: #b39dfb;
+
+  --color-icon-primary: #f3f3f5;
+  --color-icon-primary-lighter: #a0a0a8;
+  --color-icon-secondary: #b39dfb;
+
+  --color-border-primary: #7c4dff;
+  --color-border-primary-hover: #8b5cff;
+  --color-border-primary-light: #4a2da0;
+  --color-border-secondary: #6a6a72;
+  --color-border-secondary-light: #2e2e34;
+  --color-border-focus: #9e7bfa;
+}
+
+[data-theme="dark"] .poc-scope {
+  background-color: #161618;
+  color: #f3f3f5;
+}
+
+/* DS table in dark */
+[data-theme="dark"] .poc-scope .ds-table tbody tr {
+  border-bottom: 1px solid #2e2e34;
+}
+[data-theme="dark"] .poc-scope .ds-table tbody tr:nth-child(even) td {
+  background-color: #232327;
+}
+[data-theme="dark"] .poc-scope .ds-table tbody tr:nth-child(odd) td {
+  background-color: #1f1f24;
+}
+[data-theme="dark"] .poc-scope .ds-table tbody td {
+  color: #c7c7cd;
+}
+[data-theme="dark"] .poc-scope .ds-table tbody tr:hover td {
+  background-color: #2a1f52;
+}
+
+/* HomeLauncher surfaces in dark (home-launcher.css hardcodes light oklch) */
+[data-theme="dark"] .hl-root { background-color: #161618; }
+[data-theme="dark"] .hl-header {
+  background-color: #1f1f24;
+  border-bottom-color: #2e2e34;
+}
+[data-theme="dark"] .hl-scenari { border-color: #2e2e34; }
+[data-theme="dark"] .hl-scenari:hover {
+  background-color: #1f1f24;
+  border-color: var(--color-border-primary);
+}
+[data-theme="dark"] .hl-scenari-name { color: #f3f3f5; }
+[data-theme="dark"] .hl-scenari-desc { color: #a0a0a8; }
+[data-theme="dark"] .hl-scenari-eyebrow { color: #82828a; }
+[data-theme="dark"] .hl-scenari-arrow { color: #a0a0a8; }
+
+@media print {
+  body {
+    background: white;
+  }
+  nav,
+  header,
+  aside,
+  .no-print {
+    display: none !important;
+  }
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .sticky {
+    position: static !important;
+  }
+}

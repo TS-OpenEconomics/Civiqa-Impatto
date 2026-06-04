@@ -1,0 +1,139 @@
+/* ── Auth Guard loading state ─────────────────────────────────────────────── */
+
+.auth-guard-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-inset-s);
+  min-height: 200px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-s-size);
+}
+
+.auth-guard-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border-subtle);
+  border-top-color: var(--color-background-primary);
+  border-radius: 50%;
+  animation: auth-spin 0.7s linear infinite;
+}
+
+@keyframes auth-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Auth Login Prompt ────────────────────────────────────────────────────── */
+
+.auth-login-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: var(--spacing-stack-l);
+}
+
+.auth-login-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack-m);
+  padding: var(--spacing-inset-l);
+  max-width: 480px;
+  width: 100%;
+  background-color: var(--color-background-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-smooth);
+}
+
+.auth-login-title {
+  font-family: var(--font-family-body);
+  font-size: var(--type-heading-m-size);
+  font-weight: var(--type-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.auth-login-description {
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-s-size);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: var(--type-body-s-lh);
+}
+
+/* ── Error message ───────────────────────────────────────────────────────── */
+
+.auth-login-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-inset-xs);
+  padding: var(--spacing-inset-s);
+  background-color: var(--color-background-danger-subtle);
+  border: 1px solid var(--color-border-danger);
+  border-radius: var(--radius-smooth);
+  color: var(--color-text-danger);
+  font-size: var(--type-body-xs-size);
+  font-family: var(--font-family-body);
+}
+
+.auth-login-error-icon {
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.auth-login-error-dismiss {
+  margin-left: auto;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-danger);
+  font-size: var(--type-body-m-size);
+  line-height: 1;
+  padding: 0;
+}
+
+.auth-login-error-dismiss:focus-visible {
+  box-shadow: 0 0 0 1px rgba(110, 26, 255, 0.55);
+  outline: none;
+}
+
+/* ── Auth Status (top bar) ───────────────────────────────────────────────── */
+
+.auth-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-inset-s);
+}
+
+.auth-status-user {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-inset-xs);
+  font-family: var(--font-family-body);
+  font-size: var(--type-body-xs-size);
+  color: var(--color-text-secondary);
+}
+
+.auth-status-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--color-background-primary);
+  color: var(--color-text-inverse);
+  font-size: var(--type-body-xs-size);
+  font-weight: var(--type-weight-semibold);
+  flex-shrink: 0;
+}
+
+.auth-status-name {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

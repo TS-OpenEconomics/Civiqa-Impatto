@@ -3,9 +3,10 @@ import { createContext, useContext, useMemo, useState } from "react";
 
 const DEMO_USER = {
   email: "demo@civiqa.it",
-  name: "Mario Rossi",
-  initials: "MR",
-  role: "Analista",
+  name: "Marco Bianchi",
+  initials: "MB",
+  role: "RUP",
+  ente: "Comune di Colleferro",
 };
 
 const STORAGE_KEY = "civiqa.auth";

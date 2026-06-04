@@ -1,0 +1,65 @@
+/* Global styles — Civiqa POC */
+
+@import '../assets/ds/ds-tokens.css';
+@import '../assets/ds/ds-typography.css';
+
+/* Override DS focus token: violet from brand palette, 1px optical ring */
+:root {
+  --color-border-focus: rgba(110, 26, 255, 0.35);
+}
+[data-theme="dark"] {
+  --color-border-focus: rgba(161, 106, 255, 0.45);
+}
+
+/* Base reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family-1, 'Atkinson Hyperlegible Next', sans-serif);
+  overflow-x: hidden;
+}
+
+html,
+#root {
+  overflow-x: hidden;
+}
+
+/* ── Skip link (WCAG 2.4.1) ──────────────────────────────────────────────── */
+/* Visually hidden by default; appears on keyboard focus */
+.skip-link {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  padding: var(--spacing-inset-s);
+  background-color: var(--color-background-primary);
+  color: var(--color-text-inverse);
+  font-family: var(--font-family-1);
+  font-weight: 700;
+  text-decoration: none;
+  outline: none;
+}
+.skip-link:focus {
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+  box-shadow: 0 0 0 3px var(--color-border-focus);
+}
+
+/* ── Sidebar — responsive hide ───────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .sidenav-wrapper { display: none !important; }
+  #main-content    { margin-left: 0 !important; }
+}

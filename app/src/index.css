@@ -114,3 +114,135 @@
   background: #a3a3aa;
   border-radius: 6px;
 }
+
+/* ============================================================
+   DARK MODE — utility-class overrides for app/ pages (ink/bg/*)
+   AND ported POC content (gray-*/white). Higher specificity
+   ([data-theme="dark"] .x) beats the base Tailwind utilities.
+   ============================================================ */
+[data-theme="dark"] body {
+  background: #161618;
+  color: #f3f3f5;
+}
+[data-theme="dark"] .min-h-screen.bg-white,
+[data-theme="dark"] .bg-white {
+  background-color: #1f1f24;
+}
+[data-theme="dark"] .bg-bg-card { background-color: #1f1f24; }
+[data-theme="dark"] .bg-bg-page { background-color: #161618; }
+[data-theme="dark"] .bg-gray-50 { background-color: #1c1c1f; }
+[data-theme="dark"] .bg-gray-100 { background-color: #232327; }
+[data-theme="dark"] .bg-gray-200 { background-color: #2a2a30; }
+[data-theme="dark"] .bg-bluette-50 { background-color: #241a44; }
+[data-theme="dark"] .bg-bluette-25 { background-color: #1d1736; }
+[data-theme="dark"] .bg-brand-violet-soft { background-color: #241a44; }
+[data-theme="dark"] .bg-brand-violet-light { background-color: #2a1f52; }
+[data-theme="dark"] .bg-ink-100 { background-color: #232327; }
+
+/* text */
+[data-theme="dark"] .text-ink-900,
+[data-theme="dark"] .text-gray-900 { color: #f3f3f5; }
+[data-theme="dark"] .text-ink-800,
+[data-theme="dark"] .text-gray-800 { color: #e2e2e6; }
+[data-theme="dark"] .text-ink-700,
+[data-theme="dark"] .text-gray-700 { color: #cfcfd5; }
+[data-theme="dark"] .text-ink-600,
+[data-theme="dark"] .text-gray-600 { color: #b3b3bb; }
+[data-theme="dark"] .text-ink-500,
+[data-theme="dark"] .text-gray-500 { color: #9a9aa2; }
+[data-theme="dark"] .text-ink-400,
+[data-theme="dark"] .text-gray-400 { color: #82828a; }
+[data-theme="dark"] .text-ink-300,
+[data-theme="dark"] .text-gray-300 { color: #6a6a72; }
+[data-theme="dark"] .text-brand-violet { color: #9e7bfa; }
+
+/* borders */
+[data-theme="dark"] .border-ink-100 { border-color: #2a2a30; }
+[data-theme="dark"] .border-ink-200 { border-color: #34343b; }
+[data-theme="dark"] .border-ink-300 { border-color: #3a3a42; }
+[data-theme="dark"] .border-gray-100 { border-color: #26262c; }
+[data-theme="dark"] .border-gray-200 { border-color: #2e2e34; }
+[data-theme="dark"] .border-gray-300 { border-color: #3a3a42; }
+[data-theme="dark"] .divide-ink-100 > * + * { border-color: #2a2a30; }
+[data-theme="dark"] .divide-gray-100 > * + * { border-color: #26262c; }
+
+/* hero dot backgrounds + skeleton in dark */
+[data-theme="dark"] .dots-violet-bg {
+  background-color: #1c1631;
+  background-image: radial-gradient(circle, #2f2553 1.2px, transparent 1.2px);
+}
+[data-theme="dark"] .dots-grey-bg {
+  background-color: #1b1b1f;
+  background-image: radial-gradient(circle, #303036 1.2px, transparent 1.2px);
+}
+[data-theme="dark"] .skeleton-block { background: #26262c; }
+[data-theme="dark"] .skeleton-block::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+}
+
+/* inputs in dark */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background-color: #1f1f24;
+  color: #f3f3f5;
+}
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder { color: #6a6a72; }
+
+[data-theme="dark"] ::-webkit-scrollbar-track { background: #161618; }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: #3a3a42; }
+
+/* --- Light-tint PANELS (arbitrary hex + 50/100 levels) → dark surfaces.
+       Saturated accents (500/600, badges, semaphores) are left untouched. --- */
+/* neutral light-grey panels */
+[data-theme="dark"] .bg-\[\#fafafa\],
+[data-theme="dark"] .bg-\[\#fcfcfd\],
+[data-theme="dark"] .bg-\[\#f7f7fa\],
+[data-theme="dark"] .bg-\[\#f7f7f7\],
+[data-theme="dark"] .bg-\[\#f6f6f6\],
+[data-theme="dark"] .bg-\[\#f5f5f7\],
+[data-theme="dark"] .bg-\[\#f5f5f5\],
+[data-theme="dark"] .bg-\[\#f3f3f6\],
+[data-theme="dark"] .bg-\[\#f3f3f3\],
+[data-theme="dark"] .bg-\[\#f2f2f2\],
+[data-theme="dark"] .bg-\[\#f0f0f0\] { background-color: #1c1c1f; }
+/* slightly raised dividers/strips */
+[data-theme="dark"] .bg-\[\#ececec\],
+[data-theme="dark"] .bg-\[\#e7e7ea\],
+[data-theme="dark"] .bg-\[\#e0e0e6\],
+[data-theme="dark"] .bg-\[\#dcdce1\],
+[data-theme="dark"] .bg-\[\#d8d8de\] { background-color: #26262c; }
+/* violet tints */
+[data-theme="dark"] .bg-\[\#EEEDFE\],
+[data-theme="dark"] .bg-\[\#faf7ff\],
+[data-theme="dark"] .bg-\[\#e7ddff\] { background-color: #241a44; }
+/* red / pink tints */
+[data-theme="dark"] .bg-\[\#fff5f7\],
+[data-theme="dark"] .bg-\[\#FDECEC\],
+[data-theme="dark"] .bg-red-50,
+[data-theme="dark"] .bg-red-100 { background-color: #2a1416; }
+/* green / emerald tints */
+[data-theme="dark"] .bg-green-50,
+[data-theme="dark"] .bg-green-100,
+[data-theme="dark"] .bg-emerald-50,
+[data-theme="dark"] .bg-emerald-100 { background-color: #122019; }
+/* amber tints */
+[data-theme="dark"] .bg-amber-50,
+[data-theme="dark"] .bg-amber-100 { background-color: #241c0a; }
+/* blue tints */
+[data-theme="dark"] .bg-blue-50,
+[data-theme="dark"] .bg-blue-100 { background-color: #0f1b2e; }
+
+/* semantic text on dark tints — keep readable */
+[data-theme="dark"] .text-green-700,
+[data-theme="dark"] .text-green-800,
+[data-theme="dark"] .text-emerald-700,
+[data-theme="dark"] .text-emerald-800 { color: #6ee7a8; }
+[data-theme="dark"] .text-red-700,
+[data-theme="dark"] .text-red-800 { color: #fca5a5; }
+[data-theme="dark"] .text-amber-700,
+[data-theme="dark"] .text-amber-800,
+[data-theme="dark"] .text-yellow-700 { color: #fcd34d; }
+[data-theme="dark"] .text-blue-700,
+[data-theme="dark"] .text-blue-800 { color: #93c5fd; }

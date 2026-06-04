@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Plotly from "plotly.js-dist-min";
+import { useTheme } from "../../hooks/useTheme";
 
 let cachedNuts3 = null;
 
@@ -10,6 +11,7 @@ function norm(s) {
 export function ProvinceMap({ nuts2Code, data, minHeight = 220, className = "" }) {
   const ref = useRef(null);
   const [geojson, setGeojson] = useState(cachedNuts3);
+  const theme = useTheme();
 
   useEffect(() => {
     if (cachedNuts3) return;
@@ -43,15 +45,15 @@ export function ProvinceMap({ nuts2Code, data, minHeight = 220, className = "" }
       colorscale:[[0,"#F3EEFE"],[0.5,"#7C3AED"],[1,"#2E0B86"]],
       zmin:0, zmax:1, showscale:false,
       hovertemplate:"<b>%{text}</b><extra></extra>",
-      marker:{ line:{ color:"white", width:1 } },
+      marker:{ line:{ color: theme === "dark" ? "#161618" : "white", width:1 } },
     }], {
-      geo:{ fitbounds:"geojson", visible:false, projection:{type:"mercator"}, bgcolor:"white" },
-      paper_bgcolor:"white", plot_bgcolor:"white",
+      geo:{ fitbounds:"geojson", visible:false, projection:{type:"mercator"}, bgcolor:"rgba(0,0,0,0)" },
+      paper_bgcolor:"rgba(0,0,0,0)", plot_bgcolor:"rgba(0,0,0,0)",
       margin:{ t:0, b:0, l:0, r:0 },
     }, { responsive:true, displayModeBar:false });
 
     return () => { if (element) Plotly.purge(element); };
-  }, [geojson, nuts2Code, data]);
+  }, [geojson, nuts2Code, data, theme]);
 
   if (!geojson) return (
     <div className="flex items-center justify-center" style={{ minHeight }}>

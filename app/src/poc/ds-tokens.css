@@ -1,0 +1,100 @@
+/* ============================================================
+   OE Design System — Token CSS (Light Mode)
+   Importato da ds-tokens 1.css nella root del progetto.
+   Non modificare questo file direttamente.
+   ============================================================ */
+
+:root {
+  /* BACKGROUND */
+  --color-background-primary:           #4400b3;
+  --color-background-primary-hover:     #340088;
+  --color-background-primary-active:    #270065;
+  --color-background-primary-light:     #b991ff;
+  --color-background-primary-lighter:   #efe5ff;
+
+  --color-background-secondary:         #545454;
+  --color-background-secondary-dark:    #2c2c2c;
+  --color-background-secondary-light:   #e7e7e7;
+  --color-background-secondary-lighter: #f1f1f1;
+  --color-background-secondary-hover:   #2c2c2c;
+
+  --color-background-accent:            #b9ff69;
+  --color-background-inverse:           #ffffff;
+  --color-background-disable:           #e7e7e7;
+
+  --color-background-success:           #007840;
+  --color-background-success-light:     #c9ffe6;
+  --color-background-success-lighter:   #defff0;
+
+  --color-background-warning:           #ca8600;
+  --color-background-warning-light:     #ffcc66;
+  --color-background-warning-lighter:   #ffeecc;
+
+  --color-background-error:             #cc0000;
+  --color-background-error-light:       #ff9999;
+  --color-background-error-lighter:     #ffe5e5;
+
+  /* TEXT */
+  --color-text-primary:                 #000000;
+  --color-text-primary-light:           #545454;
+  --color-text-primary-lighter:         #6e6e6e;
+  --color-text-secondary:               #4400b3;
+  --color-text-secondary-hover:         #340088;
+  --color-text-inverse:                 #ffffff;
+  --color-text-disable:                 #999999;
+  --color-text-success:                 #007840;
+  --color-text-warning:                 #ca8600;
+  --color-text-error:                   #cc0000;
+
+  /* ICON */
+  --color-icon-primary:                 #000000;
+  --color-icon-secondary:               #4400b3;
+  --color-icon-inverse:                 #ffffff;
+  --color-icon-disable:                 #999999;
+  --color-icon-success:                 #007840;
+  --color-icon-warning:                 #ca8600;
+  --color-icon-error:                   #cc0000;
+
+  /* BORDER */
+  --color-border-primary:               #4400b3;
+  --color-border-primary-hover:         #340088;
+  --color-border-secondary:             #545454;
+  --color-border-secondary-hover:       #2c2c2c;
+  --color-border-secondary-light:       #e7e7e7;
+  --color-border-inverse:               #ffffff;
+  --color-border-disabled:              #999999;
+  --color-border-focus:                 #0000ff;
+  --color-border-success:               #007840;
+  --color-border-warning:               #ca8600;
+  --color-border-error:                 #cc0000;
+
+  /* SPACING */
+  --spacing-xxs:        4px;
+  --spacing-xs:         8px;
+  --spacing-s:          16px;
+  --spacing-m:          24px;
+  --spacing-l:          32px;
+  --spacing-xl:         40px;
+  --spacing-2xl:        48px;
+  --spacing-3xl:        64px;
+  --spacing-stack-xs:   8px;
+  --spacing-stack-s:    16px;
+  --spacing-stack-m:    24px;
+  --spacing-inline-xxs: 4px;
+  --spacing-inline-xs:  8px;
+  --spacing-inline-s:   16px;
+  --spacing-inset-xs:   8px;
+  --spacing-inset-s:    16px;
+  --spacing-inset-m:    24px;
+
+  /* BORDER WIDTH */
+  --border-base:   1px;
+  --border-double: 2px;
+  --border-thick:  4px;
+
+  /* BORDER RADIUS */
+  --radius-none:    0px;
+  --radius-smooth:  2px;
+  --radius-rounded: 40px;
+  --radius-circle:  80px;
+}
