@@ -1,5 +1,8 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useWizard } from '../../hooks/useWizard'
+import { getMatrixQuestions } from '../../data/poc_docfap/evaluation_matrix'
+import { INTERVENTION_CATEGORIES } from '../../data/poc_docfap/intervention_categories_layer3'
+import { getCostiByCategory, calcolaCostoTipologia } from '../../data/poc_docfap/costi_per_tipologia'
 import { WizardShell, type WizardClosePayload, type WizardPhaseDefinition } from './WizardShell'
 import { Step0_Intro } from './fase0/Step0_Intro'
 import { Step1_1_Ente } from './fase1/Step1_1_Ente'
@@ -35,10 +38,127 @@ function getAlternativaOrdinalLabel(id: SupportedAlternativaId): string {
 }
 
 export function DocfapWizard({ onClose }: DocfapWizardProps) {
-  const { state } = useWizard()
+  const {
+    state,
+    setRup,
+    setFab,
+    setCluster,
+    setProblema,
+    setUrgenza,
+    setScenarioZeroAnswers,
+    setScenarioZeroNarrative,
+    setAlternativeDefinite,
+    addAlternativa,
+    setAlternativeAggiuntaCompletata,
+    setMcaScores,
+    prefillPOCAnswers,
+  } = useWizard()
   const supportedAlternativeIds = useMemo(
     () => state.alternativeDefinite.filter(isSupportedAlternativaId),
     [state.alternativeDefinite],
+  )
+
+  // Autoriempi: prefill demo (scenario Asilo Nido — Comune di Colleferro, cluster C03)
+  // per la fase corrente. Mostrato solo sulle fasi di input (1·Inquadramento,
+  // 2·Bisogno, 3·Alternative), come nel wizard di Valutazione.
+  const autoFillPhase = useCallback(
+    (phaseIndex: number) => {
+      switch (phaseIndex) {
+        case 1:
+          setRup({ nome: 'Marco Bianchi', qualifica: 'RUP', email: 'marco.bianchi@comune.colleferro.rm.it' })
+          // FAB-51 = "Offerta insufficiente di posti nido (0-3 anni)" · tema TC03 · cluster C03
+          setFab('FAB-51', 'TC03')
+          setCluster('C03')
+          break
+        case 2:
+          setProblema({
+            descrizione:
+              'Carenza di posti negli asili nido comunali: la domanda di servizi educativi 0-3 anni supera ampiamente l’offerta attuale, con un gap stimato di 178 posti e lunghe liste di attesa.',
+            documentato: 'si',
+          })
+          setUrgenza('Breve termine (1-3 anni)')
+          // Scenario zero: seleziona le risposte reali (FAB-51) così le opzioni
+          // risultano spuntate e la narrativa è coerente con esse.
+          setScenarioZeroAnswers({
+            'DC-SZ-051-01': 'lista_attesa',
+            'DC-SZ-051-02': ['occupazione_femminile', 'costi_privati'],
+          })
+          setScenarioZeroNarrative(
+            "Il servizio educativo 0-3 è presente e funzionante, ma le liste d'attesa sono lunghe, con una quota significativa di domande che non trovano risposta nell'offerta disponibile. Si registra inoltre un tasso di occupazione femminile inferiore alla media, correlato alla mancanza di servizi di cura per la prima infanzia, e famiglie che ricorrono a soluzioni private a costi elevati.",
+          )
+          // q1Value (dato quantitativo di contesto) è facoltativo → non lo precompiliamo.
+          break
+        case 3: {
+          setAlternativeDefinite(['A1', 'A2'])
+          // Categoria/tipologia DEVONO essere codici reali: la categoria è un
+          // cat.code i cui fabbisogno_codes includono il FAB selezionato, la
+          // tipologia un tipologia_code applicabile. (label inventate = select vuote.)
+          const cats = INTERVENTION_CATEGORIES.filter((c) => c.fabbisogno_codes.includes(state.fabId ?? 'FAB-51'))
+          const cat = cats.find((c) => c.code === 'C106') ?? cats[0]
+          const categoria = cat?.code ?? 'C106'
+          const clusterId = cat?.cluster_id && cat.cluster_id !== 'NONE' ? cat.cluster_id : 'C03'
+          // CAPEX = CP_med × quantità (stessa formula di InputParamsStep), così la
+          // fase è valida subito ed è robusta a ri-click di Autoriempi.
+          const costiRecords = getCostiByCategory(categoria)
+          const capexFor = (costiCode: 'NUOVA_REALIZZAZIONE' | 'RISTRUTTURAZIONE', qty: number): number => {
+            if (costiRecords.length === 0) return 0
+            const costo = calcolaCostoTipologia(costiRecords[0], costiCode)
+            return costo ? Math.round(costo.val_med * qty) : 0
+          }
+          const a1Capex = capexFor('NUOVA_REALIZZAZIONE', 1500)
+          const a2Capex = capexFor('RISTRUTTURAZIONE', 1100)
+          addAlternativa('A1', {
+            categoria,
+            tipologia: 'nuova_realizzazione',
+            quantita: 1500,
+            obiettivoCer: 178,
+            capex: a1Capex,
+            opex: Math.round(a1Capex * 0.05),
+            nome: 'Nuova costruzione asilo nido',
+            clusterId,
+            unitaMisura: 'posti',
+          } as never)
+          addAlternativa('A2', {
+            categoria,
+            tipologia: 'ristrutturazione',
+            quantita: 1100,
+            obiettivoCer: 120,
+            capex: a2Capex,
+            opex: Math.round(a2Capex * 0.05),
+            nome: 'Ristrutturazione asilo nido esistente',
+            clusterId,
+            unitaMisura: 'posti',
+          } as never)
+          setCluster(clusterId)
+          setAlternativeAggiuntaCompletata(true)
+          prefillPOCAnswers('C03', ['A1', 'A2'])
+          break
+        }
+        case 4: {
+          // Analisi Multicriteria: assegna un giudizio qualitativo (A/M/B/N) a ogni
+          // cella della matrice (domande × alternative) con un pattern differenziato.
+          const clusterIds = state.clusterId ? [state.clusterId] : []
+          const questions = getMatrixQuestions(clusterIds)
+          const altIds = state.alternativeDefinite.filter(isSupportedAlternativaId)
+          // Pattern per alternativa: ciclato sull'indice domanda.
+          const patterns: Record<string, Array<'A' | 'M' | 'B' | 'N'>> = {
+            A1: ['A', 'M', 'A', 'M', 'A', 'M'],
+            A2: ['M', 'A', 'M', 'B', 'M', 'A'],
+            A3: ['B', 'B', 'M', 'A', 'B', 'M'],
+          }
+          altIds.forEach((altId) => {
+            const pattern = patterns[altId] ?? patterns.A1
+            questions.forEach((q, qi) => {
+              setMcaScores(altId, q.qCode, pattern[qi % pattern.length])
+            })
+          })
+          break
+        }
+        default:
+          break
+      }
+    },
+    [setRup, setFab, setCluster, setProblema, setUrgenza, setScenarioZeroAnswers, setScenarioZeroNarrative, setAlternativeDefinite, addAlternativa, setAlternativeAggiuntaCompletata, setMcaScores, prefillPOCAnswers, state.clusterId, state.alternativeDefinite, state.fabId],
   )
 
   const phases = useMemo<WizardPhaseDefinition[]>(() => {
@@ -302,5 +422,12 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
     ]
   }, [supportedAlternativeIds])
 
-  return <WizardShell phases={phases} onClose={onClose} />
+  return (
+    <WizardShell
+      phases={phases}
+      onClose={onClose}
+      onAutofill={autoFillPhase}
+      autofillPhaseIndexes={[1, 2, 3, 4]}
+    />
+  )
 }

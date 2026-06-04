@@ -33,6 +33,11 @@
   --color-background-inverse: #ffffff;
   --color-background-disable: #e5e5e8;
 
+  /* Page surface for the section "home" pages — aligned to app/'s
+     own Valutazione list (#f5f5f5) so DOCFAP & Valutazione share
+     the same backdrop. Theme-aware (dark value below). */
+  --color-background-app-page: #f5f5f5;
+
   /* TEXT */
   --color-text-primary: #0e0e10;
   --color-text-primary-light: #43434a;
@@ -55,12 +60,31 @@
   --color-border-focus: #5b21f7;
 
   /* FONTS — Atkinson → Inter / JetBrains Mono */
+  --font-family-0: "JetBrains Mono", ui-monospace, monospace;
   --font-family-1: "Inter", system-ui, sans-serif;
   --font-family-body: "Inter", system-ui, sans-serif;
   --font-family-mono: "JetBrains Mono", ui-monospace, monospace;
 
   /* spacing alias some wizard components reference */
   --spacing-inset-squish-s: 8px 16px;
+
+  /* Type scale — aligned to the Valutazione wizard (22px heading / 14px body)
+     so the DOCFAP wizard shares the same page zoom & font sizing. */
+  --type-heading-l-size: 26px;
+  --type-heading-l-lh: 1.2;
+  --type-heading-m-size: 22px;
+  --type-heading-m-lh: 1.2;
+  --type-heading-s-size: 18px;
+  --type-body-l-size: 16px;
+  --type-body-m-size: 15px;
+  --type-body-m-lh: 1.5;
+  --type-body-s-size: 14px;
+  --type-body-xs-size: 13px;
+  --type-body-xxs-size: 12px;
+  --type-caption-size: 11px;
+  --type-weight-regular: 400;
+  --type-weight-medium: 500;
+  --type-weight-bold: 700;
 }
 
 /* ---- POC content scope: structural resets confined here ---- */
@@ -130,6 +154,20 @@
   background-color: #f3eefe;
 }
 
+/* ---- Section "home" pages: match app/'s Valutazione list padding ----
+   ValutazioniList uses px-6 pt-7 xl:px-8 (24px sides / 32px ≥1280px, 28px top).
+   Mirroring it here keeps the page title from "jumping" when switching
+   between /valutazioni and /impatti/docfap (same chrome, same offsets). */
+.docfap-home {
+  padding: 28px 24px 24px;
+}
+@media (min-width: 1280px) {
+  .docfap-home {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
 /* ---- Skip link (WCAG) shared by HomeLauncher / AppShell ---- */
 .skip-link {
   position: absolute;
@@ -166,6 +204,7 @@
   --color-background-accent: #c7f03a;
   --color-background-inverse: #1f1f24;
   --color-background-disable: #2a2a30;
+  --color-background-app-page: #161618;
 
   --color-text-primary: #f3f3f5;
   --color-text-primary-light: #c7c7cd;

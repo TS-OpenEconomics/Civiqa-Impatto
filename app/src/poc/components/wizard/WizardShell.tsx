@@ -47,6 +47,10 @@ export interface WizardClosePayload {
 interface WizardShellProps {
   phases: WizardPhaseDefinition[]
   onClose?: (payload: WizardClosePayload) => void
+  /** Demo prefill for the current phase (analogo a "Autoriempi questa pagina"). */
+  onAutofill?: (phaseIndex: number) => void
+  /** Indici di fase su cui mostrare il bottone Autoriempi. */
+  autofillPhaseIndexes?: number[]
 }
 
 interface WizardPosition {
@@ -168,7 +172,7 @@ function IconCheckSmall() {
   )
 }
 
-export function WizardShell({ phases, onClose }: WizardShellProps) {
+export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes }: WizardShellProps) {
   const { state, setStep, completeStep, isStepValid, reset } = useWizard()
 
   const initialPhaseIndex = clamp(state.currentStep, 0, Math.max(0, phases.length - 1))
@@ -302,12 +306,11 @@ export function WizardShell({ phases, onClose }: WizardShellProps) {
       case 'fase2-problema':
         return (
           (state.problema.descrizione ?? '').trim().length > 0 &&
-          (state.problema.soddisfatto ?? '').trim().length > 0 &&
           (state.urgenza ?? '').trim().length > 0
         )
       case 'fase2-target':
         return true
-      case 'fase3-scenario-zero':
+      case 'fase2-sz-questions':
         return (state.scenarioZeroNarrative ?? '').trim().length > 0
       case 'fase4-mca': {
         const clusterIds = state.clusterId ? [state.clusterId] : []
@@ -332,7 +335,6 @@ export function WizardShell({ phases, onClose }: WizardShellProps) {
     state.alternativeDefinite,
     state.mcaScores,
     state.problema.descrizione,
-    state.problema.soddisfatto,
     state.scenarioZeroNarrative,
     state.urgenza,
   ])
@@ -514,6 +516,7 @@ export function WizardShell({ phases, onClose }: WizardShellProps) {
                     <div style={phaseHeaderStyle}>
                       <div style={phaseTimelineColStyle} aria-hidden={!isCompletedPhase ? true : undefined}>
                         <span
+                          className="wz-phase-dot"
                           style={{
                             ...phaseDotStyle,
                             ...(isCurrentPhase ? phaseDotCurrentStyle : null),
@@ -617,22 +620,24 @@ export function WizardShell({ phases, onClose }: WizardShellProps) {
       <section style={contentColumnStyle}>
         <header style={headerBarStyle}>
           <div style={headerActionsStyle}>
-            <button type="button" className="wizard-shell-interactive" style={utilityButtonStyle} aria-label="Salva bozza">
-              <IconSave />
-            </button>
-            <button type="button" className="wizard-shell-interactive" style={utilityButtonStyle} aria-label="Indice step">
-              <IconList />
-            </button>
-            <button type="button" className="wizard-shell-interactive" style={utilityButtonStyle} aria-label="Supporto">
-              <IconHelp />
+            <button
+              type="button"
+              onClick={() => finalizeClose(true)}
+              className="flex items-center gap-2 border border-ink-200 px-4 py-2 text-[13px] font-semibold text-ink-700 transition-colors hover:border-brand-violet hover:text-brand-violet"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M5 4h11l3 3v13a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 4v5h7M8 21v-6h8v6" />
+              </svg>
+              Salva bozza
             </button>
             <button
               type="button"
-              className="wizard-shell-interactive"
               onClick={requestClose}
-              style={closeButtonStyle}
+              className="flex items-center gap-2 text-[14px] font-semibold text-brand-violet"
             >
               Chiudi e torna al Docfap
+              <span aria-hidden="true" className="text-[20px] leading-none">&times;</span>
             </button>
           </div>
         </header>
@@ -656,6 +661,18 @@ export function WizardShell({ phases, onClose }: WizardShellProps) {
               ...(isIntroPhase ? questionCardIntroStyle : questionCardRegularStyle),
             }}
           >
+            {onAutofill && !isIntroPhase && (autofillPhaseIndexes ?? []).includes(position.phaseIndex) && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="wizard-shell-interactive"
+                  onClick={() => onAutofill(position.phaseIndex)}
+                  style={autofillButtonStyle}
+                >
+                  Autoriempi questa pagina
+                </button>
+              </div>
+            )}
             <div
               style={{
                 ...questionHeaderBlockStyle,
@@ -737,42 +754,41 @@ export function WizardShell({ phases, onClose }: WizardShellProps) {
       </section>
 
       {closeConfirmOpen && (
-        <div style={confirmBackdropStyle}>
+        <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/40 px-4">
           <div
             ref={dialogRef}
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="wizard-close-title"
             aria-describedby="wizard-close-desc"
-            style={confirmDialogStyle}
+            className="w-full max-w-md border border-ink-100 bg-white p-6 shadow-xl"
           >
-            <h3 id="wizard-close-title" style={confirmTitleStyle}>Vuoi salvare i progressi prima di uscire?</h3>
-            <p id="wizard-close-desc" style={confirmTextStyle}>
-              Puoi salvare la bozza corrente, uscire senza salvare oppure annullare e continuare il wizard.
+            <h3 id="wizard-close-title" className="text-[18px] font-bold text-ink-900">
+              Vuoi salvare i progressi prima di uscire?
+            </h3>
+            <p id="wizard-close-desc" className="mt-2 text-[14px] leading-[1.5] text-ink-600">
+              Puoi salvare la bozza corrente tra i tuoi Docfap, uscire senza salvare oppure annullare e continuare la compilazione.
             </p>
-            <div style={confirmActionsStyle}>
+            <div className="mt-6 flex flex-col gap-2">
               <button
                 ref={saveAndCloseRef}
                 type="button"
-                className="wizard-shell-interactive"
-                style={confirmPrimaryStyle}
                 onClick={() => finalizeClose(true)}
+                className="flex items-center justify-center gap-2 bg-brand-violet px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-brand-violet-dark"
               >
-                Salva e chiudi
+                Salva bozza ed esci
               </button>
               <button
                 type="button"
-                className="wizard-shell-interactive"
-                style={confirmDangerStyle}
                 onClick={() => finalizeClose(false)}
+                className="px-5 py-2.5 text-[14px] font-semibold text-ink-700 transition-colors hover:text-brand-violet"
               >
                 Esci senza salvare
               </button>
               <button
                 type="button"
-                className="wizard-shell-interactive"
-                style={confirmNeutralStyle}
                 onClick={() => setCloseConfirmOpen(false)}
+                className="px-5 py-2.5 text-[14px] font-medium text-ink-500 transition-colors hover:text-ink-900"
               >
                 Annulla
               </button>
@@ -997,30 +1013,35 @@ const headerBarStyle: CSSProperties = {
 const headerActionsStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
-  gap: 'var(--spacing-inline-xs)',
+  gap: '16px',
 }
 
-const utilityButtonStyle: CSSProperties = {
-  width: '40px',
-  height: '40px',
+const saveDraftButtonStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '8px',
   border: '1px solid var(--color-border-secondary-light)',
   background: 'var(--color-background-inverse)',
   color: 'var(--color-text-primary-light)',
   borderRadius: 'var(--radius-smooth)',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
+  padding: '8px 16px',
+  fontFamily: 'var(--font-family-1, sans-serif)',
+  fontSize: 'var(--type-body-xs-size, 13px)',
+  fontWeight: 'var(--type-weight-bold, 700)',
   cursor: 'pointer',
 }
 
 const closeButtonStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '8px',
   border: 'none',
   background: 'transparent',
   cursor: 'pointer',
   color: 'var(--color-text-secondary)',
-  fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-  fontSize: 'var(--type-body-s-size, 16px)',
-  fontWeight: 'var(--type-weight-medium, 500)',
+  fontFamily: 'var(--font-family-1, sans-serif)',
+  fontSize: 'var(--type-body-s-size, 14px)',
+  fontWeight: 'var(--type-weight-bold, 700)',
   padding: 0,
 }
 
@@ -1053,6 +1074,18 @@ const questionCardRegularStyle: CSSProperties = {
   paddingTop: '24px',
 }
 
+const autofillButtonStyle: CSSProperties = {
+  border: '1px solid var(--color-border-primary)',
+  background: 'var(--color-background-inverse)',
+  color: 'var(--color-text-secondary)',
+  borderRadius: 'var(--radius-smooth)',
+  padding: '8px 16px',
+  fontFamily: 'var(--font-family-1, sans-serif)',
+  fontSize: 'var(--type-body-xs-size, 13px)',
+  fontWeight: 'var(--type-weight-bold, 700)',
+  cursor: 'pointer',
+}
+
 const questionHeaderBlockStyle: CSSProperties = {
   display: 'grid',
   gap: 'var(--spacing-stack-xxs, 4px)',
@@ -1070,6 +1103,7 @@ const questionHeaderIntroStyle: CSSProperties = {
 
 const questionHeadingStyle: CSSProperties = {
   margin: 0,
+  outline: 'none', // h2 riceve focus programmatico (a11y) → niente riquadro nero
   color: 'var(--color-text-primary)',
   fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
   fontSize: 'var(--type-heading-m-size, 32px)',

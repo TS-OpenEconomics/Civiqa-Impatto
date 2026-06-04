@@ -91,7 +91,7 @@ export function InputParamsStep({ alternativaId }: Props) {
 
   // ── State ────────────────────────────────────────────────────────────────
 
-  const [qty, setQty] = useState('')
+  const [qty, setQty] = useState(() => (alt?.quantita && alt.quantita > 0 ? String(alt.quantita) : ''))
   const [cpStr, setCpStr] = useState('')          // user-selected CP (slider or manual)
   const [capexStr, setCapexStr] = useState('')
   const [capexIsCustom, setCapexIsCustom] = useState(false)
@@ -103,9 +103,25 @@ export function InputParamsStep({ alternativaId }: Props) {
   const capexIsCustomRef = useRef(false)
   const opexPctStrRef = useRef(opexPctStr)
   opexPctStrRef.current = opexPctStr
+  // Skip the category-reset on first mount so autofilled values survive.
+  const firstCategoriaRun = useRef(true)
+
+  // Sincronizza la quantità dallo store quando cambia dall'esterno (es. Autoriempi),
+  // così i valori autofillati compaiono e il CAPEX viene ricalcolato.
+  const storedQty = alt?.quantita ?? 0
+  useEffect(() => {
+    if (storedQty > 0 && focusedField !== `qty-${alternativaId}`) {
+      setQty((prev) => (prev === String(storedQty) ? prev : String(storedQty)))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storedQty, alternativaId])
 
   // Reset everything when category changes
   useEffect(() => {
+    if (firstCategoriaRun.current) {
+      firstCategoriaRun.current = false
+      return
+    }
     setQty('')
     setCpStr('')
     setCapexStr('')

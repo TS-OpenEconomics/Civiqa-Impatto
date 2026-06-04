@@ -26,10 +26,11 @@ export function useWizard() {
             isFilled(state.fabId ?? '')
           )
         case 2:
+          // Lo scenario zero è obbligatorio; il dato quantitativo (q1Value) è facoltativo.
           return (
             isFilled(state.problema.descrizione) &&
-            isFilled(state.problema.soddisfatto) &&
-            (state.q1Value ?? 0) > 0
+            isFilled(state.urgenza) &&
+            isFilled(state.scenarioZeroNarrative)
           )
         case 3: {
           const hasMinimum = state.alternativeDefinite.length >= 2

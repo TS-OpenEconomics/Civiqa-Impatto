@@ -102,66 +102,57 @@ export function McaQualitativa() {
 
   return (
     <div style={rootStyle}>
-      <style>{selectStyles}</style>
+      <style>{segStyles}</style>
       <p style={progressStyle}>
-        {filledCells} / {totalCells} celle compilate
+        {filledCells} / {totalCells} valutazioni compilate
       </p>
-      <div style={tableWrapStyle}>
-        <table style={tableStyle}>
-          <colgroup>
-            <col style={{ width: '320px', minWidth: '220px' }} />
-            {alternativeIds.map((id) => (
-              <col key={id} style={{ minWidth: '180px' }} />
-            ))}
-          </colgroup>
-          <thead>
-            <tr>
-              <th scope="col" style={thLabelStyle}>Domanda</th>
-              {alternativeIds.map((altId) => (
-                <th key={altId} scope="col" style={thAltStyle}>
-                  {getAltLabel(altId)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {questions.map((q, rowIndex) => (
-              <tr key={q.qCode} style={rowIndex % 2 === 1 ? trAltStyle : undefined}>
-                <th scope="row" style={rowHeaderStyle}>
-                  <span style={qLabelStyle}>{q.text}</span>
-                </th>
-                {alternativeIds.map((altId) => {
-                  const current = (state.mcaScores[altId] ?? {})[q.qCode] as EvalScale | undefined
-                  const cellId = `mca-${altId}-${q.qCode}`
-                  return (
-                    <td key={altId} style={tdStyle}>
-                      <select
-                        id={cellId}
-                        className="mca-select"
-                        value={current ?? ''}
-                        onChange={(e) => {
-                          const val = e.target.value as EvalScale
-                          if (val) setMcaScores(altId, q.qCode, val)
-                        }}
-                        aria-label={`${q.text} — ${getAltLabel(altId)}`}
-                        style={selectStyle(!!current)}
-                      >
-                        <option value="" disabled>—</option>
-                        {SCALE_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                    </td>
-                  )
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+      <div style={criteriaListStyle}>
+        {questions.map((q, qi) => (
+          <fieldset key={q.qCode} style={criterionCardStyle}>
+            <legend style={criterionLegendStyle}>
+              <span style={criterionNumStyle}>{qi + 1}</span>
+              <span style={criterionTextStyle}>{q.text}</span>
+            </legend>
+            <div style={altListStyle}>
+              {alternativeIds.map((altId) => {
+                const current = (state.mcaScores[altId] ?? {})[q.qCode] as EvalScale | undefined
+                return (
+                  <div key={altId} style={altRowStyle}>
+                    <span style={altNameStyle}>{getAltLabel(altId)}</span>
+                    <div
+                      role="radiogroup"
+                      aria-label={`${q.text} — ${getAltLabel(altId)}`}
+                      style={segGroupStyle}
+                    >
+                      {SCALE_OPTIONS.map((opt) => {
+                        const selected = current === opt.value
+                        return (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            role="radio"
+                            aria-checked={selected}
+                            className="mca-seg"
+                            onClick={() => setMcaScores(altId, q.qCode, opt.value)}
+                            style={{ ...segBtnStyle, ...(selected ? segBtnSelectedStyle : null) }}
+                          >
+                            {opt.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </fieldset>
+        ))}
       </div>
+
       {!allFilled && (
         <p style={hintStyle}>
-          Compila tutte le celle per continuare — {totalCells - filledCells} risposte mancanti
+          Completa tutte le valutazioni per continuare — {totalCells - filledCells} mancanti
         </p>
       )}
     </div>
@@ -170,13 +161,17 @@ export function McaQualitativa() {
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
-const selectStyles = `
-  .mca-select:focus {
-    outline: none;
-    box-shadow: 0 0 0 1px rgba(110, 26, 255, 0.55);
+const segStyles = `
+  .mca-seg:hover {
+    border-color: var(--color-border-primary);
+    color: var(--color-text-primary);
   }
-  .mca-select:hover {
-    border-color: var(--color-border-secondary);
+  .mca-seg[aria-checked="true"]:hover {
+    color: var(--color-text-inverse);
+  }
+  .mca-seg:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-border-focus);
   }
 `
 
@@ -203,83 +198,96 @@ const emptyStyle: CSSProperties = {
   borderRadius: 'var(--radius-smooth)',
 }
 
-const tableWrapStyle: CSSProperties = {
-  overflowX: 'auto',
+const criteriaListStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--spacing-stack-s)',
+}
+
+const criterionCardStyle: CSSProperties = {
   border: '1px solid var(--color-border-secondary-light)',
   borderRadius: 'var(--radius-smooth)',
+  background: 'var(--color-background-inverse)',
+  padding: 'var(--spacing-inset-s) var(--spacing-inset-m) var(--spacing-inset-m)',
+  margin: 0,
 }
 
-const tableStyle: CSSProperties = {
-  width: '100%',
-  borderCollapse: 'collapse',
+const criterionLegendStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: 'var(--spacing-inline-s)',
+  padding: 0,
+  marginBottom: 'var(--spacing-stack-s)',
+  color: 'var(--color-text-primary)',
+  fontWeight: 600,
+  lineHeight: 1.4,
+}
+
+const criterionNumStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 24,
+  height: 24,
+  flexShrink: 0,
+  background: 'var(--color-background-primary)',
+  color: 'var(--color-text-inverse)',
+  fontWeight: 700,
+  fontSize: 'var(--type-body-xs-size, 13px)',
+}
+
+const criterionTextStyle: CSSProperties = {
+  paddingTop: '2px',
+}
+
+const altListStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--spacing-stack-xs)',
+}
+
+const altRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 'var(--spacing-inline-m)',
+  flexWrap: 'wrap',
+  paddingTop: 'var(--spacing-stack-xs)',
+  borderTop: '1px solid var(--color-border-secondary-light)',
+}
+
+const altNameStyle: CSSProperties = {
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
   fontSize: 'var(--type-body-s-size, 14px)',
+  flex: '1 1 200px',
+  minWidth: '160px',
 }
 
-const thLabelStyle: CSSProperties = {
-  textAlign: 'left',
-  padding: 'var(--spacing-inset-s)',
-  background: '#f0f0f0',
-  color: 'var(--color-text-primary)',
-  fontWeight: 700,
-  borderBottom: '1px solid #d0d0d0',
-  fontSize: 'var(--type-body-xs-size, 13px)',
-  letterSpacing: '0.02em',
+const segGroupStyle: CSSProperties = {
+  display: 'flex',
+  gap: '6px',
+  flex: '1 1 320px',
+  maxWidth: '420px',
 }
 
-const thAltStyle: CSSProperties = {
+const segBtnStyle: CSSProperties = {
+  flex: 1,
+  padding: '8px 6px',
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
+  background: 'var(--color-background-inverse)',
+  color: 'var(--color-text-primary-light)',
+  fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
+  fontSize: 'var(--type-body-s-size, 14px)',
+  fontWeight: 600,
   textAlign: 'center',
-  padding: 'var(--spacing-inset-s)',
-  background: '#f0f0f0',
-  color: 'var(--color-text-primary)',
-  fontWeight: 700,
-  borderBottom: '1px solid #d0d0d0',
-  borderLeft: '1px solid #d0d0d0',
-  fontSize: 'var(--type-body-xs-size, 13px)',
-  letterSpacing: '0.01em',
+  cursor: 'pointer',
+  transition: 'background 0.12s ease, border-color 0.12s ease, color 0.12s ease',
 }
 
-const rowHeaderStyle: CSSProperties = {
-  textAlign: 'left',
-  padding: 'var(--spacing-inset-s)',
-  borderBottom: '1px solid var(--color-border-secondary-light)',
-  verticalAlign: 'middle',
-}
-
-const qLabelStyle: CSSProperties = {
-  display: 'block',
-  color: 'var(--color-text-primary)',
-  fontWeight: 400,
-  lineHeight: 1.45,
-}
-
-const tdStyle: CSSProperties = {
-  padding: 'var(--spacing-inset-xs) var(--spacing-inset-s)',
-  borderBottom: '1px solid var(--color-border-secondary-light)',
-  borderLeft: '1px solid var(--color-border-secondary-light)',
-  textAlign: 'center',
-  verticalAlign: 'middle',
-}
-
-const trAltStyle: CSSProperties = {
-  background: 'var(--color-background-secondary-lightest)',
-}
-
-function selectStyle(hasValue: boolean): CSSProperties {
-  return {
-    width: '100%',
-    maxWidth: '140px',
-    padding: '6px var(--spacing-inset-xs)',
-    border: `1px solid ${hasValue ? 'var(--color-border-primary)' : 'var(--color-border-secondary-light)'}`,
-    borderRadius: 'var(--radius-smooth)',
-    fontSize: 'var(--type-body-s-size, 14px)',
-    fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-    fontWeight: hasValue ? 600 : 400,
-    color: hasValue ? 'var(--color-text-primary)' : 'var(--color-text-primary-light)',
-    background: hasValue ? 'var(--color-background-inverse)' : 'var(--color-background-secondary-lightest)',
-    cursor: 'pointer',
-    appearance: 'auto',
-    outline: 'none',
-  }
+const segBtnSelectedStyle: CSSProperties = {
+  background: 'var(--color-background-primary)',
+  borderColor: 'var(--color-background-primary)',
+  color: 'var(--color-text-inverse)',
 }
 
 const hintStyle: CSSProperties = {

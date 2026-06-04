@@ -49,16 +49,6 @@ function IconDocfap({ size }: { size: number }) {
   )
 }
 
-function IconCalendar({ size }: { size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="4.5" width="18" height="16" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M7.5 2v4M16.5 2v4M3 9h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M7 13h3M14 13h3M7 16.5h3M14 16.5h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  )
-}
-
 function IconCollapse({ collapsed }: { collapsed: boolean }) {
   return (
     <svg
@@ -90,7 +80,6 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/impatti/dashboard',      label: 'Dashboard',     icon: IconDashboard },
   { to: '/impatti/docfap',         label: 'Docfap',        icon: IconDocfap },
   { to: '/valutazioni',            label: 'Valutazione',   icon: IconValutazione },
-  { to: '/impatti/pianificazione', label: 'Pianificazione', icon: IconCalendar },
   { to: '/impatti/composing',      label: 'Composing',     icon: IconComposing, disabled: true },
 ]
 

@@ -233,10 +233,16 @@ function parseStoredState(raw: string | null): WizardStoreState | null {
   }
 }
 
+// Deep clone so the shared DEFAULT_WIZARD_STATE (with nested objects) is never
+// mutated/aliased — guarantees reset() always yields a pristine state.
+function freshState(): WizardStoreState {
+  return structuredClone(DEFAULT_WIZARD_STATE)
+}
+
 function loadInitialState(): WizardStoreState {
-  if (!isBrowser()) return DEFAULT_WIZARD_STATE
+  if (!isBrowser()) return freshState()
   const stateFromStorage = parseStoredState(window.sessionStorage.getItem(STORAGE_KEY))
-  return stateFromStorage ?? DEFAULT_WIZARD_STATE
+  return stateFromStorage ?? freshState()
 }
 
 let currentState = loadInitialState()
@@ -389,7 +395,7 @@ const actions: WizardStoreActions = {
     updateState((prev) => ({ ...prev, decisioneRUP: decisione }))
   },
   reset() {
-    updateState(() => ({ ...DEFAULT_WIZARD_STATE }))
+    updateState(() => freshState())
   },
 
   prefillPOCAnswers(clusterId: string, altIds: AlternativaId[]) {

@@ -191,10 +191,12 @@ function IconChevronRight() {
   )
 }
 
-function IconPlus() {
+function IconDoc() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+      <path d="M14 3v5h5" />
+      <path d="M9 13h6M9 17h6" />
     </svg>
   )
 }
@@ -322,10 +324,13 @@ export function DocfapList() {
       {showWizard ? (
         <DocfapWizard onClose={() => setShowWizard(false)} />
       ) : null}
-      <main aria-label="Lista Docfap" style={mainStyle}>
+      <main aria-label="Lista Docfap" className="docfap-home" style={mainStyle}>
         <header style={headerStyle}>
           <div>
-            <h1 style={h1Style}>Docfap</h1>
+            <div style={titleRowStyle}>
+              <span style={titleIconStyle} aria-hidden="true"><IconDoc /></span>
+              <h1 style={h1Style}>Docfap</h1>
+            </div>
             <p style={subtitleStyle}>
               Compila il Docfap per confrontare alternative progettuali secondo la normativa prevista dall'Allegato I.7 del D.Lgs. 36/2023, con analisi costi-benefici, impatto, rischio, sensitività e supporto alla decisione del RUP.
             </p>
@@ -333,7 +338,7 @@ export function DocfapList() {
           <div style={headerActionsStyle}>
             <button type="button" onClick={handleOpenWizard} style={ctaStyle}>
               <span>Nuovo Docfap</span>
-              <IconPlus />
+              <span style={ctaPlusStyle} aria-hidden="true">+</span>
             </button>
           </div>
         </header>
@@ -547,8 +552,9 @@ export function DocfapList() {
 const mainStyle: CSSProperties = {
   display: 'grid',
   gap: 'var(--spacing-stack-m)',
-  padding: 'var(--spacing-inset-m)',
-  background: 'var(--color-background-secondary-light)',
+  /* padding handled by .docfap-home so it can match app/'s responsive
+     px-6 / xl:px-8 (media queries aren't possible in inline styles). */
+  background: 'var(--color-background-app-page, #f5f5f5)',
   minHeight: '100vh',
 }
 
@@ -568,8 +574,13 @@ const headerActionsStyle: CSSProperties = {
 }
 
 const ctaStyle: CSSProperties = {
-  minHeight: '44px',
-  padding: '0 var(--spacing-inset-s)',
+  width: '358px',
+  maxWidth: '100%',
+  height: '61px',
+  /* allineato verticalmente al bottone "Nuova valutazione" (xl:mt-8 = 32px),
+     così la CTA non "salta" passando tra le due home */
+  marginTop: '32px',
+  padding: '0 20px',
   border: '1px solid var(--color-background-primary)',
   borderRadius: 'var(--radius-smooth)',
   background: 'var(--color-background-primary)',
@@ -577,20 +588,41 @@ const ctaStyle: CSSProperties = {
   cursor: 'pointer',
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '8px',
-  fontWeight: 700,
+  justifyContent: 'space-between',
+  fontSize: 'var(--type-body-m-size, 15px)',
+  fontWeight: 500,
+}
+
+const ctaPlusStyle: CSSProperties = {
+  fontSize: '28px',
+  lineHeight: 1,
+}
+
+const titleRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+}
+
+const titleIconStyle: CSSProperties = {
+  display: 'inline-flex',
+  color: 'var(--color-icon-primary)',
 }
 
 const h1Style: CSSProperties = {
   margin: 0,
   color: 'var(--color-text-primary)',
-  fontSize: 'var(--type-heading-m-size, 32px)',
+  fontSize: 'var(--type-heading-m-size, 22px)',
+  fontWeight: 700,
+  lineHeight: 1,
 }
 
 const subtitleStyle: CSSProperties = {
-  margin: 'var(--spacing-stack-xs) 0 0',
-  color: 'var(--color-text-primary-light)',
-  maxWidth: '820px',
+  margin: 'var(--spacing-stack-s, 16px) 0 0',
+  color: 'var(--color-text-primary)',
+  fontSize: 'var(--type-body-s-size, 14px)',
+  lineHeight: 1.5,
+  maxWidth: '900px',
 }
 
 
@@ -612,6 +644,8 @@ const sectionHeaderStyle: CSSProperties = {
 const h2Style: CSSProperties = {
   margin: 0,
   color: 'var(--color-text-primary)',
+  fontSize: 'var(--type-heading-s-size, 18px)',
+  fontWeight: 700,
 }
 
 const carouselControlsStyle: CSSProperties = {

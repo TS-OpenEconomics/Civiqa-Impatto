@@ -12,21 +12,6 @@ const PROBLEMA_DOCUMENTATO_OPTIONS = [
   { value: 'no', label: 'No' },
 ]
 
-const FABBISOGNO_SODDISFATTO_OPTIONS = [
-  {
-    value: 'si',
-    label: 'Migliorare una copertura gia esistente',
-    infoContent:
-      "Seleziona questa opzione quando il fabbisogno e gia soddisfatto nella sua quantita o copertura attuale e l'intervento serve a migliorare qualita, sicurezza, efficienza o fruizione.",
-  },
-  {
-    value: 'no',
-    label: 'Colmare un fabbisogno oggi non coperto',
-    infoContent:
-      "Seleziona questa opzione quando manca ancora una quota di fabbisogno da coprire, anche se esiste gia una dotazione o un servizio solo parziale rispetto all'obiettivo da raggiungere.",
-  },
-]
-
 const URGENZA_OPTIONS = [
   { value: 'Emergenziale (entro 12 mesi)', label: 'Emergenziale (entro 12 mesi)' },
   { value: 'Breve termine (1-3 anni)', label: 'Breve termine (1-3 anni)' },
@@ -39,7 +24,6 @@ const EMERGENZA_VALUE = 'Emergenziale (entro 12 mesi)'
 export function Step2_1_Problema() {
   const { state, setProblema, setUrgenza } = useWizard()
   const [touchedDescrizione, setTouchedDescrizione] = useState(false)
-  const [touchedSoddisfatto, setTouchedSoddisfatto] = useState(false)
   const [touchedUrgenza, setTouchedUrgenza] = useState(false)
 
   const fabDescrizione = useMemo(() => {
@@ -50,11 +34,6 @@ export function Step2_1_Problema() {
   const descrizioneError =
     touchedDescrizione && state.problema.descrizione.trim().length === 0
       ? 'La descrizione del fabbisogno e obbligatoria.'
-      : undefined
-
-  const soddisfattoError =
-    touchedSoddisfatto && state.problema.soddisfatto.trim().length === 0
-      ? 'Seleziona una risposta.'
       : undefined
 
   const urgenzaError =
@@ -100,20 +79,6 @@ export function Step2_1_Problema() {
                 : 'Inserisci una descrizione chiara del fabbisogno.'
             }
             errorText={descrizioneError}
-          />
-        </section>
-
-        <section style={sectionCardStyle}>
-          <RadioGroup
-            legend="Rispetto al fabbisogno descritto, l'intervento serve principalmente a:"
-            options={FABBISOGNO_SODDISFATTO_OPTIONS}
-            value={state.problema.soddisfatto}
-            onChange={(value) => {
-              setTouchedSoddisfatto(true)
-              setProblema({ soddisfatto: value })
-            }}
-            required
-            errorText={soddisfattoError}
           />
         </section>
 

@@ -144,7 +144,7 @@ function ValutazioneIntroRoute() {
 
 function WizardRoute() {
   const navigate = useNavigate();
-  const { draftProject, setDraftProject } = useProjects();
+  const { draftProject, setDraftProject, addProject, saveProjectConfig } = useProjects();
   const editId = new URLSearchParams(window.location.search).get("editId");
 
   return (
@@ -154,6 +154,16 @@ function WizardRoute() {
       onComplete={(nextProject) => {
         setDraftProject(nextProject);
         navigate(`/valutazioni/nuova/riepilogo${editId ? `?editId=${editId}` : ""}`);
+      }}
+      onSaveDraft={(draftAsProject) => {
+        const bozza = { ...draftAsProject, stato: draftAsProject.stato || "In preparazione" };
+        if (editId) {
+          saveProjectConfig(editId, bozza);
+        } else {
+          addProject(bozza);
+        }
+        setDraftProject(null);
+        navigate("/valutazioni");
       }}
     />
   );

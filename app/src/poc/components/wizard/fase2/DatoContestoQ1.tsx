@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { getNeedByCode } from '../../../data/fabbisogni_v2'
 import { useWizard } from '../../../hooks/useWizard'
@@ -12,6 +12,14 @@ export function DatoContestoQ1() {
     state.q1Value !== null ? String(state.q1Value) : '',
   )
   const [error, setError] = useState<string | null>(null)
+
+  // Sync from store (es. Autoriempi imposta q1Value esternamente)
+  useEffect(() => {
+    setRaw((prev) => {
+      const next = state.q1Value !== null ? String(state.q1Value) : ''
+      return prev === next ? prev : next
+    })
+  }, [state.q1Value])
 
   function handleChange(value: string) {
     setRaw(value)

@@ -648,8 +648,8 @@ function Sidebar({ stepIdx }) {
 
           return (
             <div key={group.label} className="relative mb-9 grid grid-cols-[38px_minmax(0,1fr)] gap-x-4">
-              <div className={`relative z-[1] flex h-[38px] w-[38px] items-center justify-center rounded-full ${isActive || isDone ? "bg-brand-violet" : "bg-[#dcdce1]"}`}>
-                {isDone ? <span className="text-[10px] font-bold text-white">OK</span> : isActive ? <span className="h-3 w-3 rounded-full bg-white" /> : null}
+              <div className={`relative z-[1] flex h-[38px] w-[38px] items-center justify-center ${isActive || isDone ? "bg-brand-violet" : "bg-[#dcdce1]"}`}>
+                {isDone ? <span className="text-[10px] font-bold text-white">OK</span> : isActive ? <span className="h-3 w-3 bg-white" /> : null}
               </div>
               <div className="flex min-h-[38px] items-center overflow-visible pt-1">
                 <h3 className={`min-w-0 text-[17px] font-bold leading-tight ${isActive ? "text-ink-900" : "text-ink-300"}`}>{group.label}</h3>
@@ -725,8 +725,8 @@ function RadioCards({ options, value, onChange, descriptions }) {
           onClick={() => onChange(option)}
           className={`flex w-full items-start gap-4 bg-white px-5 py-5 text-left transition-colors ${value === option ? "border-2 border-brand-violet" : "border border-ink-200 hover:border-ink-300"}`}
         >
-          <div className={`mt-1 flex h-6 w-6 items-center justify-center rounded-full border-2 ${value === option ? "border-brand-violet" : "border-ink-400"}`}>
-            {value === option ? <div className="h-3 w-3 rounded-full bg-brand-violet" /> : null}
+          <div className={`mt-1 flex h-6 w-6 items-center justify-center border-2 ${value === option ? "border-brand-violet" : "border-ink-400"}`}>
+            {value === option ? <div className="h-3 w-3 bg-brand-violet" /> : null}
           </div>
           <div>
             <p className="text-[15px] font-semibold text-ink-900">{option}</p>
@@ -748,8 +748,8 @@ function RadioList({ options, value, onChange }) {
           onClick={() => onChange(option)}
           className={`flex w-full items-center gap-3 px-5 py-4 text-left ${index < options.length - 1 ? "border-b border-ink-100" : ""} ${value === option ? "bg-brand-violet-soft" : "hover:bg-[#fafafa]"}`}
         >
-          <div className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${value === option ? "border-brand-violet" : "border-ink-400"}`}>
-            {value === option ? <div className="h-3 w-3 rounded-full bg-brand-violet" /> : null}
+          <div className={`flex h-6 w-6 items-center justify-center border-2 ${value === option ? "border-brand-violet" : "border-ink-400"}`}>
+            {value === option ? <div className="h-3 w-3 bg-brand-violet" /> : null}
           </div>
           <span className="text-[14px] text-ink-900">{option}</span>
         </button>
@@ -791,8 +791,8 @@ function CarouselCards({ options, value, onChange, cols = 5 }) {
               className={`flex min-h-[160px] flex-col items-center justify-between bg-white px-4 py-5 text-center ${value === option ? "border-[4px] border-brand-violet" : "border border-white hover:border-ink-200"}`}
             >
               <span className="flex flex-1 items-center justify-center text-[14px] font-semibold leading-[1.35] text-ink-900">{option}</span>
-              <div className={`mt-4 flex h-8 w-8 items-center justify-center rounded-full border-2 ${value === option ? "border-brand-violet" : "border-ink-500"}`}>
-                {value === option ? <div className="h-4 w-4 rounded-full bg-brand-violet" /> : null}
+              <div className={`mt-4 flex h-8 w-8 items-center justify-center border-2 ${value === option ? "border-brand-violet" : "border-ink-500"}`}>
+                {value === option ? <div className="h-4 w-4 bg-brand-violet" /> : null}
               </div>
             </button>
           ))}
@@ -814,7 +814,7 @@ function ClassAccordion({ number, title, selectedLabel, isCompleted, onEdit, chi
   return (
     <div className={`overflow-hidden border bg-white ${isCompleted ? "border-ink-100" : "border-brand-violet/40"}`}>
       <div className="flex items-center gap-3 px-5 py-4">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-violet text-[12px] font-bold text-white">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-brand-violet text-[12px] font-bold text-white">
           {isCompleted ? "✓" : number}
         </span>
         <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
@@ -845,7 +845,7 @@ function TassoScontoSection({ value, onChange, onConfirm, confirmed, onEdit }) {
     return (
       <div className="overflow-hidden border border-ink-100 bg-white">
         <div className="flex items-center gap-3 px-5 py-4">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-violet text-[12px] font-bold text-white">✓</span>
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-brand-violet text-[12px] font-bold text-white">✓</span>
           <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="text-[13px] text-ink-400">Tasso di sconto sociale</p>
@@ -863,7 +863,7 @@ function TassoScontoSection({ value, onChange, onConfirm, confirmed, onEdit }) {
   return (
     <div className="overflow-hidden border border-brand-violet/40 bg-white">
       <div className="flex items-center gap-3 border-b border-[#ececf1] px-5 py-4">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-violet text-[12px] font-bold text-white">2</span>
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-brand-violet text-[12px] font-bold text-white">2</span>
         <p className="text-[13px] font-semibold text-ink-900">Tasso di sconto sociale</p>
       </div>
 
@@ -1065,10 +1065,10 @@ function DatePickerField({ label, hint, value, onChange, minDate = null }) {
                 disabled
                   ? "cursor-not-allowed text-ink-200"
                   : selected
-                  ? "rounded-full bg-brand-violet font-semibold text-white"
+                  ? "bg-brand-violet font-semibold text-white"
                   : current
-                  ? "text-ink-900 hover:rounded-full hover:bg-brand-violet-soft"
-                  : "text-ink-300 hover:rounded-full hover:bg-[#f3f3f6]"
+                  ? "text-ink-900 hover:bg-brand-violet-soft"
+                  : "text-ink-300 hover:bg-[#f3f3f6]"
               }`}
             >
               {date.getDate()}
@@ -1105,8 +1105,18 @@ function LockIcon({ className = "h-4 w-4" }) {
   );
 }
 
-export function Wizard({ initialProject, onClose, onComplete }) {
+function IconSave({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M5 4h11l3 3v13a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 4v5h7M8 21v-6h8v6" />
+    </svg>
+  );
+}
+
+export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
   const [stepIdx, setStepIdx] = useState(0);
+  const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
   const [draft, setDraft] = useState(() => buildDraft(initialProject));
   const [categorySearch, setCategorySearch] = useState("");
   const [anagraficaRevealLevel, setAnagraficaRevealLevel] = useState(() => {
@@ -1676,10 +1686,22 @@ export function Wizard({ initialProject, onClose, onComplete }) {
   })();
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-bg-page">
+    <div className="fixed inset-0 z-[200] flex flex-col bg-bg-page">
       <div className="h-[3px] flex-shrink-0 bg-accent-lime" />
-      <div className="flex h-16 flex-shrink-0 items-center justify-end border-b border-ink-100 bg-white px-8">
-        <button type="button" onClick={() => (isDirty(initialDraft, draft) ? onClose() : onClose())} className="flex items-center gap-2 text-[14px] font-semibold text-brand-violet">
+      <div className="flex h-16 flex-shrink-0 items-center justify-end gap-4 border-b border-ink-100 bg-white px-8">
+        <button
+          type="button"
+          onClick={() => onSaveDraft?.(toProject(draft, initialProject))}
+          className="flex items-center gap-2 border border-ink-200 px-4 py-2 text-[13px] font-semibold text-ink-700 transition-colors hover:border-brand-violet hover:text-brand-violet"
+        >
+          <IconSave className="h-4 w-4" />
+          Salva bozza
+        </button>
+        <button
+          type="button"
+          onClick={() => (isDirty(initialDraft, draft) ? setCloseConfirmOpen(true) : onClose())}
+          className="flex items-center gap-2 text-[14px] font-semibold text-brand-violet"
+        >
           Chiudi e torna alle valutazioni
           <span className="text-[20px] leading-none">&times;</span>
         </button>
@@ -2232,7 +2254,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
 
                       {opexStartYear ? (
                         <div className="mt-4 flex items-center gap-3 border border-ink-100 bg-[#f7f7fa] px-4 py-3">
-                          <div className="h-3 w-3 shrink-0 rounded-full bg-brand-violet" />
+                          <div className="h-3 w-3 shrink-0 bg-brand-violet" />
                           <p className="text-[13px] text-ink-700">
                             OPEX attivo dal <strong>{opexStartYear}</strong> al <strong>{opexEndYear}</strong>
                           </p>
@@ -2573,7 +2595,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                         <div className="overflow-hidden border border-ink-100 bg-white">
                         {/* ── Header ── */}
                         <div className="flex flex-col gap-3 border-b border-[#ececf1] bg-[#f7f7fa] px-5 py-4 md:flex-row md:items-center">
-                          <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-bold ${isPositiva ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-500"}`}>
+                          <span className={`flex h-7 w-7 shrink-0 items-center justify-center text-[12px] font-bold ${isPositiva ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-500"}`}>
                             {isPositiva ? "+" : "−"}
                           </span>
                           <p className="min-w-0 flex-1 text-[14px] font-semibold text-ink-900">{group}</p>
@@ -2631,7 +2653,7 @@ export function Wizard({ initialProject, onClose, onComplete }) {
                               <div className="grid gap-x-2 gap-y-3 px-5 py-4 md:grid-cols-[minmax(0,1fr)_132px_120px_96px] md:items-center">
                                 <div className="min-w-0">
                                   <div className="flex items-start gap-3">
-                                    <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${kpi.tipo === "input" ? "bg-brand-violet" : "bg-ink-300"}`} />
+                                    <span className={`mt-1.5 h-2 w-2 shrink-0 ${kpi.tipo === "input" ? "bg-brand-violet" : "bg-ink-300"}`} />
                                     <div className="min-w-0">
                                       <p className="text-[13px] font-semibold leading-[1.35] text-ink-900">{kpi.label}</p>
                                   {kpi.tipo === "input" && profiloVal == null ? (
@@ -2897,8 +2919,8 @@ export function Wizard({ initialProject, onClose, onComplete }) {
         </div>
       </div>
 
-      <div className="grid h-16 flex-shrink-0 grid-cols-2">
-        <button type="button" onClick={handleBack} className="flex items-center justify-between bg-[#5a5a5a] px-6 text-[14px] font-medium text-white">
+      <div className="grid h-16 flex-shrink-0 grid-cols-2 border-t border-ink-100">
+        <button type="button" onClick={handleBack} className="flex items-center justify-between border-r border-ink-100 bg-white px-6 text-[14px] font-medium text-ink-700 transition-colors hover:text-ink-900">
           <span>{stepIdx === 0 ? "Torna alle valutazioni" : "Torna allo step precedente"}</span>
           <span className="text-[22px] leading-none">&larr;</span>
         </button>
@@ -2912,6 +2934,40 @@ export function Wizard({ initialProject, onClose, onComplete }) {
           <span className="text-[22px] leading-none">&rarr;</span>
         </button>
       </div>
+
+      {closeConfirmOpen ? (
+        <div className="fixed inset-0 z-[210] flex items-center justify-center bg-black/40 px-4">
+          <div role="alertdialog" aria-modal="true" className="w-full max-w-md border border-ink-100 bg-white p-6 shadow-xl">
+            <h3 className="text-[18px] font-bold text-ink-900">Vuoi salvare i progressi prima di uscire?</h3>
+            <p className="mt-2 text-[14px] leading-[1.5] text-ink-600">
+              Puoi salvare la bozza corrente tra le tue valutazioni, uscire senza salvare oppure annullare e continuare la configurazione.
+            </p>
+            <div className="mt-6 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => { setCloseConfirmOpen(false); (onSaveDraft ? onSaveDraft(toProject(draft, initialProject)) : onClose()); }}
+                className="flex items-center justify-center gap-2 bg-brand-violet px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-brand-violet-dark"
+              >
+                Salva bozza ed esci
+              </button>
+              <button
+                type="button"
+                onClick={() => { setCloseConfirmOpen(false); onClose(); }}
+                className="px-5 py-2.5 text-[14px] font-semibold text-ink-700 transition-colors hover:text-brand-violet"
+              >
+                Esci senza salvare
+              </button>
+              <button
+                type="button"
+                onClick={() => setCloseConfirmOpen(false)}
+                className="px-5 py-2.5 text-[14px] font-medium text-ink-500 transition-colors hover:text-ink-900"
+              >
+                Annulla
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
