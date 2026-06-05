@@ -17,14 +17,17 @@ import {
   detailFinalRowHeaderStyle,
   detailFinalCellStyle,
   detailEmptyStyle,
+  formatScore,
+  safeNumber,
 } from './tableHelpers'
+import { BarsChart, ChartCard, altBarColor, tabStackStyle } from './chartHelpers'
 
-function fmtCurrency(value: number): string {
-  return `${Math.round(value / 1000).toLocaleString('it-IT')} k€`
+function fmtCurrency(value: unknown): string {
+  return `${(safeNumber(value) / 1_000_000).toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} M€`
 }
 
-function fmtPercent(value: number): string {
-  return `${(value * 100).toFixed(1)}%`
+function fmtPercent(value: unknown): string {
+  return `${(safeNumber(value) * 100).toFixed(1)}%`
 }
 
 export function TabCBA() {
@@ -33,8 +36,20 @@ export function TabCBA() {
   const recommendedId = getRecommendedAlternativeId(scores)
   if (scores.length === 0) return <p style={emptyStyle}>Nessun dettaglio Analisi Costi Benefici disponibile.</p>
 
+  const groups = scores.map((score) => ({
+    id: score.alternativaId,
+    label: getAlternativeDisplayLabel(score.alternativaId, state.alternative[score.alternativaId]),
+    bars: [{ value: Number((safeNumber(score.van) / 1_000_000).toFixed(1)), color: altBarColor(score.alternativaId === recommendedId) }],
+  }))
+  const fmtM = (v: number) => `${v.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} M€`
+
   return (
-    <div style={wrapStyle}>
+    <div style={tabStackStyle}>
+      <ChartCard title="VANE per alternativa" subtitle="Valore Attuale Netto Economico (M€) — in verde l'alternativa raccomandata">
+        <BarsChart groups={groups} formatValue={fmtM} />
+      </ChartCard>
+
+      <div style={wrapStyle}>
       <table style={tableStyle}>
         <colgroup>
           <col style={labelColumnStyle} />
@@ -58,7 +73,7 @@ export function TabCBA() {
         </thead>
         <tbody>
           <tr>
-            <th scope="row" style={rowHeaderStyle}>VANE (k€)</th>
+            <th scope="row" style={rowHeaderStyle}>VANE (M€)</th>
             {scores.map((score) => {
               const isRecommended = score.alternativaId === recommendedId
               return <td key={`van-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{fmtCurrency(score.van)}</td>
@@ -75,18 +90,19 @@ export function TabCBA() {
             <th scope="row" style={rowHeaderStyle}>BCR (rapporto benefici/costi)</th>
             {scores.map((score) => {
               const isRecommended = score.alternativaId === recommendedId
-              return <td key={`bcr-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{score.bcr.toFixed(2)}</td>
+              return <td key={`bcr-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{safeNumber(score.bcr).toFixed(2)}</td>
             })}
           </tr>
           <tr>
             <th scope="row" style={finalRowHeaderStyle}>Punteggio Finale</th>
             {scores.map((score) => {
               const isRecommended = score.alternativaId === recommendedId
-              return <td key={`final-${score.alternativaId}`} style={{ ...finalCellStyle, ...(isRecommended ? recommendedHeaderStyle : null) }}>{score.scoreFinale.toFixed(1)}</td>
+              return <td key={`final-${score.alternativaId}`} style={{ ...finalCellStyle, ...(isRecommended ? recommendedHeaderStyle : null) }}>{formatScore(score.scoreFinale)}</td>
             })}
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
   )
 }

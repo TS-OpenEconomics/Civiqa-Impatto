@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import { INTERVENTION_CATEGORIES } from '../../data/poc_docfap/intervention_categories_layer3'
 import type { AlternativaData, AlternativaId } from '../../types/docfap'
+import type { ScoreComposito } from '../../types/docfap'
 
 const TIPOLOGIA_LABELS: Record<string, string> = {
   nuova_realizzazione: 'Nuova realizzazione',
@@ -53,8 +54,44 @@ export function getRecommendedAlternativeId<T extends { alternativaId: Alternati
 ): AlternativaId | null {
   if (scores.length === 0) return null
   return scores.reduce((best, current) => (
-    current.scoreFinale > best.scoreFinale ? current : best
+    safeNumber(current.scoreFinale, Number.NEGATIVE_INFINITY) > safeNumber(best.scoreFinale, Number.NEGATIVE_INFINITY)
+      ? current
+      : best
   )).alternativaId
+}
+
+export function safeNumber(value: unknown, fallback = 0): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
+}
+
+export function formatScore(value: unknown): string {
+  return safeNumber(value).toFixed(1)
+}
+
+export function hasRenderableDocfapScores(scores: ScoreComposito[] | null | undefined): boolean {
+  if (!scores || scores.length === 0) return false
+
+  const requiredKeys: Array<keyof ScoreComposito> = [
+    'cbaScore',
+    'van',
+    'bcr',
+    'tir',
+    'impattoScore',
+    'rischioScore',
+    'sensitivityScore',
+    'scoreComposito',
+    'mcaScore',
+    'scoreFinale',
+    'pil',
+    'occupati',
+    'produzione',
+    'redditi',
+  ]
+
+  return scores.every((score) => (
+    Boolean(score?.alternativaId) &&
+    requiredKeys.every((key) => Number.isFinite(score[key]))
+  ))
 }
 
 export function getAlternativeColumnWidth(totalAlternatives: number): string {

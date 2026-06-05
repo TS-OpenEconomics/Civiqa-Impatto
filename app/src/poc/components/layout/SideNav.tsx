@@ -77,7 +77,8 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: '/impatti/dashboard',      label: 'Dashboard',     icon: IconDashboard },
+  /* Dashboard visibile ma non ancora cliccabile (come Composing) */
+  { to: '/impatti/dashboard',      label: 'Dashboard',     icon: IconDashboard, disabled: true },
   { to: '/impatti/docfap',         label: 'Docfap',        icon: IconDocfap },
   { to: '/valutazioni',            label: 'Valutazione',   icon: IconValutazione },
   { to: '/impatti/composing',      label: 'Composing',     icon: IconComposing, disabled: true },

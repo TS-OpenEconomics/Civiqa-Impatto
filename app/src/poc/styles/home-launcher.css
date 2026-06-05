@@ -39,7 +39,7 @@ body.hl-home-locked {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: var(--type-body-l-size, 24px);
+  font-size: 36px;
   font-family: var(--font-family-1);
   font-weight: var(--type-weight-bold, 700);
   color: var(--color-text-primary);
@@ -77,9 +77,11 @@ body.hl-home-locked {
   font-family: var(--font-family-1);
   font-size: var(--type-body-xs-size, 12px);
   font-weight: var(--type-weight-bold, 700);
-  border-radius: var(--radius-circle);
+  border-radius: var(--radius-smooth, 2px);
   flex-shrink: 0;
   user-select: none;
+  border: none;
+  cursor: pointer;
 }
 
 /* ── Accent bar (replica AppShell) ─────────────────────── */

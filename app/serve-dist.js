@@ -5,6 +5,7 @@ import { extname, join, normalize, resolve } from "node:path";
 const root = resolve("dist");
 const host = process.env.HOST || "127.0.0.1";
 const port = Number(process.env.PORT || 4173);
+const basePath = "/Civiqa-Impatto";
 
 const types = {
   ".html": "text/html; charset=utf-8",
@@ -18,7 +19,11 @@ const types = {
 };
 
 function resolveFile(urlPath) {
-  const cleanPath = decodeURIComponent(urlPath.split("?")[0]);
+  let cleanPath = decodeURIComponent(urlPath.split("?")[0]);
+  if (cleanPath === basePath || cleanPath.startsWith(`${basePath}/`)) {
+    cleanPath = cleanPath.slice(basePath.length) || "/";
+  }
+
   const requested = normalize(join(root, cleanPath));
 
   if (!requested.startsWith(root)) {
@@ -27,6 +32,10 @@ function resolveFile(urlPath) {
 
   if (existsSync(requested) && statSync(requested).isFile()) {
     return requested;
+  }
+
+  if (extname(cleanPath)) {
+    return null;
   }
 
   return join(root, "index.html");

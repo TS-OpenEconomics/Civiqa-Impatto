@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { DocfapWizard } from '../components/wizard/DocfapWizard'
+import { loadDocfapDemo } from '../data/docfapDemo'
 import { wizardStore } from '../store/wizardStore'
 
 type DocfapStatus = 'Bozza' | 'Completato' | 'In corso'
@@ -318,6 +319,10 @@ export function DocfapList() {
     wizardStore.actions.reset()
     setShowWizard(true)
   }
+  const handleOpenDemoDetail = () => {
+    wizardStore.actions.reset()
+    void loadDocfapDemo()
+  }
 
   return (
     <>
@@ -375,7 +380,7 @@ export function DocfapList() {
                 </div>
                 <p style={featuredMetaStyle}>{item.cup ? `CUP ${item.cup}` : 'CUP non disponibile'}</p>
                 <p style={featuredMetaStyle}>{`${item.settore} - ${item.dataCreazione}`}</p>
-                <Link to="/impatti/docfap/detail" style={detailButtonStyle}>
+                <Link to="/impatti/docfap/detail" style={detailButtonStyle} onClick={handleOpenDemoDetail}>
                   Vai al dettaglio <IconArrowRight />
                 </Link>
               </article>
@@ -487,6 +492,7 @@ export function DocfapList() {
                         <Link
                           to="/impatti/docfap/detail"
                           style={actionButtonStyle}
+                          onClick={handleOpenDemoDetail}
                           aria-label={`Apri dettaglio ${row.nomeIntervento}`}
                         >
                           <IconArrowRight />

@@ -17,7 +17,10 @@ import {
   detailFinalRowHeaderStyle,
   detailFinalCellStyle,
   detailEmptyStyle,
+  formatScore,
+  safeNumber,
 } from './tableHelpers'
+import { BarsChart, ChartCard, altBarColor, tabStackStyle } from './chartHelpers'
 
 const ROWS = [
   { key: 'cbaScore', label: 'Punteggio Analisi Costi Benefici' },
@@ -26,8 +29,8 @@ const ROWS = [
   { key: 'sensitivityScore', label: 'Punteggio Analisi di Sensitività' },
 ] as const
 
-function fmt(value: number): string {
-  return value.toFixed(1)
+function fmt(value: unknown): string {
+  return formatScore(value)
 }
 
 export function TabRiepilogo() {
@@ -37,8 +40,19 @@ export function TabRiepilogo() {
 
   if (scores.length === 0) return <p style={emptyStyle}>Nessun risultato disponibile.</p>
 
+  const groups = scores.map((score) => ({
+    id: score.alternativaId,
+    label: getAlternativeDisplayLabel(score.alternativaId, state.alternative[score.alternativaId]),
+    bars: [{ value: Number(safeNumber(score.scoreFinale).toFixed(1)), color: altBarColor(score.alternativaId === recommendedId) }],
+  }))
+
   return (
-    <div style={wrapStyle}>
+    <div style={tabStackStyle}>
+      <ChartCard title="Punteggio finale per alternativa" subtitle="Punteggio composito 0–100 — in verde l'alternativa raccomandata">
+        <BarsChart groups={groups} formatValue={(v) => v.toFixed(1)} />
+      </ChartCard>
+
+      <div style={wrapStyle}>
       <table style={tableStyle}>
         <colgroup>
           <col style={labelColumnStyle} />
@@ -87,6 +101,7 @@ export function TabRiepilogo() {
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
   )
 }

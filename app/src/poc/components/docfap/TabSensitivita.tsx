@@ -17,7 +17,10 @@ import {
   detailFinalRowHeaderStyle,
   detailFinalCellStyle,
   detailEmptyStyle,
+  formatScore,
+  safeNumber,
 } from './tableHelpers'
+import { CHART_RECOMMENDED_COLOR, CHART_SERIES_COLORS, ChartCard, LineChartSimple, tabStackStyle } from './chartHelpers'
 
 const SCENARIO_ORDER = [
   'CAPEX +10%',
@@ -35,8 +38,24 @@ export function TabSensitivita() {
   const recommendedId = getRecommendedAlternativeId(scores)
   if (scores.length === 0) return <p style={emptyStyle}>Nessun dettaglio sensitivita disponibile.</p>
 
+  const lines = scores.map((score, index) => ({
+    id: score.alternativaId,
+    label: getAlternativeDisplayLabel(score.alternativaId, state.alternative[score.alternativaId]),
+    color: score.alternativaId === recommendedId ? CHART_RECOMMENDED_COLOR : CHART_SERIES_COLORS[index % CHART_SERIES_COLORS.length],
+    width: score.alternativaId === recommendedId ? 3 : 2,
+    points: SCENARIO_ORDER.map((label) => {
+      const scenario = score.sensitivitaDetail?.scenari.find((item) => item.label === label)
+      return scenario ? Number(safeNumber(scenario.score).toFixed(1)) : null
+    }),
+  }))
+
   return (
-    <div style={wrapStyle}>
+    <div style={tabStackStyle}>
+      <ChartCard title="Stabilità del punteggio per scenario di stress" subtitle="Punteggio composito (0–100) di ogni alternativa al variare dei parametri chiave" height={320}>
+        <LineChartSimple categories={SCENARIO_ORDER} lines={lines} />
+      </ChartCard>
+
+      <div style={wrapStyle}>
       <table style={tableStyle}>
         <colgroup>
           <col style={labelColumnStyle} />
@@ -65,7 +84,7 @@ export function TabSensitivita() {
               {scores.map((score) => {
                 const isRecommended = score.alternativaId === recommendedId
                 const scenario = score.sensitivitaDetail?.scenari.find((item) => item.label === label)
-                return <td key={`${label}-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{scenario ? scenario.score.toFixed(1) : '—'}</td>
+                return <td key={`${label}-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{scenario ? formatScore(scenario.score) : '—'}</td>
               })}
             </tr>
           ))}
@@ -73,11 +92,12 @@ export function TabSensitivita() {
             <th scope="row" style={finalRowHeaderStyle}>PUNTEGGIO ANALISI DI SENSITIVITÀ</th>
             {scores.map((score) => {
               const isRecommended = score.alternativaId === recommendedId
-              return <td key={`sens-${score.alternativaId}`} style={{ ...finalCellStyle, ...(isRecommended ? recommendedHeaderStyle : null) }}>{score.sensitivityScore.toFixed(1)}</td>
+              return <td key={`sens-${score.alternativaId}`} style={{ ...finalCellStyle, ...(isRecommended ? recommendedHeaderStyle : null) }}>{formatScore(score.sensitivityScore)}</td>
             })}
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
   )
 }

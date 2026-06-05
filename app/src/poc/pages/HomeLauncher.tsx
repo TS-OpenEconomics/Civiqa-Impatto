@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import colleferroStemma from '../assets/Logo_Comune_Colleferro.png.png'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme, toggleTheme } from '../../hooks/useTheme'
@@ -8,7 +8,6 @@ import '../styles/home-launcher.css'
 const SCENARI_URL   = 'https://www.openeconomics.eu/insights-wall'
 const DATA_ROOM_URL = 'https://dataroom-ten-jet.vercel.app/'
 const RISORSE_URL   = 'https://demo.openrep.eu/projects'
-const PIANIFICAZIONE_PATH = '/impatti/pianificazione'
 const DOCFAP_PATH = '/impatti/docfap'
 const VALUTAZIONE_PATH = '/valutazioni'
 
@@ -48,9 +47,9 @@ function IconDocument() {
 
 function IconLineChart() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M1.5 12.5L5 8l3 3 3.5-5 3 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M1.5 14.5h13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 17l5-5 3 3 8-8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M17 7h3v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -108,15 +107,6 @@ function ModuleLink({ to, icon, label }: { to: string; icon: React.ReactNode; la
   )
 }
 
-function ModulePreviewLink({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }) {
-  return (
-    <Link to={to} className="hl-module hl-module--soon hl-module--preview">
-      <span className="hl-module-name">{icon}{label}</span>
-      <span className="hl-module-soon-label">Presto disponibile</span>
-    </Link>
-  )
-}
-
 /* ── Componente modulo esterno ───────────────────────────── */
 function ModuleExternalLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
   return (
@@ -146,11 +136,14 @@ function ModuleSoon({ icon, label }: { icon: React.ReactNode; label: string }) {
 /* ── Home launcher ───────────────────────────────────────── */
 
 export function HomeLauncher() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const theme = useTheme()
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
   const ente = (user as { ente?: string })?.ente ?? 'Comune di Colleferro'
   const nome = user?.name ?? 'Marco Bianchi'
   const iniziali = user?.initials ?? 'MB'
+  const ruolo = (user as { role?: string })?.role ?? 'RUP'
 
   useEffect(() => {
     document.documentElement.classList.add(HOME_LOCK_CLASS)
@@ -206,11 +199,65 @@ export function HomeLauncher() {
             <span className="hl-ente">{ente}</span>
             <span className="hl-separator" aria-hidden="true">|</span>
             <span className="hl-username">{nome}</span>
-            <div
-              className="hl-avatar"
-              aria-hidden="true"
-            >
-              {iniziali}
+            <div style={{ position: 'relative' }}>
+              <button
+                type="button"
+                className="hl-avatar"
+                onClick={() => setUserMenuOpen((open) => !open)}
+                aria-haspopup="menu"
+                aria-expanded={userMenuOpen}
+                aria-label="Menu profilo"
+              >
+                {iniziali}
+              </button>
+              {userMenuOpen && (
+                <>
+                  <div
+                    aria-hidden="true"
+                    onClick={() => setUserMenuOpen(false)}
+                    style={{ position: 'fixed', inset: 0, zIndex: 90 }}
+                  />
+                  <div
+                    role="menu"
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 8px)',
+                      right: 0,
+                      minWidth: 220,
+                      backgroundColor: 'var(--color-background-inverse)',
+                      border: '1px solid var(--color-border-secondary-light)',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                      zIndex: 100,
+                    }}
+                  >
+                    <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-border-secondary-light)' }}>
+                      <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)' }}>{nome}</p>
+                      <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--color-text-primary-lighter)' }}>
+                        {ruolo} · {ente}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => { setUserMenuOpen(false); logout(); navigate('/login') }}
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: '10px 16px',
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: 'var(--color-text-secondary)',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </header>
@@ -242,7 +289,7 @@ export function HomeLauncher() {
                   icon={<IconBarChart />}
                   label="Dataroom"
                 />
-                <ModulePreviewLink to={PIANIFICAZIONE_PATH} icon={<IconCalendar />} label="Pianificazione" />
+                <ModuleSoon icon={<IconCalendar />} label="Pianificazione" />
               </div>
             </div>
 

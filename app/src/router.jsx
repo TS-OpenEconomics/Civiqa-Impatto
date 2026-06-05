@@ -74,7 +74,8 @@ export function AppRouter() {
           <Route path="/valutazioni/:id/esg/results" element={<EsgResultsRoute />} />
 
           {/* ── Sezioni Impatti (ex Civiqa_POC) — chrome di app/, contenuto POC ── */}
-          <Route path="/impatti" element={<Navigate to="/impatti/dashboard" replace />} />
+          {/* Dashboard temporaneamente nascosta: ingresso sezione = Docfap */}
+          <Route path="/impatti" element={<Navigate to="/impatti/docfap" replace />} />
           <Route path="/impatti/dashboard" element={<PocPage><ImpattDashboard /></PocPage>} />
           <Route path="/impatti/docfap" element={<PocPage><DocfapList /></PocPage>} />
           <Route path="/impatti/docfap/detail" element={<PocPage><DocfapDetail /></PocPage>} />

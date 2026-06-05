@@ -1,21 +1,30 @@
-﻿import { useSyncExternalStore, useState, useRef, useId } from 'react'
+﻿import { useSyncExternalStore, useState, useRef, useId, useEffect } from 'react'
 import type { CSSProperties, KeyboardEvent, ReactNode } from 'react'
 import { wizardStore } from '../store/wizardStore'
+import { loadDocfapDemo } from '../data/docfapDemo'
 import { FABBISOGNI } from '../data/taxonomy/fabbisogni'
 import { TEMI_RELAZIONI } from '../data/taxonomy/temi-relazioni'
 import { formatEuro } from '../utils/format'
 import { TabRiepilogo } from '../components/docfap/TabRiepilogo'
 import { TabCBA } from '../components/docfap/TabCBA'
+import { TabMCA } from '../components/docfap/TabMCA'
 import { TabImpatto } from '../components/docfap/TabImpatto'
 import { TabRisk } from '../components/docfap/TabRisk'
 import { TabSensitivita } from '../components/docfap/TabSensitivita'
-import { getAlternativeDisplayLabel } from '../components/docfap/tableHelpers'
+import {
+  formatScore,
+  getAlternativeDisplayLabel,
+  getRecommendedAlternativeId,
+  hasRenderableDocfapScores,
+  safeNumber,
+} from '../components/docfap/tableHelpers'
 
-type TabId = 'riepilogo' | 'cba' | 'risk' | 'impatto' | 'sensitivita'
+type TabId = 'riepilogo' | 'cba' | 'mca' | 'risk' | 'impatto' | 'sensitivita'
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'riepilogo', label: 'Riepilogo' },
   { id: 'cba', label: 'Analisi Costi Benefici' },
+  { id: 'mca', label: 'Analisi MCA' },
   { id: 'risk', label: 'Analisi del Rischio' },
   { id: 'impatto', label: "Analisi d'impatto" },
   { id: 'sensitivita', label: 'Analisi di Sensitività' },
@@ -92,9 +101,33 @@ export function DocfapDetail() {
   const tabsRef = useRef<HTMLDivElement>(null)
   const baseId = useId()
 
+  // Se lo store è vuoto o contiene vecchi risultati non compatibili con i tab
+  // attuali, carica il dataset DOCFAP di esempio così la pagina resta navigabile.
+  useEffect(() => {
+    if (!hasRenderableDocfapScores(state.scoreFinale)) {
+      wizardStore.actions.reset()
+      void loadDocfapDemo()
+    }
+  }, [state.scoreFinale])
+
   const fab = FABBISOGNI.find((item) => item.id === state.fabId)
   const tema = TEMI_RELAZIONI.find((item) => item.id === state.temaId)
   const stato = state.scoreFinale && state.scoreFinale.length > 0 ? 'Completato' : 'In bozza'
+
+  const scores = state.scoreFinale ?? []
+  const recommendedId = getRecommendedAlternativeId(scores)
+  const recommended = recommendedId ? scores.find((item) => item.alternativaId === recommendedId) ?? null : null
+  const kpiItems = recommended
+    ? [
+        {
+          label: 'Alternativa raccomandata',
+          value: getAlternativeDisplayLabel(recommended.alternativaId, state.alternative[recommended.alternativaId]),
+        },
+        { label: 'Punteggio finale', value: `${formatScore(recommended.scoreFinale)} / 100` },
+        { label: 'VANE', value: `${(safeNumber(recommended.van) / 1_000_000).toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} M€` },
+        { label: 'Occupati attivati (ETP)', value: safeNumber(recommended.occupati).toLocaleString('it-IT') },
+      ]
+    : []
   const nomeIntervento = state.intervento.denominazione || 'Intervento senza nome'
   const dataCreazione = '14/04/2026'
   const ultimaModifica = '14/04/2026'
@@ -192,6 +225,17 @@ export function DocfapDetail() {
         </p>
       </section>
 
+      {kpiItems.length > 0 && (
+        <section style={kpiSectionStyle} aria-label="Quadro di sintesi">
+          {kpiItems.map((item) => (
+            <div key={item.label} style={kpiTileStyle}>
+              <span style={kpiLabelStyle}>{item.label}</span>
+              <span style={kpiValueStyle}>{item.value}</span>
+            </div>
+          ))}
+        </section>
+      )}
+
       <section style={configCardStyle} aria-labelledby="dd-config-heading">
         <div style={configHeaderStyle}>
           <h2 id="dd-config-heading" style={configHeaderTitleStyle}>Dati della configurazione</h2>
@@ -251,11 +295,14 @@ export function DocfapDetail() {
               tabIndex={0}
               style={tabpanelStyle}
             >
-              {tab.id === 'riepilogo' ? <TabRiepilogo /> : null}
-              {tab.id === 'cba' ? <TabCBA /> : null}
-              {tab.id === 'risk' ? <TabRisk /> : null}
-              {tab.id === 'impatto' ? <TabImpatto /> : null}
-              {tab.id === 'sensitivita' ? <TabSensitivita /> : null}
+              {/* Renderizza il contenuto solo quando il tab è attivo: i grafici
+                  recharts richiedono un contenitore visibile per dimensionarsi. */}
+              {activeTab === tab.id && tab.id === 'riepilogo' ? <TabRiepilogo /> : null}
+              {activeTab === tab.id && tab.id === 'cba' ? <TabCBA /> : null}
+              {activeTab === tab.id && tab.id === 'mca' ? <TabMCA /> : null}
+              {activeTab === tab.id && tab.id === 'risk' ? <TabRisk /> : null}
+              {activeTab === tab.id && tab.id === 'impatto' ? <TabImpatto /> : null}
+              {activeTab === tab.id && tab.id === 'sensitivita' ? <TabSensitivita /> : null}
             </div>
           ))}
         </div>
@@ -341,6 +388,37 @@ const projectStatusStyle: CSSProperties = {
   margin: 0,
   fontSize: 'var(--type-body-s-size, 16px)',
   color: 'var(--color-text-primary)',
+}
+
+const kpiSectionStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+  gap: 'var(--spacing-inline-s)',
+}
+
+const kpiTileStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--spacing-stack-xs)',
+  alignContent: 'start',
+  background: 'var(--color-background-inverse)',
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
+  padding: 'var(--spacing-inset-s)',
+}
+
+const kpiLabelStyle: CSSProperties = {
+  fontSize: 'var(--type-body-xs-size, 14px)',
+  fontWeight: 700,
+  textTransform: 'uppercase',
+  letterSpacing: '0.04em',
+  color: 'var(--color-text-primary-light)',
+}
+
+const kpiValueStyle: CSSProperties = {
+  fontSize: 'var(--type-heading-s-size, 24px)',
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+  lineHeight: 1.2,
 }
 
 const configCardStyle: CSSProperties = {

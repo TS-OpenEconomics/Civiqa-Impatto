@@ -81,9 +81,9 @@ function IconDocument() {
 
 function IconLineChart() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M1.5 12.5L5 8l3 3 3.5-5 3 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M1.5 14.5h13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 17l5-5 3 3 8-8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M17 7h3v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -225,7 +225,7 @@ export function TopNav() {
           color: 'var(--color-text-primary)',
           textDecoration: 'none',
           fontFamily: 'var(--font-family-1)',
-          fontSize: 'var(--type-body-l-size, 24px)',
+          fontSize: 36,
           fontWeight: 'var(--type-weight-bold, 700)',
           whiteSpace: 'nowrap',
         }}
@@ -487,7 +487,7 @@ export function TopNav() {
             style={{
               width: 32,
               height: 32,
-              borderRadius: 'var(--radius-circle)',
+              borderRadius: 'var(--radius-smooth, 2px)',
               backgroundColor: 'var(--color-background-primary)',
               color: 'var(--color-text-inverse)',
               display: 'flex',

@@ -18,7 +18,10 @@ import {
   detailFinalRowHeaderStyle,
   detailFinalCellStyle,
   detailEmptyStyle,
+  formatScore,
+  safeNumber,
 } from './tableHelpers'
+import { BarsChart, ChartCard, altBarColor, tabStackStyle } from './chartHelpers'
 
 const LEVEL_TO_MULTIPLIER = {
   alto: 1.0,
@@ -42,8 +45,19 @@ export function TabRisk() {
 
   if (scores.length === 0 || fattori.length === 0) return <p style={emptyStyle}>Nessun dettaglio rischio disponibile.</p>
 
+  const groups = scores.map((score) => ({
+    id: score.alternativaId,
+    label: getAlternativeDisplayLabel(score.alternativaId, state.alternative[score.alternativaId]),
+    bars: [{ value: Number(safeNumber(score.rischioScore).toFixed(1)), color: altBarColor(score.alternativaId === recommendedId) }],
+  }))
+
   return (
-    <div style={wrapStyle}>
+    <div style={tabStackStyle}>
+      <ChartCard title="Punteggio rischio per alternativa" subtitle="Punteggio analisi del rischio 0–100 — in verde l'alternativa raccomandata">
+        <BarsChart groups={groups} formatValue={(v) => v.toFixed(1)} />
+      </ChartCard>
+
+      <div style={wrapStyle}>
       <table style={tableStyle}>
         <colgroup>
           <col style={labelColumnStyle} />
@@ -84,11 +98,12 @@ export function TabRisk() {
             <th scope="row" style={finalRowHeaderStyle}>PUNTEGGIO ANALISI DEL RISCHIO</th>
             {scores.map((score) => {
               const isRecommended = score.alternativaId === recommendedId
-              return <td key={`risk-${score.alternativaId}`} style={{ ...finalCellStyle, ...(isRecommended ? recommendedHeaderStyle : null) }}>{score.rischioScore.toFixed(1)}</td>
+              return <td key={`risk-${score.alternativaId}`} style={{ ...finalCellStyle, ...(isRecommended ? recommendedHeaderStyle : null) }}>{formatScore(score.rischioScore)}</td>
             })}
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
   )
 }

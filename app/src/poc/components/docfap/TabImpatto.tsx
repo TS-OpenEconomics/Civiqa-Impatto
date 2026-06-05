@@ -17,10 +17,13 @@ import {
   detailFinalRowHeaderStyle,
   detailFinalCellStyle,
   detailEmptyStyle,
+  formatScore,
+  safeNumber,
 } from './tableHelpers'
+import { CHART_SERIES_COLORS, BarsChart, ChartCard, tabStackStyle } from './chartHelpers'
 
-function fmtK(value: number): string {
-  return `${Math.round(value).toLocaleString('it-IT')} k€`
+function fmtM(value: unknown): string {
+  return `${safeNumber(value).toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} M€`
 }
 
 export function TabImpatto() {
@@ -29,8 +32,31 @@ export function TabImpatto() {
   const recommendedId = getRecommendedAlternativeId(scores)
   if (scores.length === 0) return <p style={emptyStyle}>Nessun dettaglio impatto disponibile.</p>
 
+  const groups = scores.map((score) => ({
+    id: score.alternativaId,
+    label: getAlternativeDisplayLabel(score.alternativaId, state.alternative[score.alternativaId]),
+    bars: [
+      { value: safeNumber(score.pil), color: CHART_SERIES_COLORS[0], name: 'PIL' },
+      { value: safeNumber(score.produzione), color: CHART_SERIES_COLORS[1], name: 'Produzione' },
+      { value: safeNumber(score.redditi), color: CHART_SERIES_COLORS[2], name: 'Redditi' },
+    ],
+  }))
+
   return (
-    <div style={wrapStyle}>
+    <div style={tabStackStyle}>
+      <ChartCard title="Impatto macroeconomico per alternativa" subtitle="PIL, Produzione e Redditi attivati (M€)">
+        <BarsChart
+          groups={groups}
+          formatValue={fmtM}
+          legend={[
+            { label: 'PIL', color: CHART_SERIES_COLORS[0] },
+            { label: 'Produzione', color: CHART_SERIES_COLORS[1] },
+            { label: 'Redditi', color: CHART_SERIES_COLORS[2] },
+          ]}
+        />
+      </ChartCard>
+
+      <div style={wrapStyle}>
       <table style={tableStyle}>
         <colgroup>
           <col style={labelColumnStyle} />
@@ -54,42 +80,43 @@ export function TabImpatto() {
         </thead>
         <tbody>
           <tr>
-            <th scope="row" style={rowHeaderStyle}>PIL (k€)</th>
+            <th scope="row" style={rowHeaderStyle}>PIL (M€)</th>
             {scores.map((score) => {
               const isRecommended = score.alternativaId === recommendedId
-              return <td key={`pil-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{fmtK(score.pil)}</td>
+              return <td key={`pil-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{fmtM(score.pil)}</td>
             })}
           </tr>
           <tr>
             <th scope="row" style={rowHeaderStyle}>Occupati (ETP)</th>
             {scores.map((score) => {
               const isRecommended = score.alternativaId === recommendedId
-              return <td key={`occ-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{score.occupati.toLocaleString('it-IT')}</td>
+              return <td key={`occ-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{safeNumber(score.occupati).toLocaleString('it-IT')}</td>
             })}
           </tr>
           <tr>
-            <th scope="row" style={rowHeaderStyle}>Produzione (k€)</th>
+            <th scope="row" style={rowHeaderStyle}>Produzione (M€)</th>
             {scores.map((score) => {
               const isRecommended = score.alternativaId === recommendedId
-              return <td key={`prod-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{fmtK(score.produzione)}</td>
+              return <td key={`prod-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{fmtM(score.produzione)}</td>
             })}
           </tr>
           <tr>
-            <th scope="row" style={rowHeaderStyle}>Redditi (k€)</th>
+            <th scope="row" style={rowHeaderStyle}>Redditi (M€)</th>
             {scores.map((score) => {
               const isRecommended = score.alternativaId === recommendedId
-              return <td key={`redditi-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{fmtK(score.redditi)}</td>
+              return <td key={`redditi-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{fmtM(score.redditi)}</td>
             })}
           </tr>
           <tr>
             <th scope="row" style={finalRowHeaderStyle}>Punteggio Finale</th>
             {scores.map((score) => {
               const isRecommended = score.alternativaId === recommendedId
-              return <td key={`final-${score.alternativaId}`} style={{ ...finalCellStyle, ...(isRecommended ? recommendedHeaderStyle : null) }}>{score.scoreFinale.toFixed(1)}</td>
+              return <td key={`final-${score.alternativaId}`} style={{ ...finalCellStyle, ...(isRecommended ? recommendedHeaderStyle : null) }}>{formatScore(score.scoreFinale)}</td>
             })}
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
   )
 }
