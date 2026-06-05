@@ -1,12 +1,19 @@
 import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import { useTheme, toggleTheme } from "../../hooks/useTheme";
 import { Modal } from "../ui/Modal";
 import { IconChevronDown, IconEye, IconEyeOff, IconOEBlack, IconOEWhite } from "../ui/Icons";
 
+// Credenziali demo precompilate: in questa build l'accesso è immediato (basta "Accedi").
+const DEMO_EMAIL = "demo@civiqa.it";
+const DEMO_PASSWORD = "civiqa2024";
+
 export function Login() {
   const { login } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const theme = useTheme();
+  const dark = theme === "dark";
+  const [email, setEmail] = useState(DEMO_EMAIL);
+  const [password, setPassword] = useState(DEMO_PASSWORD);
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -63,9 +70,27 @@ export function Login() {
 
       {/* ── Right panel: gray background ── */}
       <div className="bg-bg-page flex flex-col">
-        {/* Language selector */}
-        <div className="flex items-center justify-end px-6 py-5 gap-0.5 text-sm font-medium text-ink-700">
-          IT <IconChevronDown className="w-4 h-4 text-ink-400" />
+        {/* Theme toggle + language selector */}
+        <div className="flex items-center justify-end px-6 py-5 gap-3 text-sm font-medium text-ink-700">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"}
+            title={dark ? "Tema chiaro" : "Tema scuro"}
+            className="flex h-8 w-8 items-center justify-center rounded text-ink-500 hover:text-ink-900 focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_var(--color-border-focus)]"
+          >
+            {dark ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.6" />
+                <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 14.5A8 8 0 0 1 9.5 4 7 7 0 1 0 20 14.5z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+              </svg>
+            )}
+          </button>
+          <span className="flex items-center gap-0.5">IT <IconChevronDown className="w-4 h-4 text-ink-400" /></span>
         </div>
 
         {/* Centered card */}

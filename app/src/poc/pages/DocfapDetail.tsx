@@ -60,6 +60,23 @@ const SCOPED_CSS = `
   }
 `
 
+function IconDoc() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+      <path d="M14 3v5h5" />
+      <path d="M9 13h6M9 17h6" />
+    </svg>
+  )
+}
+
+function statusBadgeColors(stato: string): CSSProperties {
+  if (stato === 'Completato') {
+    return { background: 'var(--color-background-success-lighter)', color: 'var(--color-text-success)' }
+  }
+  return { background: 'var(--color-background-secondary-lightest)', color: 'var(--color-text-primary-light)' }
+}
+
 function formatCurrency(value?: number | null): string {
   if (value === undefined || value === null) return 'Non disponibile'
   return `EUR ${formatEuro(value)}`
@@ -210,7 +227,11 @@ export function DocfapDetail() {
       <section style={heroStyle} aria-labelledby="dd-detail-title">
         <div style={heroTopRowStyle}>
           <div style={heroTitleWrapStyle}>
-            <h1 id="dd-detail-title" style={heroTitleStyle}>{nomeIntervento}</h1>
+            <div style={titleRowStyle}>
+              <span style={titleIconStyle} aria-hidden="true"><IconDoc /></span>
+              <h1 id="dd-detail-title" style={heroTitleStyle}>{nomeIntervento}</h1>
+              <span style={{ ...statusBadgeStyle, ...statusBadgeColors(stato) }}>{stato}</span>
+            </div>
             <p style={heroMetaStyle}>{metaText}</p>
           </div>
           <div style={heroActionsStyle}>
@@ -220,9 +241,6 @@ export function DocfapDetail() {
         </div>
 
         <p style={descriptionTextStyle}>{descrizioneProgetto}</p>
-        <p style={projectStatusStyle}>
-          <strong>Stato del progetto:</strong> {stato}
-        </p>
       </section>
 
       {kpiItems.length > 0 && (
@@ -256,9 +274,7 @@ export function DocfapDetail() {
       </section>
 
       <section style={analysisSectionStyle} aria-label="Analisi del DOCFAP">
-        <div
-          style={floatingTabsCardStyle}
-        >
+        <div style={tablistScrollStyle}>
           <div
             ref={tabsRef}
             role="tablist"
@@ -350,11 +366,34 @@ const heroTitleWrapStyle: CSSProperties = {
   maxWidth: '880px',
 }
 
+const titleRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+  flexWrap: 'wrap',
+}
+
+const titleIconStyle: CSSProperties = {
+  display: 'inline-flex',
+  color: 'var(--color-icon-primary)',
+}
+
 const heroTitleStyle: CSSProperties = {
   margin: 0,
-  fontSize: 'var(--type-heading-xl-size, 48px)',
-  lineHeight: 'var(--type-heading-xl-line-height, 1.1)',
+  fontSize: 'var(--type-heading-m-size, 22px)',
+  fontWeight: 700,
+  lineHeight: 1.2,
   color: 'var(--color-text-primary)',
+}
+
+const statusBadgeStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  borderRadius: 'var(--radius-rounded)',
+  padding: '2px var(--spacing-inset-xs)',
+  fontSize: 'var(--type-body-xs-size, 14px)',
+  fontWeight: 700,
+  width: 'fit-content',
 }
 
 const heroMetaStyle: CSSProperties = {
@@ -382,12 +421,6 @@ const descriptionTextStyle: CSSProperties = {
   lineHeight: 'var(--type-body-s-line-height, 1.5)',
   color: 'var(--color-text-primary)',
   maxWidth: '100ch',
-}
-
-const projectStatusStyle: CSSProperties = {
-  margin: 0,
-  fontSize: 'var(--type-body-s-size, 16px)',
-  color: 'var(--color-text-primary)',
 }
 
 const kpiSectionStyle: CSSProperties = {
@@ -429,14 +462,16 @@ const configCardStyle: CSSProperties = {
 }
 
 const configHeaderStyle: CSSProperties = {
-  background: 'var(--color-background-secondary-dark)',
+  background: 'var(--color-background-inverse)',
+  borderBottom: '1px solid var(--color-border-secondary-light)',
   padding: 'var(--spacing-inset-s) var(--spacing-inset-m)',
 }
 
 const configHeaderTitleStyle: CSSProperties = {
   margin: 0,
-  color: 'var(--color-text-inverse)',
-  fontSize: 'var(--type-heading-s-size, 24px)',
+  color: 'var(--color-text-primary)',
+  fontSize: 'var(--type-heading-s-size, 18px)',
+  fontWeight: 700,
 }
 
 const configGridStyle: CSSProperties = {
@@ -480,35 +515,29 @@ const cardStyle: CSSProperties = {
 }
 
 const analysisSectionStyle: CSSProperties = {
+  ...cardStyle,
+  padding: 0,
+  overflow: 'hidden',
   display: 'grid',
-  justifyItems: 'center',
   gap: 0,
   width: '100%',
-  maxWidth: '1400px',
-  justifySelf: 'center',
 }
 
-const floatingTabsCardStyle: CSSProperties = {
-  background: 'var(--color-background-secondary-light)',
-  border: 'none',
-  borderRadius: 'var(--radius-smooth)',
-  padding: 'var(--spacing-inset-xs) var(--spacing-inset-m) 0',
-  width: 'fit-content',
-  maxWidth: '100%',
-  zIndex: 1,
-  marginBottom: 'var(--spacing-stack-m)',
+const tablistScrollStyle: CSSProperties = {
+  borderBottom: '1px solid var(--color-border-secondary-light)',
+  padding: '0 var(--spacing-inset-m)',
+  overflowX: 'auto',
 }
 
 const analysisContentStyle: CSSProperties = {
-  ...cardStyle,
   width: '100%',
-  paddingTop: 'var(--spacing-inset-l)',
+  padding: 'var(--spacing-inset-m)',
 }
 
 const tablistStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center',
+  justifyContent: 'flex-start',
   gap: 'var(--spacing-inline-s)',
   borderBottom: 'none',
   marginBottom: 0,

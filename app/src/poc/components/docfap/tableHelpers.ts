@@ -111,19 +111,19 @@ export function alternativeColumnStyle(totalAlternatives: number): CSSProperties
 }
 
 export const detailHeaderCellBaseStyle: CSSProperties = {
-  padding: '20px 18px',
+  padding: '16px 18px',
   textAlign: 'left',
   verticalAlign: 'top',
-  background: 'var(--color-background-primary)',
-  color: 'var(--color-text-inverse)',
+  background: 'var(--color-background-secondary-lightest)',
+  color: 'var(--color-text-primary)',
   borderBottom: '1px solid var(--color-border-secondary-light)',
   wordBreak: 'break-word',
 }
 
 export const detailRecommendedHeaderStyle: CSSProperties = {
-  background: 'var(--color-background-primary)',
+  background: 'var(--color-background-primary-lighter, #efe5ff)',
   boxShadow: 'inset 0 0 0 2px #7c4dff',
-  color: 'var(--color-text-inverse)',
+  color: 'var(--color-text-primary)',
 }
 
 export const detailHeaderLabelWrapStyle: CSSProperties = {
@@ -147,13 +147,15 @@ export const detailRecommendedBadgeStyle: CSSProperties = {
 }
 
 export const detailRowHeaderStyle: CSSProperties = {
-  padding: '20px 18px',
+  padding: '16px 18px',
   textAlign: 'left',
   borderBottom: '1px solid var(--color-border-secondary-light)',
+  color: 'var(--color-text-primary)',
+  fontWeight: 600,
 }
 
 export const detailBodyCellStyle: CSSProperties = {
-  padding: '20px 18px',
+  padding: '16px 18px',
   textAlign: 'right',
   borderBottom: '1px solid var(--color-border-secondary-light)',
   fontFamily: 'var(--font-family-0, monospace)',

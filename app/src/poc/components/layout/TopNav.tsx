@@ -227,7 +227,9 @@ export function TopNav() {
           fontFamily: 'var(--font-family-1)',
           fontSize: 36,
           fontWeight: 'var(--type-weight-bold, 700)',
+          letterSpacing: '-0.025em',
           whiteSpace: 'nowrap',
+          userSelect: 'none',
         }}
         className={FOCUS_RING}
       >

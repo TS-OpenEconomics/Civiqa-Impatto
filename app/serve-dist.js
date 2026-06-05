@@ -41,7 +41,7 @@ function resolveFile(urlPath) {
   return join(root, "index.html");
 }
 
-createServer((req, res) => {
+const server = createServer((req, res) => {
   const file = resolveFile(req.url || "/");
 
   if (!file || !existsSync(file)) {
@@ -55,6 +55,28 @@ createServer((req, res) => {
     "Cache-Control": "no-store",
   });
   createReadStream(file).pipe(res);
-}).listen(port, host, () => {
-  console.log(`Civiqa POC disponibile su http://${host}:${port}/`);
 });
+
+// Se la porta è occupata (es. un'istanza precedente ancora attiva), invece di
+// crashare con EADDRINUSE proviamo le porte successive e stampiamo l'URL reale.
+const MAX_PORT_ATTEMPTS = 10;
+let attempts = 0;
+
+server.on("error", (err) => {
+  if (err.code === "EADDRINUSE" && attempts < MAX_PORT_ATTEMPTS) {
+    attempts += 1;
+    const nextPort = port + attempts;
+    console.warn(`Porta ${port + attempts - 1} occupata, provo la ${nextPort}...`);
+    server.listen(nextPort, host);
+    return;
+  }
+  console.error(`Impossibile avviare il server: ${err.message}`);
+  process.exit(1);
+});
+
+server.on("listening", () => {
+  const actualPort = server.address().port;
+  console.log(`Civiqa POC disponibile su http://${host}:${actualPort}${basePath}/`);
+});
+
+server.listen(port, host);
