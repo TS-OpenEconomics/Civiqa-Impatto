@@ -123,6 +123,7 @@ export function ScenarioZeroQuestions() {
                     style={srOnlyInput}
                   />
                   <span
+                    className="docfap-option-indicator"
                     aria-hidden="true"
                     style={{ ...indicatorStyle, ...(selected ? indicatorSelectedStyle : null) }}
                   >

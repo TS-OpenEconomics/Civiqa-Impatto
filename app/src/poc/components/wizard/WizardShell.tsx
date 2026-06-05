@@ -617,7 +617,7 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
         </aside>
       )}
 
-      <section style={contentColumnStyle}>
+      <section style={isIntroPhase ? contentColumnIntroStyle : contentColumnRegularStyle}>
         <header style={headerBarStyle}>
           <div style={headerActionsStyle}>
             <button
@@ -655,68 +655,70 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
             </div>
           )}
 
-          <article
-            style={{
-              ...questionCardStyle,
-              ...(isIntroPhase ? questionCardIntroStyle : questionCardRegularStyle),
-            }}
-          >
-            {onAutofill && !isIntroPhase && (autofillPhaseIndexes ?? []).includes(position.phaseIndex) && (
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  className="wizard-shell-interactive"
-                  onClick={() => onAutofill(position.phaseIndex)}
-                  style={autofillButtonStyle}
-                >
-                  Autoriempi questa pagina
-                </button>
-              </div>
-            )}
-            <div
+          <div style={isIntroPhase ? introMainContentStyle : mainAreaContentStyle}>
+            <article
               style={{
-                ...questionHeaderBlockStyle,
-                ...(isIntroPhase ? questionHeaderIntroStyle : questionHeaderStickyStyle),
+                ...questionCardStyle,
+                ...(isIntroPhase ? questionCardIntroStyle : questionCardRegularStyle),
               }}
             >
-              <h2
-                ref={headingRef}
-                tabIndex={-1}
-                style={{
-                  ...questionHeadingStyle,
-                  ...(isIntroPhase ? questionHeadingIntroStyle : null),
-                }}
-              >
-                {currentQuestion.title}
-              </h2>
-              <p
-                style={{
-                  ...questionSubtitleStyle,
-                  ...(isIntroPhase ? questionSubtitleIntroStyle : null),
-                }}
-              >
-                {currentQuestion.subtitle}
-              </p>
-              {currentQuestion.normRef && !isIntroPhase && (
-                <span style={normRefBadgeStyle} aria-label={`Riferimento normativo: D.Lgs. 36/2023 Allegato I.7 — ${currentQuestion.normRef}`}>
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-                    <rect x="1" y="1" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
-                    <path d="M3.5 4h5M3.5 6h5M3.5 8h3" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-                  </svg>
-                  <span>D.Lgs. 36/2023 · All. I.7 · {currentQuestion.normRef}</span>
-                </span>
+              {onAutofill && !isIntroPhase && (autofillPhaseIndexes ?? []).includes(position.phaseIndex) && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    className="wizard-shell-interactive"
+                    onClick={() => onAutofill(position.phaseIndex)}
+                    style={autofillButtonStyle}
+                  >
+                    Autoriempi questa pagina
+                  </button>
+                </div>
               )}
-            </div>
-            <div
-              style={{
-                ...questionBodyStyle,
-                ...(isIntroPhase ? questionBodyIntroStyle : null),
-                ...(isCompletionStep ? questionBodyCompletionStyle : null),
-              }}
-            >
-              {currentQuestion.content}
-            </div>
-          </article>
+              <div
+                style={{
+                  ...questionHeaderBlockStyle,
+                  ...(isIntroPhase ? questionHeaderIntroStyle : questionHeaderStickyStyle),
+                }}
+              >
+                <h2
+                  ref={headingRef}
+                  tabIndex={-1}
+                  style={{
+                    ...questionHeadingStyle,
+                    ...(isIntroPhase ? questionHeadingIntroStyle : null),
+                  }}
+                >
+                  {currentQuestion.title}
+                </h2>
+                <p
+                  style={{
+                    ...questionSubtitleStyle,
+                    ...(isIntroPhase ? questionSubtitleIntroStyle : null),
+                  }}
+                >
+                  {currentQuestion.subtitle}
+                </p>
+                {currentQuestion.normRef && !isIntroPhase && (
+                  <span style={normRefBadgeStyle} aria-label={`Riferimento normativo: D.Lgs. 36/2023 Allegato I.7 — ${currentQuestion.normRef}`}>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                      <rect x="1" y="1" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+                      <path d="M3.5 4h5M3.5 6h5M3.5 8h3" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+                    </svg>
+                    <span>D.Lgs. 36/2023 · All. I.7 · {currentQuestion.normRef}</span>
+                  </span>
+                )}
+              </div>
+              <div
+                style={{
+                  ...questionBodyStyle,
+                  ...(isIntroPhase ? questionBodyIntroStyle : null),
+                  ...(isCompletionStep ? questionBodyCompletionStyle : null),
+                }}
+              >
+                {currentQuestion.content}
+              </div>
+            </article>
+          </div>
         </main>
 
         <footer role="navigation" aria-label="Navigazione wizard" style={footerStyle}>
@@ -987,9 +989,23 @@ const phaseRailFillStyle: CSSProperties = {
 }
 
 const contentColumnStyle: CSSProperties = {
+  width: '100%',
+  maxWidth: '1120px',
   display: 'grid',
-  gridTemplateRows: 'minmax(0, 1fr)',
+  gap: 'var(--spacing-stack-m)',
   minHeight: 0,
+}
+
+const contentColumnRegularStyle: CSSProperties = {
+  ...contentColumnStyle,
+  maxWidth: 'min(1280px, calc(100vw - 64px))',
+  justifySelf: 'stretch',
+}
+
+const contentColumnIntroStyle: CSSProperties = {
+  ...contentColumnStyle,
+  maxWidth: 'min(1360px, calc(100vw - 64px))',
+  justifySelf: 'center',
 }
 
 const headerBarStyle: CSSProperties = {
@@ -1010,7 +1026,7 @@ const headerBarStyle: CSSProperties = {
 const headerActionsStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '16px',
+  gap: 'var(--spacing-inline-xs)',
 }
 
 const saveDraftButtonStyle: CSSProperties = {
@@ -1043,8 +1059,9 @@ const closeButtonStyle: CSSProperties = {
 }
 
 const mainAreaStyle: CSSProperties = {
-  overflowY: 'auto',
-  padding: '24px var(--spacing-inset-l) 96px',
+  overflow: 'hidden',
+  minHeight: 'calc(100vh - 64px - 56px)',
+  padding: '48px clamp(36px, 4vw, 64px) 24px',
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'flex-start',
@@ -1052,12 +1069,36 @@ const mainAreaStyle: CSSProperties = {
 
 const mainAreaIntroStyle: CSSProperties = {
   ...mainAreaStyle,
+  overflow: 'hidden',
+  minHeight: 'calc(100vh - 64px - 56px)',
+  padding: '24px clamp(28px, 3vw, 48px) 24px',
   alignItems: 'center',
+}
+
+const introMainContentStyle: CSSProperties = {
+  width: '100%',
+  maxWidth: 'min(1280px, calc(100vw - 96px))',
+  margin: '0 auto',
+  display: 'grid',
+  justifyItems: 'center',
+  gap: 'clamp(20px, 2.4vh, 32px)',
+}
+
+const mainAreaContentStyle: CSSProperties = {
+  width: '100%',
+  maxWidth: '880px',
+  height: '100%',
+  margin: '0 auto',
+  display: 'grid',
+  gap: 'var(--spacing-stack-m)',
+  justifyItems: 'stretch',
+  alignContent: 'start',
+  overflowY: 'auto',
+  paddingBottom: '24px',
 }
 
 const questionCardStyle: CSSProperties = {
   width: '100%',
-  maxWidth: '1120px',
   display: 'grid',
   gap: 'var(--spacing-stack-s)',
   alignContent: 'start',

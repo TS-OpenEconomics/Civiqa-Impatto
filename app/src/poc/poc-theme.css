@@ -117,7 +117,11 @@
    The app and POC resets force radius:0 !important. Keep boxes/buttons square;
    only the requested wizard bullets and left progress menu are circular. */
 .poc-scope [aria-label="Struttura wizard DOCFAP"] .wz-phase-dot,
-.poc-scope [aria-label="Wizard DOCFAP"] article article ul li > span:first-child {
+.poc-scope [aria-label="Wizard DOCFAP"] .docfap-intro-bullet,
+.poc-scope [aria-label="Wizard DOCFAP"] .radio-option__control,
+.poc-scope [aria-label="Wizard DOCFAP"] .radio-option__dot,
+.poc-scope [aria-label="Wizard DOCFAP"] .cb-item__box,
+.poc-scope [aria-label="Wizard DOCFAP"] .docfap-option-indicator {
   border-radius: 50% !important;
 }
 

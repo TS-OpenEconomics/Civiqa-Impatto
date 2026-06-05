@@ -59,7 +59,7 @@ export function Step0_Intro() {
             <ul style={listStyle}>
               {section.items.map((item) => (
                 <li key={item} style={listItemStyle}>
-                  <span aria-hidden="true" style={bulletStyle}>
+                  <span className="docfap-intro-bullet" aria-hidden="true" style={bulletStyle}>
                     <CheckIcon />
                   </span>
                   <span style={itemTextStyle}>{item}</span>
