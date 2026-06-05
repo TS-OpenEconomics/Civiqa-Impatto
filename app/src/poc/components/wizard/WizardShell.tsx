@@ -500,7 +500,7 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
                 aria-hidden="true"
                 style={{
                   ...phaseRailFillStyle,
-                  height: `${visibleSidebarPhases.length > 1 ? (Math.max(0, position.phaseIndex - 1) / (visibleSidebarPhases.length - 1)) * 100 : 0}%`,
+                  transform: `scaleY(${visibleSidebarPhases.length > 1 ? Math.max(0, position.phaseIndex - 1) / (visibleSidebarPhases.length - 1) : 0})`,
                 }}
               />
               {visibleSidebarPhases.map((phase) => {
@@ -828,7 +828,7 @@ const sidebarStyle: CSSProperties = {
 }
 
 const sidebarNavStyle: CSSProperties = {
-  padding: 'var(--spacing-inset-s) var(--spacing-inset-s) 120px',
+  padding: 'var(--spacing-inset-s) var(--spacing-inset-s) 120px 22px',
 }
 
 const phaseListStyle: CSSProperties = {
@@ -861,7 +861,7 @@ const phaseTimelineColStyle: CSSProperties = {
 const phaseDotStyle: CSSProperties = {
   width: '24px',
   height: '24px',
-  borderRadius: 'var(--radius-circle)',
+  borderRadius: '50%',
   border: '2px solid var(--color-background-primary)',
   background: 'var(--color-background-primary)',
   color: 'var(--color-text-primary-light)',
@@ -947,7 +947,7 @@ const subStepButtonCurrentStyle: CSSProperties = {
 }
 
 const subStepButtonCompletedStyle: CSSProperties = {
-  color: 'var(--color-text-primary)',
+  color: 'var(--color-text-secondary)',
 }
 
 const subStepTitleStyle: CSSProperties = {
@@ -974,19 +974,16 @@ const phaseRailTrackStyle: CSSProperties = {
   position: 'absolute',
   top: '24px',
   bottom: '24px',
-  left: '11px',
+  left: '12px',
   width: '2px',
   background: 'var(--color-border-secondary-light)',
+  transformOrigin: 'top center',
   zIndex: 0,
 }
 
 const phaseRailFillStyle: CSSProperties = {
-  position: 'absolute',
-  top: '24px',
-  left: '11px',
-  width: '2px',
-  background: 'var(--color-text-primary)',
-  zIndex: 0,
+  ...phaseRailTrackStyle,
+  background: 'var(--color-background-primary)',
 }
 
 const contentColumnStyle: CSSProperties = {

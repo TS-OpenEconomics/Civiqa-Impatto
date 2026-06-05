@@ -122,7 +122,7 @@ const listItemStyle: CSSProperties = {
 const bulletStyle: CSSProperties = {
   width: '24px',
   height: '24px',
-  borderRadius: 'var(--radius-circle)',
+  borderRadius: '50%',
   background: 'var(--color-background-primary)',
   color: 'var(--color-text-inverse)',
   display: 'inline-flex',

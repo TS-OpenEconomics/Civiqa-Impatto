@@ -1,3 +1,5 @@
+import { buildBeneficiCategorie, COLORE_VALORE_RESIDUO } from "./ecbaBenefits";
+
 function npv(rate, flows) {
   return flows.reduce((sum, cf, t) => sum + cf / Math.pow(1 + rate / 100, t), 0);
 }
@@ -23,54 +25,101 @@ export function computeEcba(project, eiaResults, setup) {
     discountRate = 3.5,
     residualValue = 0,
     annualOpex,
-    benefitItems = {},
   } = setup || {};
 
-  const conf = project.configurazione ?? {};
+  const conf = project?.configurazione ?? {};
   const capex = conf.capex ?? 0;
-  const vita_utile = conf.vita_utile ?? 20;
   const opex = annualOpex ?? conf.opex ?? 0;
+  const sector = conf.settore;
 
-  let annualBenefits = 0;
-  if (eiaResults) {
-    const perAnno = vita_utile > 0 ? vita_utile : 1;
-    if (benefitItems.gva !== false) annualBenefits += (eiaResults.gva?.totale ?? 0) / perAnno;
-    if (benefitItems.gettito) annualBenefits += (eiaResults.gettito?.totale ?? 0) / perAnno;
-    if (benefitItems.redditi) annualBenefits += (eiaResults.redditi?.totale ?? 0) / perAnno;
-    if (benefitItems.intangibili && benefitItems.intangibiliValue) {
-      annualBenefits += Number(benefitItems.intangibiliValue) || 0;
-    }
-  } else {
-    annualBenefits = capex * 0.18;
-  }
+  // ── Benefici: categorie economiche monetizzate (esternalità / outcome) ──────
+  // Il flusso di benefici annuo è la somma delle categorie del catalogo CBA,
+  // disaccoppiato dalle componenti dell'analisi di impatto (GVA/gettito/redditi).
+  const categorieBase = buildBeneficiCategorie({ capex, sector });
+  const annualBenefits = categorieBase.reduce((s, c) => s + c.valore_annuo, 0);
 
-  const rawFlows = [-capex];
-  const flussi = [];
-
+  // Fattore di annualità (attualizza un flusso costante su tutto l'orizzonte).
+  let annuityFactor = 0;
   for (let t = 1; t <= horizon; t++) {
-    const benefici = Math.round(annualBenefits + (t === horizon ? residualValue : 0));
-    const costi = opex;
-    const flusso_netto = benefici - costi;
-    rawFlows.push(flusso_netto);
-    flussi.push({ anno: t, benefici, costi, flusso_netto });
+    annuityFactor += 1 / Math.pow(1 + discountRate / 100, t);
+  }
+  const residualPV =
+    residualValue > 0 ? residualValue / Math.pow(1 + discountRate / 100, horizon) : 0;
+
+  // PV per categoria (ricorrente) + eventuale valore residuo (one-off).
+  const categoriePV = categorieBase.map((c) => ({
+    ...c,
+    valore_pv: Math.round(c.valore_annuo * annuityFactor),
+  }));
+  if (residualPV > 0) {
+    categoriePV.push({
+      id: "residuo",
+      nome: "Valore residuo",
+      descrizione:
+        "Valore economico dell'opera al termine dell'orizzonte di analisi, calcolato per ammortamento e attualizzato all'anno base.",
+      comeMisura: "Stimato come quota non ammortizzata del CAPEX, attualizzata a fine orizzonte.",
+      colore: COLORE_VALORE_RESIDUO,
+      valore_annuo: null,
+      one_off: true,
+      sottocomponenti: [],
+      valore_pv: Math.round(residualPV),
+    });
   }
 
-  let van_cum = -capex;
-  let pvBenefici = 0;
-  let pvCosti = capex;
+  const beneficiTotali = categoriePV.reduce((s, c) => s + c.valore_pv, 0);
 
-  flussi.forEach((row) => {
-    const df = Math.pow(1 + discountRate / 100, row.anno);
-    van_cum += row.flusso_netto / df;
-    pvBenefici += row.benefici / df;
-    pvCosti += row.costi / df;
-    row.van_cumulato = Math.round(van_cum);
+  // quota di ciascuna categoria sul totale dei benefici (per la ciambella).
+  const benefici_categorie = categoriePV.map((c) => ({
+    ...c,
+    quota: beneficiTotali > 0 ? c.valore_pv / beneficiTotali : 0,
+  }));
+
+  // ── Costi: CAPEX (anno 0) + OPEX attualizzato ───────────────────────────────
+  const pvCapex = capex;
+  let pvOpex = 0;
+  for (let t = 1; t <= horizon; t++) {
+    pvOpex += opex / Math.pow(1 + discountRate / 100, t);
+  }
+  pvOpex = Math.round(pvOpex);
+  const costiTotali = pvCapex + pvOpex;
+
+  const costi_categorie = [
+    { id: "capex", label: "Investimento (CAPEX)", valore_pv: Math.round(pvCapex) },
+    { id: "opex", label: "Gestione e manutenzione (OPEX)", valore_pv: pvOpex },
+  ];
+
+  // ── Flussi annuali (incluso anno 0 dell'investimento) ───────────────────────
+  const flussi = [];
+  const rawFlows = [-capex];
+  // Anno 0: solo investimento iniziale.
+  flussi.push({
+    anno: 0,
+    benefici: 0,
+    costi: Math.round(capex),
+    flusso_netto: -Math.round(capex),
+    van_cumulato: -Math.round(capex),
   });
 
-  const van = Math.round(pvBenefici - pvCosti);
-  const bc = pvCosti > 0 ? Math.round((pvBenefici / pvCosti) * 100) / 100 : 0;
+  let vanCum = -capex;
+  for (let t = 1; t <= horizon; t++) {
+    const benefici = Math.round(annualBenefits + (t === horizon ? residualValue : 0));
+    const costi = Math.round(opex);
+    const flussoNetto = benefici - costi;
+    rawFlows.push(flussoNetto);
+    vanCum += flussoNetto / Math.pow(1 + discountRate / 100, t);
+    flussi.push({
+      anno: t,
+      benefici,
+      costi,
+      flusso_netto: flussoNetto,
+      van_cumulato: Math.round(vanCum),
+    });
+  }
+
+  const van = Math.round(beneficiTotali - costiTotali);
+  const bc = costiTotali > 0 ? Math.round((beneficiTotali / costiTotali) * 100) / 100 : 0;
   const tir = irr(rawFlows);
-  const paybackRow = flussi.find((r) => r.van_cumulato >= 0);
+  const paybackRow = flussi.find((r) => r.anno >= 1 && r.van_cumulato >= 0);
 
   return {
     van,
@@ -81,9 +130,14 @@ export function computeEcba(project, eiaResults, setup) {
     bcr: bc,
     irr: tir,
     payback_period: paybackRow?.anno ?? null,
-    benefici_totali: Math.round(pvBenefici),
-    costi_totali: Math.round(pvCosti),
+    benefici_totali: Math.round(beneficiTotali),
+    costi_totali: Math.round(costiTotali),
     annual_benefits: Math.round(annualBenefits),
+    // Nuovi campi per i grafici del report CBA
+    benefici_categorie,
+    costi_categorie,
+    pv_capex: Math.round(pvCapex),
+    pv_opex: pvOpex,
     flussi,
     meta: {
       orizzonte: horizon,

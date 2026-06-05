@@ -648,8 +648,8 @@ function Sidebar({ stepIdx }) {
 
           return (
             <div key={group.label} className="relative mb-9 grid grid-cols-[38px_minmax(0,1fr)] gap-x-4">
-              <div className={`relative z-[1] flex h-[38px] w-[38px] items-center justify-center ${isActive || isDone ? "bg-brand-violet" : "bg-[#dcdce1]"}`}>
-                {isDone ? <span className="text-[10px] font-bold text-white">OK</span> : isActive ? <span className="h-3 w-3 bg-white" /> : null}
+              <div className={`relative z-[1] flex h-[38px] w-[38px] items-center justify-center rounded-full ${isActive || isDone ? "bg-brand-violet" : "bg-[#dcdce1]"}`}>
+                {isDone ? <span className="text-[10px] font-bold text-white">OK</span> : isActive ? <span className="h-3 w-3 rounded-full bg-white" /> : null}
               </div>
               <div className="flex min-h-[38px] items-center overflow-visible pt-1">
                 <h3 className={`min-w-0 text-[17px] font-bold leading-tight ${isActive ? "text-ink-900" : "text-ink-300"}`}>{group.label}</h3>
@@ -725,8 +725,8 @@ function RadioCards({ options, value, onChange, descriptions }) {
           onClick={() => onChange(option)}
           className={`flex w-full items-start gap-4 bg-white px-5 py-5 text-left transition-colors ${value === option ? "border-2 border-brand-violet" : "border border-ink-200 hover:border-ink-300"}`}
         >
-          <div className={`mt-1 flex h-6 w-6 items-center justify-center border-2 ${value === option ? "border-brand-violet" : "border-ink-400"}`}>
-            {value === option ? <div className="h-3 w-3 bg-brand-violet" /> : null}
+          <div className={`mt-1 flex h-6 w-6 items-center justify-center rounded-full border-2 ${value === option ? "border-brand-violet" : "border-ink-400"}`}>
+            {value === option ? <div className="h-3 w-3 rounded-full bg-brand-violet" /> : null}
           </div>
           <div>
             <p className="text-[15px] font-semibold text-ink-900">{option}</p>
@@ -748,8 +748,8 @@ function RadioList({ options, value, onChange }) {
           onClick={() => onChange(option)}
           className={`flex w-full items-center gap-3 px-5 py-4 text-left ${index < options.length - 1 ? "border-b border-ink-100" : ""} ${value === option ? "bg-brand-violet-soft" : "hover:bg-[#fafafa]"}`}
         >
-          <div className={`flex h-6 w-6 items-center justify-center border-2 ${value === option ? "border-brand-violet" : "border-ink-400"}`}>
-            {value === option ? <div className="h-3 w-3 bg-brand-violet" /> : null}
+          <div className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${value === option ? "border-brand-violet" : "border-ink-400"}`}>
+            {value === option ? <div className="h-3 w-3 rounded-full bg-brand-violet" /> : null}
           </div>
           <span className="text-[14px] text-ink-900">{option}</span>
         </button>
@@ -791,8 +791,8 @@ function CarouselCards({ options, value, onChange, cols = 5 }) {
               className={`flex min-h-[160px] flex-col items-center justify-between bg-white px-4 py-5 text-center ${value === option ? "border-[4px] border-brand-violet" : "border border-white hover:border-ink-200"}`}
             >
               <span className="flex flex-1 items-center justify-center text-[14px] font-semibold leading-[1.35] text-ink-900">{option}</span>
-              <div className={`mt-4 flex h-8 w-8 items-center justify-center border-2 ${value === option ? "border-brand-violet" : "border-ink-500"}`}>
-                {value === option ? <div className="h-4 w-4 bg-brand-violet" /> : null}
+              <div className={`mt-4 flex h-8 w-8 items-center justify-center rounded-full border-2 ${value === option ? "border-brand-violet" : "border-ink-500"}`}>
+                {value === option ? <div className="h-4 w-4 rounded-full bg-brand-violet" /> : null}
               </div>
             </button>
           ))}
@@ -814,7 +814,7 @@ function ClassAccordion({ number, title, selectedLabel, isCompleted, onEdit, chi
   return (
     <div className={`overflow-hidden border bg-white ${isCompleted ? "border-ink-100" : "border-brand-violet/40"}`}>
       <div className="flex items-center gap-3 px-5 py-4">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-brand-violet text-[12px] font-bold text-white">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-violet text-[12px] font-bold text-white">
           {isCompleted ? "✓" : number}
         </span>
         <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
@@ -845,7 +845,7 @@ function TassoScontoSection({ value, onChange, onConfirm, confirmed, onEdit }) {
     return (
       <div className="overflow-hidden border border-ink-100 bg-white">
         <div className="flex items-center gap-3 px-5 py-4">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-brand-violet text-[12px] font-bold text-white">✓</span>
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-violet text-[12px] font-bold text-white">✓</span>
           <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="text-[13px] text-ink-400">Tasso di sconto sociale</p>
@@ -863,7 +863,7 @@ function TassoScontoSection({ value, onChange, onConfirm, confirmed, onEdit }) {
   return (
     <div className="overflow-hidden border border-brand-violet/40 bg-white">
       <div className="flex items-center gap-3 border-b border-[#ececf1] px-5 py-4">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-brand-violet text-[12px] font-bold text-white">2</span>
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-violet text-[12px] font-bold text-white">2</span>
         <p className="text-[13px] font-semibold text-ink-900">Tasso di sconto sociale</p>
       </div>
 
@@ -2254,7 +2254,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
 
                       {opexStartYear ? (
                         <div className="mt-4 flex items-center gap-3 border border-ink-100 bg-[#f7f7fa] px-4 py-3">
-                          <div className="h-3 w-3 shrink-0 bg-brand-violet" />
+                          <div className="h-3 w-3 shrink-0 rounded-full bg-brand-violet" />
                           <p className="text-[13px] text-ink-700">
                             OPEX attivo dal <strong>{opexStartYear}</strong> al <strong>{opexEndYear}</strong>
                           </p>
@@ -2595,7 +2595,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                         <div className="overflow-hidden border border-ink-100 bg-white">
                         {/* ── Header ── */}
                         <div className="flex flex-col gap-3 border-b border-[#ececf1] bg-[#f7f7fa] px-5 py-4 md:flex-row md:items-center">
-                          <span className={`flex h-7 w-7 shrink-0 items-center justify-center text-[12px] font-bold ${isPositiva ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-500"}`}>
+                          <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-bold ${isPositiva ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-500"}`}>
                             {isPositiva ? "+" : "−"}
                           </span>
                           <p className="min-w-0 flex-1 text-[14px] font-semibold text-ink-900">{group}</p>
@@ -2653,7 +2653,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                               <div className="grid gap-x-2 gap-y-3 px-5 py-4 md:grid-cols-[minmax(0,1fr)_132px_120px_96px] md:items-center">
                                 <div className="min-w-0">
                                   <div className="flex items-start gap-3">
-                                    <span className={`mt-1.5 h-2 w-2 shrink-0 ${kpi.tipo === "input" ? "bg-brand-violet" : "bg-ink-300"}`} />
+                                    <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${kpi.tipo === "input" ? "bg-brand-violet" : "bg-ink-300"}`} />
                                     <div className="min-w-0">
                                       <p className="text-[13px] font-semibold leading-[1.35] text-ink-900">{kpi.label}</p>
                                   {kpi.tipo === "input" && profiloVal == null ? (

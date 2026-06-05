@@ -12,6 +12,7 @@ import {
 } from "../ui/Icons";
 import { useToast } from "../../hooks/useToast";
 import { computeProvinceDistribution } from "../../lib/eiaEngine";
+import { HoldingHands, HoldingHandsEntry } from "./HoldingHands";
 
 function assetUrl(path) {
   const base = import.meta.env.BASE_URL ?? "/";
@@ -259,6 +260,7 @@ export function EiaResults({ project, analysis, onBack }) {
   const initialTab = TABS.some((t) => t.id === requestedTab) ? requestedTab : "sintesi";
   const [tab, setTab] = useState(initialTab);
   const [metodologiaOpen, setMetodologiaOpen] = useState(false);
+  const [guidaOpen, setGuidaOpen] = useState(false);
   const { showToast } = useToast();
 
   const meta = staticResults.metadata ?? {};
@@ -370,6 +372,20 @@ export function EiaResults({ project, analysis, onBack }) {
       <div className="px-4 pb-8 md:px-8">
         {errored && <ErrorBanner />}
         {loading && <LoadingBanner />}
+        <HoldingHandsEntry onOpen={() => setGuidaOpen(true)} disabled={loading || errored} />
+        <HoldingHands
+          open={guidaOpen}
+          onClose={() => setGuidaOpen(false)}
+          project={project}
+          onGoToDetails={() => {
+            setGuidaOpen(false);
+            handleTabChange("sintesi");
+          }}
+          onOpenMethodology={() => {
+            setGuidaOpen(false);
+            setMetodologiaOpen(true);
+          }}
+        />
         <div className="overflow-hidden border border-ink-100 bg-white">
           <TabBar
             activeTab={tab}

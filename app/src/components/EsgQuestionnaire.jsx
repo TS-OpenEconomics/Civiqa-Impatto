@@ -445,7 +445,7 @@ function MultiCarousel({ options, selected, onToggle, offset, setOffset }) {
               >
                 <span className="flex-1 text-[13px] font-semibold leading-[1.35] text-ink-900">{opt}</span>
                 <div
-                  className={`mt-3 flex h-6 w-6 shrink-0 items-center justify-center border-2 ${
+                  className={`mt-3 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${
                     checked ? "border-brand-violet bg-brand-violet" : "border-ink-300 bg-white"
                   }`}
                 >

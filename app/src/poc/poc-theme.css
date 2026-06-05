@@ -113,6 +113,14 @@
   font-weight: 600;
 }
 
+/* ---- Rounded DOCFAP exceptions ----
+   The app and POC resets force radius:0 !important. Keep boxes/buttons square;
+   only the requested wizard bullets and left progress menu are circular. */
+.poc-scope [aria-label="Struttura wizard DOCFAP"] .wz-phase-dot,
+.poc-scope [aria-label="Wizard DOCFAP"] article article ul li > span:first-child {
+  border-radius: 50% !important;
+}
+
 /* ---- Utility classes ported from POC index.css (re-skinned) ---- */
 .font-serif {
   font-family: "Inter", system-ui, sans-serif;
