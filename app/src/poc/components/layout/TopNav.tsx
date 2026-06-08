@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import colleferroStemma from '../../assets/Logo_Comune_Colleferro.png.png'
+import civiqaLogo from '../../assets/civiqa-logo.png'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useTheme, toggleTheme } from '../../../hooks/useTheme'
 
@@ -233,8 +234,12 @@ export function TopNav() {
         }}
         className={FOCUS_RING}
       >
-        <span aria-hidden="true" style={{ lineHeight: 1 }}>■</span>
-        <span>Civiqa</span>
+        <img
+          src={civiqaLogo}
+          alt="Civiqa"
+          className="civiqa-wordmark"
+          style={{ height: 30, width: 'auto', display: 'block' }}
+        />
       </Link>
 
       {/* Nav fasi — centrato, solo su /impatti/* */}
@@ -489,7 +494,7 @@ export function TopNav() {
             style={{
               width: 32,
               height: 32,
-              borderRadius: 'var(--radius-smooth, 2px)',
+              borderRadius: '50%',
               backgroundColor: 'var(--color-background-primary)',
               color: 'var(--color-text-inverse)',
               display: 'flex',
@@ -503,7 +508,7 @@ export function TopNav() {
               border: 'none',
               cursor: 'pointer',
             }}
-            className={FOCUS_RING}
+            className={`civiqa-avatar ${FOCUS_RING}`}
           >
             {iniziali}
           </button>

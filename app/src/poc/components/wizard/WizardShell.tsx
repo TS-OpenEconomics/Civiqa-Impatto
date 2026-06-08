@@ -302,7 +302,25 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
     if (!isPhase1CurrentSubStepValid) return false
     if (!isPhase5MatrixQuestionValid) return false
 
+    // Sotto-step dinamici di Fase 3 (uno per alternativa): configurazione, costi e nome.
+    const altMatch = currentSubStep.id.match(/^fase3-(a[123])-(setup|params|nome)$/)
+    if (altMatch) {
+      const altId = altMatch[1].toUpperCase() as 'A1' | 'A2' | 'A3'
+      const alt = state.alternative[altId]
+      if (!alt) return false
+      if (altMatch[2] === 'setup') {
+        return (alt.categoria ?? '').trim().length > 0 && (alt.tipologia ?? '').trim().length > 0
+      }
+      if (altMatch[2] === 'params') {
+        return (alt.capex ?? 0) > 0
+      }
+      // nome
+      return (alt.nome ?? '').trim().length > 0
+    }
+
     switch (currentSubStep.id) {
+      case 'fase1-ente':
+        return (state.rup.nome ?? '').trim().length > 0
       case 'fase2-problema':
         return (
           (state.problema.descrizione ?? '').trim().length > 0 &&
@@ -312,6 +330,8 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
         return true
       case 'fase2-sz-questions':
         return (state.scenarioZeroNarrative ?? '').trim().length > 0
+      case 'fase2-q1':
+        return state.q1Value != null && state.q1Value > 0
       case 'fase4-mca': {
         const clusterIds = state.clusterId ? [state.clusterId] : []
         const mcaQuestions = getMatrixQuestions(clusterIds)
@@ -324,6 +344,10 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
           return mcaQuestions.every((q) => !!scores[q.qCode])
         })
       }
+      case 'fase5-intervento':
+        return (state.intervento.denominazione ?? '').trim().length > 0
+      case 'fase5-decisione':
+        return (state.decisioneRUP?.motivazione ?? '').trim().length > 0
       default:
         return true
     }
@@ -332,11 +356,16 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
     isPhase1CurrentSubStepValid,
     isPhase5MatrixQuestionValid,
     state.clusterId,
+    state.alternative,
     state.alternativeDefinite,
     state.mcaScores,
     state.problema.descrizione,
     state.scenarioZeroNarrative,
     state.urgenza,
+    state.rup.nome,
+    state.q1Value,
+    state.intervento.denominazione,
+    state.decisioneRUP,
   ])
 
   const isCurrentPhaseValid = isStepValid(position.phaseIndex)
@@ -472,6 +501,7 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
   const isCompletionStep = currentSubStep.id === 'fase5-completamento'
   const nextButtonLabel = isIntroPhase ? 'Inizia la configurazione' : 'Vai allo step successivo'
   const shellPhaseStyle = isIntroPhase ? introShellStyle : shellStyle
+  const showAutofill = !!onAutofill && !isIntroPhase && (autofillPhaseIndexes ?? []).includes(position.phaseIndex)
   const visibleSidebarPhases = useMemo(() => phases.filter((phase) => phase.id !== 'fase-0'), [phases])
 
   // Completion is shown full screen (no sidebar/header/footer chrome), like the
@@ -662,6 +692,18 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
           )}
 
           <div style={isIntroPhase ? introMainContentStyle : mainAreaContentStyle}>
+            {showAutofill && (
+              <div style={autofillRowStyle}>
+                <button
+                  type="button"
+                  className="wizard-shell-interactive"
+                  onClick={() => onAutofill?.({ phaseIndex: position.phaseIndex, subStepId: currentSubStep.id })}
+                  style={autofillButtonStyle}
+                >
+                  Autoriempi questa pagina
+                </button>
+              </div>
+            )}
             <article
               style={{
                 ...questionCardStyle,
@@ -703,16 +745,6 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
                     </span>
                   )}
                 </div>
-                {onAutofill && !isIntroPhase && (autofillPhaseIndexes ?? []).includes(position.phaseIndex) && (
-                  <button
-                    type="button"
-                    className="wizard-shell-interactive"
-                    onClick={() => onAutofill({ phaseIndex: position.phaseIndex, subStepId: currentSubStep.id })}
-                    style={autofillButtonStyle}
-                  >
-                    Autoriempi questa pagina
-                  </button>
-                )}
               </div>
               <div
                 style={{
@@ -1004,8 +1036,16 @@ const contentColumnStyle: CSSProperties = {
 
 const contentColumnRegularStyle: CSSProperties = {
   ...contentColumnStyle,
-  maxWidth: 'min(1280px, calc(100vw - 64px))',
+  // Riempie l'intera colonna 1fr: l'area scrollabile (e la sua barra) arriva al
+  // bordo destro della pagina, come nel wizard di valutazione. Il contenuto resta
+  // centrato grazie al maxWidth interno (mainAreaContentStyle).
+  maxWidth: 'none',
   justifySelf: 'stretch',
+}
+
+const autofillRowStyle: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'flex-end',
 }
 
 const contentColumnIntroStyle: CSSProperties = {
@@ -1065,7 +1105,7 @@ const closeButtonStyle: CSSProperties = {
 }
 
 const mainAreaStyle: CSSProperties = {
-  overflow: 'hidden',
+  overflowY: 'auto',
   minHeight: 'calc(100vh - 64px - 56px)',
   padding: '32px clamp(36px, 4vw, 64px) 24px',
   display: 'flex',
@@ -1075,8 +1115,6 @@ const mainAreaStyle: CSSProperties = {
 
 const mainAreaIntroStyle: CSSProperties = {
   ...mainAreaStyle,
-  overflow: 'hidden',
-  minHeight: 'calc(100vh - 64px - 56px)',
   padding: '24px clamp(28px, 3vw, 48px) 24px',
   alignItems: 'center',
 }
@@ -1099,7 +1137,6 @@ const mainAreaContentStyle: CSSProperties = {
   gap: 'var(--spacing-stack-m)',
   justifyItems: 'stretch',
   alignContent: 'start',
-  overflowY: 'auto',
   paddingBottom: '24px',
 }
 

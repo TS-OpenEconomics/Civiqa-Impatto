@@ -2484,7 +2484,7 @@ const CHART_INFO = {
   },
   "settori.classifica": {
     title: "Settori più attivati",
-    body: "I 63 settori ATECO della classificazione ISTAT (tavole input-output 2019) ordinati per valore attivato sulla dimensione scelta. La vista 'per territorio' suddivide ogni barra per provincia/regione di destinazione; la vista 'per componente' mostra la quota diretta/indiretta/indotta del singolo settore.",
+    body: "I 63 settori ATECO della classificazione ISTAT (tavole input-output 2022) ordinati per valore attivato sulla dimensione scelta. La vista 'per territorio' suddivide ogni barra per provincia/regione di destinazione; la vista 'per componente' mostra la quota diretta/indiretta/indotta del singolo settore.",
   },
   "settori.heatmap": {
     title: "Mappa di calore settore × territorio",
@@ -2517,7 +2517,7 @@ const METODOLOGIA_SECTIONS = [
     body: [
       "La SAM è una matrice contabile che rappresenta in modo integrato la struttura dell'economia italiana: attività produttive, fattori della produzione (lavoro e capitale), imprese, famiglie, governo, resto del mondo, formazione del capitale.",
       "Letta per riga descrive i redditi di ciascun aggregato; letta per colonna ne descrive le spese. La SAM cattura quindi non solo gli scambi B2B fra settori (come una tavola input-output tradizionale) ma anche la redistribuzione del reddito fra famiglie, imprese e Stato.",
-      "Disaggregazione: 63 settori ATECO secondo la classificazione ISTAT (tavole input-output 2019), con dettaglio provinciale per l'intero territorio italiano.",
+      "Disaggregazione: 63 settori ATECO secondo la classificazione ISTAT (tavole input-output 2022), con dettaglio provinciale per l'intero territorio italiano.",
     ],
   },
   {
@@ -2582,7 +2582,7 @@ const METODOLOGIA_SECTIONS = [
     id: "fonti",
     title: "Fonti dati",
     body: [
-      "ISTAT — Tavole input-output simmetriche per branca produttiva, classificazione 2019 (struttura della SAM).",
+      "ISTAT — Tavole input-output simmetriche per branca produttiva, classificazione 2022 (struttura della SAM).",
       "ISTAT — Dati di occupazione, redditi e popolazione per il dettaglio settoriale e territoriale.",
       "Aliquote fiscali medie effettive per la stima del gettito (IVA, IRPEF, IRES, contributi sociali).",
     ],

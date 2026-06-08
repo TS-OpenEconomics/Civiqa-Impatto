@@ -1,0 +1,13 @@
+{
+  "name": "civiqa-impatto",
+  "private": true,
+  "scripts": {
+    "app": "node scripts/open-app.mjs",
+    "stop": "powershell -ExecutionPolicy Bypass -File scripts/stop-app.ps1",
+    "stop:app": "powershell -ExecutionPolicy Bypass -File scripts/stop-app.ps1",
+    "dev": "npm --prefix app run dev",
+    "build": "npm --prefix app run build",
+    "preview": "npm --prefix app run preview",
+    "install:app": "npm --prefix app install"
+  }
+}
