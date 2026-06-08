@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 .npm-cache/
+.tools/
 .tools/node.zip
 
 # Editor directories and files

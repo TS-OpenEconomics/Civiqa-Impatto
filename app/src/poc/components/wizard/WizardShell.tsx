@@ -47,8 +47,8 @@ export interface WizardClosePayload {
 interface WizardShellProps {
   phases: WizardPhaseDefinition[]
   onClose?: (payload: WizardClosePayload) => void
-  /** Demo prefill for the current phase (analogo a "Autoriempi questa pagina"). */
-  onAutofill?: (phaseIndex: number) => void
+  /** Demo prefill for the CURRENT page only (one per page). */
+  onAutofill?: (ctx: { phaseIndex: number; subStepId: string }) => void
   /** Indici di fase su cui mostrare il bottone Autoriempi. */
   autofillPhaseIndexes?: number[]
 }
@@ -469,10 +469,16 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
   }
 
   const isIntroPhase = currentPhase.id === 'fase-0'
-  const isCompletionStep = currentSubStep.id === 'fase7-completamento'
+  const isCompletionStep = currentSubStep.id === 'fase5-completamento'
   const nextButtonLabel = isIntroPhase ? 'Inizia la configurazione' : 'Vai allo step successivo'
   const shellPhaseStyle = isIntroPhase ? introShellStyle : shellStyle
   const visibleSidebarPhases = useMemo(() => phases.filter((phase) => phase.id !== 'fase-0'), [phases])
+
+  // Completion is shown full screen (no sidebar/header/footer chrome), like the
+  // Valutazione CompletionScreen — the step renders its own centered layout.
+  if (isCompletionStep) {
+    return <div style={fullScreenStepStyle}>{currentQuestion.content}</div>
+  }
 
   return (
     <WizardNavigationContext.Provider value={{ goToNextPhase, goToNextSubStep }}>
@@ -667,7 +673,7 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
                   <button
                     type="button"
                     className="wizard-shell-interactive"
-                    onClick={() => onAutofill(position.phaseIndex)}
+                    onClick={() => onAutofill({ phaseIndex: position.phaseIndex, subStepId: currentSubStep.id })}
                     style={autofillButtonStyle}
                   >
                     Autoriempi questa pagina
@@ -1202,6 +1208,14 @@ const questionBodyCompletionStyle: CSSProperties = {
   padding: 0,
   border: 'none',
   background: 'transparent',
+}
+
+const fullScreenStepStyle: CSSProperties = {
+  position: 'fixed',
+  inset: 0,
+  zIndex: 200,
+  overflowY: 'auto',
+  background: 'var(--color-background-secondary-light)',
 }
 
 const footerStyle: CSSProperties = {

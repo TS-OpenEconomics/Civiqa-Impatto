@@ -77,7 +77,7 @@ body.hl-home-locked {
   font-family: var(--font-family-1);
   font-size: var(--type-body-xs-size, 12px);
   font-weight: var(--type-weight-bold, 700);
-  border-radius: var(--radius-smooth, 2px);
+  border-radius: var(--radius-circle, 80px);
   flex-shrink: 0;
   user-select: none;
   border: none;
