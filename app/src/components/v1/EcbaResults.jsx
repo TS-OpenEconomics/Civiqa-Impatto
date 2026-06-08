@@ -63,10 +63,10 @@ const CSS = `
   font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
   /* Stesso sfondo della sezione Impatto (token bg-page): le card bianche con bordo
      creano i "bordini grigi" tra una card e l'altra, come in Impatto. */
-  background:var(--grey-light);color:var(--text-main);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100%;
+  background:var(--grey-light);color:var(--text-main);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100%;padding:32px;
 }
 .ecba-root *{box-sizing:border-box;margin:0;padding:0}
-.ecba-root .wrap{max-width:1180px;margin:0 auto;padding:22px 22px 90px}
+.ecba-root .wrap{width:100%;min-height:calc(100vh - 64px);margin:0;padding:0 0 90px}
 
 .ecba-root .crumb{font-size:13px;color:var(--text-muted);margin-bottom:4px}
 .ecba-root .crumb b{color:var(--text-main)} .ecba-root .crumb-sep{margin:0 7px;color:var(--text-soft)}
@@ -94,7 +94,7 @@ const CSS = `
 .ecba-root .hcol .val{font-size:16px;font-weight:600}
 
 /* BANNER */
-.ecba-root .simple-banner{margin-top:14px;background:linear-gradient(95deg,var(--blu-050),#fbf8ff 70%,#fff);border:1px solid var(--grey-line);display:flex;align-items:center;justify-content:space-between;padding:16px 24px;gap:16px;flex-wrap:wrap}
+.ecba-root .simple-banner{margin-top:32px;background:linear-gradient(95deg,var(--blu-050),#fbf8ff 70%,#fff);border:1px solid var(--grey-line);display:flex;align-items:center;justify-content:space-between;padding:16px 24px;gap:16px;flex-wrap:wrap}
 .ecba-root .sb-left{display:flex;align-items:center;gap:16px}
 .ecba-root .sb-icon{width:42px;height:42px;background:var(--blu-500);display:flex;align-items:center;justify-content:center;flex:0 0 42px}
 .ecba-root .sb-icon svg{width:22px;height:22px;stroke:#fff}
@@ -102,7 +102,7 @@ const CSS = `
 .ecba-root .sb-cta{font-size:14px;font-weight:800;color:var(--blu-600);cursor:pointer;white-space:nowrap} .ecba-root .sb-cta:hover{color:var(--blu-800)}
 
 /* TABS (3 pages) */
-.ecba-root .tabs{margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);background:var(--white);border:1px solid var(--grey-line)}
+.ecba-root .tabs{margin-top:20px;display:grid;grid-template-columns:repeat(3,1fr);background:var(--white);border:1px solid var(--grey-line)}
 .ecba-root .tab{padding:16px 22px;cursor:pointer;border:none;border-right:1px solid var(--grey-line);background:none;text-align:left;font-family:inherit}
 .ecba-root .tab:last-child{border-right:none}
 .ecba-root .tab .t-name{font-size:15px;font-weight:800;color:var(--text-main)}
@@ -111,7 +111,7 @@ const CSS = `
 .ecba-root .tab:not(.active):hover{background:var(--blu-050)}
 
 /* PANELS */
-.ecba-root .panel{display:none;animation:ecba-fade .25s ease}.ecba-root .panel.show{display:block}
+.ecba-root .panel{display:none;animation:ecba-fade .25s ease}.ecba-root .panel.show{display:block;background:var(--white);border:1px solid var(--grey-line);border-top:none;padding:24px}
 @keyframes ecba-fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .ecba-root .view-lab{font-size:11px;font-weight:700;letter-spacing:.16em;color:var(--text-soft);text-transform:uppercase;margin:26px 0 6px}
 .ecba-root .view-h{font-size:27px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
@@ -200,6 +200,10 @@ const CSS = `
 .ecba-root .formula{background:var(--grey-light);border:1px solid var(--grey-line);padding:12px 16px;font-family:"SFMono-Regular",Consolas,monospace;font-size:13px;margin:8px 0 12px}
 
 @media(max-width:820px){
+  .ecba-root{padding:16px}
+  .ecba-root .wrap{min-height:calc(100vh - 32px);padding:0 0 70px}
+  .ecba-root .simple-banner{margin-top:24px}
+  .ecba-root .panel.show{padding:18px 16px}
   .ecba-root .head-cols,.ecba-root .kpi-grid,.ecba-root .tabs{grid-template-columns:1fr}
   .ecba-root .hcol+.hcol{border-left:none;border-top:1px solid var(--grey-line)}
   .ecba-root .tab{border-right:none;border-bottom:1px solid var(--grey-line)}
