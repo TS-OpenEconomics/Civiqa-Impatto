@@ -63,7 +63,7 @@ const CSS = `
   font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
   /* Stesso sfondo della sezione Impatto (token bg-page): le card bianche con bordo
      creano i "bordini grigi" tra una card e l'altra, come in Impatto. */
-  background:var(--grey-light);color:var(--text-main);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100%;padding:32px;
+  position:relative;background:var(--grey-light);color:var(--text-main);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100%;padding:32px;
 }
 .ecba-root *{box-sizing:border-box;margin:0;padding:0}
 .ecba-root .wrap{width:100%;min-height:calc(100vh - 64px);margin:0;padding:0 0 90px}
@@ -154,8 +154,13 @@ const CSS = `
 .ecba-root .card{background:var(--white);border:1px solid var(--grey-line);margin-top:16px;padding:24px 26px}
 .ecba-root .card-h{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:800;letter-spacing:-.01em}
 .ecba-root .card-sub{font-size:13px;color:var(--text-muted);margin-top:3px;max-width:740px}
-.ecba-root .chart-box{margin-top:20px}
-.ecba-root svg.chart{width:100%;height:auto;display:block;overflow:visible}
+.ecba-root .chart-box{margin-top:20px;overflow-x:auto}
+.ecba-root svg.chart{width:100%;height:auto;display:block;overflow:visible;margin:0 auto}
+.ecba-root #svg-wf{max-width:1140px}
+.ecba-root #svg-cf{max-width:1290px}
+.ecba-root #svg-tor{max-width:1230px}
+.ecba-root #svg-mc{max-width:1170px}
+.ecba-root #svg-dn{width:480px !important;max-width:480px !important;flex:0 0 480px !important}
 .ecba-root .legend{display:flex;flex-wrap:wrap;gap:10px 12px;margin-top:18px}
 .ecba-root .lg{display:flex;align-items:center;gap:8px;font-size:13px}
 .ecba-root .lg .sw{width:13px;height:13px;flex:0 0 13px}
@@ -175,6 +180,14 @@ const CSS = `
 .ecba-root .ax-txt{fill:var(--text-soft);font-size:11px;font-family:inherit}
 .ecba-root .bar-lbl{fill:var(--text-main);font-size:11.5px;font-weight:700;font-family:inherit}
 .ecba-root .connector{stroke:#c4c4be;stroke-width:1;stroke-dasharray:3 3}
+.ecba-root .chart-hit{cursor:pointer;pointer-events:all}
+.ecba-root .chart-hit:hover{filter:brightness(.96)}
+.ecba-root .chart-point{cursor:pointer;pointer-events:all;transition:r .12s ease,opacity .12s ease}
+.ecba-root .chart-tip{position:absolute;z-index:1600;display:none;min-width:190px;max-width:280px;background:#fff;border-left:2px solid var(--blu-500);box-shadow:0 12px 32px rgba(14,14,16,.18);padding:12px 14px;pointer-events:none}
+.ecba-root .chart-tip.show{display:block}
+.ecba-root .chart-tip .ct-lab{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-soft);margin-bottom:5px}
+.ecba-root .chart-tip .ct-val{font-size:17px;font-weight:800;color:var(--text-main);line-height:1.2}
+.ecba-root .chart-tip .ct-sub{font-size:12.5px;color:var(--text-muted);line-height:1.45;margin-top:5px}
 
 /* MODAL */
 .ecba-root .modal-bg{position:fixed;inset:0;background:rgba(20,8,48,.55);display:none;z-index:1000;align-items:flex-start;justify-content:center;padding:40px 20px;overflow:auto}
@@ -204,6 +217,7 @@ const CSS = `
   .ecba-root .wrap{min-height:calc(100vh - 32px);padding:0 0 70px}
   .ecba-root .simple-banner{margin-top:24px}
   .ecba-root .panel.show{padding:18px 16px}
+  .ecba-root #svg-dn{width:280px !important;max-width:100% !important;flex:0 1 280px !important}
   .ecba-root .head-cols,.ecba-root .kpi-grid,.ecba-root .tabs{grid-template-columns:1fr}
   .ecba-root .hcol+.hcol{border-left:none;border-top:1px solid var(--grey-line)}
   .ecba-root .tab{border-right:none;border-bottom:1px solid var(--grey-line)}
@@ -525,6 +539,61 @@ export function EcbaResults({ project, onBack }) {
     const { signal } = ac;
     const q = (s) => root.querySelector(s);
     const qa = (s) => root.querySelectorAll(s);
+    const chartTip = document.createElement("div");
+    chartTip.className = "chart-tip";
+    root.appendChild(chartTip);
+
+    function htmlEscape(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function fmt1(value) {
+      return Number(value).toFixed(1).replace(".", ",");
+    }
+
+    function showChartTip(event, el) {
+      chartTip.innerHTML = `
+        <div class="ct-lab">${htmlEscape(el.dataset.tipLabel)}</div>
+        <div class="ct-val">${htmlEscape(el.dataset.tipValue)}</div>
+        ${el.dataset.tipSub ? `<div class="ct-sub">${htmlEscape(el.dataset.tipSub)}</div>` : ""}
+      `;
+      chartTip.classList.add("show");
+      const rootRect = root.getBoundingClientRect();
+      const tipW = 280;
+      let left = event.clientX - rootRect.left + root.scrollLeft + 14;
+      const maxLeft = root.clientWidth - tipW - 8;
+      if (left > maxLeft) left = event.clientX - rootRect.left + root.scrollLeft - tipW - 14;
+      chartTip.style.left = `${Math.max(8, left)}px`;
+      chartTip.style.top = `${event.clientY - rootRect.top + root.scrollTop + 14}px`;
+    }
+
+    function closeChartTip() {
+      chartTip.classList.remove("show");
+    }
+
+    function bindChartTips(svg) {
+      if (!svg) return;
+      svg.querySelectorAll(".chart-hit,.chart-point").forEach((el) => {
+        el.setAttribute("tabindex", "0");
+        el.setAttribute("role", "button");
+        el.addEventListener("click", (event) => {
+          event.stopPropagation();
+          showChartTip(event, el);
+        }, { signal });
+        el.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            event.stopPropagation();
+            showChartTip(event, el);
+          }
+        }, { signal });
+      });
+    }
+    document.addEventListener("click", closeChartTip, { signal });
 
     // ===== TABS (page switching + lazy render) =====
     const rendered = {};
@@ -595,11 +664,14 @@ export function EcbaResults({ project, onBack }) {
           yB = y(b.base),
           h = Math.max(2, yB - yT);
         o += `<rect x="${x}" y="${yB}" width="${bw}" height="0" fill="${b.fill}"><animate attributeName="height" from="0" to="${h}" dur=".65s" begin="${i * 0.18}s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1"/><animate attributeName="y" from="${yB}" to="${yT}" dur=".65s" begin="${i * 0.18}s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1"/></rect>`;
+        const value = b.label === "Costi" ? -costi : b.top;
+        o += `<rect class="chart-hit" x="${x}" y="${yT}" width="${bw}" height="${h}" fill="transparent" data-tip-label="${b.label}" data-tip-value="${fmt1(value)} M€" data-tip-sub="Valore attuale sull'orizzonte di analisi"></rect>`;
         const ly = b.pos === "top" ? yT - 9 : (yT + yB) / 2 + 5;
         o += `<text class="bar-lbl" x="${x + bw / 2}" y="${ly}" text-anchor="middle" style="font-size:14px" opacity="0">${b.lab} M€<animate attributeName="opacity" from="0" to="1" dur=".3s" begin="${i * 0.18 + 0.55}s" fill="freeze"/></text>`;
         o += `<text class="ax-txt" x="${x + bw / 2}" y="${H - padB + 22}" text-anchor="middle" style="font-weight:700;fill:var(--text-main);font-size:13px">${b.label}</text>`;
       });
       svg.innerHTML = o;
+      bindChartTips(svg);
     }
 
     // ===== CASHFLOW (multi-line, toggleable) =====
@@ -684,6 +756,9 @@ export function EcbaResults({ project, onBack }) {
         o += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="${s.w}" stroke-linejoin="round"${dash}>`;
         if (animate) o += `<animate attributeName="stroke-dashoffset" from="1" to="0" dur="1.2s" begin="${0.2 + si * 0.08}s" fill="freeze"/>`;
         o += `</polyline>`;
+        s.data.forEach((v, t) => {
+          o += `<circle class="chart-point" cx="${x(t)}" cy="${y(v)}" r="5" fill="${s.color}" opacity=".18" stroke="${s.color}" stroke-width="1.4" data-tip-label="${s.label}" data-tip-value="${fmt1(v)} M€" data-tip-sub="Anno ${t}"></circle>`;
+        });
       });
       // payback on net
       const net = CF.series.find((s) => s.key === "net");
@@ -701,6 +776,7 @@ export function EcbaResults({ project, onBack }) {
         }
       }
       svg.innerHTML = o;
+      bindChartTips(svg);
     }
 
     // ===== DONUT =====
@@ -723,11 +799,13 @@ export function EcbaResults({ project, onBack }) {
           [x1, y1] = pt(rO, a1),
           [x2, y2] = pt(rI, a1),
           [x3, y3] = pt(rI, a0);
-        o += `<path d="M${x0} ${y0} A${rO} ${rO} 0 ${lg} 1 ${x1} ${y1} L${x2} ${y2} A${rI} ${rI} 0 ${lg} 0 ${x3} ${y3} Z" fill="${s.color}" opacity="0"><animate attributeName="opacity" from="0" to="1" dur=".4s" begin="${i * 0.12}s" fill="freeze"/></path>`;
+        const value = (53.1 * s.pct) / 100;
+        o += `<path class="chart-hit" d="M${x0} ${y0} A${rO} ${rO} 0 ${lg} 1 ${x1} ${y1} L${x2} ${y2} A${rI} ${rI} 0 ${lg} 0 ${x3} ${y3} Z" fill="${s.color}" opacity="0" data-tip-label="${s.label}" data-tip-value="${fmt1(value)} M€" data-tip-sub="${s.pct}% dei benefici totali"><animate attributeName="opacity" from="0" to="1" dur=".4s" begin="${i * 0.12}s" fill="freeze"/></path>`;
       });
       o += `<text x="${cx}" y="${cy - 6}" text-anchor="middle" style="font-size:13px;fill:var(--text-muted);font-weight:600">Benefici</text>`;
       o += `<text x="${cx}" y="${cy + 18}" text-anchor="middle" style="font-size:24px;font-weight:800;fill:var(--text-main)">53,1 M€</text>`;
       svg.innerHTML = o;
+      bindChartTips(svg);
       q("#dn-legend").innerHTML = d
         .map(
           (s) =>
@@ -763,6 +841,7 @@ export function EcbaResults({ project, onBack }) {
           bh = 22;
         o += `<rect x="${x(v.low)}" y="${cy - bh / 2}" width="0" height="${bh}" fill="#c0392b" opacity=".88"><animate attributeName="width" from="0" to="${x(base) - x(v.low)}" dur=".5s" begin="${i * 0.1}s" fill="freeze"/></rect>`;
         o += `<rect x="${x(base)}" y="${cy - bh / 2}" width="0" height="${bh}" fill="#1e7a45" opacity=".88"><animate attributeName="width" from="0" to="${x(v.high) - x(base)}" dur=".5s" begin="${i * 0.1}s" fill="freeze"/></rect>`;
+        o += `<rect class="chart-hit" x="${x(v.low)}" y="${cy - rowH / 2 + 3}" width="${x(v.high) - x(v.low)}" height="${rowH - 6}" fill="transparent" data-tip-label="${v.name}" data-tip-value="${fmt1(v.low)} / ${fmt1(v.high)} M€" data-tip-sub="Scenario sfavorevole / favorevole rispetto al VANE base"></rect>`;
         o += `<text x="${padL - 12}" y="${cy + 4}" text-anchor="end" style="font-size:12.5px;font-weight:700;fill:var(--text-main)">${v.name}</text>`;
         o += `<text x="${padL - 12}" y="${cy + 18}" text-anchor="end" style="font-size:10.5px;fill:var(--text-soft)">${v.sub}</text>`;
         o += `<text x="${x(v.low) - 5}" y="${cy + 4}" text-anchor="end" style="font-size:11px;fill:#c0392b;font-weight:700" opacity="0">${v.low.toFixed(1).replace(".", ",")}<animate attributeName="opacity" from="0" to="1" dur=".3s" begin="${i * 0.1 + 0.5}s" fill="freeze"/></text>`;
@@ -771,6 +850,7 @@ export function EcbaResults({ project, onBack }) {
       o += `<line x1="${x(base)}" y1="${padT - 2}" x2="${x(base)}" y2="${padT + d.length * rowH + 4}" stroke="var(--blu-700)" stroke-width="1.6"/>`;
       o += `<text class="ax-txt" x="${x(base)}" y="${padT - 4}" text-anchor="middle" style="fill:var(--blu-700);font-weight:700">VANE base ${base.toFixed(1).replace(".", ",")}</text>`;
       svg.innerHTML = o;
+      bindChartTips(svg);
     }
 
     // ===== MONTECARLO =====
@@ -806,6 +886,7 @@ export function EcbaResults({ project, onBack }) {
         const mid = xEdges(i) + m.w / 2,
           fill = mid < 0 ? "#c0392b" : "#6E1AFF";
         o += `<rect x="${x}" y="${y(0)}" width="${bw}" height="0" fill="${fill}" opacity=".9"><animate attributeName="y" from="${y(0)}" to="${yT}" dur=".5s" begin="${i * 0.05}s" fill="freeze"/><animate attributeName="height" from="0" to="${h}" dur=".5s" begin="${i * 0.05}s" fill="freeze"/></rect>`;
+        o += `<rect class="chart-hit" x="${x}" y="${yT}" width="${bw}" height="${Math.max(6, h)}" fill="transparent" data-tip-label="Intervallo VANE" data-tip-value="${xEdges(i)} / ${xEdges(i) + m.w} M€" data-tip-sub="Frequenza simulazioni: ${v}%"></rect>`;
         o += `<text class="ax-txt" x="${x + bw / 2}" y="${H - padB + 16}" text-anchor="middle">${xEdges(i)}</text>`;
       });
       // zero line
@@ -821,6 +902,7 @@ export function EcbaResults({ project, onBack }) {
       o += `<text x="${W - padR}" y="${padT + 48}" text-anchor="end" style="font-size:12px;fill:var(--text-muted)" opacity="0">simulazioni con VANE &gt; 0<animate attributeName="opacity" from="0" to="1" dur=".5s" begin="1.1s" fill="freeze"/></text>`;
       o += `<text class="ax-txt" x="${W - padR}" y="${H - padB + 16}" text-anchor="end" style="font-weight:700;fill:var(--text-muted)">VANE (M€)</text>`;
       svg.innerHTML = o;
+      bindChartTips(svg);
     }
 
     // ===== INFO POPOVER (click, stesso pattern della sezione Impatto) =====
@@ -893,6 +975,7 @@ export function EcbaResults({ project, onBack }) {
       if (e.key === "Escape") {
         closeModal();
         closePop();
+        closeChartTip();
       }
     }, { signal });
     qa("#mnav a").forEach((a) =>
@@ -935,6 +1018,7 @@ export function EcbaResults({ project, onBack }) {
     return () => {
       ac.abort();
       pop.remove();
+      chartTip.remove();
       document.body.style.overflow = "";
     };
   }, []);
