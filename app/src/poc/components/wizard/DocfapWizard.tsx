@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useWizard } from '../../hooks/useWizard'
 import { getMatrixQuestions } from '../../data/poc_docfap/evaluation_matrix'
 import { INTERVENTION_CATEGORIES } from '../../data/poc_docfap/intervention_categories_layer3'
@@ -57,6 +57,15 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
     () => state.alternativeDefinite.filter(isSupportedAlternativaId),
     [state.alternativeDefinite],
   )
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [])
 
   // Autoriempi: prefill demo (scenario Asilo Nido — Comune di Colleferro, cluster C03).
   // Riempie SOLO la pagina corrente (un autoriempi per pagina), come nel wizard di
@@ -366,7 +375,7 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
             questions: [
               {
                 title: 'Analisi Multicriteria qualitativa',
-                subtitle: 'Valuta le alternative su criteri qualitativi. Scala: A (Alto) · M (Medio) · B (Basso) · N (Nullo).',
+                subtitle: 'Valuta le alternative su criteri qualitativi.',
                 normRef: 'Art. 2, c.4, g) + c.7',
                 content: <McaQualitativa />,
               },

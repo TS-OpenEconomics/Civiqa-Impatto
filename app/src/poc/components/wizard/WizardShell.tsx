@@ -668,8 +668,42 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
                 ...(isIntroPhase ? questionCardIntroStyle : questionCardRegularStyle),
               }}
             >
-              {onAutofill && !isIntroPhase && (autofillPhaseIndexes ?? []).includes(position.phaseIndex) && (
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={questionHeaderRowStyle}>
+                <div
+                  style={{
+                    ...questionHeaderBlockStyle,
+                    ...(isIntroPhase ? questionHeaderIntroStyle : questionHeaderStickyStyle),
+                  }}
+                >
+                  <h2
+                    ref={headingRef}
+                    tabIndex={-1}
+                    style={{
+                      ...questionHeadingStyle,
+                      ...(isIntroPhase ? questionHeadingIntroStyle : null),
+                    }}
+                  >
+                    {currentQuestion.title}
+                  </h2>
+                  <p
+                    style={{
+                      ...questionSubtitleStyle,
+                      ...(isIntroPhase ? questionSubtitleIntroStyle : null),
+                    }}
+                  >
+                    {currentQuestion.subtitle}
+                  </p>
+                  {currentQuestion.normRef && !isIntroPhase && (
+                    <span style={normRefBadgeStyle} aria-label={`Riferimento normativo: D.Lgs. 36/2023 Allegato I.7 — ${currentQuestion.normRef}`}>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                        <rect x="1" y="1" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+                        <path d="M3.5 4h5M3.5 6h5M3.5 8h3" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+                      </svg>
+                      <span>D.Lgs. 36/2023 · All. I.7 · {currentQuestion.normRef}</span>
+                    </span>
+                  )}
+                </div>
+                {onAutofill && !isIntroPhase && (autofillPhaseIndexes ?? []).includes(position.phaseIndex) && (
                   <button
                     type="button"
                     className="wizard-shell-interactive"
@@ -678,40 +712,6 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
                   >
                     Autoriempi questa pagina
                   </button>
-                </div>
-              )}
-              <div
-                style={{
-                  ...questionHeaderBlockStyle,
-                  ...(isIntroPhase ? questionHeaderIntroStyle : questionHeaderStickyStyle),
-                }}
-              >
-                <h2
-                  ref={headingRef}
-                  tabIndex={-1}
-                  style={{
-                    ...questionHeadingStyle,
-                    ...(isIntroPhase ? questionHeadingIntroStyle : null),
-                  }}
-                >
-                  {currentQuestion.title}
-                </h2>
-                <p
-                  style={{
-                    ...questionSubtitleStyle,
-                    ...(isIntroPhase ? questionSubtitleIntroStyle : null),
-                  }}
-                >
-                  {currentQuestion.subtitle}
-                </p>
-                {currentQuestion.normRef && !isIntroPhase && (
-                  <span style={normRefBadgeStyle} aria-label={`Riferimento normativo: D.Lgs. 36/2023 Allegato I.7 — ${currentQuestion.normRef}`}>
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-                      <rect x="1" y="1" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
-                      <path d="M3.5 4h5M3.5 6h5M3.5 8h3" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-                    </svg>
-                    <span>D.Lgs. 36/2023 · All. I.7 · {currentQuestion.normRef}</span>
-                  </span>
                 )}
               </div>
               <div
@@ -1067,7 +1067,7 @@ const closeButtonStyle: CSSProperties = {
 const mainAreaStyle: CSSProperties = {
   overflow: 'hidden',
   minHeight: 'calc(100vh - 64px - 56px)',
-  padding: '48px clamp(36px, 4vw, 64px) 24px',
+  padding: '32px clamp(36px, 4vw, 64px) 24px',
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'flex-start',
@@ -1115,7 +1115,16 @@ const questionCardIntroStyle: CSSProperties = {
 }
 
 const questionCardRegularStyle: CSSProperties = {
-  paddingTop: '24px',
+  paddingTop: '16px',
+}
+
+const questionHeaderRowStyle: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start',
+  gap: 'var(--spacing-inline-m)',
+  width: '100%',
+  flexWrap: 'wrap',
 }
 
 const autofillButtonStyle: CSSProperties = {
@@ -1128,17 +1137,21 @@ const autofillButtonStyle: CSSProperties = {
   fontSize: 'var(--type-body-xs-size, 13px)',
   fontWeight: 'var(--type-weight-bold, 700)',
   cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  alignSelf: 'flex-start',
 }
 
 const questionHeaderBlockStyle: CSSProperties = {
   display: 'grid',
   gap: 'var(--spacing-stack-xxs, 4px)',
+  flex: 1,
+  minWidth: 0,
 }
 
 const questionHeaderStickyStyle: CSSProperties = {
   position: 'static',
   background: 'transparent',
-  padding: '16px 0 var(--spacing-stack-xs)',
+  padding: '12px 0 var(--spacing-stack-xs)',
 }
 
 const questionHeaderIntroStyle: CSSProperties = {

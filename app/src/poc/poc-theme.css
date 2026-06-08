@@ -121,14 +121,10 @@
 .poc-scope [aria-label="Wizard DOCFAP"] .radio-option__control,
 .poc-scope [aria-label="Wizard DOCFAP"] .radio-option__dot,
 .poc-scope [aria-label="Wizard DOCFAP"] .cb-item__box,
-.poc-scope [aria-label="Wizard DOCFAP"] .docfap-option-indicator {
+.poc-scope [aria-label="Wizard DOCFAP"] .docfap-option-indicator,
+.poc-scope .mca-dot,
+.poc-scope .mca-dot > span {
   border-radius: 50% !important;
-}
-
-/* ---- Utility classes ported from POC index.css (re-skinned) ---- */
-.font-serif {
-  font-family: "Inter", system-ui, sans-serif;
-  font-weight: 600;
 }
 
 .font-mono-data {
