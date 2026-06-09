@@ -188,11 +188,14 @@ const CSS = `
 .ecba-root .card-sub{font-size:13px;color:var(--text-muted);margin-top:3px;max-width:740px}
 .ecba-root .chart-box{margin-top:20px;overflow-x:auto}
 .ecba-root svg.chart{width:100%;height:auto;display:block;overflow:visible;margin:0 auto}
-.ecba-root #svg-wf{max-width:1140px}
-.ecba-root #svg-cf{max-width:1290px}
-.ecba-root #svg-tor{max-width:1230px}
-.ecba-root #svg-mc{max-width:1170px}
-.ecba-root #svg-dn{width:480px !important;max-width:480px !important;flex:0 0 480px !important}
+.ecba-root #svg-wf{max-width:720px}
+.ecba-root #svg-cf{max-width:760px}
+.ecba-root #svg-mc{max-width:760px}
+.ecba-root #svg-heat{max-width:720px}
+.ecba-root #svg-dn{width:420px !important;max-width:420px !important;flex:0 0 420px !important}
+/* due grafici spider affiancati */
+.ecba-root .card-row{display:flex;gap:16px;align-items:stretch}
+.ecba-root .card-row > .card{flex:1 1 0;min-width:0;margin-top:16px}
 .ecba-root .legend{display:flex;flex-wrap:wrap;gap:10px 12px;margin-top:18px}
 .ecba-root .lg{display:flex;align-items:center;gap:8px;font-size:13px}
 .ecba-root .lg .sw{width:13px;height:13px;flex:0 0 13px}
@@ -254,6 +257,7 @@ const CSS = `
   .ecba-root .hcol+.hcol{border-left:none;border-top:1px solid var(--grey-line)}
   .ecba-root .tab{border-right:none;border-bottom:1px solid var(--grey-line)}
   .ecba-root .modal-body{grid-template-columns:1fr}.ecba-root .m-nav{display:none}
+  .ecba-root .card-row{flex-direction:column;gap:0}
 }
 `;
 
@@ -313,7 +317,7 @@ const MARKUP = `
     <div class="view-h">Sintesi della convenienza</div>
     <div class="view-intro">Investimento di partenza <b>41,1 M€</b> nella provincia di Palermo, valutato su <b>30 anni</b> e attualizzato al <b>3%</b>. Gli indicatori misurano la convenienza <b>economico-sociale</b> dell'opera, non la sua redditività finanziaria.</div>
 
-    <div class="sec-head">I risultati dell'analisi <span class="info-i" data-tip="I tre indicatori standard dell'ECBA, calcolati su flussi attualizzati al tasso sociale del 3%.">i</span></div>
+    <div class="sec-head">I risultati dell'analisi <span class="info-i" data-tip="I tre indicatori standard dell'analisi economica costi-benefici, calcolati su flussi attualizzati al tasso sociale del 3%.">i</span></div>
     <div class="sec-sub">Gli indicatori sintetici di efficienza economico-sociale</div>
 
     <div class="kpi-grid">
@@ -415,31 +419,24 @@ const MARKUP = `
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-h">Sensitività del Valore Attuale Netto Economico alle variabili chiave <span class="info-i" data-tip="Tornado: ogni barra mostra di quanto si sposta il Valore Attuale Netto Economico quando la variabile peggiora (sinistra) o migliora (destra) rispetto allo scenario base.">i</span></div>
-      <div class="card-sub">Variazione del Valore Attuale Netto Economico (M€) rispetto al valore base, ordinata per impatto.</div>
-      <div class="chart-box"><svg id="svg-tor" class="chart" viewBox="0 0 760 320"></svg></div>
-      <div class="read"><h5>Come si legge</h5>
-        <p>È un grafico "a tornado": ogni barra è una variabile dell'analisi. La parte <span style="color:var(--red-600);font-weight:800">rossa</span> mostra dove finisce il Valore Attuale Netto Economico se la variabile <b>peggiora</b>, la parte <span style="color:var(--green-700);font-weight:800">verde</span> se <b>migliora</b>. La linea verticale è il valore base.</p>
-        <p>Più la barra è larga, più quella variabile è <b>critica</b>: qui i <b>costi di investimento</b> sono il fattore che muove di più il risultato.</p></div>
-    </div>
+    <div class="card-row">
+      <div class="card">
+        <div class="card-h">Elasticità del Valore Attuale Netto Economico ai parametri <span class="info-i" data-tip="Per ogni parametro, di quanto cambia (in percentuale) il Valore Attuale Netto Economico al variare dell'1% del parametro. Più il profilo è esteso, più il risultato è sensibile.">i</span></div>
+        <div class="card-sub">Variazione % del Valore Attuale Netto Economico per +1% del parametro.</div>
+        <div class="chart-box" style="display:flex;justify-content:center"><svg id="svg-elastic" class="chart" viewBox="0 0 460 380" style="max-width:420px"></svg></div>
+        <div class="read"><h5>Come si legge</h5>
+          <p>Ogni raggio è un parametro e la distanza dal centro è l'<b>elasticità</b> |ε| del Valore Attuale Netto Economico. Un profilo "appuntito" verso un asse segnala che quel parametro <b>domina</b> il risultato.</p>
+          <p>Qui i <b>costi di investimento</b> e i <b>parametri delle esternalità</b> sono i raggi più estesi.</p></div>
+      </div>
 
-    <div class="card">
-      <div class="card-h">Elasticità del Valore Attuale Netto Economico ai parametri <span class="info-i" data-tip="Per ogni parametro, di quanto cambia (in percentuale) il Valore Attuale Netto Economico al variare dell'1% del parametro. Più il profilo è esteso, più il risultato è sensibile.">i</span></div>
-      <div class="card-sub">Variazione % del Valore Attuale Netto Economico per +1% del parametro — valori più alti = maggiore sensitività.</div>
-      <div class="chart-box" style="display:flex;justify-content:center"><svg id="svg-elastic" class="chart" viewBox="0 0 460 380" style="max-width:520px"></svg></div>
-      <div class="read"><h5>Come si legge</h5>
-        <p>È un grafico "radar": ogni raggio è un parametro dell'analisi e la distanza dal centro è l'<b>elasticità</b> |ε| del Valore Attuale Netto Economico. Un profilo "appuntito" verso un asse segnala che quel parametro <b>domina</b> il risultato.</p>
-        <p>Qui i <b>costi di investimento</b> e i <b>parametri delle esternalità</b> sono i raggi più estesi: sono le leve su cui si gioca la convenienza dell'opera.</p></div>
-    </div>
-
-    <div class="card">
-      <div class="card-h">Incertezza dei parametri — contributo alla varianza <span class="info-i" data-tip="Quota normalizzata (0–100%) con cui ciascun parametro contribuisce alla varianza del Valore Attuale Netto Economico nelle simulazioni Montecarlo.">i</span></div>
-      <div class="card-sub">Contributo normalizzato [0–100%] di ciascun parametro alla varianza complessiva del risultato.</div>
-      <div class="chart-box" style="display:flex;justify-content:center"><svg id="svg-variance" class="chart" viewBox="0 0 460 380" style="max-width:520px"></svg></div>
-      <div class="read"><h5>Come si legge</h5>
-        <p>Mentre l'elasticità misura la sensitività <b>marginale</b>, questo radar mostra <b>quanto</b> ciascun parametro pesa sull'incertezza complessiva, tenendo conto anche di quanto quel parametro può realmente variare.</p>
-        <p>I parametri che combinano alta elasticità e ampia variabilità — qui i <b>costi di investimento</b> — sono quelli da presidiare con stime più accurate.</p></div>
+      <div class="card">
+        <div class="card-h">Incertezza dei parametri — contributo alla varianza <span class="info-i" data-tip="Quota normalizzata (0–100%) con cui ciascun parametro contribuisce alla varianza del Valore Attuale Netto Economico nelle simulazioni Montecarlo.">i</span></div>
+        <div class="card-sub">Contributo normalizzato [0–100%] di ciascun parametro alla varianza complessiva.</div>
+        <div class="chart-box" style="display:flex;justify-content:center"><svg id="svg-variance" class="chart" viewBox="0 0 460 380" style="max-width:420px"></svg></div>
+        <div class="read"><h5>Come si legge</h5>
+          <p>Mentre l'elasticità misura la sensitività <b>marginale</b>, questo radar mostra <b>quanto</b> ciascun parametro pesa sull'incertezza complessiva, tenendo conto di quanto può realmente variare.</p>
+          <p>I parametri ad alta elasticità e ampia variabilità — qui i <b>costi di investimento</b> — sono da presidiare con stime più accurate.</p></div>
+      </div>
     </div>
 
     <div class="card">
@@ -668,7 +665,6 @@ export function EcbaResults({ project, onBack }) {
         drawDonut();
       }
       if (p === "sens") {
-        drawTornado();
         drawElasticitySpider();
         drawVarianceSpider();
         drawMonte();

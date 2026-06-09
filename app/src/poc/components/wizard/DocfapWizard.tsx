@@ -7,7 +7,6 @@ import { WizardShell, type WizardClosePayload, type WizardPhaseDefinition } from
 import { Step0_Intro } from './fase0/Step0_Intro'
 import { Step1_1_Ente } from './fase1/Step1_1_Ente'
 import { Step1_3_FabbisognoTema } from './fase1/Step1_3_FabbisognoTema'
-import { Step1_4_FabbisognoSpecifico } from './fase1/Step1_4_FabbisognoSpecifico'
 import { Step2_1_Problema } from './fase2/Step2_1_Problema'
 import { ScenarioZeroQuestions } from './fase2/ScenarioZeroQuestions'
 import { DatoContestoQ1 } from './fase2/DatoContestoQ1'
@@ -126,13 +125,9 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
         case 'fase1-ente':
           setRup({ nome: 'Marco Bianchi', qualifica: 'RUP', email: 'marco.bianchi@comune.colleferro.rm.it' })
           return
-        case 'fase1-tema':
-          // Solo il macro-tema; il fabbisogno specifico resta alla sua pagina.
-          setFab(state.fabId ?? null, 'TC03')
-          return
         case 'fase1-fabbisogno':
           // FAB-51 = "Offerta insufficiente di posti nido (0-3 anni)" · cluster C03
-          setFab('FAB-51', state.temaId ?? 'TC03')
+          setFab('FAB-51', 'TC03')
           setCluster('C03')
           return
 
@@ -279,26 +274,14 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
             ],
           },
           {
-            id: 'fase1-tema',
-            title: 'Tema',
-            questions: [
-              {
-                title: 'In che macro tema si inserisce il fabbisogno da soddisfare?',
-                subtitle: "Individua l'ambito tematico in cui ricade il fabbisogno.",
-                normRef: 'Art. 2, c.2',
-                content: <Step1_3_FabbisognoTema />,
-              },
-            ],
-          },
-          {
             id: 'fase1-fabbisogno',
             title: 'Fabbisogno',
             questions: [
               {
-                title: "Qual è il fabbisogno specifico da soddisfare?",
-                subtitle: 'Individua il fabbisogno corretto per associare il DOCFAP al quadro programmatorio.',
+                title: 'Quale fabbisogno deve soddisfare il progetto?',
+                subtitle: 'Seleziona prima il macro tema oppure cerca direttamente il fabbisogno specifico.',
                 normRef: 'Art. 2, c.2',
-                content: <Step1_4_FabbisognoSpecifico />,
+                content: <Step1_3_FabbisognoTema />,
               },
             ],
           },

@@ -12,6 +12,10 @@ function CheckMark() {
   )
 }
 
+function RadioDot() {
+  return <span aria-hidden="true" style={radioDotStyle} />
+}
+
 export function ScenarioZeroQuestions() {
   const { state, setScenarioZeroAnswers, setScenarioZeroNarrative } = useWizard()
   const [questions, setQuestions] = useState<SzQuestion[]>([])
@@ -95,47 +99,56 @@ export function ScenarioZeroQuestions() {
   return (
     <div style={rootStyle}>
       <style>{`.sz-option:focus-within { box-shadow: 0 0 0 2px var(--color-border-focus); }`}</style>
-      {questions.map((q) => (
-        <fieldset key={q.questionId} style={fieldsetStyle}>
-          <legend style={legendStyle}>{q.text}</legend>
-          <div style={optionsGridStyle}>
-            {q.opzioni.map((o) => {
-              const isRadio = q.tipo === 'radio'
-              const selected = isRadio
-                ? (answers[q.questionId] as string | undefined) === o.id
-                : ((answers[q.questionId] as string[] | undefined) ?? []).includes(o.id)
-              return (
-                <label
-                  key={o.id}
-                  className="sz-option"
-                  style={{ ...optionBoxStyle, ...(selected ? optionBoxSelectedStyle : null) }}
-                >
-                  <input
-                    type={isRadio ? 'radio' : 'checkbox'}
-                    name={q.questionId}
-                    value={o.id}
-                    checked={selected}
-                    onChange={(e) =>
-                      isRadio
-                        ? handleSingleChange(q.questionId, o.id)
-                        : handleMultiChange(q.questionId, o.id, e.target.checked)
-                    }
-                    style={srOnlyInput}
-                  />
-                  <span
-                    className="docfap-option-indicator"
-                    aria-hidden="true"
-                    style={{ ...indicatorStyle, ...(selected ? indicatorSelectedStyle : null) }}
-                  >
-                    {selected ? <CheckMark /> : null}
-                  </span>
-                  <span style={optionLabelStyle}>{o.label}</span>
-                </label>
-              )
-            })}
-          </div>
-        </fieldset>
-      ))}
+      <div style={questionsGridStyle}>
+        {questions.map((q) => {
+          const isRadio = q.tipo === 'radio'
+          return (
+            <fieldset key={q.questionId} style={fieldsetStyle}>
+              <legend style={legendStyle}>{q.text}</legend>
+              <p style={questionModeStyle}>{isRadio ? 'Risposta singola' : 'Selezione multipla'}</p>
+              <div style={optionsGridStyle}>
+                {q.opzioni.map((o) => {
+                  const selected = isRadio
+                    ? (answers[q.questionId] as string | undefined) === o.id
+                    : ((answers[q.questionId] as string[] | undefined) ?? []).includes(o.id)
+                  return (
+                    <label
+                      key={o.id}
+                      className="sz-option"
+                      style={{ ...optionBoxStyle, ...(selected ? optionBoxSelectedStyle : null) }}
+                    >
+                      <input
+                        type={isRadio ? 'radio' : 'checkbox'}
+                        name={q.questionId}
+                        value={o.id}
+                        checked={selected}
+                        onChange={(e) =>
+                          isRadio
+                            ? handleSingleChange(q.questionId, o.id)
+                            : handleMultiChange(q.questionId, o.id, e.target.checked)
+                        }
+                        style={srOnlyInput}
+                      />
+                      <span
+                        className="docfap-option-indicator"
+                        aria-hidden="true"
+                        style={{
+                          ...indicatorStyle,
+                          ...(isRadio ? radioIndicatorStyle : checkboxIndicatorStyle),
+                          ...(selected ? indicatorSelectedStyle : null),
+                        }}
+                      >
+                        {selected ? (isRadio ? <RadioDot /> : <CheckMark />) : null}
+                      </span>
+                      <span style={optionLabelStyle}>{o.label}</span>
+                    </label>
+                  )
+                })}
+              </div>
+            </fieldset>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -143,9 +156,28 @@ export function ScenarioZeroQuestions() {
 const srOnly: CSSProperties = { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' }
 const srOnlyInput: CSSProperties = { position: 'absolute', opacity: 0, width: 1, height: 1, margin: 0 }
 const rootStyle: CSSProperties = { display: 'grid', gap: 'var(--spacing-stack-m)' }
-const fieldsetStyle: CSSProperties = { border: '1px solid var(--color-border-secondary-light)', borderRadius: 'var(--radius-smooth)', padding: 'var(--spacing-inset-m)', margin: 0 }
-const legendStyle: CSSProperties = { padding: '0 var(--spacing-inline-s)', fontWeight: 600, color: 'var(--color-text-primary)' }
-const optionsGridStyle: CSSProperties = { display: 'grid', gap: 'var(--spacing-stack-xs)', marginTop: 'var(--spacing-stack-s)' }
+const questionsGridStyle: CSSProperties = { display: 'grid', gap: 'var(--spacing-stack-s)' }
+const fieldsetStyle: CSSProperties = {
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
+  padding: 'var(--spacing-inset-m)',
+  margin: 0,
+  background: 'var(--color-background-inverse)',
+}
+const legendStyle: CSSProperties = { padding: '0 var(--spacing-inline-s)', fontWeight: 700, color: 'var(--color-text-primary)' }
+const questionModeStyle: CSSProperties = {
+  margin: 'var(--spacing-stack-xxs, 4px) 0 0',
+  color: 'var(--color-text-primary-light)',
+  fontSize: 'var(--type-body-xs-size, 13px)',
+  fontWeight: 700,
+  textTransform: 'uppercase',
+}
+const optionsGridStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+  gap: 'var(--spacing-stack-xs)',
+  marginTop: 'var(--spacing-stack-s)',
+}
 const optionBoxStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
@@ -172,9 +204,21 @@ const indicatorStyle: CSSProperties = {
   background: 'var(--color-background-inverse)',
   color: 'var(--color-text-inverse)',
 }
+const radioIndicatorStyle: CSSProperties = {
+  borderRadius: 'var(--radius-circle)',
+}
+const checkboxIndicatorStyle: CSSProperties = {
+  borderRadius: '3px',
+}
 const indicatorSelectedStyle: CSSProperties = {
   background: 'var(--color-background-primary)',
   borderColor: 'var(--color-background-primary)',
+}
+const radioDotStyle: CSSProperties = {
+  width: 8,
+  height: 8,
+  borderRadius: 'var(--radius-circle)',
+  background: 'var(--color-text-inverse)',
 }
 const optionLabelStyle: CSSProperties = { lineHeight: 1.4 }
 const labelStyle: CSSProperties = { display: 'block', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 'var(--spacing-stack-xs)' }

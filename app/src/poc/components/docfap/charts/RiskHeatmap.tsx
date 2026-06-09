@@ -33,6 +33,9 @@ function textColor(norm: number): string {
   return Math.abs(norm) > 0.45 ? '#fff' : '#333'
 }
 
+// k€ → stringa in M€ (italiano)
+const toM = (k: number) => (k / 1000).toLocaleString('it-IT', { maximumFractionDigits: 1 })
+
 interface Props {
   scores: ScoreComposito[]
   alternative: Partial<Record<AlternativaId, AlternativaData>>
@@ -65,7 +68,7 @@ export function RiskHeatmap({ scores, alternative }: Props) {
         <div>
           <h3 style={titleStyle}>Heatmap NPV — sensitività combinata Costi × Benefici</h3>
           <p style={subtitleStyle}>
-            VANE in k€ al variare dei moltiplicatori di costo (righe) e beneficio (colonne).
+            VANE in M€ al variare dei moltiplicatori di costo (righe) e beneficio (colonne).
             Verde = NPV positivo, Rosso = NPV negativo.
           </p>
         </div>
@@ -126,9 +129,9 @@ export function RiskHeatmap({ scores, alternative }: Props) {
                     border: '1px solid rgba(255,255,255,0.2)',
                     userSelect: 'none',
                   }}
-                    title={`Costi ×${cm}, Benefici ×${bm} → NPV: ${npv.toLocaleString('it-IT')} k€`}
+                    title={`Costi ×${cm}, Benefici ×${bm} → NPV: ${toM(npv)} M€`}
                   >
-                    {npv.toLocaleString('it-IT')}
+                    {toM(npv)}
                   </div>
                 )
               })}

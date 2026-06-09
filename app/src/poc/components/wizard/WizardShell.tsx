@@ -331,7 +331,7 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
       case 'fase2-sz-questions':
         return (state.scenarioZeroNarrative ?? '').trim().length > 0
       case 'fase2-q1':
-        return state.q1Value != null && state.q1Value > 0
+        return true
       case 'fase4-mca': {
         const clusterIds = state.clusterId ? [state.clusterId] : []
         const mcaQuestions = getMatrixQuestions(clusterIds)

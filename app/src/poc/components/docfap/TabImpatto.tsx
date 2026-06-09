@@ -23,8 +23,9 @@ import {
 import { ImpactDecompositionChart } from './charts/ImpactDecompositionChart'
 import { ImpactMultiplierChart } from './charts/ImpactMultiplierChart'
 
-function fmtK(value: number): string {
-  return `${Math.round(value).toLocaleString('it-IT')} k€`
+// pil / produzione / redditi sono già in €M (vedi ScoreComposito)
+function fmtM(value: number): string {
+  return `${value.toLocaleString('it-IT', { maximumFractionDigits: 1 })} M€`
 }
 
 export function TabImpatto() {
@@ -35,10 +36,10 @@ export function TabImpatto() {
   if (scores.length === 0) return <p style={emptyStyle}>Nessun dettaglio d'impatto disponibile.</p>
 
   const rows: { key: string; label: string; get: (s: typeof scores[0]) => string }[] = [
-    { key: 'pil',      label: 'PIL (k€)',            get: s => fmtK(s.pil) },
+    { key: 'pil',      label: 'PIL (M€)',            get: s => fmtM(s.pil) },
     { key: 'occupati', label: 'Occupati (ETP)',       get: s => s.occupati.toLocaleString('it-IT') },
-    { key: 'prod',     label: 'Produzione (k€)',      get: s => fmtK(s.produzione) },
-    { key: 'redditi',  label: 'Redditi (k€)',         get: s => fmtK(s.redditi) },
+    { key: 'prod',     label: 'Produzione (M€)',      get: s => fmtM(s.produzione) },
+    { key: 'redditi',  label: 'Redditi (M€)',         get: s => fmtM(s.redditi) },
   ]
 
   return (

@@ -24,7 +24,7 @@ import { CbaWaterfallChart } from './charts/CbaWaterfallChart'
 import { CbaTrendlineChart } from './charts/CbaTrendlineChart'
 
 function fmtEuro(value: number): string {
-  return `${Math.round(value / 1000).toLocaleString('it-IT')} k€`
+  return `${(value / 1_000_000).toLocaleString('it-IT', { maximumFractionDigits: 1 })} M€`
 }
 
 function fmtPct(value: number): string {

@@ -19,6 +19,9 @@ import { RiskVarianceChart } from './charts/RiskVarianceChart'
 import { RiskHistogram } from './charts/RiskHistogram'
 import { RiskHeatmap } from './charts/RiskHeatmap'
 
+// k€ → stringa in M€ (italiano)
+const toM = (k: number) => (k / 1000).toLocaleString('it-IT', { maximumFractionDigits: 1 })
+
 function probBestColor(p: number): string {
   if (p >= 0.6) return '#1b5e20'
   if (p >= 0.3) return '#e65100'
@@ -88,16 +91,16 @@ export function TabSensitivita() {
                   <tbody>
                     <tr>
                       <td style={tdLabelStyle}>Media NPV</td>
-                      <td style={tdValueStyle}>{mc.summary.mean.toLocaleString('it-IT')} k€</td>
+                      <td style={tdValueStyle}>{toM(mc.summary.mean)} M€</td>
                     </tr>
                     <tr>
                       <td style={tdLabelStyle}>Dev. std</td>
-                      <td style={tdValueStyle}>± {mc.summary.std.toLocaleString('it-IT')} k€</td>
+                      <td style={tdValueStyle}>± {toM(mc.summary.std)} M€</td>
                     </tr>
                     <tr>
                       <td style={tdLabelStyle}>P5 / P50 / P95</td>
                       <td style={tdValueStyle}>
-                        {mc.summary.p5.toLocaleString('it-IT')} / {mc.summary.p50.toLocaleString('it-IT')} / {mc.summary.p95.toLocaleString('it-IT')} k€
+                        {toM(mc.summary.p5)} / {toM(mc.summary.p50)} / {toM(mc.summary.p95)} M€
                       </td>
                     </tr>
                     <tr>

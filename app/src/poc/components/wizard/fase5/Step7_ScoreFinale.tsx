@@ -61,6 +61,11 @@ function fmtPct(value: number): string {
   return `${value.toFixed(1)}%`
 }
 
+// k€ → stringa in M€ (italiano)
+function fmtMfromK(value: number): string {
+  return (value / 1000).toLocaleString('it-IT', { maximumFractionDigits: 1 })
+}
+
 function toTitleCase(str: string): string {
   return str
     .split(' ')
@@ -580,7 +585,7 @@ export function Step7_ScoreFinale() {
                         <td key={`p50-${item.alternativaId}`}
                           style={getInnerBodyCellStyle(item, localRecommendedId)}>
                           <span style={monoStyle}>
-                            {mc ? `${mc.summary.p50.toLocaleString('it-IT')} k€` : '—'}
+                            {mc ? `${fmtMfromK(mc.summary.p50)} M€` : '—'}
                           </span>
                         </td>
                       )
@@ -597,7 +602,7 @@ export function Step7_ScoreFinale() {
                           style={getInnerBodyCellStyle(item, localRecommendedId)}>
                           <span style={monoStyle}>
                             {mc
-                              ? `${mc.summary.p5.toLocaleString('it-IT')} – ${mc.summary.p95.toLocaleString('it-IT')} k€`
+                              ? `${fmtMfromK(mc.summary.p5)} – ${fmtMfromK(mc.summary.p95)} M€`
                               : '—'}
                           </span>
                         </td>

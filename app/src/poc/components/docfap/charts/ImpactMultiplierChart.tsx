@@ -85,7 +85,7 @@ export function ImpactMultiplierChart({ scores, alternative }: Props) {
       </p>
 
       <ResponsiveContainer width="100%" height={320}>
-        <BarChart data={chartData} margin={{ top: 24, right: 16, bottom: 8, left: 8 }}>
+        <BarChart data={chartData} margin={{ top: 24, right: 16, bottom: 8, left: 8 }} barGap={2} barCategoryGap="24%">
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e8e8e8" />
           <XAxis
             dataKey="dim"
@@ -121,7 +121,7 @@ export function ImpactMultiplierChart({ scores, alternative }: Props) {
               dataKey={s.alternativaId}
               name={s.alternativaId}
               fill={ALT_COLORS[s.alternativaId] ?? '#5B21F7'}
-              maxBarSize={36}
+              maxBarSize={52}
               radius={[3, 3, 0, 0]}
             >
               <LabelList

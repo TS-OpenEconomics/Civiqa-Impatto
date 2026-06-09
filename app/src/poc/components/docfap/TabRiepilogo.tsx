@@ -30,8 +30,8 @@ import {
 const ROWS = [
   { key: 'cbaScore', label: 'Punteggio Analisi Costi Benefici' },
   { key: 'impattoScore', label: "Punteggio Analisi d'impatto" },
-  { key: 'rischioScore', label: 'Punteggio Analisi del Rischio' },
-  { key: 'sensitivityScore', label: 'Punteggio Analisi di Sensitività' },
+  { key: 'mcaScore', label: 'Punteggio Analisi Multicriteria' },
+  { key: 'sensitivityScore', label: 'Punteggio Analisi del Rischio' },
 ] as const
 
 function fmt(value: number): string {
@@ -134,7 +134,7 @@ export function TabRiepilogo() {
         <div style={chartCardStyle}>
           <div style={chartHeaderStyle}>
             <span style={chartTitleStyle}>Confronto per Dimensione</span>
-            <span style={chartSubStyle}>CBA · Impatto · Multicriteria · Sensitività per alternativa</span>
+            <span style={chartSubStyle}>CBA · Impatto · Multicriteria · Rischio per alternativa</span>
           </div>
           <div style={chartBodyStyle}>
             <DimensionChart ranking={scores} getLabel={getLabel} recommendedId={recommendedId} />

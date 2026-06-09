@@ -19,7 +19,7 @@ const DIMENSIONS = [
   { key: 'cbaScore' as keyof ScoreComposito, label: 'CBA' },
   { key: 'impattoScore' as keyof ScoreComposito, label: 'Impatto' },
   { key: 'mcaScore' as keyof ScoreComposito, label: 'Multicriteria' },
-  { key: 'sensitivityScore' as keyof ScoreComposito, label: 'Sensitività' },
+  { key: 'sensitivityScore' as keyof ScoreComposito, label: 'Rischio' },
 ]
 
 export function DimensionChart({ ranking, getLabel, recommendedId }: Props) {
@@ -60,7 +60,7 @@ export function DimensionChart({ ranking, getLabel, recommendedId }: Props) {
 
       <ResponsiveContainer width="100%" height={300}>
         {mode === 'barre' ? (
-          <BarChart data={data} margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
+          <BarChart data={data} margin={{ top: 8, right: 16, left: 8, bottom: 8 }} barGap={2} barCategoryGap="22%">
             <CartesianGrid vertical={false} stroke="#e7e7e7" strokeDasharray="3 3" />
             <XAxis dataKey="dimension" tick={{ fontSize: 11, fill: '#6e6e6e' }} axisLine={false} tickLine={false} />
             <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#6e6e6e' }} axisLine={false} tickLine={false} />
@@ -73,7 +73,7 @@ export function DimensionChart({ ranking, getLabel, recommendedId }: Props) {
                 name={item.alternativaId}
                 fill={getAltFill(fillIndex(item, i))}
                 radius={[2, 2, 0, 0]}
-                maxBarSize={36}
+                maxBarSize={52}
               />
             ))}
           </BarChart>

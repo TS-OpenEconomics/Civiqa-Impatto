@@ -53,9 +53,10 @@ export function CbaWaterfallChart({ scores, alternative }: Props) {
       const pvC = capex + opex * AF
       const pvB = s.bcr * pvC
       const id = s.alternativaId
-      if (key === 'pvBenefici') row[id] = Math.round(pvB / 1000)
-      else if (key === 'pvCosti') row[id] = -Math.round(pvC / 1000)
-      else row[id] = Math.round(s.van / 1000)
+      const toM = (eur: number) => Math.round(eur / 100_000) / 10  // € → M€ (1 decimale)
+      if (key === 'pvBenefici') row[id] = toM(pvB)
+      else if (key === 'pvCosti') row[id] = -toM(pvC)
+      else row[id] = toM(s.van)
     }
     return row
   })
@@ -70,7 +71,7 @@ export function CbaWaterfallChart({ scores, alternative }: Props) {
         <p style={tooltipTitleStyle}>{label}</p>
         {payload.map(p => (
           <p key={p.name} style={{ ...tooltipRowStyle, color: p.fill }}>
-            {p.name}: <strong>{p.value.toLocaleString('it-IT')} k€</strong>
+            {p.name}: <strong>{p.value.toLocaleString('it-IT')} M€</strong>
           </p>
         ))}
       </div>
@@ -80,7 +81,7 @@ export function CbaWaterfallChart({ scores, alternative }: Props) {
   return (
     <div style={cardStyle}>
       <h3 style={titleStyle}>Componenti CBA — tutte le alternative</h3>
-      <p style={subtitleStyle}>Valori in k€ (Valore Attuale Netto). Spesa totale mostrata come valore negativo.</p>
+      <p style={subtitleStyle}>Valori in M€ (Valore Attuale Netto). Spesa totale mostrata come valore negativo.</p>
       <ResponsiveContainer width="100%" height={320}>
         <BarChart data={chartData} barCategoryGap="28%" barGap={4} margin={{ top: 16, right: 24, bottom: 8, left: 16 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e0e0e0" />
@@ -91,7 +92,7 @@ export function CbaWaterfallChart({ scores, alternative }: Props) {
             tickLine={false}
           />
           <YAxis
-            tickFormatter={v => `${v.toLocaleString('it-IT')} k€`}
+            tickFormatter={v => `${v.toLocaleString('it-IT')} M€`}
             tick={{ fontSize: 12, fill: 'var(--color-text-primary-light, #555)' }}
             axisLine={false}
             tickLine={false}

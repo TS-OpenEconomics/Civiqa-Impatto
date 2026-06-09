@@ -28,6 +28,9 @@ function annuityFactor(r: number, n: number): number {
   return (1 - Math.pow(1 + r, -n)) / r
 }
 
+// € → M€ con 2 decimali (i flussi annui sono sotto il milione)
+const toM2 = (eur: number) => Math.round(eur / 10_000) / 100
+
 interface YearPoint {
   year: number
   beneficiTotali: number
@@ -63,8 +66,8 @@ function buildTrendData(
         beneficiCittadini: 0,
         introitoTARI:      0,
         risparmiAmbiente:  0,
-        flussoNetto:       Math.round(-capex / 1000),
-        vanCumulativo:     Math.round(cumVan / 1000),
+        flussoNetto:       toM2(-capex),
+        vanCumulativo:     toM2(cumVan),
       })
     } else {
       const annNet = annualBenefit - opex
@@ -72,12 +75,12 @@ function buildTrendData(
 
       points.push({
         year:              y,
-        beneficiTotali:    Math.round(annualBenefit / 1000),
-        beneficiCittadini: Math.round(annualBenefit * SPLIT_CITTADINI / 1000),
-        introitoTARI:      Math.round(annualBenefit * SPLIT_TARI / 1000),
-        risparmiAmbiente:  Math.round(annualBenefit * SPLIT_AMBIENTE / 1000),
-        flussoNetto:       Math.round(annNet / 1000),
-        vanCumulativo:     Math.round(cumVan / 1000),
+        beneficiTotali:    toM2(annualBenefit),
+        beneficiCittadini: toM2(annualBenefit * SPLIT_CITTADINI),
+        introitoTARI:      toM2(annualBenefit * SPLIT_TARI),
+        risparmiAmbiente:  toM2(annualBenefit * SPLIT_AMBIENTE),
+        flussoNetto:       toM2(annNet),
+        vanCumulativo:     toM2(cumVan),
       })
     }
   }
@@ -106,7 +109,7 @@ export function CbaTrendlineChart({ scores, alternative }: Props) {
         <p style={tooltipTitleStyle}>Anno {label}</p>
         {payload.map(p => (
           <p key={p.name} style={{ ...tooltipRowStyle, color: p.color }}>
-            {p.name}: <strong>{p.value.toLocaleString('it-IT')} k€</strong>
+            {p.name}: <strong>{p.value.toLocaleString('it-IT')} M€</strong>
           </p>
         ))}
       </div>
@@ -118,7 +121,7 @@ export function CbaTrendlineChart({ scores, alternative }: Props) {
       <div style={headerRowStyle}>
         <div>
           <h3 style={titleStyle}>Flussi monetizzati — vita utile del progetto</h3>
-          <p style={subtitleStyle}>Valori in k€ · Anno 0 = investimento iniziale · Flusso netto = Benefici − OPEX</p>
+          <p style={subtitleStyle}>Valori in M€ · Anno 0 = investimento iniziale · Flusso netto = Benefici − OPEX</p>
         </div>
         {scores.length > 1 && (
           <div style={switcherStyle} role="group" aria-label="Seleziona alternativa">
@@ -152,7 +155,7 @@ export function CbaTrendlineChart({ scores, alternative }: Props) {
             tickLine={false}
           />
           <YAxis
-            tickFormatter={v => `${v.toLocaleString('it-IT')} k€`}
+            tickFormatter={v => `${v.toLocaleString('it-IT')} M€`}
             tick={{ fontSize: 12, fill: 'var(--color-text-primary-light, #555)' }}
             axisLine={false}
             tickLine={false}

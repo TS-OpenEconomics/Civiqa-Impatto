@@ -22,7 +22,7 @@ const ANALYSIS_TABS: { key: AnalysisKey; label: string }[] = [
   { key: 'cba', label: 'Analisi CBA' },
   { key: 'impatto', label: "Analisi d'Impatto" },
   { key: 'mca', label: 'Analisi Multicriteria' },
-  { key: 'sensitivita', label: 'Analisi di Sensitività' },
+  { key: 'sensitivita', label: 'Analisi del Rischio' },
 ]
 
 const CBA_METRICS = [
@@ -125,7 +125,7 @@ export function DetailAnalysisChart({ ranking, getLabel, recommendedId, mcaQuest
         <p style={emptyStyle}>Dati non disponibili per questa analisi.</p>
       ) : (
         <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={chartData} margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
+          <BarChart data={chartData} margin={{ top: 8, right: 16, left: 8, bottom: 8 }} barGap={2} barCategoryGap="22%">
             <CartesianGrid vertical={false} stroke="#e7e7e7" strokeDasharray="3 3" />
             <XAxis dataKey="metric" tick={{ fontSize: 10, fill: '#6e6e6e' }} axisLine={false} tickLine={false} />
             <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#6e6e6e' }} axisLine={false} tickLine={false} />
@@ -138,7 +138,7 @@ export function DetailAnalysisChart({ ranking, getLabel, recommendedId, mcaQuest
                 name={item.alternativaId}
                 fill={getAltFill(fillIndex(item, i))}
                 radius={[2, 2, 0, 0]}
-                maxBarSize={36}
+                maxBarSize={52}
               />
             ))}
           </BarChart>

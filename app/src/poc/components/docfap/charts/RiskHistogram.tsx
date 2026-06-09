@@ -15,6 +15,9 @@ import type { HistogramBin } from '../../../engine/riskMonteCarlo'
 const COLOR_POSITIVE = '#43a047'
 const COLOR_NEGATIVE = '#e53935'
 
+// k€ → stringa in M€ (italiano)
+const toM = (k: number) => (k / 1000).toLocaleString('it-IT', { maximumFractionDigits: 1 })
+
 function probColor(prob: number): string {
   if (prob > 0.2) return '#c62828'
   if (prob > 0.05) return '#e65100'
@@ -46,7 +49,7 @@ export function RiskHistogram({ scores, alternative }: Props) {
     return (
       <div style={tooltipStyle}>
         <p style={tooltipTitleStyle}>
-          Bin: {bin.binMin.toLocaleString('it-IT')} – {bin.binMax.toLocaleString('it-IT')} k€
+          Bin: {toM(bin.binMin)} – {toM(bin.binMax)} M€
         </p>
         <p style={{ margin: 0, color: bin.positive ? COLOR_POSITIVE : COLOR_NEGATIVE, fontWeight: 700 }}>
           {bin.count} simulazioni
@@ -113,13 +116,13 @@ export function RiskHistogram({ scores, alternative }: Props) {
         <div style={statItemStyle}>
           <span style={statLabelStyle}>P5 / P50 / P95</span>
           <span style={statValueStyle}>
-            {summary.p5.toLocaleString('it-IT')} / {summary.p50.toLocaleString('it-IT')} / {summary.p95.toLocaleString('it-IT')} k€
+            {toM(summary.p5)} / {toM(summary.p50)} / {toM(summary.p95)} M€
           </span>
         </div>
         <div style={statItemStyle}>
           <span style={statLabelStyle}>Media ± Dev.std</span>
           <span style={statValueStyle}>
-            {summary.mean.toLocaleString('it-IT')} ± {summary.std.toLocaleString('it-IT')} k€
+            {toM(summary.mean)} ± {toM(summary.std)} M€
           </span>
         </div>
         <div style={statItemStyle}>

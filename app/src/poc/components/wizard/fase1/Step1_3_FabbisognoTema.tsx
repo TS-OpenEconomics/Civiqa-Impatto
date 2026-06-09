@@ -3,7 +3,6 @@ import type { CSSProperties } from 'react'
 import { NEEDS_DOCFAP } from '../../../data/poc_docfap/fabbisogni_v2'
 import { useWizard } from '../../../hooks/useWizard'
 import { InputField } from '../../ui/InputField'
-import { useWizardNavigation } from '../WizardShell'
 
 // ── Search helpers ────────────────────────────────────────────────────────────
 
@@ -184,16 +183,21 @@ function ThemeBadgeIcon({ themeId }: { themeId: string }) {
 
 export function Step1_3_FabbisognoTema() {
   const { state, setFab, setCluster } = useWizard()
-  const { goToNextSubStep } = useWizardNavigation()
 
   const initialThemeId = state.temaId ?? null
   const [selectedThemeId, setSelectedThemeId] = useState<string | null>(initialThemeId)
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [mode, setMode] = useState<'guided' | 'search'>('guided')
 
   const selectedTheme = useMemo(
     () => TEMI.find((t) => t.id === selectedThemeId) ?? null,
     [selectedThemeId],
+  )
+
+  const selectedNeed = useMemo(
+    () => NEEDS_DOCFAP.find((n) => n.code === state.fabId) ?? null,
+    [state.fabId],
   )
 
   useEffect(() => {
@@ -234,84 +238,212 @@ export function Step1_3_FabbisognoTema() {
     setSelectedThemeId(need.tema_code)
     setFab(need.code, need.tema_code)
     setCluster(need.cluster_mca === 'NONE' ? null : need.cluster_mca)
-    goToNextSubStep()
   }
+
+  const needsByTheme = useMemo(() => {
+    if (!selectedThemeId) return []
+    return NEEDS_DOCFAP.filter((n) => n.tema_code === selectedThemeId)
+  }, [selectedThemeId])
 
   return (
     <div style={rootStyle}>
-      <section style={sectionStyle}>
-        <fieldset style={themeListStyle}>
-          <legend style={srOnlyStyle}>Tema del fabbisogno</legend>
-          {TEMI.map((theme) => {
-            const isSelected = selectedThemeId === theme.id
-            return (
-              <label
-                key={theme.id}
-                className={`step1-3-interactive${isSelected ? ' step1-3-selected' : ''}`}
-                style={themeRowStyle}
-              >
-                <input
-                  type="radio"
-                  name="tema-fabbisogno"
-                  value={theme.id}
-                  checked={isSelected}
-                  onChange={() => onSelectTheme(theme.id)}
-                  style={radioStyle}
-                />
-                <span aria-hidden="true" style={themeCodeStyle}>
-                  <ThemeBadgeIcon themeId={theme.id} />
-                </span>
-                <span style={themeTextStyle}>{theme.label}</span>
-              </label>
-            )
-          })}
-        </fieldset>
+      <section style={modeGridStyle}>
+        <section style={mode === 'guided' ? { ...modeCardStyle, ...modeCardActiveStyle } : modeCardStyle}>
+          <button type="button" style={modeHeaderButtonStyle} onClick={() => setMode('guided')}>
+            <span style={modeTitleStyle}>Percorso guidato</span>
+            <span style={modeMetaStyle}>
+              {selectedTheme ? selectedNeed ? `${selectedTheme.label} · ${selectedNeed.label}` : selectedTheme.label : 'Tema + fabbisogno'}
+            </span>
+          </button>
 
-        <div style={searchBoxStyle}>
-          <InputField
-            label="Ricerca assistita fabbisogno"
-            value={searchTerm}
-            onChange={setSearchTerm}
-            placeholder="Cerca per titolo o descrizione del fabbisogno"
-            ariaLabel="Ricerca assistita fabbisogno"
-            helperText="Se non sai da quale tema partire, cerca direttamente il fabbisogno per titolo o descrizione."
-          />
+          {mode === 'guided' ? (
+            <div style={modeBodyStyle}>
+              <fieldset style={themeListStyle}>
+                <legend style={srOnlyStyle}>Tema del fabbisogno</legend>
+                {TEMI.map((theme) => {
+                  const isSelected = selectedThemeId === theme.id
+                  return (
+                    <label
+                      key={theme.id}
+                      className={`step1-3-interactive${isSelected ? ' step1-3-selected' : ''}`}
+                      style={themeRowStyle}
+                    >
+                      <input
+                        type="radio"
+                        name="tema-fabbisogno"
+                        value={theme.id}
+                        checked={isSelected}
+                        onChange={() => onSelectTheme(theme.id)}
+                        style={radioStyle}
+                      />
+                      <span aria-hidden="true" style={themeCodeStyle}>
+                        <ThemeBadgeIcon themeId={theme.id} />
+                      </span>
+                      <span style={themeTextStyle}>{theme.label}</span>
+                    </label>
+                  )
+                })}
+              </fieldset>
 
-          {debouncedSearch.trim().length >= 2 && (
-            <div role="listbox" aria-label="Risultati ricerca fabbisogno" style={searchResultsStyle}>
-              {filteredNeeds.length > 0 && (
-                <p style={searchCountStyle} aria-live="polite">
-                  {filteredNeeds.length} fabbisogn{filteredNeeds.length === 1 ? 'o' : 'i'} trovat{filteredNeeds.length === 1 ? 'o' : 'i'}
-                </p>
-              )}
-              {filteredNeeds.map((need) => {
-                const themeLabel = TEMI.find((t) => t.id === need.tema_code)?.label ?? need.tema_code
-                return (
-                  <button
-                    key={need.code}
-                    type="button"
-                    role="option"
-                    className="step1-3-interactive"
-                    onClick={() => onSelectFabbisogno(need.code)}
-                    style={searchResultOptionStyle}
+              {selectedTheme ? (
+                <div style={guidedListWrapStyle}>
+                  <div style={guidedHeaderStyle}>
+                    <h3 style={guidedTitleStyle}>Fabbisogni di {selectedTheme.label}</h3>
+                    <span style={guidedCountStyle}>{needsByTheme.length} opzioni</span>
+                  </div>
+                  <div
+                    role="listbox"
+                    aria-label="Fabbisogni del tema selezionato"
+                    aria-activedescendant={state.fabId ? `fab-option-${state.fabId}` : undefined}
+                    style={needListStyle}
                   >
-                    <span style={searchResultHeaderStyle}>
-                      <span style={searchResultLabelStyle}>{need.label}</span>
-                      <span style={searchResultThemeStyle}>{themeLabel}</span>
-                    </span>
-                    <span style={searchResultSubLabelStyle}>{need.description}</span>
-                  </button>
-                )
-              })}
+                    {needsByTheme.map((need) => {
+                      const isSelected = state.fabId === need.code
+                      return (
+                        <button
+                          key={need.code}
+                          id={`fab-option-${need.code}`}
+                          type="button"
+                          role="option"
+                          aria-selected={isSelected}
+                          className={`step1-3-interactive${isSelected ? ' step1-3-selected' : ''}`}
+                          onClick={() => onSelectFabbisogno(need.code)}
+                          style={isSelected ? { ...needOptionStyle, ...selectedNeedOptionStyle } : needOptionStyle}
+                        >
+                          <span style={searchResultHeaderStyle}>
+                            <span style={searchResultLabelStyle}>{need.label}</span>
+                            <span style={searchResultThemeStyle}>{need.code}</span>
+                          </span>
+                          <span style={searchResultSubLabelStyle}>{need.description}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </section>
 
-              {filteredNeeds.length === 0 && (
-                <p style={emptySearchStateStyle} aria-live="polite">
-                  Nessun fabbisogno trovato per "{debouncedSearch.trim()}". Prova con un termine diverso o seleziona prima il tema.
-                </p>
+        <section style={mode === 'search' ? { ...modeCardStyle, ...modeCardActiveStyle } : modeCardStyle}>
+          <button type="button" style={modeHeaderButtonStyle} onClick={() => setMode('search')}>
+            <span style={modeTitleStyle}>Cerca fabbisogno</span>
+            <span style={modeMetaStyle}>{selectedNeed ? selectedNeed.label : 'Ricerca diretta'}</span>
+          </button>
+
+          {mode === 'search' ? (
+            <div style={{ ...modeBodyStyle, ...searchBoxStyle }}>
+              <InputField
+                label="Ricerca assistita fabbisogno"
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Cerca per titolo o descrizione del fabbisogno"
+                ariaLabel="Ricerca assistita fabbisogno"
+                helperText="Selezionando un risultato vengono impostati automaticamente macro tema e fabbisogno."
+              />
+
+              {debouncedSearch.trim().length >= 2 && (
+                <div role="listbox" aria-label="Risultati ricerca fabbisogno" style={searchResultsStyle}>
+                  {filteredNeeds.length > 0 && (
+                    <p style={searchCountStyle} aria-live="polite">
+                      {filteredNeeds.length} fabbisogn{filteredNeeds.length === 1 ? 'o' : 'i'} trovat{filteredNeeds.length === 1 ? 'o' : 'i'}
+                    </p>
+                  )}
+                  {filteredNeeds.map((need) => {
+                    const themeLabel = TEMI.find((t) => t.id === need.tema_code)?.label ?? need.tema_code
+                    return (
+                      <button
+                        key={need.code}
+                        type="button"
+                        role="option"
+                        className="step1-3-interactive"
+                        onClick={() => onSelectFabbisogno(need.code)}
+                        style={searchResultOptionStyle}
+                      >
+                        <span style={searchResultHeaderStyle}>
+                          <span style={searchResultLabelStyle}>{need.label}</span>
+                          <span style={searchResultThemeStyle}>{themeLabel}</span>
+                        </span>
+                        <span style={searchResultSubLabelStyle}>{need.description}</span>
+                      </button>
+                    )
+                  })}
+
+                  {filteredNeeds.length === 0 && (
+                    <p style={emptySearchStateStyle} aria-live="polite">
+                      Nessun fabbisogno trovato per "{debouncedSearch.trim()}". Prova con un termine diverso o usa il percorso guidato.
+                    </p>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
+          ) : null}
+        </section>
+      </section>
+
+      <section aria-live="polite" style={detailsBoxStyle}>
+        <h3 style={detailsTitleStyle}>Dettagli fabbisogno selezionato</h3>
+
+        {selectedNeed ? (
+          <dl style={detailsListStyle}>
+            <div style={detailsRowStyle}>
+              <dt style={detailsTermStyle}>Descrizione</dt>
+              <dd style={detailsValueStyle}>{selectedNeed.description}</dd>
+            </div>
+
+            {selectedNeed.missions.length > 0 && (
+              <div style={detailsRowStyle}>
+                <dt style={detailsTermStyle}>Missioni DUP</dt>
+                <dd style={detailsValueStyle}>
+                  <div style={detailsBlockStyle}>
+                    {selectedNeed.missions.map((mission) => (
+                      <div key={mission.code} style={codeItemStyle}>
+                        <span style={codeTagStyle}>{mission.code}</span>
+                        <span>{mission.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </dd>
+              </div>
+            )}
+
+            {selectedNeed.rso.length > 0 && (
+              <div style={detailsRowStyle}>
+                <dt style={detailsTermStyle}>Obiettivi politica di coesione UE</dt>
+                <dd style={detailsValueStyle}>
+                  <div style={detailsBlockStyle}>
+                    {selectedNeed.rso.map((rso) => (
+                      <div key={rso.code} style={codeItemStyle}>
+                        <span style={codeTagStyle}>{rso.code}</span>
+                        <span>{rso.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </dd>
+              </div>
+            )}
+
+            {selectedNeed.funds.length > 0 && (
+              <div style={detailsRowStyle}>
+                <dt style={detailsTermStyle}>Fondi di riferimento</dt>
+                <dd style={detailsValueStyle}>
+                  <div style={detailsBlockStyle}>
+                    {selectedNeed.funds.map((fund) => (
+                      <div key={fund.code} style={codeItemStyle}>
+                        <span style={codeTagStyle}>{fund.code}</span>
+                        <span>{fund.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </dd>
+              </div>
+            )}
+          </dl>
+        ) : (
+          <p style={detailsEmptyStyle}>
+            Seleziona un fabbisogno dal percorso guidato o dalla ricerca per visualizzare i dettagli.
+          </p>
+        )}
       </section>
 
       <style>{`
@@ -338,14 +470,61 @@ const rootStyle: CSSProperties = {
   gap: 'var(--spacing-stack-s)',
 }
 
-const sectionStyle: CSSProperties = {
+const modeGridStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+  gap: 'var(--spacing-inline-s)',
+  alignItems: 'start',
+}
+
+const modeCardStyle: CSSProperties = {
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
+  background: 'var(--color-background-inverse)',
+  overflow: 'hidden',
+}
+
+const modeCardActiveStyle: CSSProperties = {
+  borderColor: 'var(--color-border-primary-light)',
+  boxShadow: 'inset 0 3px 0 var(--color-border-primary-light)',
+}
+
+const modeHeaderButtonStyle: CSSProperties = {
+  width: '100%',
+  minHeight: '74px',
+  border: 'none',
+  background: 'transparent',
+  padding: 'var(--spacing-inset-s)',
+  display: 'grid',
+  gap: '4px',
+  textAlign: 'left',
+  cursor: 'pointer',
+}
+
+const modeTitleStyle: CSSProperties = {
+  color: 'var(--color-text-primary)',
+  fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
+  fontSize: 'var(--type-body-s-size, 16px)',
+  fontWeight: 700,
+}
+
+const modeMetaStyle: CSSProperties = {
+  color: 'var(--color-text-primary-light)',
+  fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
+  fontSize: 'var(--type-body-xs-size, 13px)',
+  lineHeight: 1.35,
+}
+
+const modeBodyStyle: CSSProperties = {
   display: 'grid',
   gap: 'var(--spacing-stack-s)',
+  borderTop: '1px solid var(--color-border-secondary-light)',
+  padding: 'var(--spacing-inset-s)',
 }
 
 const themeListStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
+  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
   gap: '12px',
   border: 'none',
   padding: 0,
@@ -386,6 +565,58 @@ const searchBoxStyle: CSSProperties = {
   display: 'grid',
   gap: 'var(--spacing-stack-xs)',
   marginTop: 'var(--spacing-stack-xs)',
+}
+
+const guidedListWrapStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--spacing-stack-xs)',
+}
+
+const guidedHeaderStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  justifyContent: 'space-between',
+  gap: '12px',
+}
+
+const guidedTitleStyle: CSSProperties = {
+  margin: 0,
+  color: 'var(--color-text-primary)',
+  fontSize: 'var(--type-body-s-size, 16px)',
+}
+
+const guidedCountStyle: CSSProperties = {
+  color: 'var(--color-text-primary-light)',
+  fontSize: 'var(--type-body-xs-size, 13px)',
+}
+
+const needListStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--spacing-stack-xs)',
+  maxHeight: '320px',
+  overflowY: 'auto',
+  padding: 'var(--spacing-inset-xs)',
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
+  background: 'var(--color-background-inverse)',
+}
+
+const needOptionStyle: CSSProperties = {
+  display: 'grid',
+  gap: '4px',
+  textAlign: 'left',
+  background: 'var(--color-background-inverse)',
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
+  padding: 'var(--spacing-inset-squish-s)',
+  color: 'var(--color-text-primary)',
+  cursor: 'pointer',
+}
+
+const selectedNeedOptionStyle: CSSProperties = {
+  background: 'var(--color-background-primary-lighter)',
+  borderColor: 'var(--color-border-primary-light)',
+  boxShadow: 'inset 4px 0 0 var(--color-border-primary-light)',
 }
 
 const searchResultsStyle: CSSProperties = {
@@ -448,6 +679,69 @@ const searchCountStyle: CSSProperties = {
 const emptySearchStateStyle: CSSProperties = {
   margin: 0,
   padding: 'var(--spacing-inset-s)',
+  color: 'var(--color-text-primary-light)',
+}
+
+const detailsBoxStyle: CSSProperties = {
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
+  background: 'var(--color-background-secondary-lightest)',
+  padding: 'var(--spacing-inset-m)',
+}
+
+const detailsTitleStyle: CSSProperties = {
+  margin: '0 0 var(--spacing-stack-s)',
+  color: 'var(--color-text-primary)',
+}
+
+const detailsListStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--spacing-stack-xs)',
+  margin: 0,
+}
+
+const detailsRowStyle: CSSProperties = {
+  display: 'grid',
+  gap: '2px',
+}
+
+const detailsTermStyle: CSSProperties = {
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+}
+
+const detailsValueStyle: CSSProperties = {
+  margin: 0,
+  color: 'var(--color-text-primary-light)',
+}
+
+const detailsBlockStyle: CSSProperties = {
+  display: 'grid',
+  gap: '6px',
+}
+
+const codeItemStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  gap: '8px',
+  flexWrap: 'wrap',
+}
+
+const codeTagStyle: CSSProperties = {
+  fontFamily: 'var(--font-family-0, "Atkinson Hyperlegible Mono", monospace)',
+  fontSize: '11px',
+  fontWeight: 600,
+  color: 'var(--color-text-primary)',
+  background: 'var(--color-background-secondary-lighter)',
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-rounded)',
+  padding: '1px 7px',
+  whiteSpace: 'nowrap',
+  flexShrink: 0,
+}
+
+const detailsEmptyStyle: CSSProperties = {
+  margin: 0,
   color: 'var(--color-text-primary-light)',
 }
 

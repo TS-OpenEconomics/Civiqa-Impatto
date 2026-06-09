@@ -632,14 +632,14 @@ function toProject(draft, base) {
 
 function Sidebar({ stepIdx }) {
   const currentGroup = STEPS[stepIdx].group;
-  const lineFill = stepIdx / (STEPS.length - 1);
+  const lineFill = GROUPS.length <= 1 ? 1 : currentGroup / (GROUPS.length - 1);
 
   return (
-    <aside className="w-[320px] shrink-0 border-r border-[#ececec] bg-white px-6 py-6">
+    <aside className="w-[280px] shrink-0 overflow-y-auto border-r-2 border-[#ececec] bg-white px-5 py-6">
       <div className="relative">
-        <div className="absolute bottom-3 left-[18px] top-7 w-[3px] bg-[#ececec]" />
+        <div className="absolute bottom-6 left-3 top-6 w-0.5 bg-[#ececec]" />
         <div
-          className="absolute bottom-3 left-[18px] top-7 w-[3px] origin-top bg-brand-violet transition-transform duration-500"
+          className="absolute bottom-6 left-3 top-6 w-0.5 origin-top bg-brand-violet transition-transform duration-500"
           style={{ transform: `scaleY(${lineFill})` }}
         />
         {GROUPS.map((group, groupIndex) => {
@@ -647,28 +647,28 @@ function Sidebar({ stepIdx }) {
           const isActive = groupIndex === currentGroup;
 
           return (
-            <div key={group.label} className="relative mb-9 grid grid-cols-[38px_minmax(0,1fr)] gap-x-4">
-              <div className={`relative z-[1] flex h-[38px] w-[38px] items-center justify-center rounded-full ${isActive || isDone ? "bg-brand-violet" : "bg-[#dcdce1]"}`}>
-                {isDone ? <span className="text-[10px] font-bold text-white">OK</span> : isActive ? <span className="h-3 w-3 rounded-full bg-white" /> : null}
+            <div key={group.label} className="relative grid grid-cols-[24px_minmax(0,1fr)] gap-x-3 pb-5">
+              <div className={`relative z-[1] flex h-6 w-6 items-center justify-center rounded-full border-2 ${isActive || isDone ? "border-brand-violet bg-brand-violet text-white" : "border-[#dcdce1] bg-white text-transparent"}`}>
+                {isDone ? <span className="text-[10px] font-bold leading-none">✓</span> : null}
               </div>
-              <div className="flex min-h-[38px] items-center overflow-visible pt-1">
-                <h3 className={`min-w-0 text-[17px] font-bold leading-tight ${isActive ? "text-ink-900" : "text-ink-300"}`}>{group.label}</h3>
+              <div className="flex min-h-6 items-start overflow-visible pt-0.5">
+                <h3 className={`min-w-0 text-[12px] font-semibold leading-tight ${isActive ? "font-bold text-ink-900" : "text-ink-300"}`}>{group.label}</h3>
               </div>
 
               {isActive ? (
-                <div className="col-start-2 mt-5 space-y-4">
+                <div className="col-start-2 mt-4 space-y-3">
                   {group.sublabels.map((sublabel) => {
                     const sublabelSteps = STEPS.filter((s) => s.sublabel === sublabel);
 
                     return (
                       <div key={sublabel}>
                         <p className="mb-2 text-[12px] leading-tight text-ink-900">{sublabel}</p>
-                        <div className="flex gap-1">
+                        <div className="flex gap-0.5">
                           {sublabelSteps.map((s) => {
                             const sIdx = STEPS.findIndex((step) => step.id === s.id);
                             const fill = sIdx < stepIdx ? 1 : sIdx === stepIdx ? 0.5 : 0;
                             return (
-                              <div key={s.id} className="h-[6px] flex-1 overflow-hidden bg-[#e7e7ea]">
+                              <div key={s.id} className="h-[3px] flex-1 overflow-hidden bg-[#e7e7ea]">
                                 <div className="h-full bg-brand-violet transition-[width] duration-300" style={{ width: `${fill * 100}%` }} />
                               </div>
                             );
