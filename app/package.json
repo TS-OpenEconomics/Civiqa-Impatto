@@ -9,6 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview"
   },
+  "overrides": {
+    "es-toolkit": "1.45.1"
+  },
   "dependencies": {
     "leaflet": "^1.9.4",
     "papaparse": "^5.5.3",

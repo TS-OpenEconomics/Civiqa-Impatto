@@ -121,7 +121,8 @@ export const detailHeaderCellBaseStyle: CSSProperties = {
 }
 
 export const detailRecommendedHeaderStyle: CSSProperties = {
-  background: 'var(--color-background-primary-lighter, #efe5ff)',
+  // rgba translucido così l'evidenziazione funziona su tema chiaro e scuro
+  background: 'rgba(91,33,247,0.16)',
   boxShadow: 'inset 0 0 0 2px #7c4dff',
   color: 'var(--color-text-primary)',
 }
@@ -164,22 +165,53 @@ export const detailBodyCellStyle: CSSProperties = {
 }
 
 export const detailRecommendedColumnStyle: CSSProperties = {
-  background: '#efe5ff',
+  background: 'rgba(91,33,247,0.08)',
 }
 
 export const detailFinalRowHeaderStyle: CSSProperties = {
   ...detailRowHeaderStyle,
-  background: '#efe5ff',
+  background: 'rgba(91,33,247,0.16)',
   fontWeight: 700,
 }
 
 export const detailFinalCellStyle: CSSProperties = {
   ...detailBodyCellStyle,
-  background: '#efe5ff',
+  background: 'rgba(91,33,247,0.16)',
   fontWeight: 700,
 }
 
 export const detailEmptyStyle: CSSProperties = {
   margin: 0,
   color: 'var(--color-text-primary-light)',
+}
+
+/**
+ * Filtra scoreFinale per includere solo le alternative definite dall'utente.
+ * Usa sempre questo invece di leggere state.scoreFinale direttamente nei tab,
+ * così i dati in cache non mostrano alternative obsolete.
+ */
+export function getDefinedScores(
+  scoreFinale: ScoreComposito[] | null | undefined,
+  alternativeDefinite: AlternativaId[],
+): ScoreComposito[] {
+  if (!scoreFinale || scoreFinale.length === 0) return []
+  const defined = new Set(alternativeDefinite)
+  return scoreFinale.filter((s) => defined.has(s.alternativaId))
+}
+
+/** Stile cella punteggio finale per la colonna raccomandata — sfondo più intenso + box-shadow (skin app). */
+export function getDetailFinalRecommendedCellStyle(isRecommended: boolean): CSSProperties {
+  if (!isRecommended) return detailFinalCellStyle
+  return {
+    ...detailFinalCellStyle,
+    background: 'rgba(91,33,247,0.24)',
+    boxShadow: 'inset 0 0 0 2px #7c4dff',
+  }
+}
+
+/** Wrapper tabella con bordo e border-radius (skin app). */
+export const detailTableWrapStyle: CSSProperties = {
+  overflowX: 'auto',
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
 }

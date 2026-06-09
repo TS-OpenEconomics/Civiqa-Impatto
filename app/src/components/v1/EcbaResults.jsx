@@ -7,9 +7,11 @@ import { useEffect, useRef } from "react";
 // dell'originale (`*`, `body`) non sfuggano al resto dell'app.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ===== DATA (mock, single object) =====
+// ===== DATA (mock, single object) — tutti i valori in M€ =====
 const DATA = {
-  waterfall: { benefici: 53.1, costi: 40.7, vane: 12.4 },
+  // Ponte costi-benefici: i 40,7 M€ di spesa sono ripartiti tra costi economici
+  // (CAPEX+OPEX) ed esternalità negative monetizzate, così VANE = 53,1 − 36,2 − 4,5 = 12,4.
+  waterfall: { benefici: 53.1, costi: 36.2, esternalitaNeg: 4.5, vane: 12.4 },
   // annual economic flows (pre-cumulation), scaled to VA totals
   cashflow: (function () {
     const cap = [14, 12, 5.2];
@@ -46,6 +48,36 @@ const DATA = {
     { name: "Tasso di sconto sociale", sub: "±0,5 p.p.", low: 11.2, high: 13.6 },
   ],
   montecarlo: { start: -15, w: 5, freq: [1, 2, 5, 11, 18, 22, 18, 12, 7, 3, 1], base: 12.4 },
+  // ── Sezione rischio (porting della sezione rischio DOCFAP) ──────────────────
+  // Sintesi probabilistica del VANE (M€)
+  riskSummary: {
+    probPositive: 0.92,   // quota simulazioni con VANE > 0
+    median: 12.4,         // VANE mediano (M€)
+    mean: 12.1,           // VANE medio (M€)
+    std: 8.5,             // deviazione standard (M€)
+    p5: -3.2,             // 5° percentile (M€)
+    p95: 27.0,            // 95° percentile (M€)
+    criticalVar: "Costi di investimento",
+  },
+  // Elasticità |ε| del VANE: variazione % del VANE per +1% del parametro
+  elasticities: [
+    { param: "Costi investimento", value: 2.8 },
+    { param: "Esternalità", value: 2.1 },
+    { param: "Crescita domanda", value: 1.8 },
+    { param: "OPEX", value: 1.2 },
+    { param: "Tasso sconto", value: 0.9 },
+  ],
+  // Contributo normalizzato [0–1] di ciascun parametro alla varianza del VANE
+  variances: [
+    { param: "Costi investimento", value: 0.85 },
+    { param: "Esternalità", value: 0.70 },
+    { param: "Crescita domanda", value: 0.55 },
+    { param: "OPEX", value: 0.40 },
+    { param: "Tasso sconto", value: 0.30 },
+  ],
+  // Heatmap VANE (M€) al variare dei moltiplicatori di costo (righe) e beneficio (colonne)
+  // VANE(cm,bm) = benefici·bm − costiTotali·cm, con benefici 53,1 e costi totali 40,7
+  heatmap: { benefici: 53.1, costiTotali: 40.7, costMults: [0.8, 0.9, 1.0, 1.1, 1.2, 1.3], benefitMults: [0.8, 0.9, 1.0, 1.1, 1.2, 1.3] },
 };
 
 const CSS = `
@@ -242,7 +274,7 @@ const MARKUP = `
           <img src="${ECBA_ICON}" alt="Analisi Costi-Benefici" />
         </div>
         <div>
-          <div class="head-title">Analisi Economica Costi-Benefici <span class="badge">ECBA</span></div>
+          <div class="head-title">Analisi Economica Costi-Benefici</div>
           <div class="head-sub">Del progetto <b>Nuovo asilo nido comunale</b></div>
         </div>
       </div>
@@ -270,9 +302,9 @@ const MARKUP = `
 
   <!-- TABS -->
   <div class="tabs" id="tabs">
-    <button class="tab active" data-p="sintesi"><div class="t-name">Sintesi</div><div class="t-kpi">VANE +12,4 M€</div></button>
-    <button class="tab" data-p="ecba"><div class="t-name">ECBA</div><div class="t-kpi">B/C 1,30</div></button>
-    <button class="tab" data-p="sens"><div class="t-name">Analisi del Rischio</div><div class="t-kpi">VANE &gt; 0 · 92%</div></button>
+    <button class="tab active" data-p="sintesi"><div class="t-name">Sintesi</div><div class="t-kpi">Valore Attuale Netto Economico +12,4 M€</div></button>
+    <button class="tab" data-p="ecba"><div class="t-name">Analisi Economica Costi-Benefici</div><div class="t-kpi">Rapporto Benefici/Costi 1,30</div></button>
+    <button class="tab" data-p="sens"><div class="t-name">Analisi del Rischio</div><div class="t-kpi">Valore Attuale Netto Economico &gt; 0 · 92%</div></button>
   </div>
 
   <!-- ================= PANEL · SINTESI ================= -->
@@ -286,8 +318,8 @@ const MARKUP = `
 
     <div class="kpi-grid">
       <div class="kpi">
-        <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9.3a3.5 3.5 0 1 0 0 5.4M8 11h5M8 13h4"/></svg></span><span class="kpi-label">VANE</span></div>
-          <span class="info-i" data-tip="Valore Attuale Netto Economico — somma, anno per anno, della differenza tra benefici e costi economici, riportata a valore di oggi. È l'indicatore primario: l'opera conviene se VANE > 0.">i</span></div>
+        <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9.3a3.5 3.5 0 1 0 0 5.4M8 11h5M8 13h4"/></svg></span><span class="kpi-label" style="text-transform:none;letter-spacing:0">Valore Attuale Netto Economico</span></div>
+          <span class="info-i" data-tip="Valore Attuale Netto Economico — somma, anno per anno, della differenza tra benefici e costi economici, riportata a valore di oggi. È l'indicatore primario: l'opera conviene se è maggiore di zero.">i</span></div>
         <div class="kpi-num">+12,4<span class="kpi-unit"> M€</span></div>
         <div class="kpi-desc">Beneficio netto per la collettività · <span class="ok">&gt; 0, conveniente</span></div>
       </div>
@@ -311,16 +343,16 @@ const MARKUP = `
         <span class="disc">Valori a prezzi economici (prezzi ombra), in valore attuale al 3%. È una stima dell'effetto sul benessere sociale a parità di altre condizioni, non un rendimento finanziario garantito.</span></div>
     </div>
 
-    <div class="sec-head">Come si forma il valore netto <span class="info-i" data-tip="Grafico a cascata: dai benefici economici totali si sottraggono i costi, ottenendo il VANE.">i</span></div>
-    <div class="sec-sub">Dai benefici totali ai costi, fino al beneficio netto (VANE)</div>
+    <div class="sec-head">Come si forma il valore netto <span class="info-i" data-tip="Grafico a cascata: dai benefici economici totali si sottraggono i costi e le esternalità negative, ottenendo il Valore Attuale Netto Economico.">i</span></div>
+    <div class="sec-sub">Dai benefici totali ai costi e alle esternalità negative, fino al beneficio netto</div>
     <div class="card">
       <div class="card-h">Ponte costi-benefici</div>
       <div class="card-sub">Valori attuali in M€ · orizzonte 30 anni · tasso 3%.</div>
       <div class="chart-box"><svg id="svg-wf" class="chart" viewBox="0 0 760 340"></svg></div>
       <div class="read"><h5>Come si legge</h5>
-        <p>La prima barra <span style="color:var(--lime-700);font-weight:800">lime</span> è il totale dei <b>benefici economici</b> attualizzati. La barra <span style="font-weight:800;color:#7a7a72">grigia</span> sono i <b>costi</b>: è "sospesa", parte dall'alto dei benefici e scende per il loro intero valore.</p>
-        <p>Ciò che resta sotto è la barra <span style="color:var(--blu-700);font-weight:800">viola</span>, il <b>VANE</b>. Sopra lo zero significa guadagno netto di benessere per la collettività.</p></div>
-      <div class="takeaway"><b>53,1 M€</b> di benefici contro <b>40,7 M€</b> di costi: saldo a favore della collettività <b>+12,4 M€</b>.</div>
+        <p>La prima barra <span style="color:var(--lime-700);font-weight:800">lime</span> è il totale dei <b>benefici economici</b> attualizzati. La barra <span style="font-weight:800;color:#7a7a72">grigia</span> sono i <b>costi economici</b> (CAPEX e OPEX): è "sospesa", parte dall'alto dei benefici e scende. La barra <span style="color:var(--red-600);font-weight:800">rossa</span> sono le <b>esternalità negative</b> monetizzate, che scendono ancora.</p>
+        <p>Ciò che resta sotto è la barra <span style="color:var(--blu-700);font-weight:800">viola</span>, il <b>Valore Attuale Netto Economico</b>. Sopra lo zero significa guadagno netto di benessere per la collettività.</p></div>
+      <div class="takeaway"><b>53,1 M€</b> di benefici contro <b>36,2 M€</b> di costi e <b>4,5 M€</b> di esternalità negative: saldo a favore della collettività <b>+12,4 M€</b>.</div>
     </div>
   </div>
 
@@ -336,7 +368,7 @@ const MARKUP = `
       <div class="chart-box"><svg id="svg-cf" class="chart" viewBox="0 0 760 400"></svg></div>
       <div class="legend" id="cf-legend"></div>
       <div class="read"><h5>Come si legge</h5>
-        <p>L'asse orizzontale è il <b>tempo</b> (anni dall'avvio). La linea <span style="color:var(--red-600);font-weight:800">dei costi</span> sale subito per il <b>CAPEX</b> di costruzione, poi prosegue piano con l'<b>OPEX</b> annuale. La linea <span style="color:var(--green-700);font-weight:800">dei benefici</span> parte da zero e cresce man mano che il servizio produce effetti.</p>
+        <p>L'asse orizzontale è il <b>tempo</b> (anni dall'avvio). La linea <span style="color:var(--red-600);font-weight:800">dei costi</span> è mostrata <b>in negativo</b>: scende subito per il <b>CAPEX</b> di costruzione, poi prosegue piano in basso con l'<b>OPEX</b> annuale. La linea <span style="color:var(--green-700);font-weight:800">dei benefici</span> parte da zero e cresce man mano che il servizio produce effetti.</p>
         <p>La linea <span class="key">viola</span> è il <b>flusso netto cumulato</b> (benefici − costi): è negativa nei primi anni, poi risale. Il punto in cui supera lo zero è il <b>payback sociale</b> — quando l'opera ha restituito alla collettività quanto è costata.</p></div>
       <div class="takeaway">Il flusso netto torna positivo intorno all'<b>anno 14</b> e chiude a <b>+12,4 M€</b> a fine orizzonte.</div>
     </div>
@@ -354,55 +386,86 @@ const MARKUP = `
     </div>
   </div>
 
-  <!-- ================= PANEL · SENSITIVITÀ ================= -->
+  <!-- ================= PANEL · ANALISI DEL RISCHIO ================= -->
   <div class="panel" id="p-sens">
     <div class="view-lab">Vista</div>
     <div class="view-h">Analisi del rischio</div>
-    <div class="view-intro">Quanto è <b>solido</b> il risultato se cambiano le ipotesi di base. Si individuano le variabili più critiche e si stima, con una simulazione probabilistica, la <b>probabilità che l'opera resti conveniente</b>.</div>
+    <div class="view-intro">Quanto è <b>solido</b> il risultato se cambiano le ipotesi di base. Si individuano le variabili più critiche, se ne misura l'<b>elasticità</b> e il <b>contributo all'incertezza</b>, e si stima — con una simulazione probabilistica — la <b>probabilità che l'opera resti conveniente</b>.</div>
 
     <div class="sec-head">Robustezza del risultato <span class="info-i" data-tip="Sintesi della simulazione Montecarlo sulle variabili critiche.">i</span></div>
     <div class="sec-sub">L'esito della valutazione di fronte all'incertezza</div>
     <div class="kpi-grid">
       <div class="kpi">
-        <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18c3 0 4.5-11 9-11s6 11 9 11"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span><span class="kpi-label">Probabilità VANE &gt; 0</span></div>
-          <span class="info-i" data-tip="Quota di simulazioni Montecarlo (su 10.000) in cui il VANE resta positivo. Sintetizza la rischiosità complessiva del progetto.">i</span></div>
+        <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18c3 0 4.5-11 9-11s6 11 9 11"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span><span class="kpi-label">Probabilità Valore Attuale Netto Economico &gt; 0</span></div>
+          <span class="info-i" data-tip="Quota di simulazioni Montecarlo (su 10.000) in cui il Valore Attuale Netto Economico resta positivo. Sintetizza la rischiosità complessiva del progetto.">i</span></div>
         <div class="kpi-num">92<span class="kpi-unit"> %</span></div>
         <div class="kpi-desc">Su 10.000 scenari simulati · <span class="ok">rischio contenuto</span></div>
       </div>
       <div class="kpi">
-        <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><line x1="12" y1="4" x2="12" y2="20"/></svg></span><span class="kpi-label">VANE mediano</span></div>
-          <span class="info-i" data-tip="Valore centrale della distribuzione del VANE risultante dalla simulazione.">i</span></div>
+        <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><line x1="12" y1="4" x2="12" y2="20"/></svg></span><span class="kpi-label">Valore Attuale Netto Economico mediano</span></div>
+          <span class="info-i" data-tip="Valore centrale della distribuzione del Valore Attuale Netto Economico risultante dalla simulazione. L'intervallo P5–P95 indica dove cade il 90% degli esiti.">i</span></div>
         <div class="kpi-num">+12,4<span class="kpi-unit"> M€</span></div>
-        <div class="kpi-desc">Valore centrale della distribuzione</div>
+        <div class="kpi-desc">Intervallo P5–P95: <b>−3,2 / +27,0 M€</b> · media ± dev.std <b>12,1 ± 8,5 M€</b></div>
       </div>
       <div class="kpi">
         <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18V8M10 18V5M16 18v-7M22 18H2"/></svg></span><span class="kpi-label">Variabile critica</span></div>
-          <span class="info-i" data-tip="La variabile che, al variare del ±1%, produce la maggiore variazione del VANE. Va monitorata con priorità.">i</span></div>
+          <span class="info-i" data-tip="La variabile che, al variare del ±1%, produce la maggiore variazione del Valore Attuale Netto Economico. Va monitorata con priorità.">i</span></div>
         <div class="kpi-num" style="font-size:22px;line-height:1.2">Costi di<br>investimento</div>
         <div class="kpi-desc">Maggiore impatto sul risultato</div>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-h">Sensitività del VANE alle variabili chiave <span class="info-i" data-tip="Tornado: ogni barra mostra di quanto si sposta il VANE quando la variabile peggiora (sinistra) o migliora (destra) rispetto allo scenario base.">i</span></div>
-      <div class="card-sub">Variazione del VANE (M€) rispetto al valore base, ordinata per impatto.</div>
+      <div class="card-h">Sensitività del Valore Attuale Netto Economico alle variabili chiave <span class="info-i" data-tip="Tornado: ogni barra mostra di quanto si sposta il Valore Attuale Netto Economico quando la variabile peggiora (sinistra) o migliora (destra) rispetto allo scenario base.">i</span></div>
+      <div class="card-sub">Variazione del Valore Attuale Netto Economico (M€) rispetto al valore base, ordinata per impatto.</div>
       <div class="chart-box"><svg id="svg-tor" class="chart" viewBox="0 0 760 320"></svg></div>
       <div class="read"><h5>Come si legge</h5>
-        <p>È un grafico "a tornado": ogni barra è una variabile dell'analisi. La parte <span style="color:var(--red-600);font-weight:800">rossa</span> mostra dove finisce il VANE se la variabile <b>peggiora</b>, la parte <span style="color:var(--green-700);font-weight:800">verde</span> se <b>migliora</b>. La linea verticale è il VANE base.</p>
+        <p>È un grafico "a tornado": ogni barra è una variabile dell'analisi. La parte <span style="color:var(--red-600);font-weight:800">rossa</span> mostra dove finisce il Valore Attuale Netto Economico se la variabile <b>peggiora</b>, la parte <span style="color:var(--green-700);font-weight:800">verde</span> se <b>migliora</b>. La linea verticale è il valore base.</p>
         <p>Più la barra è larga, più quella variabile è <b>critica</b>: qui i <b>costi di investimento</b> sono il fattore che muove di più il risultato.</p></div>
     </div>
 
     <div class="card">
-      <div class="card-h">Distribuzione probabilistica del VANE <span class="info-i" data-tip="Simulazione Montecarlo: distribuzione di frequenza del VANE assegnando distribuzioni di probabilità alle variabili critiche.">i</span></div>
-      <div class="card-sub">10.000 simulazioni · frequenza degli esiti del VANE (M€).</div>
+      <div class="card-h">Elasticità del Valore Attuale Netto Economico ai parametri <span class="info-i" data-tip="Per ogni parametro, di quanto cambia (in percentuale) il Valore Attuale Netto Economico al variare dell'1% del parametro. Più il profilo è esteso, più il risultato è sensibile.">i</span></div>
+      <div class="card-sub">Variazione % del Valore Attuale Netto Economico per +1% del parametro — valori più alti = maggiore sensitività.</div>
+      <div class="chart-box" style="display:flex;justify-content:center"><svg id="svg-elastic" class="chart" viewBox="0 0 460 380" style="max-width:520px"></svg></div>
+      <div class="read"><h5>Come si legge</h5>
+        <p>È un grafico "radar": ogni raggio è un parametro dell'analisi e la distanza dal centro è l'<b>elasticità</b> |ε| del Valore Attuale Netto Economico. Un profilo "appuntito" verso un asse segnala che quel parametro <b>domina</b> il risultato.</p>
+        <p>Qui i <b>costi di investimento</b> e i <b>parametri delle esternalità</b> sono i raggi più estesi: sono le leve su cui si gioca la convenienza dell'opera.</p></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">Incertezza dei parametri — contributo alla varianza <span class="info-i" data-tip="Quota normalizzata (0–100%) con cui ciascun parametro contribuisce alla varianza del Valore Attuale Netto Economico nelle simulazioni Montecarlo.">i</span></div>
+      <div class="card-sub">Contributo normalizzato [0–100%] di ciascun parametro alla varianza complessiva del risultato.</div>
+      <div class="chart-box" style="display:flex;justify-content:center"><svg id="svg-variance" class="chart" viewBox="0 0 460 380" style="max-width:520px"></svg></div>
+      <div class="read"><h5>Come si legge</h5>
+        <p>Mentre l'elasticità misura la sensitività <b>marginale</b>, questo radar mostra <b>quanto</b> ciascun parametro pesa sull'incertezza complessiva, tenendo conto anche di quanto quel parametro può realmente variare.</p>
+        <p>I parametri che combinano alta elasticità e ampia variabilità — qui i <b>costi di investimento</b> — sono quelli da presidiare con stime più accurate.</p></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">Distribuzione probabilistica del Valore Attuale Netto Economico <span class="info-i" data-tip="Simulazione Montecarlo: distribuzione di frequenza del Valore Attuale Netto Economico assegnando distribuzioni di probabilità alle variabili critiche.">i</span></div>
+      <div class="card-sub">10.000 simulazioni · frequenza degli esiti del Valore Attuale Netto Economico (M€).</div>
       <div class="chart-box"><svg id="svg-mc" class="chart" viewBox="0 0 760 340"></svg></div>
       <div class="legend">
-        <div class="lg"><span class="sw" style="background:var(--red-600)"></span><span>Scenari con VANE &lt; 0 (8%)</span></div>
-        <div class="lg"><span class="sw" style="background:var(--blu-500)"></span><span>Scenari con VANE &gt; 0 (92%)</span></div>
+        <div class="lg"><span class="sw" style="background:var(--red-600)"></span><span>Scenari con Valore Attuale Netto Economico &lt; 0 (8%)</span></div>
+        <div class="lg"><span class="sw" style="background:var(--green-700)"></span><span>Scenari con Valore Attuale Netto Economico &gt; 0 (92%)</span></div>
       </div>
       <div class="read"><h5>Come si legge</h5>
-        <p>Ogni barra conta <b>quante simulazioni</b> hanno prodotto un VANE in quell'intervallo. Le barre <span style="color:var(--red-600);font-weight:800">rosse</span> a sinistra dello zero sono gli scenari sfavorevoli (opera non conveniente), quelle <span class="key">blu</span> a destra gli scenari favorevoli.</p>
+        <p>Ogni barra conta <b>quante simulazioni</b> hanno prodotto un Valore Attuale Netto Economico in quell'intervallo. Le barre <span style="color:var(--red-600);font-weight:800">rosse</span> a sinistra dello zero sono gli scenari sfavorevoli (opera non conveniente), quelle <span style="color:var(--green-700);font-weight:800">verdi</span> a destra gli scenari favorevoli.</p>
         <p>Il <b>92%</b> della distribuzione cade a destra dello zero: anche tenendo conto dell'incertezza, l'opera resta conveniente nella larga maggioranza degli scenari.</p></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">Sensitività combinata Costi × Benefici <span class="info-i" data-tip="Mappa di calore del Valore Attuale Netto Economico al variare simultaneo dei moltiplicatori di costo (righe) e di beneficio (colonne).">i</span></div>
+      <div class="card-sub">Valore Attuale Netto Economico (M€) per ogni combinazione di moltiplicatori. Verde = positivo, Rosso = negativo.</div>
+      <div class="chart-box"><svg id="svg-heat" class="chart" viewBox="0 0 760 360"></svg></div>
+      <div class="legend">
+        <div class="lg"><span class="sw" style="background:#b71c1c"></span><span>Valore Attuale Netto Economico negativo</span></div>
+        <div class="lg"><span class="sw" style="background:#1b5e20"></span><span>Valore Attuale Netto Economico positivo</span></div>
+      </div>
+      <div class="read"><h5>Come si legge</h5>
+        <p>Ogni cella incrocia un <b>moltiplicatore di costo</b> (riga) con un <b>moltiplicatore di beneficio</b> (colonna): mostra quanto vale il Valore Attuale Netto Economico in quello scenario. Le celle <span style="color:#1b5e20;font-weight:800">verdi</span> restano convenienti, quelle <span style="color:var(--red-600);font-weight:800">rosse</span> no.</p>
+        <p>La diagonale di celle chiare individua la <b>soglia di pareggio</b>: finché costi e benefici non si discostano troppo dalla stima base, l'opera resta conveniente.</p></div>
     </div>
   </div>
 
@@ -606,7 +669,10 @@ export function EcbaResults({ project, onBack }) {
       }
       if (p === "sens") {
         drawTornado();
+        drawElasticitySpider();
+        drawVarianceSpider();
         drawMonte();
+        drawHeatmap();
       }
       rendered[p] = true;
     }
@@ -639,16 +705,18 @@ export function EcbaResults({ project, onBack }) {
         padB = 52,
         plotH = H - padT - padB,
         plotW = W - padL - padR;
-      const { benefici, costi, vane } = DATA.waterfall,
+      const { benefici, costi, esternalitaNeg, vane } = DATA.waterfall,
         maxV = benefici * 1.12;
+      const lvlAfterCosti = benefici - costi;                 // 16,9
       const y = (v) => padT + plotH - (v / maxV) * plotH;
       const bars = [
-        { label: "Benefici", base: 0, top: benefici, fill: "var(--lime)", lab: benefici.toFixed(1).replace(".", ","), pos: "top" },
-        { label: "Costi", base: vane, top: benefici, fill: "var(--grey-mid)", lab: "−" + costi.toFixed(1).replace(".", ","), pos: "mid" },
-        { label: "VANE", base: 0, top: vane, fill: "var(--blu-700)", lab: fmt(vane), pos: "top" },
+        { label: "Benefici", axis: ["Benefici"], base: 0, top: benefici, fill: "var(--lime)", lab: benefici.toFixed(1).replace(".", ","), pos: "top", tip: benefici },
+        { label: "Costi economici", axis: ["Costi", "economici"], base: lvlAfterCosti, top: benefici, fill: "var(--grey-mid)", lab: "−" + costi.toFixed(1).replace(".", ","), pos: "mid", tip: -costi },
+        { label: "Esternalità negative", axis: ["Esternalità", "negative"], base: vane, top: lvlAfterCosti, fill: "var(--red-600)", lab: "−" + esternalitaNeg.toFixed(1).replace(".", ","), pos: "mid", tip: -esternalitaNeg },
+        { label: "Valore Attuale Netto Economico", axis: ["Valore Attuale", "Netto Economico"], base: 0, top: vane, fill: "var(--blu-700)", lab: fmt(vane), pos: "top", tip: vane },
       ];
-      const n = 3,
-        gap = 80,
+      const n = bars.length,
+        gap = 52,
         bw = (plotW - gap * (n - 1)) / n,
         xOf = (i) => padL + i * (bw + gap);
       let o = "";
@@ -657,18 +725,24 @@ export function EcbaResults({ project, onBack }) {
       }
       o += `<line class="ax-zero" x1="${padL}" y1="${y(0)}" x2="${W - padR}" y2="${y(0)}"/>`;
       o += `<line class="connector" x1="${xOf(0) + bw}" y1="${y(benefici)}" x2="${xOf(1)}" y2="${y(benefici)}"/>`;
-      o += `<line class="connector" x1="${xOf(1) + bw}" y1="${y(vane)}" x2="${xOf(2)}" y2="${y(vane)}"/>`;
+      o += `<line class="connector" x1="${xOf(1) + bw}" y1="${y(lvlAfterCosti)}" x2="${xOf(2)}" y2="${y(lvlAfterCosti)}"/>`;
+      o += `<line class="connector" x1="${xOf(2) + bw}" y1="${y(vane)}" x2="${xOf(3)}" y2="${y(vane)}"/>`;
       bars.forEach((b, i) => {
         const x = xOf(i),
           yT = y(b.top),
           yB = y(b.base),
           h = Math.max(2, yB - yT);
         o += `<rect x="${x}" y="${yB}" width="${bw}" height="0" fill="${b.fill}"><animate attributeName="height" from="0" to="${h}" dur=".65s" begin="${i * 0.18}s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1"/><animate attributeName="y" from="${yB}" to="${yT}" dur=".65s" begin="${i * 0.18}s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1"/></rect>`;
-        const value = b.label === "Costi" ? -costi : b.top;
-        o += `<rect class="chart-hit" x="${x}" y="${yT}" width="${bw}" height="${h}" fill="transparent" data-tip-label="${b.label}" data-tip-value="${fmt1(value)} M€" data-tip-sub="Valore attuale sull'orizzonte di analisi"></rect>`;
+        o += `<rect class="chart-hit" x="${x}" y="${yT}" width="${bw}" height="${h}" fill="transparent" data-tip-label="${b.label}" data-tip-value="${fmt1(b.tip)} M€" data-tip-sub="Valore attuale sull'orizzonte di analisi"></rect>`;
         const ly = b.pos === "top" ? yT - 9 : (yT + yB) / 2 + 5;
         o += `<text class="bar-lbl" x="${x + bw / 2}" y="${ly}" text-anchor="middle" style="font-size:14px" opacity="0">${b.lab} M€<animate attributeName="opacity" from="0" to="1" dur=".3s" begin="${i * 0.18 + 0.55}s" fill="freeze"/></text>`;
-        o += `<text class="ax-txt" x="${x + bw / 2}" y="${H - padB + 22}" text-anchor="middle" style="font-weight:700;fill:var(--text-main);font-size:13px">${b.label}</text>`;
+        const ax = b.axis;
+        const baseY = H - padB + 22;
+        if (ax.length === 1) {
+          o += `<text class="ax-txt" x="${x + bw / 2}" y="${baseY}" text-anchor="middle" style="font-weight:700;fill:var(--text-main);font-size:13px">${ax[0]}</text>`;
+        } else {
+          o += `<text class="ax-txt" x="${x + bw / 2}" y="${baseY}" text-anchor="middle" style="font-weight:700;fill:var(--text-main);font-size:12px"><tspan x="${x + bw / 2}" dy="0">${ax[0]}</tspan><tspan x="${x + bw / 2}" dy="14">${ax[1]}</tspan></text>`;
+        }
       });
       svg.innerHTML = o;
       bindChartTips(svg);
@@ -691,7 +765,8 @@ export function EcbaResults({ project, onBack }) {
       const series = [
         { key: "net", label: "Flusso netto cumulato", color: "#4400B3", w: 3, data: netCum, on: true },
         { key: "ben", label: "Benefici totali", color: "#1e7a45", w: 2.2, data: benCum, on: true },
-        { key: "cost", label: "Costi totali", color: "#c0392b", w: 2.2, data: costCum, on: true },
+        // Costi mostrati in negativo (deflusso di cassa per la collettività)
+        { key: "cost", label: "Costi totali", color: "#c0392b", w: 2.2, data: costCum.map((v) => -v), on: true },
       ];
       DATA.donut.forEach((d, i) =>
         series.push({ key: "c" + i, label: d.label, color: d.color, w: 1.3, data: benCum.map((b) => +((b * d.pct) / 100).toFixed(3)), on: false }),
@@ -756,8 +831,9 @@ export function EcbaResults({ project, onBack }) {
         o += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="${s.w}" stroke-linejoin="round"${dash}>`;
         if (animate) o += `<animate attributeName="stroke-dashoffset" from="1" to="0" dur="1.2s" begin="${0.2 + si * 0.08}s" fill="freeze"/>`;
         o += `</polyline>`;
+        // Niente pallini visibili: punti-bersaglio trasparenti per il tooltip al click
         s.data.forEach((v, t) => {
-          o += `<circle class="chart-point" cx="${x(t)}" cy="${y(v)}" r="5" fill="${s.color}" opacity=".18" stroke="${s.color}" stroke-width="1.4" data-tip-label="${s.label}" data-tip-value="${fmt1(v)} M€" data-tip-sub="Anno ${t}"></circle>`;
+          o += `<circle class="chart-point" cx="${x(t)}" cy="${y(v)}" r="8" fill="transparent" data-tip-label="${s.label}" data-tip-value="${fmt1(v)} M€" data-tip-sub="Anno ${t}"></circle>`;
         });
       });
       // payback on net
@@ -841,14 +917,14 @@ export function EcbaResults({ project, onBack }) {
           bh = 22;
         o += `<rect x="${x(v.low)}" y="${cy - bh / 2}" width="0" height="${bh}" fill="#c0392b" opacity=".88"><animate attributeName="width" from="0" to="${x(base) - x(v.low)}" dur=".5s" begin="${i * 0.1}s" fill="freeze"/></rect>`;
         o += `<rect x="${x(base)}" y="${cy - bh / 2}" width="0" height="${bh}" fill="#1e7a45" opacity=".88"><animate attributeName="width" from="0" to="${x(v.high) - x(base)}" dur=".5s" begin="${i * 0.1}s" fill="freeze"/></rect>`;
-        o += `<rect class="chart-hit" x="${x(v.low)}" y="${cy - rowH / 2 + 3}" width="${x(v.high) - x(v.low)}" height="${rowH - 6}" fill="transparent" data-tip-label="${v.name}" data-tip-value="${fmt1(v.low)} / ${fmt1(v.high)} M€" data-tip-sub="Scenario sfavorevole / favorevole rispetto al VANE base"></rect>`;
+        o += `<rect class="chart-hit" x="${x(v.low)}" y="${cy - rowH / 2 + 3}" width="${x(v.high) - x(v.low)}" height="${rowH - 6}" fill="transparent" data-tip-label="${v.name}" data-tip-value="${fmt1(v.low)} / ${fmt1(v.high)} M€" data-tip-sub="Scenario sfavorevole / favorevole rispetto al valore base"></rect>`;
         o += `<text x="${padL - 12}" y="${cy + 4}" text-anchor="end" style="font-size:12.5px;font-weight:700;fill:var(--text-main)">${v.name}</text>`;
         o += `<text x="${padL - 12}" y="${cy + 18}" text-anchor="end" style="font-size:10.5px;fill:var(--text-soft)">${v.sub}</text>`;
         o += `<text x="${x(v.low) - 5}" y="${cy + 4}" text-anchor="end" style="font-size:11px;fill:#c0392b;font-weight:700" opacity="0">${v.low.toFixed(1).replace(".", ",")}<animate attributeName="opacity" from="0" to="1" dur=".3s" begin="${i * 0.1 + 0.5}s" fill="freeze"/></text>`;
         o += `<text x="${x(v.high) + 5}" y="${cy + 4}" style="font-size:11px;fill:#1e7a45;font-weight:700" opacity="0">${v.high.toFixed(1).replace(".", ",")}<animate attributeName="opacity" from="0" to="1" dur=".3s" begin="${i * 0.1 + 0.5}s" fill="freeze"/></text>`;
       });
       o += `<line x1="${x(base)}" y1="${padT - 2}" x2="${x(base)}" y2="${padT + d.length * rowH + 4}" stroke="var(--blu-700)" stroke-width="1.6"/>`;
-      o += `<text class="ax-txt" x="${x(base)}" y="${padT - 4}" text-anchor="middle" style="fill:var(--blu-700);font-weight:700">VANE base ${base.toFixed(1).replace(".", ",")}</text>`;
+      o += `<text class="ax-txt" x="${x(base)}" y="${padT - 4}" text-anchor="middle" style="fill:var(--blu-700);font-weight:700">Valore base ${base.toFixed(1).replace(".", ",")}</text>`;
       svg.innerHTML = o;
       bindChartTips(svg);
     }
@@ -884,23 +960,140 @@ export function EcbaResults({ project, onBack }) {
           h = (v / maxF) * plotH,
           yT = y(v);
         const mid = xEdges(i) + m.w / 2,
-          fill = mid < 0 ? "#c0392b" : "#6E1AFF";
+          fill = mid < 0 ? "#c0392b" : "var(--green-700)";
         o += `<rect x="${x}" y="${y(0)}" width="${bw}" height="0" fill="${fill}" opacity=".9"><animate attributeName="y" from="${y(0)}" to="${yT}" dur=".5s" begin="${i * 0.05}s" fill="freeze"/><animate attributeName="height" from="0" to="${h}" dur=".5s" begin="${i * 0.05}s" fill="freeze"/></rect>`;
-        o += `<rect class="chart-hit" x="${x}" y="${yT}" width="${bw}" height="${Math.max(6, h)}" fill="transparent" data-tip-label="Intervallo VANE" data-tip-value="${xEdges(i)} / ${xEdges(i) + m.w} M€" data-tip-sub="Frequenza simulazioni: ${v}%"></rect>`;
+        o += `<rect class="chart-hit" x="${x}" y="${yT}" width="${bw}" height="${Math.max(6, h)}" fill="transparent" data-tip-label="Intervallo Valore Attuale Netto Economico" data-tip-value="${xEdges(i)} / ${xEdges(i) + m.w} M€" data-tip-sub="Frequenza simulazioni: ${v}%"></rect>`;
         o += `<text class="ax-txt" x="${x + bw / 2}" y="${H - padB + 16}" text-anchor="middle">${xEdges(i)}</text>`;
       });
       // zero line
       const zx = valToX(0);
       o += `<line x1="${zx}" y1="${padT - 4}" x2="${zx}" y2="${H - padB}" stroke="var(--text-main)" stroke-width="1.6"/>`;
-      o += `<text class="ax-txt" x="${zx}" y="${padT - 6}" text-anchor="middle" style="fill:var(--text-main);font-weight:700">VANE = 0</text>`;
+      o += `<text class="ax-txt" x="${zx}" y="${padT - 6}" text-anchor="middle" style="fill:var(--text-main);font-weight:700">Valore Attuale Netto Economico = 0</text>`;
       // base/median line
       const bx = valToX(m.base);
       o += `<line x1="${bx}" y1="${padT}" x2="${bx}" y2="${H - padB}" stroke="var(--blu-700)" stroke-width="1" stroke-dasharray="4 3" opacity=".6"/>`;
       o += `<text class="ax-txt" x="${bx}" y="${H - padB - 6}" text-anchor="middle" style="fill:var(--blu-700);font-weight:700">mediana ${m.base.toFixed(1).replace(".", ",")}</text>`;
       // 92% annotation
       o += `<text x="${W - padR}" y="${padT + 30}" text-anchor="end" style="font-size:30px;font-weight:800;fill:var(--blu-700)" opacity="0">92%<animate attributeName="opacity" from="0" to="1" dur=".5s" begin="1s" fill="freeze"/></text>`;
-      o += `<text x="${W - padR}" y="${padT + 48}" text-anchor="end" style="font-size:12px;fill:var(--text-muted)" opacity="0">simulazioni con VANE &gt; 0<animate attributeName="opacity" from="0" to="1" dur=".5s" begin="1.1s" fill="freeze"/></text>`;
-      o += `<text class="ax-txt" x="${W - padR}" y="${H - padB + 16}" text-anchor="end" style="font-weight:700;fill:var(--text-muted)">VANE (M€)</text>`;
+      o += `<text x="${W - padR}" y="${padT + 48}" text-anchor="end" style="font-size:12px;fill:var(--text-muted)" opacity="0">simulazioni con Valore Attuale Netto Economico &gt; 0<animate attributeName="opacity" from="0" to="1" dur=".5s" begin="1.1s" fill="freeze"/></text>`;
+      o += `<text class="ax-txt" x="${W - padR}" y="${H - padB + 16}" text-anchor="end" style="font-weight:700;fill:var(--text-muted)">Valore Attuale Netto Economico (M€)</text>`;
+      svg.innerHTML = o;
+      bindChartTips(svg);
+    }
+
+    // ===== SPIDER (radar) — elasticità & varianza =====
+    function spiderLabel(text, x, y, anchor) {
+      const words = text.split(" ");
+      if (words.length === 1) {
+        return `<text x="${x}" y="${y}" text-anchor="${anchor}" style="font-size:11.5px;font-weight:700;fill:var(--text-main)">${htmlEscape(text)}</text>`;
+      }
+      const mid = Math.ceil(words.length / 2);
+      const l1 = words.slice(0, mid).join(" "),
+        l2 = words.slice(mid).join(" ");
+      return `<text x="${x}" y="${y - 6}" text-anchor="${anchor}" style="font-size:11.5px;font-weight:700;fill:var(--text-main)"><tspan x="${x}" dy="0">${htmlEscape(l1)}</tspan><tspan x="${x}" dy="13">${htmlEscape(l2)}</tspan></text>`;
+    }
+    function drawSpider(svg, data, opt) {
+      if (!svg) return;
+      const cx = 230,
+        cy = 198,
+        R = 122,
+        n = data.length,
+        rings = 4;
+      const ang = (i) => -Math.PI / 2 + (i * 2 * Math.PI) / n;
+      const pt = (r, a) => [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+      const clamp01 = (v) => Math.max(0, Math.min(1, v));
+      let o = "";
+      for (let k = 1; k <= rings; k++) {
+        const rr = (R * k) / rings;
+        const poly = data.map((_, i) => pt(rr, ang(i)).map((c) => c.toFixed(1)).join(",")).join(" ");
+        o += `<polygon points="${poly}" fill="none" stroke="var(--grey-line)" stroke-width="1"/>`;
+        o += `<text class="ax-txt" x="${cx + 4}" y="${(cy - rr + 3).toFixed(1)}">${opt.ringLabel((opt.max * k) / rings)}</text>`;
+      }
+      data.forEach((d, i) => {
+        const a = ang(i),
+          [axx, ayy] = pt(R, a);
+        o += `<line x1="${cx}" y1="${cy}" x2="${axx.toFixed(1)}" y2="${ayy.toFixed(1)}" stroke="var(--grey-line)" stroke-width="1"/>`;
+        const [lx, ly] = pt(R + 20, a);
+        const c = Math.cos(a);
+        const anchor = c > 0.3 ? "start" : c < -0.3 ? "end" : "middle";
+        o += spiderLabel(d.param, lx.toFixed(1), (ly + 4).toFixed(1), anchor);
+      });
+      const vpoly = data.map((d, i) => pt(R * clamp01(d.value / opt.max), ang(i)).map((c) => c.toFixed(1)).join(",")).join(" ");
+      o += `<polygon points="${vpoly}" fill="${opt.color}" fill-opacity="0.18" stroke="${opt.color}" stroke-width="2.5"><animate attributeName="fill-opacity" from="0" to="0.18" dur=".5s" fill="freeze"/></polygon>`;
+      data.forEach((d, i) => {
+        const [px, py] = pt(R * clamp01(d.value / opt.max), ang(i));
+        o += `<circle class="chart-point" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="5" fill="${opt.color}" data-tip-label="${htmlEscape(d.param)}" data-tip-value="${opt.tipValue(d.value)}" data-tip-sub="${opt.tipSub}"></circle>`;
+      });
+      svg.innerHTML = o;
+      bindChartTips(svg);
+    }
+    function drawElasticitySpider() {
+      const data = DATA.elasticities;
+      const max = Math.max(1, Math.ceil(Math.max(...data.map((d) => d.value))));
+      drawSpider(q("#svg-elastic"), data, {
+        max,
+        color: "#5B21F7",
+        ringLabel: (v) => v.toFixed(1).replace(".", ","),
+        tipValue: (v) => "|ε| = " + v.toFixed(2).replace(".", ","),
+        tipSub: "Variazione % del Valore Attuale Netto Economico per +1% del parametro",
+      });
+    }
+    function drawVarianceSpider() {
+      drawSpider(q("#svg-variance"), DATA.variances, {
+        max: 1,
+        color: "#9E7BFA",
+        ringLabel: (v) => Math.round(v * 100) + "%",
+        tipValue: (v) => Math.round(v * 100) + "%",
+        tipSub: "Contributo del parametro alla varianza complessiva del risultato",
+      });
+    }
+
+    // ===== HEATMAP — sensitività combinata Costi × Benefici =====
+    function drawHeatmap() {
+      const svg = q("#svg-heat");
+      if (!svg) return;
+      const { benefici, costiTotali, costMults, benefitMults } = DATA.heatmap;
+      const rows = [...costMults].reverse(); // costo alto in alto
+      const cols = benefitMults;
+      const npvOf = (cm, bm) => benefici * bm - costiTotali * cm;
+      let maxAbs = 0;
+      rows.forEach((cm) => cols.forEach((bm) => { maxAbs = Math.max(maxAbs, Math.abs(npvOf(cm, bm))); }));
+      const lerp = (a, b, t) => Math.round(a + (b - a) * t);
+      const colorOf = (npv) => {
+        const norm = Math.max(-1, Math.min(1, npv / Math.max(maxAbs, 1)));
+        if (norm >= 0) return `rgb(${lerp(249, 27, norm)},${lerp(251, 94, norm)},${lerp(231, 32, norm)})`;
+        const t = -norm;
+        return `rgb(${lerp(249, 183, t)},${lerp(251, 28, t)},${lerp(231, 28, t)})`;
+      };
+      const W = 760,
+        padL = 96,
+        padT = 56,
+        padR = 18,
+        padB = 36;
+      const gw = W - padL - padR,
+        gh = 360 - padT - padB;
+      const cw = gw / cols.length,
+        ch = gh / rows.length;
+      const fmtMul = (m) => m.toFixed(1).replace(".", ",");
+      let o = "";
+      cols.forEach((bm, j) => {
+        o += `<text class="ax-txt" x="${(padL + j * cw + cw / 2).toFixed(1)}" y="${padT - 12}" text-anchor="middle" style="font-weight:700;fill:var(--text-main)">${fmtMul(bm)}×</text>`;
+      });
+      o += `<text class="ax-txt" x="${(padL + gw / 2).toFixed(1)}" y="${padT - 30}" text-anchor="middle" style="font-style:italic">Moltiplicatore benefici →</text>`;
+      rows.forEach((cm, i) => {
+        const yRow = padT + i * ch;
+        o += `<text class="ax-txt" x="${padL - 10}" y="${(yRow + ch / 2 + 4).toFixed(1)}" text-anchor="end" style="font-weight:700;fill:var(--text-main)">${fmtMul(cm)}×</text>`;
+        cols.forEach((bm, j) => {
+          const npv = npvOf(cm, bm);
+          const norm = Math.max(-1, Math.min(1, npv / Math.max(maxAbs, 1)));
+          const x = padL + j * cw;
+          const fg = Math.abs(norm) > 0.45 ? "#fff" : "#333";
+          o += `<rect class="chart-hit" x="${x.toFixed(1)}" y="${yRow.toFixed(1)}" width="${(cw - 2).toFixed(1)}" height="${(ch - 2).toFixed(1)}" fill="${colorOf(npv)}" stroke="#fff" stroke-width="1" data-tip-label="Costi ×${fmtMul(cm)} · Benefici ×${fmtMul(bm)}" data-tip-value="${fmt1(npv)} M€" data-tip-sub="Valore Attuale Netto Economico nello scenario"></rect>`;
+          o += `<text x="${(x + (cw - 2) / 2).toFixed(1)}" y="${(yRow + (ch - 2) / 2 + 4).toFixed(1)}" text-anchor="middle" style="font-size:11.5px;font-weight:700;fill:${fg};pointer-events:none">${fmt1(npv)}</text>`;
+        });
+      });
+      const vy = padT + gh / 2;
+      o += `<text class="ax-txt" x="22" y="${vy.toFixed(1)}" text-anchor="middle" transform="rotate(-90 22 ${vy.toFixed(1)})" style="font-style:italic">↑ Moltiplicatore costi</text>`;
       svg.innerHTML = o;
       bindChartTips(svg);
     }

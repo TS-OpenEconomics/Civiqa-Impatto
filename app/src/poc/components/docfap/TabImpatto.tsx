@@ -1,9 +1,11 @@
-﻿import type { CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 import { useSyncExternalStore } from 'react'
 import { wizardStore } from '../../store/wizardStore'
 import {
   getAlternativeDisplayLabel,
   getRecommendedAlternativeId,
+  getDefinedScores,
+  getDetailFinalRecommendedCellStyle,
   labelColumnStyle,
   alternativeColumnStyle,
   detailHeaderCellBaseStyle,
@@ -15,63 +17,48 @@ import {
   detailBodyCellStyle,
   detailRecommendedColumnStyle,
   detailFinalRowHeaderStyle,
-  detailFinalCellStyle,
   detailEmptyStyle,
-  formatScore,
-  safeNumber,
+  detailTableWrapStyle,
 } from './tableHelpers'
-import { CHART_SERIES_COLORS, BarsChart, ChartCard, tabStackStyle } from './chartHelpers'
+import { ImpactDecompositionChart } from './charts/ImpactDecompositionChart'
+import { ImpactMultiplierChart } from './charts/ImpactMultiplierChart'
 
-function fmtM(value: unknown): string {
-  return `${safeNumber(value).toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} M€`
+function fmtK(value: number): string {
+  return `${Math.round(value).toLocaleString('it-IT')} k€`
 }
 
 export function TabImpatto() {
   const state = useSyncExternalStore(wizardStore.subscribe, wizardStore.getState, wizardStore.getState)
-  const scores = state.scoreFinale ?? []
+  const scores = getDefinedScores(state.scoreFinale, state.alternativeDefinite)
   const recommendedId = getRecommendedAlternativeId(scores)
-  if (scores.length === 0) return <p style={emptyStyle}>Nessun dettaglio impatto disponibile.</p>
 
-  const groups = scores.map((score) => ({
-    id: score.alternativaId,
-    label: getAlternativeDisplayLabel(score.alternativaId, state.alternative[score.alternativaId]),
-    bars: [
-      { value: safeNumber(score.pil), color: CHART_SERIES_COLORS[0], name: 'PIL' },
-      { value: safeNumber(score.produzione), color: CHART_SERIES_COLORS[1], name: 'Produzione' },
-      { value: safeNumber(score.redditi), color: CHART_SERIES_COLORS[2], name: 'Redditi' },
-    ],
-  }))
+  if (scores.length === 0) return <p style={emptyStyle}>Nessun dettaglio d'impatto disponibile.</p>
+
+  const rows: { key: string; label: string; get: (s: typeof scores[0]) => string }[] = [
+    { key: 'pil',      label: 'PIL (k€)',            get: s => fmtK(s.pil) },
+    { key: 'occupati', label: 'Occupati (ETP)',       get: s => s.occupati.toLocaleString('it-IT') },
+    { key: 'prod',     label: 'Produzione (k€)',      get: s => fmtK(s.produzione) },
+    { key: 'redditi',  label: 'Redditi (k€)',         get: s => fmtK(s.redditi) },
+  ]
 
   return (
-    <div style={tabStackStyle}>
-      <ChartCard title="Impatto macroeconomico per alternativa" subtitle="PIL, Produzione e Redditi attivati (M€)">
-        <BarsChart
-          groups={groups}
-          formatValue={fmtM}
-          legend={[
-            { label: 'PIL', color: CHART_SERIES_COLORS[0] },
-            { label: 'Produzione', color: CHART_SERIES_COLORS[1] },
-            { label: 'Redditi', color: CHART_SERIES_COLORS[2] },
-          ]}
-        />
-      </ChartCard>
-
-      <div style={wrapStyle}>
+    <div style={wrapStyle}>
+      <div style={detailTableWrapStyle}>
       <table style={tableStyle}>
         <colgroup>
           <col style={labelColumnStyle} />
-          {scores.map((score) => <col key={score.alternativaId} style={alternativeColumnStyle(scores.length)} />)}
+          {scores.map(s => <col key={s.alternativaId} style={alternativeColumnStyle(scores.length)} />)}
         </colgroup>
         <thead>
           <tr>
             <th style={headerCellStyle}>Indicatore</th>
-            {scores.map((score) => {
-              const isRecommended = score.alternativaId === recommendedId
+            {scores.map(s => {
+              const isRec = s.alternativaId === recommendedId
               return (
-                <th key={score.alternativaId} style={{ ...headerCellStyle, ...(isRecommended ? recommendedHeaderStyle : null) }}>
+                <th key={s.alternativaId} style={{ ...headerCellStyle, ...(isRec ? recommendedHeaderStyle : null) }}>
                   <div style={headerLabelWrapStyle}>
-                    <span style={headerLabelStyle}>{getAlternativeDisplayLabel(score.alternativaId, state.alternative[score.alternativaId])}</span>
-                    {isRecommended ? <span style={recommendedBadgeStyle}>Raccomandata</span> : null}
+                    <span style={headerLabelStyle}>{getAlternativeDisplayLabel(s.alternativaId, state.alternative[s.alternativaId])}</span>
+                    {isRec && <span style={recommendedBadgeStyle}>Raccomandata</span>}
                   </div>
                 </th>
               )
@@ -79,50 +66,39 @@ export function TabImpatto() {
           </tr>
         </thead>
         <tbody>
+          {rows.map(({ key, label, get }, rowIdx) => (
+            <tr key={key} style={rowIdx % 2 === 1 ? rowAlternateStyle : undefined}>
+              <th scope="row" style={rowHeaderStyle}>{label}</th>
+              {scores.map(s => {
+                const isRec = s.alternativaId === recommendedId
+                return (
+                  <td key={`${key}-${s.alternativaId}`} style={{ ...bodyCellStyle, ...(isRec ? recommendedColumnStyle : null) }}>
+                    {get(s)}
+                  </td>
+                )
+              })}
+            </tr>
+          ))}
           <tr>
-            <th scope="row" style={rowHeaderStyle}>PIL (M€)</th>
-            {scores.map((score) => {
-              const isRecommended = score.alternativaId === recommendedId
-              return <td key={`pil-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{fmtM(score.pil)}</td>
-            })}
-          </tr>
-          <tr>
-            <th scope="row" style={rowHeaderStyle}>Occupati (ETP)</th>
-            {scores.map((score) => {
-              const isRecommended = score.alternativaId === recommendedId
-              return <td key={`occ-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{safeNumber(score.occupati).toLocaleString('it-IT')}</td>
-            })}
-          </tr>
-          <tr>
-            <th scope="row" style={rowHeaderStyle}>Produzione (M€)</th>
-            {scores.map((score) => {
-              const isRecommended = score.alternativaId === recommendedId
-              return <td key={`prod-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{fmtM(score.produzione)}</td>
-            })}
-          </tr>
-          <tr>
-            <th scope="row" style={rowHeaderStyle}>Redditi (M€)</th>
-            {scores.map((score) => {
-              const isRecommended = score.alternativaId === recommendedId
-              return <td key={`redditi-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>{fmtM(score.redditi)}</td>
-            })}
-          </tr>
-          <tr>
-            <th scope="row" style={finalRowHeaderStyle}>Punteggio Finale</th>
-            {scores.map((score) => {
-              const isRecommended = score.alternativaId === recommendedId
-              return <td key={`final-${score.alternativaId}`} style={{ ...finalCellStyle, ...(isRecommended ? recommendedHeaderStyle : null) }}>{formatScore(score.scoreFinale)}</td>
-            })}
+            <th scope="row" style={finalRowHeaderStyle}>Punteggio d'Impatto</th>
+            {scores.map(s => (
+              <td key={`imp-${s.alternativaId}`} style={getDetailFinalRecommendedCellStyle(s.alternativaId === recommendedId)}>
+                {s.impattoScore.toFixed(1)}
+              </td>
+            ))}
           </tr>
         </tbody>
       </table>
       </div>
+
+      <ImpactDecompositionChart scores={scores} alternative={state.alternative} />
+      <ImpactMultiplierChart scores={scores} alternative={state.alternative} />
     </div>
   )
 }
 
-const wrapStyle: CSSProperties = { overflowX: 'auto' }
-const tableStyle: CSSProperties = { width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }
+const wrapStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 'var(--spacing-stack-m, 24px)' }
+const tableStyle: CSSProperties = { width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', background: 'var(--color-background-inverse)' }
 const headerCellStyle: CSSProperties = detailHeaderCellBaseStyle
 const recommendedHeaderStyle: CSSProperties = detailRecommendedHeaderStyle
 const headerLabelWrapStyle: CSSProperties = detailHeaderLabelWrapStyle
@@ -132,5 +108,5 @@ const rowHeaderStyle: CSSProperties = detailRowHeaderStyle
 const bodyCellStyle: CSSProperties = detailBodyCellStyle
 const recommendedColumnStyle: CSSProperties = detailRecommendedColumnStyle
 const finalRowHeaderStyle: CSSProperties = detailFinalRowHeaderStyle
-const finalCellStyle: CSSProperties = detailFinalCellStyle
 const emptyStyle: CSSProperties = detailEmptyStyle
+const rowAlternateStyle: CSSProperties = { background: 'rgba(127,127,140,0.06)' }

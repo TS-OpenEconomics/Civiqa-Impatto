@@ -3,6 +3,7 @@ import type {
   AlternativaId,
   ScoreComposito,
 } from '../types/docfap'
+import { CLUSTER_MCA } from '../data/mca/clusters'
 
 type ValutazioneLivello = 'alto' | 'medio' | 'basso' | 'nullo'
 
@@ -399,34 +400,66 @@ const actions: WizardStoreActions = {
   },
 
   prefillPOCAnswers(clusterId: string, altIds: AlternativaId[]) {
-    if (clusterId !== 'C03') return
+    const cluster = CLUSTER_MCA[clusterId]
+    if (!cluster) return
 
     const state = currentState
 
-    const riskDefaults: Partial<Record<AlternativaId, Record<string, ValutazioneLivello>>> = {
-      A1: {
-        C03_R_01: 'alto',  C03_R_02: 'medio', C03_R_03: 'basso',
-        C03_R_04: 'medio', C03_R_05: 'alto',  C03_R_06: 'medio',
-      },
-      A2: {
-        C03_R_01: 'medio', C03_R_02: 'medio', C03_R_03: 'alto',
-        C03_R_04: 'basso', C03_R_05: 'medio', C03_R_06: 'basso',
-      },
-      A3: {
-        C03_R_01: 'basso', C03_R_02: 'basso', C03_R_03: 'basso',
-        C03_R_04: 'medio', C03_R_05: 'basso', C03_R_06: 'basso',
-      },
+    // Per-alternative patterns:
+    //   A1 (first infra alt): medio-biased → weighted score ≈ 60-65
+    //   A2 (second infra alt): alto-biased  → weighted score ≈ 80-85
+    //   A3+ (other/voucher):  basso-biased  → weighted score ≈ 40-50
+    // Pattern array: value at index i is the level for criterion i.
+    // Uses modular index for variety across different-length criteria lists.
+    const MCA_PATTERNS: Record<string, ValutazioneLivello[]> = {
+      A1: ['medio', 'medio', 'alto',  'medio', 'alto',  'basso', 'medio', 'alto'],
+      A2: ['alto',  'medio', 'alto',  'alto',  'alto',  'medio', 'alto',  'alto'],
+      A3: ['basso', 'medio', 'medio', 'basso', 'medio', 'medio', 'basso', 'medio'],
+      A4: ['medio', 'basso', 'medio', 'alto',  'basso', 'medio', 'medio', 'basso'],
+      A5: ['basso', 'basso', 'medio', 'medio', 'basso', 'basso', 'medio', 'basso'],
     }
+    const RISK_PATTERNS: Record<string, ValutazioneLivello[]> = {
+      A1: ['alto',  'medio', 'basso', 'medio', 'alto',  'medio', 'basso', 'medio'],
+      A2: ['medio', 'medio', 'alto',  'basso', 'medio', 'basso', 'medio', 'basso'],
+      A3: ['basso', 'basso', 'basso', 'medio', 'basso', 'basso', 'basso', 'medio'],
+      A4: ['medio', 'alto',  'medio', 'alto',  'medio', 'medio', 'basso', 'alto'],
+      A5: ['basso', 'medio', 'basso', 'basso', 'medio', 'basso', 'basso', 'basso'],
+    }
+
+    // ── MCA Qualitativa ──────────────────────────────────────────────────
+    const qualCriteri = cluster.criteriiQualitativi
+    const firstQId = qualCriteri[0]?.id
+    const newMcaScores = { ...state.mcaScores }
+    for (const altId of altIds) {
+      // Skip only if the stored data already covers this cluster's criteria
+      const existing = state.mcaScores[altId] ?? {}
+      if (firstQId && Object.prototype.hasOwnProperty.call(existing, firstQId)) continue
+      const pattern = MCA_PATTERNS[altId] ?? MCA_PATTERNS['A3']
+      const scores: Record<string, string> = {}
+      qualCriteri.forEach((c, i) => {
+        scores[c.id] = pattern[i % pattern.length]
+      })
+      newMcaScores[altId] = scores
+    }
+
+    // ── Rischi ───────────────────────────────────────────────────────────
+    const fattoriRischio = cluster.fattoriRischio
+    const firstRId = fattoriRischio[0]?.id
     const newRischiScores = { ...state.rischiScores }
     for (const altId of altIds) {
-      const defaults = riskDefaults[altId]
-      if (!defaults) continue
-      if (Object.keys(state.rischiScores[altId] ?? {}).length > 0) continue
-      newRischiScores[altId] = { ...defaults }
+      const existing = state.rischiScores[altId] ?? {}
+      if (firstRId && Object.prototype.hasOwnProperty.call(existing, firstRId)) continue
+      const pattern = RISK_PATTERNS[altId] ?? RISK_PATTERNS['A3']
+      const scores: Record<string, ValutazioneLivello> = {}
+      fattoriRischio.forEach((f, i) => {
+        scores[f.id] = pattern[i % pattern.length]
+      })
+      newRischiScores[altId] = scores
     }
 
     updateState((prev) => ({
       ...prev,
+      mcaScores: newMcaScores,
       rischiScores: newRischiScores,
     }))
   },

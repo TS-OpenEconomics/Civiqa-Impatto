@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { DocfapWizard } from '../components/wizard/DocfapWizard'
 import { loadDocfapDemo } from '../data/docfapDemo'
 import { wizardStore } from '../store/wizardStore'
@@ -296,14 +296,15 @@ function FeaturedDocfapCard({ item, onOpen }: { item: DocfapRecord; onOpen: () =
         ))}
       </div>
 
-      <Link to="/impatti/docfap/detail" style={detailButtonStyle} onClick={onOpen}>
-        Vai al dettaglio <IconArrowRight />
-      </Link>
+      <button type="button" style={detailButtonStyle} onClick={onOpen}>
+        {item.stato === 'Completato' ? 'Vai al dettaglio' : 'Continua nel wizard'} <IconArrowRight />
+      </button>
     </article>
   )
 }
 
 export function DocfapList() {
+  const navigate = useNavigate()
   const [showWizard, setShowWizard] = useState(false)
   const [activeTab, setActiveTab] = useState<TabKey>('ente')
   const [onlyDraft, setOnlyDraft] = useState(false)
@@ -361,9 +362,21 @@ export function DocfapList() {
     wizardStore.actions.reset()
     setShowWizard(true)
   }
-  const handleOpenDemoDetail = () => {
+  // Progetto COMPLETATO → apri il dettaglio con i dati demo (CBA/Impatto/MCA/
+  // Rischio popolati, A1+A2). Progetto NON completato → riprendi dal wizard.
+  const handleOpenProject = (row: DocfapRecord) => {
     wizardStore.actions.reset()
-    void loadDocfapDemo()
+    if (row.stato === 'Completato') {
+      void loadDocfapDemo({
+        denominazione: row.nomeIntervento,
+        comune: row.comune,
+        provincia: row.provincia,
+        proprietario: row.proprietario,
+      })
+      navigate('/impatti/docfap/detail')
+    } else {
+      setShowWizard(true)
+    }
   }
 
   return (
@@ -415,7 +428,7 @@ export function DocfapList() {
 
           <div style={carouselGridStyle}>
             {featuredVisible.map((item) => (
-              <FeaturedDocfapCard key={item.id} item={item} onOpen={handleOpenDemoDetail} />
+              <FeaturedDocfapCard key={item.id} item={item} onOpen={() => handleOpenProject(item)} />
             ))}
           </div>
         </section>
@@ -521,14 +534,18 @@ export function DocfapList() {
                     </td>
                     <td style={tdStyle}>
                       <div style={actionsWrapStyle}>
-                        <Link
-                          to="/impatti/docfap/detail"
+                        <button
+                          type="button"
                           style={actionButtonStyle}
-                          onClick={handleOpenDemoDetail}
-                          aria-label={`Apri dettaglio ${row.nomeIntervento}`}
+                          onClick={() => handleOpenProject(row)}
+                          aria-label={
+                            row.stato === 'Completato'
+                              ? `Apri dettaglio ${row.nomeIntervento}`
+                              : `Continua nel wizard ${row.nomeIntervento}`
+                          }
                         >
                           <IconArrowRight />
-                        </Link>
+                        </button>
                         {row.stato === 'Bozza' && (
                           <button type="button" style={dangerButtonStyle} aria-label={`Elimina bozza ${row.nomeIntervento}`}>
                             <IconTrash />

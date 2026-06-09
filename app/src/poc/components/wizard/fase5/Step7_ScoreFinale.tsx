@@ -4,6 +4,7 @@ import { INTERVENTION_CATEGORIES } from '../../../data/poc_docfap/intervention_c
 import { getMatrixQuestions, loadPocData } from '../../../data/poc_docfap/evaluation_matrix'
 import type { McaQuestion } from '../../../data/poc_docfap/evaluation_matrix'
 import { DEFAULT_DIMENSION_WEIGHTS, calcScoreComposito, runFullAnalysis } from '../../../engine/scoreComposito'
+import { MC_MOCK_DATA } from '../../../engine/riskMonteCarlo'
 import { useWizard } from '../../../hooks/useWizard'
 import type { AlternativaId, ScoreComposito } from '../../../types/docfap'
 import { Badge } from '../../ui/Badge'
@@ -290,7 +291,7 @@ export function Step7_ScoreFinale() {
                 },
                 {
                   key: 'sensitivita',
-                  label: 'Analisi di Sensitività',
+                  label: 'Analisi del Rischio',
                   weightKey: 'wSENS' as keyof typeof weights,
                   get: (i: ScoreComposito) => fmt1(i.sensitivityScore),
                 },
@@ -521,7 +522,7 @@ export function Step7_ScoreFinale() {
           </div>
         </article>
 
-        {/* Sensitività accordion */}
+        {/* Analisi del Rischio — Monte Carlo accordion */}
         <article style={cardStyle}>
           <Button
             variant="ghost"
@@ -530,70 +531,135 @@ export function Step7_ScoreFinale() {
             aria-expanded={openCards.sensitivita}
             aria-controls="step7-card-sensitivita"
           >
-            Analisi di Sensitività
+            Analisi del Rischio
           </Button>
           <div id="step7-card-sensitivita" hidden={!openCards.sensitivita} style={cardContentStyle}>
-            {(() => {
-              const scenarioLabels =
-                localRanking
-                  .find((i) => (i.sensitivitaDetail?.scenari?.length ?? 0) > 0)
-                  ?.sensitivitaDetail?.scenari.map((s) => s.label) ?? []
+            <p style={metaTextStyle}>
+              1.000 simulazioni Monte Carlo · CAPEX e OPEX log-normali (σ=20%) · Benefici normali (σ=25%) ·{' '}
+              <strong>P(Migliore)</strong> = % simulazioni in cui l'alternativa ha il punteggio composito più alto
+            </p>
+            <div style={innerTableWrapStyle}>
+              <table style={innerTableStyle}>
+                <colgroup>
+                  <col style={{ width: '220px' }} />
+                  {localRanking.map((item) => (
+                    <col key={item.alternativaId} />
+                  ))}
+                </colgroup>
+                <thead>
+                  <AltHeaderRow />
+                </thead>
+                <tbody>
+                  {/* Row 1: P(Migliore) — headline metric */}
+                  <tr>
+                    <th scope="row" style={innerRowHeaderStyle}>P(Migliore)</th>
+                    {localRanking.map((item) => {
+                      const mc = MC_MOCK_DATA[item.alternativaId]
+                      const pct = mc ? mc.summary.probBest * 100 : null
+                      const color = pct === null ? undefined
+                        : pct >= 60 ? '#1b5e20'
+                        : pct >= 20 ? '#e65100'
+                        : '#c62828'
+                      return (
+                        <td key={`probBest-${item.alternativaId}`}
+                          style={getInnerBodyCellStyle(item, localRecommendedId)}>
+                          <span style={{ ...monoStyle, color, fontWeight: 700 }}>
+                            {pct !== null ? `${pct.toFixed(0)}%` : '—'}
+                          </span>
+                        </td>
+                      )
+                    })}
+                  </tr>
 
-              if (scenarioLabels.length === 0) {
-                return <p style={metaTextStyle}>Nessun dato di sensitività disponibile.</p>
-              }
+                  {/* Row 2: Media NPV (P50) */}
+                  <tr style={innerRowAlternateStyle}>
+                    <th scope="row" style={innerRowHeaderStyle}>Media NPV (P50)</th>
+                    {localRanking.map((item) => {
+                      const mc = MC_MOCK_DATA[item.alternativaId]
+                      return (
+                        <td key={`p50-${item.alternativaId}`}
+                          style={getInnerBodyCellStyle(item, localRecommendedId)}>
+                          <span style={monoStyle}>
+                            {mc ? `${mc.summary.p50.toLocaleString('it-IT')} k€` : '—'}
+                          </span>
+                        </td>
+                      )
+                    })}
+                  </tr>
 
-              return (
-                <div style={innerTableWrapStyle}>
-                  <table style={innerTableStyle}>
-                    <colgroup>
-                      <col style={{ width: '200px' }} />
-                      {localRanking.map((item) => (
-                        <col key={item.alternativaId} />
-                      ))}
-                    </colgroup>
-                    <thead>
-                      <AltHeaderRow />
-                    </thead>
-                    <tbody>
-                      {scenarioLabels.map((label, rowIdx) => (
-                        <tr key={label} style={rowIdx % 2 === 1 ? innerRowAlternateStyle : undefined}>
-                          <th scope="row" style={innerRowHeaderStyle}>{label}</th>
-                          {localRanking.map((item) => {
-                            const scenario = item.sensitivitaDetail?.scenari?.find(
-                              (s) => s.label === label,
-                            )
-                            return (
-                              <td
-                                key={`${label}-${item.alternativaId}`}
-                                style={getInnerBodyCellStyle(item, localRecommendedId)}
-                              >
-                                <span style={monoStyle}>
-                                  {scenario ? fmt1(scenario.score) : '—'}
-                                </span>
-                              </td>
-                            )
-                          })}
-                        </tr>
-                      ))}
-                      <tr>
-                        <th scope="row" style={innerTotalRowHeaderStyle}>
-                          Punteggio Analisi di Sensitività
-                        </th>
-                        {localRanking.map((item) => (
-                          <td
-                            key={`sensscore-${item.alternativaId}`}
-                            style={getInnerTotalCellStyle(item, localRecommendedId)}
-                          >
-                            <span style={monoStyle}>{fmt1(item.sensitivityScore)}</span>
-                          </td>
-                        ))}
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              )
-            })()}
+                  {/* Row 3: Intervallo P5–P95 */}
+                  <tr>
+                    <th scope="row" style={innerRowHeaderStyle}>Intervallo P5–P95</th>
+                    {localRanking.map((item) => {
+                      const mc = MC_MOCK_DATA[item.alternativaId]
+                      return (
+                        <td key={`p5p95-${item.alternativaId}`}
+                          style={getInnerBodyCellStyle(item, localRecommendedId)}>
+                          <span style={monoStyle}>
+                            {mc
+                              ? `${mc.summary.p5.toLocaleString('it-IT')} – ${mc.summary.p95.toLocaleString('it-IT')} k€`
+                              : '—'}
+                          </span>
+                        </td>
+                      )
+                    })}
+                  </tr>
+
+                  {/* Row 4: P(NPV < 0) */}
+                  <tr style={innerRowAlternateStyle}>
+                    <th scope="row" style={innerRowHeaderStyle}>P(NPV &lt; 0)</th>
+                    {localRanking.map((item) => {
+                      const mc = MC_MOCK_DATA[item.alternativaId]
+                      const prob = mc?.summary.probNegative ?? null
+                      const color = prob === null ? undefined
+                        : prob > 0.2 ? '#c62828'
+                        : prob > 0.05 ? '#e65100'
+                        : '#2e7d32'
+                      return (
+                        <td key={`probNeg-${item.alternativaId}`}
+                          style={getInnerBodyCellStyle(item, localRecommendedId)}>
+                          <span style={{ ...monoStyle, color, fontWeight: prob !== null && prob > 0.05 ? 700 : undefined }}>
+                            {prob !== null ? `${(prob * 100).toFixed(1)}%` : '—'}
+                          </span>
+                        </td>
+                      )
+                    })}
+                  </tr>
+
+                  {/* Row 5: Parametro critico */}
+                  <tr>
+                    <th scope="row" style={innerRowHeaderStyle}>Parametro critico</th>
+                    {localRanking.map((item) => {
+                      const mc = MC_MOCK_DATA[item.alternativaId]
+                      const topParam = mc
+                        ? [...mc.elasticities].sort((a, b) => b.value - a.value)[0]?.param
+                        : null
+                      return (
+                        <td key={`param-${item.alternativaId}`}
+                          style={getInnerBodyCellStyle(item, localRecommendedId)}>
+                          <span style={monoStyle}>{topParam ?? '—'}</span>
+                        </td>
+                      )
+                    })}
+                  </tr>
+
+                  {/* Total row: Punteggio */}
+                  <tr>
+                    <th scope="row" style={innerTotalRowHeaderStyle}>
+                      Punteggio Analisi del Rischio
+                    </th>
+                    {localRanking.map((item) => (
+                      <td
+                        key={`riskscore-${item.alternativaId}`}
+                        style={getInnerTotalCellStyle(item, localRecommendedId)}
+                      >
+                        <span style={monoStyle}>{fmt1(item.sensitivityScore)}</span>
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </article>
 

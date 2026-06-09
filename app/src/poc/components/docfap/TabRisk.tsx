@@ -1,10 +1,13 @@
-import type { CSSProperties, ReactNode } from 'react'
+// Tab "Analisi Multicriteria" — criteri qualitativi MCA per cluster
+import type { CSSProperties } from 'react'
 import { useSyncExternalStore } from 'react'
+import { CLUSTER_MCA } from '../../data/mca/clusters'
 import { wizardStore } from '../../store/wizardStore'
-import type { AlternativaId } from '../../types/docfap'
 import {
   getAlternativeDisplayLabel,
   getRecommendedAlternativeId,
+  getDefinedScores,
+  getDetailFinalRecommendedCellStyle,
   labelColumnStyle,
   alternativeColumnStyle,
   detailHeaderCellBaseStyle,
@@ -16,219 +19,155 @@ import {
   detailBodyCellStyle,
   detailRecommendedColumnStyle,
   detailFinalRowHeaderStyle,
-  detailFinalCellStyle,
   detailEmptyStyle,
-  formatScore,
-  safeNumber,
+  detailTableWrapStyle,
 } from './tableHelpers'
-import { BarsChart, ChartCard, altBarColor, tabStackStyle } from './chartHelpers'
+import { MCARadarChart } from './charts/MCARadarChart'
 
-// ── Modello probabilistico (deterministico) ─────────────────────────────────
-// I quattro indicatori dell'analisi del rischio sono derivati dai dati di ciascuna
-// alternativa (VANE, punteggio di rischio, punteggio finale, CAPEX) con un modello
-// normale: beneficio netto ~ N(media = VANE, σ proporzionale a CAPEX e rischiosità).
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value))
+// ── Badge livello ────────────────────────────────────────────────────────
+type LivelloMCA = 'alto' | 'medio' | 'basso' | 'nullo'
+
+const LIVELLO_LABEL: Record<LivelloMCA, string> = {
+  alto:  'Alto',
+  medio: 'Medio',
+  basso: 'Basso',
+  nullo: 'Nullo',
 }
 
-// CDF normale standard — approssimazione di Abramowitz & Stegun.
-function normalCdf(z: number): number {
-  const t = 1 / (1 + 0.2316419 * Math.abs(z))
-  const d = 0.3989423 * Math.exp((-z * z) / 2)
-  let p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))))
-  if (z > 0) p = 1 - p
-  return p
+const LIVELLO_STYLE: Record<LivelloMCA, CSSProperties> = {
+  alto:  { background: '#e8f5e9', color: '#1b5e20', border: '1px solid #a5d6a7' },
+  medio: { background: '#fff8e1', color: '#e65100', border: '1px solid #ffe082' },
+  basso: { background: '#ffebee', color: '#b71c1c', border: '1px solid #ef9a9a' },
+  nullo: { background: '#f5f5f5', color: '#757575', border: '1px solid #e0e0e0' },
 }
 
-interface RiskMetrics {
-  pOptimal: number
-  medianK: number
-  loK: number
-  hiK: number
-  lossPct: number
-}
-
-function computeRiskMetrics(
-  score: { van: number; rischioScore: number },
-  capex: number,
-  optimalWeight: number,
-): RiskMetrics {
-  const medianK = safeNumber(score.van) / 1000
-  const rischio = safeNumber(score.rischioScore)
-  const capexK = capex > 0 ? capex / 1000 : Math.max(Math.abs(medianK) * 3, 1000)
-  const vol = clamp(0.12 + ((100 - rischio) / 100) * 0.3, 0.1, 0.6)
-  const sigmaK = Math.max(vol * capexK, Math.abs(medianK) * 0.15, 1)
-  return {
-    pOptimal: optimalWeight * 100,
-    medianK,
-    loK: medianK - 1.645 * sigmaK,
-    hiK: medianK + 1.645 * sigmaK,
-    lossPct: clamp(normalCdf(-medianK / sigmaK) * 100, 0.1, 99),
-  }
-}
-
-const METRICS = [
-  {
-    key: 'pOptimal' as const,
-    label: 'Probabilità scelta ottimale',
-    tip: 'Su 1.000 simulazioni con parametri variabili, questa alternativa risulta la migliore in questa percentuale dei casi.',
-  },
-  {
-    key: 'median' as const,
-    label: 'Beneficio netto mediano',
-    tip: 'Il valore centrale dei benefici netti attesi: nel 50% degli scenari il risultato è superiore, nel 50% inferiore.',
-  },
-  {
-    key: 'ci90' as const,
-    label: 'Intervallo di confidenza 90%',
-    tip: 'Nel 90% degli scenari simulati, il beneficio netto cade tra questi due valori.',
-  },
-  {
-    key: 'loss' as const,
-    label: 'Rischio di perdita',
-    tip: 'La probabilità che i costi superino i benefici — più è bassa, più l’investimento è robusto.',
-  },
-]
-
-const TOOLTIP_CSS = `
-.docfap-infotip{position:relative;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-left:6px;color:#a3a3aa;cursor:help;vertical-align:middle}
-.docfap-infotip svg{width:15px;height:15px;stroke:currentColor;fill:none}
-.docfap-infotip:hover,.docfap-infotip:focus-visible{color:#5b21f7;outline:none}
-.docfap-infotip-box{position:absolute;left:0;top:calc(100% + 7px);width:250px;background:#0e0e10;color:#fff;font-size:12px;line-height:1.5;padding:9px 12px;z-index:60;opacity:0;pointer-events:none;transition:opacity .12s;box-shadow:0 10px 28px rgba(14,14,16,.28)}
-.docfap-infotip:hover .docfap-infotip-box,.docfap-infotip:focus-visible .docfap-infotip-box{opacity:1}
-`
-
-function nf0(value: number): string {
-  return new Intl.NumberFormat('it-IT', { maximumFractionDigits: 0 }).format(Math.round(value))
-}
-function nf1(value: number): string {
-  return new Intl.NumberFormat('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value)
-}
-function kEur(value: number): string {
-  return `${nf0(value)} k€`
-}
-
-function InfoTip({ text }: { text: string }) {
+function LivelloBadge({ livello }: { livello: LivelloMCA | undefined }) {
+  if (!livello) return <span style={emptyBadgeStyle}>—</span>
   return (
-    <span className="docfap-infotip" role="button" tabIndex={0} aria-label={text}>
-      <svg viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="10" />
-        <line x1="12" y1="16" x2="12" y2="12" />
-        <line x1="12" y1="8" x2="12.01" y2="8" />
-      </svg>
-      <span className="docfap-infotip-box" role="tooltip">{text}</span>
+    <span style={{ ...badgeBaseStyle, ...LIVELLO_STYLE[livello] }}>
+      {LIVELLO_LABEL[livello]}
     </span>
   )
 }
 
+function parsePercent(value: string | number): number {
+  if (typeof value === 'number') return value
+  const n = Number.parseFloat(value.replace('%', '').replace(',', '.'))
+  return Number.isFinite(n) ? n : 0
+}
+
 export function TabRisk() {
   const state = useSyncExternalStore(wizardStore.subscribe, wizardStore.getState, wizardStore.getState)
-  const scores = state.scoreFinale ?? []
+  const scores = getDefinedScores(state.scoreFinale, state.alternativeDefinite)
   const recommendedId = getRecommendedAlternativeId(scores)
+  const cluster = state.clusterId ? CLUSTER_MCA[state.clusterId] : null
 
-  if (scores.length === 0) return <p style={emptyStyle}>Nessun dettaglio del rischio disponibile.</p>
+  // ← fix: use criteriiQualitativi (MCA) not fattoriRischio (rischio)
+  const criteri = cluster?.criteriiQualitativi ?? []
 
-  const groups = scores.map((score) => ({
-    id: score.alternativaId,
-    label: getAlternativeDisplayLabel(score.alternativaId, state.alternative[score.alternativaId]),
-    bars: [{ value: Number(safeNumber(score.rischioScore).toFixed(1)), color: altBarColor(score.alternativaId === recommendedId) }],
-  }))
-
-  // Probabilità di scelta ottimale: softmax sui punteggi finali (somma ≈ 100%).
-  const beta = 0.06
-  const maxScore = Math.max(...scores.map((score) => safeNumber(score.scoreFinale)), 0)
-  const weights = scores.map((score) => Math.exp(beta * (safeNumber(score.scoreFinale) - maxScore)))
-  const sumW = weights.reduce((acc, w) => acc + w, 0) || 1
-
-  const metricsById = new Map<AlternativaId, RiskMetrics>()
-  scores.forEach((score, index) => {
-    const capex = safeNumber(state.alternative[score.alternativaId]?.capex)
-    metricsById.set(score.alternativaId, computeRiskMetrics(score, capex, weights[index] / sumW))
-  })
-
-  const renderMetric = (key: (typeof METRICS)[number]['key'], m: RiskMetrics): ReactNode => {
-    if (key === 'pOptimal') return `${nf0(m.pOptimal)}%`
-    if (key === 'median') return kEur(m.medianK)
-    if (key === 'ci90') return `${nf0(m.loK)} – ${nf0(m.hiK)} k€`
-    return `${nf1(m.lossPct)}%`
+  if (scores.length === 0 || criteri.length === 0) {
+    return <p style={emptyStyle}>Nessun dettaglio Analisi Multicriteria disponibile.</p>
   }
 
   return (
-    <div style={tabStackStyle}>
-      <style>{TOOLTIP_CSS}</style>
-
-      <ChartCard title="Punteggio Analisi del Rischio per alternativa" subtitle="Punteggio composito 0–100 — in verde l'alternativa raccomandata">
-        <BarsChart groups={groups} formatValue={(v) => v.toFixed(1)} />
-      </ChartCard>
-
-      <ChartCard
-        title="Dettaglio del rischio"
-        subtitle="Esiti della simulazione probabilistica (1.000 scenari) — passa sul simbolo ⓘ per la spiegazione di ciascun indicatore"
-      >
-        <div style={wrapStyle}>
-          <table style={tableStyle}>
-            <colgroup>
-              <col style={labelColumnStyle} />
-              {scores.map((score) => <col key={score.alternativaId} style={alternativeColumnStyle(scores.length)} />)}
-            </colgroup>
-            <thead>
-              <tr>
-                <th style={headerCellStyle}>Indicatore</th>
-                {scores.map((score) => {
-                  const isRecommended = score.alternativaId === recommendedId
-                  return (
-                    <th key={score.alternativaId} style={{ ...headerCellStyle, ...(isRecommended ? recommendedHeaderStyle : null) }}>
-                      <div style={headerLabelWrapStyle}>
-                        <span style={headerLabelStyle}>{getAlternativeDisplayLabel(score.alternativaId, state.alternative[score.alternativaId])}</span>
-                        {isRecommended ? <span style={recommendedBadgeStyle}>Raccomandata</span> : null}
-                      </div>
-                    </th>
-                  )
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {METRICS.map((metric) => (
-                <tr key={metric.key}>
-                  <th scope="row" style={rowHeaderStyle}>
-                    <span style={metricLabelStyle}>
-                      {metric.label}
-                      <InfoTip text={metric.tip} />
-                    </span>
+    <div style={wrapStyle}>
+      {/* ── Tabella criteri ───────────────────────────────────────────── */}
+      <div style={detailTableWrapStyle}>
+        <table style={tableStyle}>
+          <colgroup>
+            <col style={labelColumnStyle} />
+            <col style={pesoColumnStyle} />
+            {scores.map(s => <col key={s.alternativaId} style={alternativeColumnStyle(scores.length)} />)}
+          </colgroup>
+          <thead>
+            <tr>
+              <th style={headerCellStyle}>Criterio</th>
+              <th style={{ ...headerCellStyle, textAlign: 'center' }}>Peso</th>
+              {scores.map(s => {
+                const isRec = s.alternativaId === recommendedId
+                return (
+                  <th key={s.alternativaId} style={{ ...headerCellStyle, ...(isRec ? recommendedHeaderStyle : null) }}>
+                    <div style={headerLabelWrapStyle}>
+                      <span style={headerLabelStyle}>
+                        {getAlternativeDisplayLabel(s.alternativaId, state.alternative[s.alternativaId])}
+                      </span>
+                      {isRec && <span style={recommendedBadgeStyle}>Raccomandata</span>}
+                    </div>
                   </th>
-                  {scores.map((score) => {
-                    const isRecommended = score.alternativaId === recommendedId
-                    const m = metricsById.get(score.alternativaId)
+                )
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {criteri.map((criterio, rowIdx) => {
+              const peso = parsePercent(criterio.pesoDefault)
+              return (
+                <tr key={criterio.id} style={rowIdx % 2 === 1 ? rowAlternateStyle : undefined}>
+                  <th scope="row" style={rowHeaderStyle} title={criterio.domanda}>
+                    {criterio.criterio}
+                  </th>
+                  <td style={{ ...bodyCellStyle, textAlign: 'center', color: 'var(--color-text-primary-light)' }}>
+                    {peso}%
+                  </td>
+                  {scores.map(s => {
+                    const isRec = s.alternativaId === recommendedId
+                    const rawLivello = (state.mcaScores[s.alternativaId]?.[criterio.id] ?? '').toLowerCase() as LivelloMCA | ''
+                    const livello: LivelloMCA | undefined = rawLivello in LIVELLO_LABEL
+                      ? rawLivello as LivelloMCA
+                      : undefined
                     return (
-                      <td key={`${metric.key}-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>
-                        {m ? renderMetric(metric.key, m) : '—'}
+                      <td
+                        key={`${criterio.id}-${s.alternativaId}`}
+                        style={{ ...bodyCellStyle, textAlign: 'center', ...(isRec ? recommendedColumnStyle : null) }}
+                      >
+                        <LivelloBadge livello={livello} />
                       </td>
                     )
                   })}
                 </tr>
+              )
+            })}
+            <tr>
+              <th scope="row" style={finalRowHeaderStyle} colSpan={2}>
+                Punteggio Analisi Multicriteria
+              </th>
+              {scores.map(s => (
+                <td key={`mca-${s.alternativaId}`} style={getDetailFinalRecommendedCellStyle(s.alternativaId === recommendedId)}>
+                  {s.mcaScore.toFixed(1)}
+                </td>
               ))}
-              <tr>
-                <th scope="row" style={finalRowHeaderStyle}>Punteggio Analisi del Rischio</th>
-                {scores.map((score) => {
-                  const isRecommended = score.alternativaId === recommendedId
-                  return (
-                    <td key={`final-${score.alternativaId}`} style={{ ...finalCellStyle, ...(isRecommended ? recommendedHeaderStyle : null) }}>
-                      {formatScore(score.rischioScore)}
-                    </td>
-                  )
-                })}
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </ChartCard>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* ── Radar chart ──────────────────────────────────────────────── */}
+      <MCARadarChart
+        scores={scores}
+        alternative={state.alternative}
+        criteri={criteri}
+        mcaScores={state.mcaScores}
+      />
     </div>
   )
 }
 
-const metricLabelStyle: CSSProperties = { display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap' }
-const wrapStyle: CSSProperties = { overflow: 'visible' }
-const tableStyle: CSSProperties = { width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }
+// ── Styles ────────────────────────────────────────────────────────────────
+const wrapStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 'var(--spacing-stack-m, 24px)',
+}
+
+const tableStyle: CSSProperties = {
+  width: '100%',
+  borderCollapse: 'collapse',
+  tableLayout: 'fixed',
+  background: 'var(--color-background-inverse)',
+}
+
+const pesoColumnStyle: CSSProperties = { width: '64px' }
+
 const headerCellStyle: CSSProperties = detailHeaderCellBaseStyle
 const recommendedHeaderStyle: CSSProperties = detailRecommendedHeaderStyle
 const headerLabelWrapStyle: CSSProperties = detailHeaderLabelWrapStyle
@@ -238,5 +177,21 @@ const rowHeaderStyle: CSSProperties = detailRowHeaderStyle
 const bodyCellStyle: CSSProperties = detailBodyCellStyle
 const recommendedColumnStyle: CSSProperties = detailRecommendedColumnStyle
 const finalRowHeaderStyle: CSSProperties = detailFinalRowHeaderStyle
-const finalCellStyle: CSSProperties = detailFinalCellStyle
 const emptyStyle: CSSProperties = detailEmptyStyle
+const rowAlternateStyle: CSSProperties = { background: 'rgba(127,127,140,0.06)' }
+
+const badgeBaseStyle: CSSProperties = {
+  display: 'inline-block',
+  padding: '2px 8px',
+  borderRadius: 'var(--radius-rounded, 40px)',
+  fontSize: 12,
+  fontWeight: 600,
+  lineHeight: 1.6,
+  letterSpacing: '0.01em',
+  whiteSpace: 'nowrap',
+}
+
+const emptyBadgeStyle: CSSProperties = {
+  color: 'var(--color-text-primary-light)',
+  fontSize: 14,
+}

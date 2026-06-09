@@ -9,7 +9,7 @@ import { TabRiepilogo } from '../components/docfap/TabRiepilogo'
 import { TabCBA } from '../components/docfap/TabCBA'
 import { TabMCA } from '../components/docfap/TabMCA'
 import { TabImpatto } from '../components/docfap/TabImpatto'
-import { TabRisk } from '../components/docfap/TabRisk'
+import { TabSensitivita } from '../components/docfap/TabSensitivita'
 import {
   formatScore,
   getAlternativeDisplayLabel,
@@ -314,7 +314,7 @@ export function DocfapDetail() {
               {activeTab === tab.id && tab.id === 'riepilogo' ? <TabRiepilogo /> : null}
               {activeTab === tab.id && tab.id === 'cba' ? <TabCBA /> : null}
               {activeTab === tab.id && tab.id === 'mca' ? <TabMCA /> : null}
-              {activeTab === tab.id && tab.id === 'risk' ? <TabRisk /> : null}
+              {activeTab === tab.id && tab.id === 'risk' ? <TabSensitivita /> : null}
               {activeTab === tab.id && tab.id === 'impatto' ? <TabImpatto /> : null}
             </div>
           ))}
