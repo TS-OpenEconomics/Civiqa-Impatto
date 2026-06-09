@@ -4,6 +4,7 @@ import civiqaLogo from '../assets/civiqa-logo.png'
 import colleferroStemma from '../assets/Logo_Comune_Colleferro.png.png'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme, toggleTheme } from '../../hooks/useTheme'
+import { IconValutazione } from '../components/layout/SideNav'
 import '../styles/home-launcher.css'
 
 const SCENARI_URL   = 'https://www.openeconomics.eu/insights-wall'
@@ -42,15 +43,6 @@ function IconDocument() {
       <path d="M3 1.5h7l3 3V14a.5.5 0 0 1-.5.5h-9A.5.5 0 0 1 3 14V1.5z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
       <path d="M10 1.5V4.5H13" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
       <path d="M5.5 8h5M5.5 10.5h5M5.5 5.5h2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function IconLineChart() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M4 17l5-5 3 3 8-8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M17 7h3v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -319,7 +311,7 @@ export function HomeLauncher() {
               </div>
               <div className="hl-tile-modules">
                 <ModuleLink to={DOCFAP_PATH} icon={<IconDocument />} label="Docfap" />
-                <ModuleLink to={VALUTAZIONE_PATH} icon={<IconLineChart />} label="Valutazione" />
+                <ModuleLink to={VALUTAZIONE_PATH} icon={<IconValutazione size={16} />} label="Valutazione" />
                 <ModuleSoon icon={<IconEdit />} label="Composing" />
               </div>
             </div>
