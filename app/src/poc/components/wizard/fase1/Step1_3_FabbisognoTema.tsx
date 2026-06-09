@@ -244,7 +244,7 @@ function LockAccordion({
 }
 
 export function Step1_3_FabbisognoTema() {
-  const { state, setFab, setCluster } = useWizard()
+  const { state, setFab, setTema, setCluster } = useWizard()
 
   const [mode, setMode] = useState<'guided' | 'search'>('guided')
   const [selectedThemeId, setSelectedThemeId] = useState<string | null>(state.temaId ?? null)
@@ -327,6 +327,13 @@ export function Step1_3_FabbisognoTema() {
     setMode(nextMode)
     setSearchTerm('')
     setDebouncedSearch('')
+    if (nextMode === 'search') {
+      setSelectedThemeId(null)
+      setFab(null, null)
+      setTema(null)
+      setCluster(null)
+      setRevealLevel(1)
+    }
   }
 
   return (

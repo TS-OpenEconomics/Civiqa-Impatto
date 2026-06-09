@@ -76,6 +76,7 @@ interface WizardStoreActions {
   setStep: (step: number) => void
   completeStep: (step: number) => void
   setFab: (fabId: string | null, temaId?: string | null) => void
+  setTema: (temaId: string | null) => void
   setCluster: (clusterId: string | null) => void
   setRup: (patch: Partial<RupData>) => void
   setIntervento: (patch: Partial<InterventoData>) => void
@@ -277,6 +278,9 @@ const actions: WizardStoreActions = {
   },
   setFab(fabId, temaId) {
     updateState((prev) => ({ ...prev, fabId, temaId: temaId ?? prev.temaId }))
+  },
+  setTema(temaId) {
+    updateState((prev) => ({ ...prev, temaId }))
   },
   setCluster(clusterId) {
     updateState((prev) => ({ ...prev, clusterId }))
