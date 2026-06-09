@@ -309,6 +309,13 @@ export function Step1_3_FabbisognoTema() {
     setRevealLevel(2)
   }
 
+  const editFabbisogno = () => {
+    if (!selectedThemeId) return
+    setFab(null, selectedThemeId)
+    setCluster(null)
+    setRevealLevel(2)
+  }
+
   const editTheme = () => {
     setRevealLevel(1)
   }
@@ -325,7 +332,7 @@ export function Step1_3_FabbisognoTema() {
   return (
     <div
       className="s13-root"
-      style={{ ...rootStyle, gridTemplateColumns: selectedNeed ? 'minmax(0, 1fr) minmax(300px, 380px)' : '1fr' }}
+      style={rootStyle}
     >
       <div style={leftColStyle}>
       {/* Toggle modalità (Percorso guidato / Cerca fabbisogno) */}
@@ -393,8 +400,8 @@ export function Step1_3_FabbisognoTema() {
                 number={2}
                 title="Fabbisogno"
                 selectedLabel={selectedNeed?.label}
-                isCompleted={false}
-                onEdit={() => {}}
+                isCompleted={!!selectedNeed}
+                onEdit={editFabbisogno}
               >
                 <div style={guidedHeaderStyle}>
                   <span style={guidedCountStyle}>{needsByTheme.length} opzioni per {selectedTheme.label}</span>
@@ -485,68 +492,71 @@ export function Step1_3_FabbisognoTema() {
             )}
           </div>
         )}
-      </div>
 
-      {/* Dettagli — pannello a destra, visibile dopo aver selezionato un fabbisogno */}
-      {selectedNeed ? (
-        <aside aria-live="polite" style={detailsBoxStyle}>
+        <section aria-live="polite" style={detailsBoxStyle}>
           <h3 style={detailsTitleStyle}>Dettagli fabbisogno selezionato</h3>
-          <dl style={detailsListStyle}>
-            <div style={detailsRowStyle}>
-              <dt style={detailsTermStyle}>Descrizione</dt>
-              <dd style={detailsValueStyle}>{selectedNeed.description}</dd>
-            </div>
-
-            {selectedNeed.missions.length > 0 && (
+          {selectedNeed ? (
+            <dl style={detailsListStyle}>
               <div style={detailsRowStyle}>
-                <dt style={detailsTermStyle}>Missioni DUP</dt>
-                <dd style={detailsValueStyle}>
-                  <div style={detailsBlockStyle}>
-                    {selectedNeed.missions.map((mission) => (
-                      <div key={mission.code} style={codeItemStyle}>
-                        <span className="docfap-code-tag" style={codeTagStyle}>{mission.code}</span>
-                        <span>{mission.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </dd>
+                <dt style={detailsTermStyle}>Descrizione</dt>
+                <dd style={detailsValueStyle}>{selectedNeed.description}</dd>
               </div>
-            )}
 
-            {selectedNeed.rso.length > 0 && (
-              <div style={detailsRowStyle}>
-                <dt style={detailsTermStyle}>Obiettivi politica di coesione UE</dt>
-                <dd style={detailsValueStyle}>
-                  <div style={detailsBlockStyle}>
-                    {selectedNeed.rso.map((rso) => (
-                      <div key={rso.code} style={codeItemStyle}>
-                        <span className="docfap-code-tag" style={codeTagStyle}>{rso.code}</span>
-                        <span>{rso.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </dd>
-              </div>
-            )}
+              {selectedNeed.missions.length > 0 && (
+                <div style={detailsRowStyle}>
+                  <dt style={detailsTermStyle}>Missioni DUP</dt>
+                  <dd style={detailsValueStyle}>
+                    <div style={detailsBlockStyle}>
+                      {selectedNeed.missions.map((mission) => (
+                        <div key={mission.code} style={codeItemStyle}>
+                          <span className="docfap-code-tag" style={codeTagStyle}>{mission.code}</span>
+                          <span>{mission.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </dd>
+                </div>
+              )}
 
-            {selectedNeed.funds.length > 0 && (
-              <div style={detailsRowStyle}>
-                <dt style={detailsTermStyle}>Fondi di riferimento</dt>
-                <dd style={detailsValueStyle}>
-                  <div style={detailsBlockStyle}>
-                    {selectedNeed.funds.map((fund) => (
-                      <div key={fund.code} style={codeItemStyle}>
-                        <span className="docfap-code-tag" style={codeTagStyle}>{fund.code}</span>
-                        <span>{fund.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </dd>
-              </div>
-            )}
-          </dl>
-        </aside>
-      ) : null}
+              {selectedNeed.rso.length > 0 && (
+                <div style={detailsRowStyle}>
+                  <dt style={detailsTermStyle}>Obiettivi politica di coesione UE</dt>
+                  <dd style={detailsValueStyle}>
+                    <div style={detailsBlockStyle}>
+                      {selectedNeed.rso.map((rso) => (
+                        <div key={rso.code} style={codeItemStyle}>
+                          <span className="docfap-code-tag" style={codeTagStyle}>{rso.code}</span>
+                          <span>{rso.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </dd>
+                </div>
+              )}
+
+              {selectedNeed.funds.length > 0 && (
+                <div style={detailsRowStyle}>
+                  <dt style={detailsTermStyle}>Fondi di riferimento</dt>
+                  <dd style={detailsValueStyle}>
+                    <div style={detailsBlockStyle}>
+                      {selectedNeed.funds.map((fund) => (
+                        <div key={fund.code} style={codeItemStyle}>
+                          <span className="docfap-code-tag" style={codeTagStyle}>{fund.code}</span>
+                          <span>{fund.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </dd>
+                </div>
+              )}
+            </dl>
+          ) : (
+            <p style={detailsEmptyStyle}>
+              Seleziona un fabbisogno per visualizzare descrizione, missioni, obiettivi UE e fondi di riferimento.
+            </p>
+          )}
+        </section>
+      </div>
 
       <style>{`
         .step1-3-interactive:focus-visible,
@@ -570,7 +580,7 @@ export function Step1_3_FabbisognoTema() {
 
 const rootStyle: CSSProperties = {
   display: 'grid',
-  gap: 'var(--spacing-inline-l)',
+  gap: 'var(--spacing-stack-m)',
   alignItems: 'start',
   width: '100%',
 }
@@ -867,20 +877,18 @@ const radioDotStyle: CSSProperties = {
 const detailsBoxStyle: CSSProperties = {
   border: '1px solid var(--color-border-secondary-light)',
   borderRadius: 'var(--radius-smooth)',
-  background: 'var(--color-background-secondary-lightest)',
+  background: 'var(--color-background-inverse)',
   padding: 'var(--spacing-inset-m)',
-  // Pannello contestuale: resta visibile a fianco mentre si scorre la lista
-  position: 'sticky',
-  top: 'var(--spacing-inset-m)',
-  alignSelf: 'start',
-  maxHeight: 'calc(100vh - 120px)',
-  overflowY: 'auto',
+  boxShadow: '0 1px 0 rgba(14, 14, 16, 0.02)',
 }
 
 const detailsTitleStyle: CSSProperties = {
   margin: '0 0 var(--spacing-stack-s)',
   color: 'var(--color-text-primary)',
-  fontSize: 'var(--type-body-s-size, 16px)',
+  fontSize: 'var(--type-heading-s-size, 22px)',
+  lineHeight: 1.15,
+  letterSpacing: '-0.02em',
+  fontWeight: 800,
 }
 
 const detailsListStyle: CSSProperties = {
@@ -902,6 +910,13 @@ const detailsTermStyle: CSSProperties = {
 const detailsValueStyle: CSSProperties = {
   margin: 0,
   color: 'var(--color-text-primary-light)',
+}
+
+const detailsEmptyStyle: CSSProperties = {
+  margin: 0,
+  color: 'var(--color-text-primary-light)',
+  fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
+  fontSize: 'var(--type-body-s-size, 16px)',
 }
 
 const detailsBlockStyle: CSSProperties = {

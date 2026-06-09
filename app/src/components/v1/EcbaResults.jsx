@@ -518,6 +518,7 @@ export function EcbaResults({ project, onBack }) {
   const rootRef = useRef(null);
   const onBackRef = useRef(onBack);
   const projectRef = useRef(project);
+  const pendingGuideActionRef = useRef(null);
   const [guideOpen, setGuideOpen] = useState(false);
 
   // Tiene i ref allineati alle prop senza scriverli durante il render.
@@ -525,6 +526,26 @@ export function EcbaResults({ project, onBack }) {
     onBackRef.current = onBack;
     projectRef.current = project;
   });
+
+  useEffect(() => {
+    if (guideOpen) return;
+    const action = pendingGuideActionRef.current;
+    if (!action) return;
+    pendingGuideActionRef.current = null;
+
+    const run = () => {
+      if (action === "details") {
+        rootRef.current?.querySelector('.tab[data-p="ecba"]')?.click();
+        return;
+      }
+      if (action === "methodology") {
+        rootRef.current?.querySelector(".js-metodologia")?.click();
+      }
+    };
+
+    const raf = window.requestAnimationFrame(run);
+    return () => window.cancelAnimationFrame(raf);
+  }, [guideOpen]);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -1223,12 +1244,12 @@ export function EcbaResults({ project, onBack }) {
         project={project}
         onClose={() => setGuideOpen(false)}
         onOpenMethodology={() => {
+          pendingGuideActionRef.current = "methodology";
           setGuideOpen(false);
-          rootRef.current?.querySelector(".js-metodologia")?.click();
         }}
         onGoToDetails={() => {
+          pendingGuideActionRef.current = "details";
           setGuideOpen(false);
-          rootRef.current?.querySelector('.tab[data-p="ecba"]')?.click();
         }}
       />
     </div>
