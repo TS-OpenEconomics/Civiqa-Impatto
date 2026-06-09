@@ -26,6 +26,8 @@ export interface WizardQuestionDefinition {
   subtitle: string
   content: ReactNode
   normRef?: string
+  /** Quando true il contenuto non è racchiuso nel box bianco centrale. */
+  bare?: boolean
 }
 
 export interface WizardSubStepDefinition {
@@ -47,8 +49,8 @@ export interface WizardClosePayload {
 interface WizardShellProps {
   phases: WizardPhaseDefinition[]
   onClose?: (payload: WizardClosePayload) => void
-  /** Demo prefill for the current phase (analogo a "Autoriempi questa pagina"). */
-  onAutofill?: (phaseIndex: number) => void
+  /** Demo prefill for the CURRENT page only (one per page). */
+  onAutofill?: (ctx: { phaseIndex: number; subStepId: string }) => void
   /** Indici di fase su cui mostrare il bottone Autoriempi. */
   autofillPhaseIndexes?: number[]
 }
@@ -302,7 +304,25 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
     if (!isPhase1CurrentSubStepValid) return false
     if (!isPhase5MatrixQuestionValid) return false
 
+    // Sotto-step dinamici di Fase 3 (uno per alternativa): configurazione, costi e nome.
+    const altMatch = currentSubStep.id.match(/^fase3-(a[123])-(setup|params|nome)$/)
+    if (altMatch) {
+      const altId = altMatch[1].toUpperCase() as 'A1' | 'A2' | 'A3'
+      const alt = state.alternative[altId]
+      if (!alt) return false
+      if (altMatch[2] === 'setup') {
+        return (alt.categoria ?? '').trim().length > 0 && (alt.tipologia ?? '').trim().length > 0
+      }
+      if (altMatch[2] === 'params') {
+        return (alt.capex ?? 0) > 0
+      }
+      // nome
+      return (alt.nome ?? '').trim().length > 0
+    }
+
     switch (currentSubStep.id) {
+      case 'fase1-ente':
+        return (state.rup.nome ?? '').trim().length > 0
       case 'fase2-problema':
         return (
           (state.problema.descrizione ?? '').trim().length > 0 &&
@@ -312,6 +332,8 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
         return true
       case 'fase2-sz-questions':
         return (state.scenarioZeroNarrative ?? '').trim().length > 0
+      case 'fase2-q1':
+        return true
       case 'fase4-mca': {
         const clusterIds = state.clusterId ? [state.clusterId] : []
         const mcaQuestions = getMatrixQuestions(clusterIds)
@@ -324,6 +346,10 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
           return mcaQuestions.every((q) => !!scores[q.qCode])
         })
       }
+      case 'fase5-intervento':
+        return (state.intervento.denominazione ?? '').trim().length > 0
+      case 'fase5-decisione':
+        return (state.decisioneRUP?.motivazione ?? '').trim().length > 0
       default:
         return true
     }
@@ -332,11 +358,16 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
     isPhase1CurrentSubStepValid,
     isPhase5MatrixQuestionValid,
     state.clusterId,
+    state.alternative,
     state.alternativeDefinite,
     state.mcaScores,
     state.problema.descrizione,
     state.scenarioZeroNarrative,
     state.urgenza,
+    state.rup.nome,
+    state.q1Value,
+    state.intervento.denominazione,
+    state.decisioneRUP,
   ])
 
   const isCurrentPhaseValid = isStepValid(position.phaseIndex)
@@ -469,10 +500,17 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
   }
 
   const isIntroPhase = currentPhase.id === 'fase-0'
-  const isCompletionStep = currentSubStep.id === 'fase7-completamento'
+  const isCompletionStep = currentSubStep.id === 'fase5-completamento'
   const nextButtonLabel = isIntroPhase ? 'Inizia la configurazione' : 'Vai allo step successivo'
   const shellPhaseStyle = isIntroPhase ? introShellStyle : shellStyle
+  const showAutofill = !!onAutofill && !isIntroPhase && (autofillPhaseIndexes ?? []).includes(position.phaseIndex)
   const visibleSidebarPhases = useMemo(() => phases.filter((phase) => phase.id !== 'fase-0'), [phases])
+
+  // Completion is shown full screen (no sidebar/header/footer chrome), like the
+  // Valutazione CompletionScreen — the step renders its own centered layout.
+  if (isCompletionStep) {
+    return <div style={fullScreenStepStyle}>{currentQuestion.content}</div>
+  }
 
   return (
     <WizardNavigationContext.Provider value={{ goToNextPhase, goToNextSubStep }}>
@@ -495,8 +533,8 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
         <aside style={sidebarStyle} aria-label="Struttura wizard DOCFAP">
           <nav style={sidebarNavStyle}>
             <div role="list" style={phaseListStyle}>
-              <span aria-hidden="true" style={phaseRailTrackStyle} />
-              <span
+              <div aria-hidden="true" style={phaseRailTrackStyle} />
+              <div
                 aria-hidden="true"
                 style={{
                   ...phaseRailFillStyle,
@@ -506,15 +544,14 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
               {visibleSidebarPhases.map((phase) => {
                 const phaseIndex = phases.findIndex((candidate) => candidate.id === phase.id)
                 const isCurrentPhase = phaseIndex === position.phaseIndex
-                const isCompletedPhase =
-                  state.completedSteps.includes(phaseIndex) || phaseIndex < position.phaseIndex
-                const isCollapsed = openPhaseId !== phase.id
-                const isFuturePhase = !isCurrentPhase && !isCompletedPhase
+                const isCompletedPhase = phaseIndex < position.phaseIndex
+                const isFuturePhase = phaseIndex > position.phaseIndex
+                const isPhaseOpen = !isFuturePhase
 
                 return (
                   <section key={phase.id} role="listitem" style={phaseSectionStyle}>
                     <div style={phaseHeaderStyle}>
-                      <div style={phaseTimelineColStyle} aria-hidden={!isCompletedPhase ? true : undefined}>
+                      <div style={phaseTimelineColStyle} aria-hidden="true">
                         <span
                           className="wz-phase-dot"
                           style={{
@@ -523,17 +560,12 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
                             ...(isCompletedPhase ? phaseDotCompletedStyle : null),
                             ...(isFuturePhase ? phaseDotFutureStyle : null),
                           }}
-                          aria-label={isCompletedPhase ? 'Completato' : undefined}
                         >
                           {isCompletedPhase ? <IconCheckSmall /> : null}
                         </span>
                       </div>
 
-                      <button
-                        type="button"
-                        className="wizard-shell-interactive"
-                        onClick={() => togglePhase(phase.id)}
-                        aria-expanded={!isCollapsed}
+                      <div
                         style={{
                           ...phaseToggleStyle,
                           ...(isCurrentPhase ? phaseToggleCurrentStyle : null),
@@ -543,32 +575,27 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
                         <span style={phaseTitleRowStyle}>
                           <span>{phase.title}</span>
                         </span>
-                      </button>
+                      </div>
                     </div>
 
-                    {!isCollapsed && (
+                    {isPhaseOpen ? (
                       <ul style={subStepListStyle}>
                         {buildSidebarSubStepGroups(phase.substeps).map((group) => {
+                          const lastSubStepIndex = group.firstSubStepIndex + group.count - 1
                           const isCurrentSubStep =
-                            phaseIndex === position.phaseIndex &&
+                            isCurrentPhase &&
                             position.subStepIndex >= group.firstSubStepIndex &&
-                            position.subStepIndex < group.firstSubStepIndex + group.count
-
-                          const completedSegments = Array.from({ length: group.count }, (_, offset) => {
-                            const subStepIndex = group.firstSubStepIndex + offset
-                            const subStep = phase.substeps[subStepIndex]
-                            const totalQuestions = Math.max(1, subStep.questions.length)
-                            const completedQuestions = getCompletedQuestionsCount(
-                              phaseIndex,
-                              subStepIndex,
-                              totalQuestions,
-                            )
-
-                            return completedQuestions >= totalQuestions
-                          })
-                          const completedCount = completedSegments.filter(Boolean).length
-                          const totalQuestions = Math.max(1, group.count)
-                          const isCompletedSubStep = completedCount >= totalQuestions
+                            position.subStepIndex <= lastSubStepIndex
+                          const completedSteps = isCompletedPhase
+                            ? group.count
+                            : isFuturePhase
+                              ? 0
+                              : Array.from({ length: group.count }, (_, offset) => group.firstSubStepIndex + offset)
+                                  .filter((idx) => idx < position.subStepIndex).length
+                          const isCompletedSubStep = completedSteps >= group.count
+                          const canNavigate =
+                            isCompletedPhase ||
+                            (isCurrentPhase && group.firstSubStepIndex <= position.subStepIndex)
 
                           return (
                             <li key={`${phase.id}-${group.firstSubStepIndex}-${group.title}`} style={subStepItemStyle}>
@@ -576,39 +603,45 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
                                 type="button"
                                 className="wizard-shell-interactive"
                                 onClick={() => goTo({ phaseIndex, subStepIndex: group.firstSubStepIndex, questionIndex: 0 })}
+                                disabled={!canNavigate}
                                 aria-current={isCurrentSubStep ? 'step' : undefined}
                                 style={{
                                   ...subStepButtonStyle,
                                   ...(isCurrentSubStep ? subStepButtonCurrentStyle : null),
                                   ...(isCompletedSubStep ? subStepButtonCompletedStyle : null),
+                                  ...(!canNavigate ? subStepButtonDisabledStyle : null),
                                 }}
                               >
                                 <span style={subStepTitleStyle}>{group.title}</span>
                                 <span
                                   role="progressbar"
                                   aria-valuemin={0}
-                                  aria-valuemax={totalQuestions}
-                                  aria-valuenow={Math.min(completedCount, totalQuestions)}
+                                  aria-valuemax={group.count}
+                                  aria-valuenow={Math.min(completedSteps, group.count)}
                                   style={subStepSegmentedTrackStyle}
                                 >
-                                  {Array.from({ length: totalQuestions }, (_, i) => (
-                                    <span
-                                      key={i}
-                                      style={{
-                                        ...subStepSegmentStyle,
-                                        background: i < Math.min(completedCount, totalQuestions)
-                                          ? 'var(--color-background-primary)'
-                                          : 'var(--color-border-secondary-light)',
-                                      }}
-                                    />
-                                  ))}
+                                  {Array.from({ length: group.count }, (_, offset) => {
+                                    const idx = group.firstSubStepIndex + offset
+                                    const filled = isCompletedPhase || (isCurrentPhase && idx < position.subStepIndex)
+                                    return (
+                                      <span
+                                        key={offset}
+                                        style={{
+                                          ...subStepSegmentStyle,
+                                          background: filled
+                                            ? 'var(--color-background-primary)'
+                                            : 'var(--color-border-secondary-light)',
+                                        }}
+                                      />
+                                    )
+                                  })}
                                 </span>
                               </button>
                             </li>
                           )
                         })}
                       </ul>
-                    )}
+                    ) : null}
                   </section>
                 )
               })}
@@ -656,63 +689,66 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
           )}
 
           <div style={isIntroPhase ? introMainContentStyle : mainAreaContentStyle}>
+            {showAutofill && (
+              <div style={autofillRowStyle}>
+                <button
+                  type="button"
+                  className="wizard-shell-interactive"
+                  onClick={() => onAutofill?.({ phaseIndex: position.phaseIndex, subStepId: currentSubStep.id })}
+                  style={autofillButtonStyle}
+                >
+                  Autoriempi questa pagina
+                </button>
+              </div>
+            )}
             <article
               style={{
                 ...questionCardStyle,
                 ...(isIntroPhase ? questionCardIntroStyle : questionCardRegularStyle),
               }}
             >
-              {onAutofill && !isIntroPhase && (autofillPhaseIndexes ?? []).includes(position.phaseIndex) && (
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button
-                    type="button"
-                    className="wizard-shell-interactive"
-                    onClick={() => onAutofill(position.phaseIndex)}
-                    style={autofillButtonStyle}
+              <div style={questionHeaderRowStyle}>
+                <div
+                  style={{
+                    ...questionHeaderBlockStyle,
+                    ...(isIntroPhase ? questionHeaderIntroStyle : questionHeaderStickyStyle),
+                  }}
+                >
+                  <h2
+                    ref={headingRef}
+                    tabIndex={-1}
+                    style={{
+                      ...questionHeadingStyle,
+                      ...(isIntroPhase ? questionHeadingIntroStyle : null),
+                    }}
                   >
-                    Autoriempi questa pagina
-                  </button>
+                    {currentQuestion.title}
+                  </h2>
+                  <p
+                    style={{
+                      ...questionSubtitleStyle,
+                      ...(isIntroPhase ? questionSubtitleIntroStyle : null),
+                    }}
+                  >
+                    {currentQuestion.subtitle}
+                  </p>
+                  {currentQuestion.normRef && !isIntroPhase && (
+                    <span style={normRefBadgeStyle} aria-label={`Riferimento normativo: D.Lgs. 36/2023 Allegato I.7 — ${currentQuestion.normRef}`}>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                        <rect x="1" y="1" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+                        <path d="M3.5 4h5M3.5 6h5M3.5 8h3" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+                      </svg>
+                      <span>D.Lgs. 36/2023 · All. I.7 · {currentQuestion.normRef}</span>
+                    </span>
+                  )}
                 </div>
-              )}
-              <div
-                style={{
-                  ...questionHeaderBlockStyle,
-                  ...(isIntroPhase ? questionHeaderIntroStyle : questionHeaderStickyStyle),
-                }}
-              >
-                <h2
-                  ref={headingRef}
-                  tabIndex={-1}
-                  style={{
-                    ...questionHeadingStyle,
-                    ...(isIntroPhase ? questionHeadingIntroStyle : null),
-                  }}
-                >
-                  {currentQuestion.title}
-                </h2>
-                <p
-                  style={{
-                    ...questionSubtitleStyle,
-                    ...(isIntroPhase ? questionSubtitleIntroStyle : null),
-                  }}
-                >
-                  {currentQuestion.subtitle}
-                </p>
-                {currentQuestion.normRef && !isIntroPhase && (
-                  <span style={normRefBadgeStyle} aria-label={`Riferimento normativo: D.Lgs. 36/2023 Allegato I.7 — ${currentQuestion.normRef}`}>
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-                      <rect x="1" y="1" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
-                      <path d="M3.5 4h5M3.5 6h5M3.5 8h3" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-                    </svg>
-                    <span>D.Lgs. 36/2023 · All. I.7 · {currentQuestion.normRef}</span>
-                  </span>
-                )}
               </div>
               <div
                 style={{
                   ...questionBodyStyle,
                   ...(isIntroPhase ? questionBodyIntroStyle : null),
                   ...(isCompletionStep ? questionBodyCompletionStyle : null),
+                  ...(currentQuestion.bare ? questionBodyBareStyle : null),
                 }}
               >
                 {currentQuestion.content}
@@ -952,6 +988,12 @@ const subStepButtonCompletedStyle: CSSProperties = {
   color: 'var(--color-text-secondary)',
 }
 
+const subStepButtonDisabledStyle: CSSProperties = {
+  cursor: 'default',
+  pointerEvents: 'none',
+  color: 'var(--color-text-disable)',
+}
+
 const subStepTitleStyle: CSSProperties = {
   fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
   fontSize: 'var(--type-body-xxs-size, 12px)',
@@ -998,8 +1040,16 @@ const contentColumnStyle: CSSProperties = {
 
 const contentColumnRegularStyle: CSSProperties = {
   ...contentColumnStyle,
-  maxWidth: 'min(1280px, calc(100vw - 64px))',
+  // Riempie l'intera colonna 1fr: l'area scrollabile (e la sua barra) arriva al
+  // bordo destro della pagina, come nel wizard di valutazione. Il contenuto resta
+  // centrato grazie al maxWidth interno (mainAreaContentStyle).
+  maxWidth: 'none',
   justifySelf: 'stretch',
+}
+
+const autofillRowStyle: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'flex-end',
 }
 
 const contentColumnIntroStyle: CSSProperties = {
@@ -1059,9 +1109,9 @@ const closeButtonStyle: CSSProperties = {
 }
 
 const mainAreaStyle: CSSProperties = {
-  overflow: 'hidden',
+  overflowY: 'auto',
   minHeight: 'calc(100vh - 64px - 56px)',
-  padding: '48px clamp(36px, 4vw, 64px) 24px',
+  padding: '32px clamp(36px, 4vw, 64px) 24px',
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'flex-start',
@@ -1069,8 +1119,6 @@ const mainAreaStyle: CSSProperties = {
 
 const mainAreaIntroStyle: CSSProperties = {
   ...mainAreaStyle,
-  overflow: 'hidden',
-  minHeight: 'calc(100vh - 64px - 56px)',
   padding: '24px clamp(28px, 3vw, 48px) 24px',
   alignItems: 'center',
 }
@@ -1093,7 +1141,6 @@ const mainAreaContentStyle: CSSProperties = {
   gap: 'var(--spacing-stack-m)',
   justifyItems: 'stretch',
   alignContent: 'start',
-  overflowY: 'auto',
   paddingBottom: '24px',
 }
 
@@ -1109,7 +1156,16 @@ const questionCardIntroStyle: CSSProperties = {
 }
 
 const questionCardRegularStyle: CSSProperties = {
-  paddingTop: '24px',
+  paddingTop: '16px',
+}
+
+const questionHeaderRowStyle: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start',
+  gap: 'var(--spacing-inline-m)',
+  width: '100%',
+  flexWrap: 'wrap',
 }
 
 const autofillButtonStyle: CSSProperties = {
@@ -1122,17 +1178,21 @@ const autofillButtonStyle: CSSProperties = {
   fontSize: 'var(--type-body-xs-size, 13px)',
   fontWeight: 'var(--type-weight-bold, 700)',
   cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  alignSelf: 'flex-start',
 }
 
 const questionHeaderBlockStyle: CSSProperties = {
   display: 'grid',
   gap: 'var(--spacing-stack-xxs, 4px)',
+  flex: 1,
+  minWidth: 0,
 }
 
 const questionHeaderStickyStyle: CSSProperties = {
   position: 'static',
   background: 'transparent',
-  padding: '16px 0 var(--spacing-stack-xs)',
+  padding: '12px 0 var(--spacing-stack-xs)',
 }
 
 const questionHeaderIntroStyle: CSSProperties = {
@@ -1202,6 +1262,20 @@ const questionBodyCompletionStyle: CSSProperties = {
   padding: 0,
   border: 'none',
   background: 'transparent',
+}
+
+const questionBodyBareStyle: CSSProperties = {
+  padding: 0,
+  border: 'none',
+  background: 'transparent',
+}
+
+const fullScreenStepStyle: CSSProperties = {
+  position: 'fixed',
+  inset: 0,
+  zIndex: 200,
+  overflowY: 'auto',
+  background: 'var(--color-background-secondary-light)',
 }
 
 const footerStyle: CSSProperties = {

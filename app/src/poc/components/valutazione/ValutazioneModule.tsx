@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { COLLEFERRO_PROJECTS, LAZIO_PROJECTS, type AnalysisType, type ProjectStatus, type ValutazioneProject } from '../../data/mockValutazione'
+import { IconValutazione } from '../layout/SideNav'
 import { ValutazioneWizardProvider, useValutazioneWizard } from '../../contexts/ValutazioneWizardContext'
 import { ValutazioneWizard } from './wizard/ValutazioneWizard'
 
@@ -143,7 +144,10 @@ function ValutazioneModuleInner() {
 
       <main style={pageStyle} aria-label="Valutazione">
         <header style={headerStyle}>
-          <div>
+          <div style={brandWrapStyle}>
+            <span aria-hidden="true" style={brandIconStyle}>
+              <IconValutazione size={28} />
+            </span>
             <h1 style={titleStyle}>Valutazione</h1>
             <p style={subtitleStyle}>
               Configura un nuovo progetto e raccogli le informazioni necessarie per le analisi di impatto,
@@ -266,6 +270,18 @@ const headerStyle: CSSProperties = {
   justifyContent: 'space-between',
   alignItems: 'flex-start',
   gap: 'var(--spacing-inline-s)',
+}
+
+const brandWrapStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--spacing-stack-xs)',
+}
+
+const brandIconStyle: CSSProperties = {
+  display: 'block',
+  color: 'var(--color-text-primary)',
+  width: '28px',
+  height: '28px',
 }
 
 const titleStyle: CSSProperties = {

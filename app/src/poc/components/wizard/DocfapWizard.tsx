@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useWizard } from '../../hooks/useWizard'
 import { getMatrixQuestions } from '../../data/poc_docfap/evaluation_matrix'
 import { INTERVENTION_CATEGORIES } from '../../data/poc_docfap/intervention_categories_layer3'
@@ -7,7 +7,6 @@ import { WizardShell, type WizardClosePayload, type WizardPhaseDefinition } from
 import { Step0_Intro } from './fase0/Step0_Intro'
 import { Step1_1_Ente } from './fase1/Step1_1_Ente'
 import { Step1_3_FabbisognoTema } from './fase1/Step1_3_FabbisognoTema'
-import { Step1_4_FabbisognoSpecifico } from './fase1/Step1_4_FabbisognoSpecifico'
 import { Step2_1_Problema } from './fase2/Step2_1_Problema'
 import { ScenarioZeroQuestions } from './fase2/ScenarioZeroQuestions'
 import { DatoContestoQ1 } from './fase2/DatoContestoQ1'
@@ -58,27 +57,90 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
     [state.alternativeDefinite],
   )
 
-  // Autoriempi: prefill demo (scenario Asilo Nido — Comune di Colleferro, cluster C03)
-  // per la fase corrente. Mostrato solo sulle fasi di input (1·Inquadramento,
-  // 2·Bisogno, 3·Alternative), come nel wizard di Valutazione.
-  const autoFillPhase = useCallback(
-    (phaseIndex: number) => {
-      switch (phaseIndex) {
-        case 1:
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [])
+
+  // Autoriempi: prefill demo (scenario Asilo Nido — Comune di Colleferro, cluster C03).
+  // Riempie SOLO la pagina corrente (un autoriempi per pagina), come nel wizard di
+  // Valutazione. La pagina è identificata dall'id del substep.
+  const autoFillPage = useCallback(
+    ({ subStepId }: { phaseIndex: number; subStepId: string }) => {
+      const ALT_PRESET: Record<SupportedAlternativaId, {
+        tipologia: string
+        quantita: number
+        obiettivoCer: number
+        nome: string
+        costiCode: 'NUOVA_REALIZZAZIONE' | 'RISTRUTTURAZIONE'
+      }> = {
+        A1: { tipologia: 'nuova_realizzazione', quantita: 1500, obiettivoCer: 178, nome: 'Nuova costruzione asilo nido', costiCode: 'NUOVA_REALIZZAZIONE' },
+        A2: { tipologia: 'ristrutturazione', quantita: 1100, obiettivoCer: 120, nome: 'Ristrutturazione asilo nido esistente', costiCode: 'RISTRUTTURAZIONE' },
+        A3: { tipologia: 'ristrutturazione', quantita: 900, obiettivoCer: 90, nome: 'Recupero immobile esistente', costiCode: 'RISTRUTTURAZIONE' },
+      }
+
+      const resolveCategoria = () => {
+        const cats = INTERVENTION_CATEGORIES.filter((c) => c.fabbisogno_codes.includes(state.fabId ?? 'FAB-51'))
+        const cat = cats.find((c) => c.code === 'C106') ?? cats[0]
+        const categoria = cat?.code ?? 'C106'
+        const clusterId = cat?.cluster_id && cat.cluster_id !== 'NONE' ? cat.cluster_id : 'C03'
+        return { categoria, clusterId }
+      }
+      const capexFor = (categoria: string, costiCode: 'NUOVA_REALIZZAZIONE' | 'RISTRUTTURAZIONE', qty: number): number => {
+        const recs = getCostiByCategory(categoria)
+        if (recs.length === 0) return 0
+        const costo = calcolaCostoTipologia(recs[0], costiCode)
+        return costo ? Math.round(costo.val_med * qty) : 0
+      }
+      const fillAlternativaSetup = (altId: SupportedAlternativaId) => {
+        const { categoria, clusterId } = resolveCategoria()
+        const p = ALT_PRESET[altId]
+        const capex = capexFor(categoria, p.costiCode, p.quantita)
+        const cur = state.alternative[altId] ?? {}
+        addAlternativa(altId, {
+          ...cur,
+          categoria,
+          tipologia: p.tipologia,
+          quantita: p.quantita,
+          obiettivoCer: p.obiettivoCer,
+          capex,
+          opex: Math.round(capex * 0.05),
+          nome: (cur as { nome?: string }).nome || p.nome,
+          clusterId,
+          unitaMisura: 'posti',
+        } as never)
+        if (altId === 'A1') setCluster(clusterId)
+      }
+      const fillAlternativaNome = (altId: SupportedAlternativaId) => {
+        const cur = state.alternative[altId] ?? {}
+        addAlternativa(altId, { ...cur, nome: ALT_PRESET[altId].nome } as never)
+      }
+
+      switch (subStepId) {
+        // Fase 1 · Inquadramento ------------------------------------------
+        case 'fase1-ente':
           setRup({ nome: 'Marco Bianchi', qualifica: 'RUP', email: 'marco.bianchi@comune.colleferro.rm.it' })
-          // FAB-51 = "Offerta insufficiente di posti nido (0-3 anni)" · tema TC03 · cluster C03
+          return
+        case 'fase1-fabbisogno':
+          // FAB-51 = "Offerta insufficiente di posti nido (0-3 anni)" · cluster C03
           setFab('FAB-51', 'TC03')
           setCluster('C03')
-          break
-        case 2:
+          return
+
+        // Fase 2 · Bisogno ------------------------------------------------
+        case 'fase2-problema':
           setProblema({
             descrizione:
               'Carenza di posti negli asili nido comunali: la domanda di servizi educativi 0-3 anni supera ampiamente l’offerta attuale, con un gap stimato di 178 posti e lunghe liste di attesa.',
             documentato: 'si',
           })
           setUrgenza('Breve termine (1-3 anni)')
-          // Scenario zero: seleziona le risposte reali (FAB-51) così le opzioni
-          // risultano spuntate e la narrativa è coerente con esse.
+          return
+        case 'fase2-sz-questions':
           setScenarioZeroAnswers({
             'DC-SZ-051-01': 'lista_attesa',
             'DC-SZ-051-02': ['occupazione_femminile', 'costi_privati'],
@@ -86,61 +148,25 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
           setScenarioZeroNarrative(
             "Il servizio educativo 0-3 è presente e funzionante, ma le liste d'attesa sono lunghe, con una quota significativa di domande che non trovano risposta nell'offerta disponibile. Si registra inoltre un tasso di occupazione femminile inferiore alla media, correlato alla mancanza di servizi di cura per la prima infanzia, e famiglie che ricorrono a soluzioni private a costi elevati.",
           )
-          // q1Value (dato quantitativo di contesto) è facoltativo → non lo precompiliamo.
-          break
-        case 3: {
+          return
+        case 'fase2-q1':
+          setQ1Value(178)
+          return
+
+        // Fase 3 · Alternative -------------------------------------------
+        case 'fase3-aggiunta':
           setAlternativeDefinite(['A1', 'A2'])
-          // Categoria/tipologia DEVONO essere codici reali: la categoria è un
-          // cat.code i cui fabbisogno_codes includono il FAB selezionato, la
-          // tipologia un tipologia_code applicabile. (label inventate = select vuote.)
-          const cats = INTERVENTION_CATEGORIES.filter((c) => c.fabbisogno_codes.includes(state.fabId ?? 'FAB-51'))
-          const cat = cats.find((c) => c.code === 'C106') ?? cats[0]
-          const categoria = cat?.code ?? 'C106'
-          const clusterId = cat?.cluster_id && cat.cluster_id !== 'NONE' ? cat.cluster_id : 'C03'
-          // CAPEX = CP_med × quantità (stessa formula di InputParamsStep), così la
-          // fase è valida subito ed è robusta a ri-click di Autoriempi.
-          const costiRecords = getCostiByCategory(categoria)
-          const capexFor = (costiCode: 'NUOVA_REALIZZAZIONE' | 'RISTRUTTURAZIONE', qty: number): number => {
-            if (costiRecords.length === 0) return 0
-            const costo = calcolaCostoTipologia(costiRecords[0], costiCode)
-            return costo ? Math.round(costo.val_med * qty) : 0
-          }
-          const a1Capex = capexFor('NUOVA_REALIZZAZIONE', 1500)
-          const a2Capex = capexFor('RISTRUTTURAZIONE', 1100)
-          addAlternativa('A1', {
-            categoria,
-            tipologia: 'nuova_realizzazione',
-            quantita: 1500,
-            obiettivoCer: 178,
-            capex: a1Capex,
-            opex: Math.round(a1Capex * 0.05),
-            nome: 'Nuova costruzione asilo nido',
-            clusterId,
-            unitaMisura: 'posti',
-          } as never)
-          addAlternativa('A2', {
-            categoria,
-            tipologia: 'ristrutturazione',
-            quantita: 1100,
-            obiettivoCer: 120,
-            capex: a2Capex,
-            opex: Math.round(a2Capex * 0.05),
-            nome: 'Ristrutturazione asilo nido esistente',
-            clusterId,
-            unitaMisura: 'posti',
-          } as never)
-          setCluster(clusterId)
+          fillAlternativaSetup('A1')
+          fillAlternativaSetup('A2')
           setAlternativeAggiuntaCompletata(true)
           prefillPOCAnswers('C03', ['A1', 'A2'])
-          break
-        }
-        case 4: {
-          // Analisi Multicriteria: assegna un giudizio qualitativo (A/M/B/N) a ogni
-          // cella della matrice (domande × alternative) con un pattern differenziato.
+          return
+
+        // Fase 4 · Analisi Multicriteria ---------------------------------
+        case 'fase4-mca': {
           const clusterIds = state.clusterId ? [state.clusterId] : []
           const questions = getMatrixQuestions(clusterIds)
           const altIds = state.alternativeDefinite.filter(isSupportedAlternativaId)
-          // Pattern per alternativa: ciclato sull'indice domanda.
           const patterns: Record<string, Array<'A' | 'M' | 'B' | 'N'>> = {
             A1: ['A', 'M', 'A', 'M', 'A', 'M'],
             A2: ['M', 'A', 'M', 'B', 'M', 'A'],
@@ -152,13 +178,22 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
               setMcaScores(altId, q.qCode, pattern[qi % pattern.length])
             })
           })
-          break
+          return
         }
-        default:
-          break
+
+        default: {
+          // Substep dinamici per singola alternativa (fase 3): riempie quella alternativa.
+          const m = subStepId.match(/^fase3-(a[123])-(setup|params|nome)$/)
+          if (m) {
+            const altId = m[1].toUpperCase() as SupportedAlternativaId
+            if (m[2] === 'nome') fillAlternativaNome(altId)
+            else fillAlternativaSetup(altId)
+          }
+          return
+        }
       }
     },
-    [setRup, setFab, setCluster, setProblema, setUrgenza, setScenarioZeroAnswers, setScenarioZeroNarrative, setAlternativeDefinite, addAlternativa, setAlternativeAggiuntaCompletata, setMcaScores, prefillPOCAnswers, state.clusterId, state.alternativeDefinite, state.fabId],
+    [setRup, setFab, setCluster, setProblema, setUrgenza, setScenarioZeroAnswers, setScenarioZeroNarrative, setAlternativeDefinite, addAlternativa, setAlternativeAggiuntaCompletata, setMcaScores, prefillPOCAnswers, state.clusterId, state.alternativeDefinite, state.fabId, state.temaId, state.alternative],
   )
 
   const phases = useMemo<WizardPhaseDefinition[]>(() => {
@@ -239,26 +274,15 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
             ],
           },
           {
-            id: 'fase1-tema',
-            title: 'Tema',
-            questions: [
-              {
-                title: 'In che macro tema si inserisce il fabbisogno da soddisfare?',
-                subtitle: "Individua l'ambito tematico in cui ricade il fabbisogno.",
-                normRef: 'Art. 2, c.2',
-                content: <Step1_3_FabbisognoTema />,
-              },
-            ],
-          },
-          {
             id: 'fase1-fabbisogno',
             title: 'Fabbisogno',
             questions: [
               {
-                title: "Qual è il fabbisogno specifico da soddisfare?",
-                subtitle: 'Individua il fabbisogno corretto per associare il DOCFAP al quadro programmatorio.',
+                title: 'Quale fabbisogno deve soddisfare il progetto?',
+                subtitle: 'Seleziona prima il macro tema oppure cerca direttamente il fabbisogno specifico.',
                 normRef: 'Art. 2, c.2',
-                content: <Step1_4_FabbisognoSpecifico />,
+                bare: true,
+                content: <Step1_3_FabbisognoTema />,
               },
             ],
           },
@@ -335,7 +359,7 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
             questions: [
               {
                 title: 'Analisi Multicriteria qualitativa',
-                subtitle: 'Valuta le alternative su criteri qualitativi. Scala: A (Alto) · M (Medio) · B (Basso) · N (Nullo).',
+                subtitle: 'Valuta le alternative su criteri qualitativi.',
                 normRef: 'Art. 2, c.4, g) + c.7',
                 content: <McaQualitativa />,
               },
@@ -426,7 +450,7 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
     <WizardShell
       phases={phases}
       onClose={onClose}
-      onAutofill={autoFillPhase}
+      onAutofill={autoFillPage}
       autofillPhaseIndexes={[1, 2, 3, 4]}
     />
   )

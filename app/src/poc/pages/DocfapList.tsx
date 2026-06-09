@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { DocfapWizard } from '../components/wizard/DocfapWizard'
 import { loadDocfapDemo } from '../data/docfapDemo'
 import { wizardStore } from '../store/wizardStore'
@@ -261,7 +261,50 @@ function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange
   )
 }
 
+function FeaturedDocfapCard({ item, onOpen }: { item: DocfapRecord; onOpen: () => void }) {
+  return (
+    <article style={featuredCardStyle}>
+      <div style={featuredCardTopStyle}>
+        <div style={docIconBadgeStyle} aria-hidden="true">
+          <IconDoc />
+        </div>
+        <span style={{ ...statusBadgeStyle, ...statusStyle(item.stato) }}>{item.stato}</span>
+      </div>
+
+      <div style={featuredBodyStyle}>
+        <strong style={featuredTitleStyle}>{item.nomeIntervento}</strong>
+        <p style={featuredMetaStyle}>{item.cup ? `CUP ${item.cup}` : 'CUP non disponibile'}</p>
+        <p style={featuredMetaStyle}>{`${item.settore} - ${item.tipoIntervento}`}</p>
+      </div>
+
+      <div style={featuredFactsStyle}>
+        <span style={featuredFactStyle}>
+          <span style={featuredFactLabelStyle}>Comune</span>
+          <strong style={featuredFactValueStyle}>{item.comune}</strong>
+        </span>
+        <span style={featuredFactStyle}>
+          <span style={featuredFactLabelStyle}>Avvio</span>
+          <strong style={featuredFactValueStyle}>{item.inizioLavori}</strong>
+        </span>
+      </div>
+
+      <div style={analysisWrapStyle}>
+        {(['CBA', 'RISK'] as const).map((tag) => (
+          <span key={tag} style={{ ...analysisBadgeStyle, ...analysisStyle(tag, item.analisiDisponibili.includes(tag)) }}>
+            {tag}
+          </span>
+        ))}
+      </div>
+
+      <button type="button" style={detailButtonStyle} onClick={onOpen}>
+        {item.stato === 'Completato' ? 'Vai al dettaglio' : 'Concludi Docfap'} <IconArrowRight />
+      </button>
+    </article>
+  )
+}
+
 export function DocfapList() {
+  const navigate = useNavigate()
   const [showWizard, setShowWizard] = useState(false)
   const [activeTab, setActiveTab] = useState<TabKey>('ente')
   const [onlyDraft, setOnlyDraft] = useState(false)
@@ -319,9 +362,21 @@ export function DocfapList() {
     wizardStore.actions.reset()
     setShowWizard(true)
   }
-  const handleOpenDemoDetail = () => {
+  // Progetto COMPLETATO → apri il dettaglio con i dati demo (CBA/Impatto/MCA/
+  // Rischio popolati, A1+A2). Progetto NON completato → riprendi dal wizard.
+  const handleOpenProject = (row: DocfapRecord) => {
     wizardStore.actions.reset()
-    void loadDocfapDemo()
+    if (row.stato === 'Completato') {
+      void loadDocfapDemo({
+        denominazione: row.nomeIntervento,
+        comune: row.comune,
+        provincia: row.provincia,
+        proprietario: row.proprietario,
+      })
+      navigate('/impatti/docfap/detail')
+    } else {
+      setShowWizard(true)
+    }
   }
 
   return (
@@ -348,7 +403,7 @@ export function DocfapList() {
           </div>
         </header>
 
-        <section aria-labelledby="docfap-evidenza" style={sectionStyle}>
+        <section aria-labelledby="docfap-evidenza" style={featuredSectionStyle}>
           <div style={sectionHeaderStyle}>
             <h2 id="docfap-evidenza" style={h2Style}>In evidenza</h2>
             <div style={carouselControlsStyle}>
@@ -373,17 +428,7 @@ export function DocfapList() {
 
           <div style={carouselGridStyle}>
             {featuredVisible.map((item) => (
-              <article key={item.id} style={featuredCardStyle}>
-                <div style={featuredTitleRowStyle}>
-                  <strong style={featuredTitleStyle}>{item.nomeIntervento}</strong>
-                  <span style={{ ...statusBadgeStyle, ...statusStyle(item.stato) }}>{item.stato}</span>
-                </div>
-                <p style={featuredMetaStyle}>{item.cup ? `CUP ${item.cup}` : 'CUP non disponibile'}</p>
-                <p style={featuredMetaStyle}>{`${item.settore} - ${item.dataCreazione}`}</p>
-                <Link to="/impatti/docfap/detail" style={detailButtonStyle} onClick={handleOpenDemoDetail}>
-                  Vai al dettaglio <IconArrowRight />
-                </Link>
-              </article>
+              <FeaturedDocfapCard key={item.id} item={item} onOpen={() => handleOpenProject(item)} />
             ))}
           </div>
         </section>
@@ -489,14 +534,18 @@ export function DocfapList() {
                     </td>
                     <td style={tdStyle}>
                       <div style={actionsWrapStyle}>
-                        <Link
-                          to="/impatti/docfap/detail"
+                        <button
+                          type="button"
                           style={actionButtonStyle}
-                          onClick={handleOpenDemoDetail}
-                          aria-label={`Apri dettaglio ${row.nomeIntervento}`}
+                          onClick={() => handleOpenProject(row)}
+                          aria-label={
+                            row.stato === 'Completato'
+                              ? `Apri dettaglio ${row.nomeIntervento}`
+                              : `Concludi Docfap ${row.nomeIntervento}`
+                          }
                         >
                           <IconArrowRight />
-                        </Link>
+                        </button>
                         {row.stato === 'Bozza' && (
                           <button type="button" style={dangerButtonStyle} aria-label={`Elimina bozza ${row.nomeIntervento}`}>
                             <IconTrash />
@@ -641,6 +690,16 @@ const sectionStyle: CSSProperties = {
   gap: 'var(--spacing-stack-s)',
 }
 
+const featuredSectionStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--spacing-stack-s)',
+  padding: 0,
+  margin: 0,
+  background: 'transparent',
+  border: 'none',
+  borderRadius: 0,
+}
+
 const sectionHeaderStyle: CSSProperties = {
   display: 'flex',
   justifyContent: 'space-between',
@@ -674,47 +733,107 @@ const carouselButtonStyle: CSSProperties = {
 
 const carouselGridStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
   gap: 'var(--spacing-inline-s)',
 }
 
 const featuredCardStyle: CSSProperties = {
   border: '1px solid var(--color-border-secondary-light)',
   borderRadius: 'var(--radius-smooth)',
-  padding: 'var(--spacing-inset-s)',
+  padding: '18px',
   display: 'grid',
-  gap: 'var(--spacing-stack-xs)',
+  gap: '14px',
   background: 'var(--color-background-inverse)',
+  minHeight: '238px',
+  alignContent: 'start',
+  boxShadow: '0 1px 0 rgba(14, 14, 16, 0.03)',
 }
 
-const featuredTitleRowStyle: CSSProperties = {
+const featuredCardTopStyle: CSSProperties = {
   display: 'flex',
   gap: 'var(--spacing-inline-xs)',
   justifyContent: 'space-between',
-  alignItems: 'flex-start',
+  alignItems: 'center',
+}
+
+const docIconBadgeStyle: CSSProperties = {
+  width: '38px',
+  height: '38px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: 'var(--color-text-secondary)',
+  background: 'var(--color-background-primary-lighter)',
+  border: '1px solid var(--color-border-primary-light)',
+  borderRadius: 'var(--radius-smooth)',
+}
+
+const featuredBodyStyle: CSSProperties = {
+  display: 'grid',
+  gap: '6px',
 }
 
 const featuredTitleStyle: CSSProperties = {
   color: 'var(--color-text-primary)',
+  fontSize: 'var(--type-body-m-size, 16px)',
+  lineHeight: 1.25,
 }
 
 const featuredMetaStyle: CSSProperties = {
   margin: 0,
   color: 'var(--color-text-primary-light)',
   fontSize: 'var(--type-body-xs-size, 14px)',
+  lineHeight: 1.35,
+}
+
+const featuredFactsStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+  gap: '8px',
+}
+
+const featuredFactStyle: CSSProperties = {
+  minWidth: 0,
+  padding: '10px 12px',
+  background: 'var(--color-background-secondary-lightest)',
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
+  display: 'grid',
+  gap: '3px',
+}
+
+const featuredFactLabelStyle: CSSProperties = {
+  color: 'var(--color-text-primary-light)',
+  fontSize: '11px',
+  fontWeight: 700,
+  textTransform: 'uppercase',
+  letterSpacing: '0.04em',
+}
+
+const featuredFactValueStyle: CSSProperties = {
+  minWidth: 0,
+  color: 'var(--color-text-primary)',
+  fontSize: 'var(--type-body-xs-size, 14px)',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 }
 
 const detailButtonStyle: CSSProperties = {
-  marginTop: 'var(--spacing-stack-xs)',
-  border: 'none',
-  background: 'transparent',
+  marginTop: 'auto',
+  minHeight: '38px',
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
+  background: 'var(--color-background-inverse)',
   color: 'var(--color-text-secondary)',
   fontWeight: 700,
   display: 'inline-flex',
   alignItems: 'center',
+  justifyContent: 'space-between',
   gap: 'var(--spacing-inline-xxs, 4px)',
   cursor: 'pointer',
-  padding: 0,
+  padding: '0 12px',
+  textDecoration: 'none',
 }
 
 const statusBadgeStyle: CSSProperties = {

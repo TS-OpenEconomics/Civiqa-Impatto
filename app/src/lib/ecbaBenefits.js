@@ -81,10 +81,9 @@ const DEFAULT_TEMPLATE = [
  * Costruisce le categorie di benefici economici con i relativi VALORI ANNUI.
  * @param {object} opts
  * @param {number} opts.capex   CAPEX di progetto (€)
- * @param {string} [opts.sector] settore (per future calibrazioni settoriali)
  * @returns {Array<{id,nome,descrizione,comeMisura,colore,valore_annuo,sottocomponenti:Array<{label,valore_annuo}>}>}
  */
-export function buildBeneficiCategorie({ capex = 0, sector } = {}) {
+export function buildBeneficiCategorie({ capex = 0 } = {}) {
   // Base annua: se manca il CAPEX si usa una base nominale per non avere zeri.
   const base = capex && capex > 0 ? capex : 5_000_000;
 

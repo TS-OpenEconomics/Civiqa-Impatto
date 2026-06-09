@@ -9,6 +9,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Eccezioni mirate alla regola brand "border-radius: 0" ───────────────────
+   L'avatar utente è l'unico elemento volutamente circolare (regola globale
+   `* { border-radius:0 !important }` qui sotto). Selettore di classe + !important
+   per avere la precedenza. ─────────────────────────────────────────────────── */
+.civiqa-avatar { border-radius: 50% !important; }
+
+/* Logo wordmark: il PNG è nero → in tema scuro va invertito per restare leggibile */
+[data-theme="dark"] .civiqa-wordmark { filter: invert(1) brightness(1.85) contrast(1.05); }
+
 /* ─── OE Design System: global border-radius reset ───────────────────────────
    Border-radius = 0 is a core brand identity rule. No exceptions.
    ─────────────────────────────────────────────────────────────────────────── */

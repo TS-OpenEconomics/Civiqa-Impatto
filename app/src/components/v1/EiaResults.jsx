@@ -65,7 +65,6 @@ const inp = d.input ?? {};
 const comps = d.components ?? {};
 const rawGeo = d.geography ?? {};
 const sectItems = d.sectors?.items ?? [];
-const previews = d.previews ?? {};
 
 const byPerimeter = rawSyn.by_perimeter ?? {};
 const perCapita = rawSyn.per_capita ?? {};
@@ -114,18 +113,6 @@ const TABS = [
   { id: "esplora", label: "Approfondimento" },
 ];
 
-const TAB_PREVIEWS = {
-  sintesi: cleanText(previews.sintesi ?? "3,56 M€ PIL"),
-  componenti: cleanText(previews.componenti ?? "44% diretto"),
-  geografia: cleanText(previews.geografia ?? "84% in regione"),
-  settori: cleanText(previews.settori ?? "Costruzioni leader"),
-  esplora: cleanText(previews.esplora ?? "Approfondimento dati"),
-};
-
-;
-;
-;
-;
 
 const GEO_DIMS = [
   { id: "production", label: "Produzione" },
@@ -241,16 +228,6 @@ function buildSegmentComponentValues(data, segment) {
     direct: segmentDirect,
     indirect: spilloverTotal > 0 ? residual * (indirect / spilloverTotal) : 0,
     induced: spilloverTotal > 0 ? residual * (induced / spilloverTotal) : 0,
-  };
-}
-
-function buildPerimeterPreview() {
-  return {
-    sintesi: TAB_PREVIEWS.sintesi,
-    componenti: TAB_PREVIEWS.componenti,
-    geografia: TAB_PREVIEWS.geografia,
-    settori: TAB_PREVIEWS.settori,
-    esplora: TAB_PREVIEWS.esplora,
   };
 }
 
@@ -389,7 +366,6 @@ export function EiaResults({ project, analysis, onBack }) {
         <div className="overflow-hidden border border-ink-100 bg-white">
           <TabBar
             activeTab={tab}
-            previews={buildPerimeterPreview()}
             onChange={handleTabChange}
           />
           <div className="border-t border-ink-100 bg-white px-4 py-6 md:px-6">
@@ -433,7 +409,7 @@ export function EiaResults({ project, analysis, onBack }) {
   );
 }
 
-function TabBar({ activeTab, previews, onChange }) {
+function TabBar({ activeTab, onChange }) {
   return (
     <div className="flex overflow-x-auto">
       {TABS.map((t, idx) => {
@@ -449,11 +425,8 @@ function TabBar({ activeTab, previews, onChange }) {
             ].join(" ")}
             style={{ minHeight: 64 }}
           >
-            <span className="flex w-full flex-col gap-1">
+            <span className="flex w-full items-center justify-center">
               <span className="text-[16px] font-bold leading-tight">{t.label}</span>
-              <span className={`text-xs ${active ? "text-white/85" : "text-ink-500"} hidden sm:block`}>
-                {previews[t.id]}
-              </span>
             </span>
           </button>
         );
@@ -768,82 +741,6 @@ function SintesiPerCapitaCol({ name, pop, gdpPc, empPc, highlight }) {
           </p>
         </div>
       </div>
-    </div>
-  );
-}
-
-function DimensionGlossary() {
-  const [open, setOpen] = useState(false);
-  const dims = [
-    {
-      icon: "spese",
-      label: "Spesa investita",
-      text: "Lo «shock» iniziale immesso nell'economia: il costo totale del progetto che attiva le filiere. È il punto di partenza di tutta l'analisi.",
-    },
-    {
-      icon: "produzione",
-      label: "Valore della produzione",
-      text: "Il volume d'affari complessivo attivato lungo la filiera, inclusi i fornitori di secondo e terzo livello. È sempre superiore alla spesa perché la catena si moltiplica.",
-    },
-    {
-      icon: "pil",
-      label: "PIL (valore aggiunto)",
-      text: "La nuova ricchezza genuinamente creata: differenza tra il valore prodotto e il costo degli input intermedi. È la misura più accurata dell'impatto economico netto.",
-    },
-    {
-      icon: "occupazione",
-      label: "Occupazione",
-      text: "Occupati generati nell'economia: lavoro diretto nei settori che ricevono la spesa, indiretto presso i fornitori, indotto dai consumi.",
-    },
-    {
-      icon: "redditi",
-      label: "Redditi distribuiti",
-      text: "La quota di valore aggiunto che torna a famiglie e imprese come salari, profitti e rendite. Misura quanta ricchezza creata si converte in potere d'acquisto dei residenti.",
-    },
-    {
-      icon: "gettito",
-      label: "Gettito fiscale",
-      text: "Imposte e contributi attivati dall'attività economica indotta. Indica quanta parte della spesa pubblica «rientra» alle casse pubbliche attraverso il giro dell'economia.",
-    },
-  ];
-
-  return (
-    <div className="border border-ink-100 bg-white shadow-sm">
-      <button
-        onClick={() => setOpen((prev) => !prev)}
-        className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-bg-page"
-      >
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">Cosa misura ogni dimensione</p>
-        <span className="text-xs text-ink-400">{open ? "Chiudi ▴" : "Apri ▾"}</span>
-      </button>
-      {open && (
-        <div className="border-t border-ink-100">
-          <div className="grid grid-cols-1 gap-x-6 gap-y-5 p-5 md:grid-cols-2 lg:grid-cols-3">
-            {dims.map((d) => (
-              <div key={d.label} className="flex gap-3">
-                <ImpactIcon
-                  type={d.icon}
-                  label={d.label}
-                  className="h-4 w-4"
-                  wrapperClassName="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center text-brand-violet"
-                />
-                <div>
-                  <p className="text-[12px] font-bold text-ink-900">{d.label}</p>
-                  <p className="mt-1 text-[12px] leading-relaxed text-ink-600">{d.text}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function TakeawayBanner({ text }) {
-  return (
-    <div className="border-l-4 border-accent-lime bg-white px-6 py-5">
-      <p className="text-sm font-medium text-ink-900">{text}</p>
     </div>
   );
 }
@@ -1812,7 +1709,7 @@ const SANKEY_RIGHT_COLOR = "#A3A3AA";
 
 function SectorSankeyChart({ dim }) {
   const totalSpend = inp.total_spend || 1;
-  const spendSectors = inp.spend_breakdown ?? [];
+  const spendSectors = useMemo(() => inp.spend_breakdown ?? [], []);
   const [selected, setSelected] = useState(() => new Set());
   const filterActive = selected.size > 0;
 
@@ -2465,90 +2362,6 @@ function ExploreResultTable({ rows, meta, dimKey, effect, maxValue, total, sortK
   );
 }
 
-function perimeterToGlossary(tab) {
-  return GLOSSARY[tab] ?? [];
-}
-
-const GLOSSARY = {
-  sintesi: [
-    { term: "PIL (valore aggiunto)", def: "Ricchezza nuova generata dall'attività economica." },
-    { term: "Produzione", def: "Volume d'affari totale della filiera attivata." },
-    { term: "Occupati", def: "Posti di lavoro attivati dal progetto lungo la filiera." },
-    { term: "Redditi", def: "Quota di valore che torna a famiglie e imprese." },
-    { term: "Gettito", def: "Imposte e contributi attivati dal progetto. Solo nazionale." },
-    { term: "Moltiplicatore", def: "Euro di effetto generati per ogni euro speso." },
-  ],
-  componenti: [
-    { term: "Impatto diretto", def: "Effetto immediato della spesa sui settori che la ricevono." },
-    { term: "Impatto indiretto", def: "Effetto a cascata sui fornitori." },
-    { term: "Impatto indotto", def: "Effetto dei consumi delle famiglie." },
-    { term: "Filiera", def: "Catena di fornitori e sub-fornitori." },
-    { term: "Spesa autonoma", def: "La spesa iniziale del progetto." },
-  ],
-  geografia: [
-    { term: "Provincia di origine", def: "Provincia in cui avviene fisicamente la spesa." },
-    { term: "Spillover regionale", def: "Effetto che si diffonde sulle altre province della regione." },
-    { term: "Dispersione extra-regionale", def: "Quota di valore attivata fuori regione." },
-    { term: "Pro capite", def: "Valore diviso per la popolazione." },
-  ],
-  settori: [
-    { term: "Settore ATECO", def: "Classificazione standard delle attività economiche." },
-    { term: "Settore non delocalizzabile", def: "Settore che tende a trattenere valore nel territorio." },
-    { term: "Heatmap", def: "Griglia a colori per leggere due dimensioni insieme." },
-  ],
-  esplora: [
-    { term: "Dimensione", def: "Cosa stai misurando." },
-    { term: "Asse di scomposizione", def: "Come stai dividendo il dato." },
-    { term: "Livello di profondità", def: "Quanto in dettaglio stai scendendo." },
-    { term: "Esporta CSV", def: "Scarica i dati come file di testo." },
-    { term: "Esporta Excel", def: "Scarica i dati in formato .xlsx." },
-  ],
-};
-
-function GlossaryPopover({ tab, onClose }) {
-  const ref = useRef(null);
-  const entries = perimeterToGlossary(tab);
-
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === "Escape") onClose();
-    };
-    const onDown = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) onClose();
-    };
-    document.addEventListener("keydown", onKey);
-    document.addEventListener("mousedown", onDown);
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.removeEventListener("mousedown", onDown);
-    };
-  }, [onClose]);
-
-  return (
-    <div ref={ref} className="fixed right-0 top-0 bottom-0 z-50 flex w-[320px] flex-col border-l border-ink-100 bg-white">
-      <div className="flex items-center justify-between border-b-2 border-brand-violet bg-white px-5 py-4">
-        <p className="text-sm font-bold text-ink-900">Come si legge</p>
-        <button onClick={onClose} className="text-ink-500 hover:text-ink-900">
-          ×
-        </button>
-      </div>
-      <div className="border-b border-ink-100 bg-bg-page px-5 py-3">
-        <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">{cleanText(tab)}</p>
-      </div>
-      <div className="flex-1 overflow-y-auto p-5">
-        <div className="space-y-4">
-          {entries.map((entry) => (
-            <div key={entry.term} className="border-b border-ink-100 pb-4 last:border-b-0 last:pb-0">
-              <p className="text-sm font-bold text-ink-900">{cleanText(entry.term)}</p>
-              <p className="mt-1 text-sm leading-relaxed text-ink-700">{cleanText(entry.def)}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function MetaField({ label, value }) {
   return (
     <div className="px-6 py-4 md:px-8">
@@ -2644,7 +2457,7 @@ const CHART_INFO = {
   },
   "settori.classifica": {
     title: "Settori più attivati",
-    body: "I 63 settori ATECO della classificazione ISTAT (tavole input-output 2019) ordinati per valore attivato sulla dimensione scelta. La vista 'per territorio' suddivide ogni barra per provincia/regione di destinazione; la vista 'per componente' mostra la quota diretta/indiretta/indotta del singolo settore.",
+    body: "I 63 settori ATECO della classificazione ISTAT (tavole input-output 2022) ordinati per valore attivato sulla dimensione scelta. La vista 'per territorio' suddivide ogni barra per provincia/regione di destinazione; la vista 'per componente' mostra la quota diretta/indiretta/indotta del singolo settore.",
   },
   "settori.heatmap": {
     title: "Mappa di calore settore × territorio",
@@ -2677,7 +2490,7 @@ const METODOLOGIA_SECTIONS = [
     body: [
       "La SAM è una matrice contabile che rappresenta in modo integrato la struttura dell'economia italiana: attività produttive, fattori della produzione (lavoro e capitale), imprese, famiglie, governo, resto del mondo, formazione del capitale.",
       "Letta per riga descrive i redditi di ciascun aggregato; letta per colonna ne descrive le spese. La SAM cattura quindi non solo gli scambi B2B fra settori (come una tavola input-output tradizionale) ma anche la redistribuzione del reddito fra famiglie, imprese e Stato.",
-      "Disaggregazione: 63 settori ATECO secondo la classificazione ISTAT (tavole input-output 2019), con dettaglio provinciale per l'intero territorio italiano.",
+      "Disaggregazione: 63 settori ATECO secondo la classificazione ISTAT (tavole input-output 2022), con dettaglio provinciale per l'intero territorio italiano.",
     ],
   },
   {
@@ -2742,7 +2555,7 @@ const METODOLOGIA_SECTIONS = [
     id: "fonti",
     title: "Fonti dati",
     body: [
-      "ISTAT — Tavole input-output simmetriche per branca produttiva, classificazione 2019 (struttura della SAM).",
+      "ISTAT — Tavole input-output simmetriche per branca produttiva, classificazione 2022 (struttura della SAM).",
       "ISTAT — Dati di occupazione, redditi e popolazione per il dettaglio settoriale e territoriale.",
       "Aliquote fiscali medie effettive per la stima del gettito (IVA, IRPEF, IRES, contributi sociali).",
     ],

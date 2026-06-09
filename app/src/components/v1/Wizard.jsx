@@ -632,14 +632,14 @@ function toProject(draft, base) {
 
 function Sidebar({ stepIdx }) {
   const currentGroup = STEPS[stepIdx].group;
-  const lineFill = stepIdx / (STEPS.length - 1);
+  const lineFill = GROUPS.length <= 1 ? 1 : currentGroup / (GROUPS.length - 1);
 
   return (
-    <aside className="w-[320px] shrink-0 border-r border-[#ececec] bg-white px-6 py-6">
+    <aside className="w-[280px] shrink-0 overflow-y-auto border-r-2 border-[#ececec] bg-white px-5 py-6">
       <div className="relative">
-        <div className="absolute bottom-3 left-[18px] top-7 w-[3px] bg-[#ececec]" />
+        <div className="absolute bottom-6 left-3 top-6 w-0.5 bg-[#ececec]" />
         <div
-          className="absolute bottom-3 left-[18px] top-7 w-[3px] origin-top bg-brand-violet transition-transform duration-500"
+          className="absolute bottom-6 left-3 top-6 w-0.5 origin-top bg-brand-violet transition-transform duration-500"
           style={{ transform: `scaleY(${lineFill})` }}
         />
         {GROUPS.map((group, groupIndex) => {
@@ -647,28 +647,28 @@ function Sidebar({ stepIdx }) {
           const isActive = groupIndex === currentGroup;
 
           return (
-            <div key={group.label} className="relative mb-9 grid grid-cols-[38px_minmax(0,1fr)] gap-x-4">
-              <div className={`relative z-[1] flex h-[38px] w-[38px] items-center justify-center rounded-full ${isActive || isDone ? "bg-brand-violet" : "bg-[#dcdce1]"}`}>
-                {isDone ? <span className="text-[10px] font-bold text-white">OK</span> : isActive ? <span className="h-3 w-3 rounded-full bg-white" /> : null}
+            <div key={group.label} className="relative grid grid-cols-[24px_minmax(0,1fr)] gap-x-3 pb-5">
+              <div className={`relative z-[1] flex h-6 w-6 items-center justify-center rounded-full border-2 ${isActive || isDone ? "border-brand-violet bg-brand-violet text-white" : "border-[#dcdce1] bg-white text-transparent"}`}>
+                {isDone ? <span className="text-[10px] font-bold leading-none">✓</span> : null}
               </div>
-              <div className="flex min-h-[38px] items-center overflow-visible pt-1">
-                <h3 className={`min-w-0 text-[17px] font-bold leading-tight ${isActive ? "text-ink-900" : "text-ink-300"}`}>{group.label}</h3>
+              <div className="flex min-h-6 items-start overflow-visible pt-0.5">
+                <h3 className={`min-w-0 text-[12px] font-semibold leading-tight ${isActive ? "font-bold text-ink-900" : "text-ink-300"}`}>{group.label}</h3>
               </div>
 
               {isActive ? (
-                <div className="col-start-2 mt-5 space-y-4">
+                <div className="col-start-2 mt-4 space-y-3">
                   {group.sublabels.map((sublabel) => {
                     const sublabelSteps = STEPS.filter((s) => s.sublabel === sublabel);
 
                     return (
                       <div key={sublabel}>
                         <p className="mb-2 text-[12px] leading-tight text-ink-900">{sublabel}</p>
-                        <div className="flex gap-1">
+                        <div className="flex gap-0.5">
                           {sublabelSteps.map((s) => {
                             const sIdx = STEPS.findIndex((step) => step.id === s.id);
                             const fill = sIdx < stepIdx ? 1 : sIdx === stepIdx ? 0.5 : 0;
                             return (
-                              <div key={s.id} className="h-[6px] flex-1 overflow-hidden bg-[#e7e7ea]">
+                              <div key={s.id} className="h-[3px] flex-1 overflow-hidden bg-[#e7e7ea]">
                                 <div className="h-full bg-brand-violet transition-[width] duration-300" style={{ width: `${fill * 100}%` }} />
                               </div>
                             );
@@ -690,8 +690,8 @@ function Sidebar({ stepIdx }) {
 function QuestionHeader({ title, description, type }) {
   return (
     <div className="mb-8">
-      <h2 className="max-w-4xl text-[22px] font-bold leading-[1.2] text-ink-900">{title}</h2>
-      {description ? <p className="mt-3 max-w-5xl text-[14px] leading-[1.5] text-ink-900">{description}</p> : null}
+      <h2 className="max-w-5xl text-[22px] font-bold leading-[1.2] text-ink-900">{title}</h2>
+      {description ? <p className="mt-3 max-w-6xl text-[14px] leading-[1.5] text-ink-900">{description}</p> : null}
       {type ? <p className="mt-5 text-[14px] text-ink-900">{type}</p> : null}
     </div>
   );
@@ -717,7 +717,7 @@ function TextInput({ label, hint, value, onChange, placeholder, optional }) {
 
 function RadioCards({ options, value, onChange, descriptions }) {
   return (
-    <div className="max-w-3xl space-y-3">
+    <div className="max-w-5xl space-y-3">
       {options.map((option) => (
         <button
           key={option}
@@ -740,7 +740,7 @@ function RadioCards({ options, value, onChange, descriptions }) {
 
 function RadioList({ options, value, onChange }) {
   return (
-    <div className="max-w-3xl overflow-hidden border border-ink-100 bg-white">
+    <div className="max-w-5xl overflow-hidden border border-ink-100 bg-white">
       {options.map((option, index) => (
         <button
           key={option}
@@ -1711,7 +1711,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
         <Sidebar stepIdx={stepIdx} />
 
         <div className="flex-1 overflow-y-auto bg-[#f3f3f3]">
-          <div className="px-8 py-8">
+          <div className="mx-auto w-full max-w-[1280px] px-10 py-8">
             {["anagrafica", "classificazione", "durata"].includes(step.id) && (
               <div className="mb-5 flex justify-end">
                 <button
@@ -1730,7 +1730,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                   description="Inserisci nome, descrizione e stato di avanzamento. Queste informazioni servono a contestualizzare il progetto e a impostare il percorso di valutazione più appropriato."
                 />
 
-                <div className="max-w-3xl space-y-3">
+                <div className="max-w-5xl space-y-3">
                   {/* Section 1: Anagrafica */}
                   <ClassAccordion
                     number="1"
@@ -1933,7 +1933,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                   description="Indica le dimensioni principali del progetto. Questi dati saranno usati per stimare il CAPEX e alimentare i benefici attesi."
                 />
                 {profiloTemplate ? (
-                  <div className="max-w-3xl overflow-hidden border border-ink-100 bg-white">
+                  <div className="max-w-5xl overflow-hidden border border-ink-100 bg-white">
                     <div className="flex items-center gap-3 border-b border-ink-100 bg-[#f7f7fa] px-5 py-3">
                       <p className="text-[14px] font-semibold text-ink-900">{profiloTemplate.titolo}</p>
                       <span className="ml-auto text-[11px] font-medium text-ink-400">{draft.categoria_intervento}</span>
@@ -1958,7 +1958,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                     </div>
                   </div>
                 ) : (
-                  <div className="max-w-3xl border border-ink-100 bg-white p-6">
+                  <div className="max-w-5xl border border-ink-100 bg-white p-6">
                     <p className="text-[14px] text-ink-600">
                       Nessun parametro specifico disponibile per{" "}
                       <strong>{draft.categoria_intervento || "questa categoria"}</strong>.
@@ -1975,7 +1975,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                   title="Quale sarà la durata del progetto?"
                   description="Indica il periodo previsto dalla fase di avvio lavori alla piena operatività. Questa informazione è importante per programmare correttamente le attività, stimare i costi e valutare la sostenibilità nel tempo e i benefici nel progetto."
                 />
-                <div className="grid max-w-3xl grid-cols-1 gap-5 md:grid-cols-2">
+                <div className="grid max-w-5xl grid-cols-1 gap-5 md:grid-cols-2">
                   <DatePickerField
                     label="Data di inizio"
                     hint="Formato data gg/mm/aaaa"

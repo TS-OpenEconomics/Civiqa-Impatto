@@ -9,7 +9,6 @@ import { TabRiepilogo } from '../components/docfap/TabRiepilogo'
 import { TabCBA } from '../components/docfap/TabCBA'
 import { TabMCA } from '../components/docfap/TabMCA'
 import { TabImpatto } from '../components/docfap/TabImpatto'
-import { TabRisk } from '../components/docfap/TabRisk'
 import { TabSensitivita } from '../components/docfap/TabSensitivita'
 import {
   formatScore,
@@ -19,7 +18,7 @@ import {
   safeNumber,
 } from '../components/docfap/tableHelpers'
 
-type TabId = 'riepilogo' | 'cba' | 'mca' | 'risk' | 'impatto' | 'sensitivita'
+type TabId = 'riepilogo' | 'cba' | 'mca' | 'risk' | 'impatto'
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'riepilogo', label: 'Riepilogo' },
@@ -27,7 +26,6 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'mca', label: 'Analisi MCA' },
   { id: 'risk', label: 'Analisi del Rischio' },
   { id: 'impatto', label: "Analisi d'impatto" },
-  { id: 'sensitivita', label: 'Analisi di Sensitività' },
 ]
 
 const SCOPED_CSS = `
@@ -316,9 +314,8 @@ export function DocfapDetail() {
               {activeTab === tab.id && tab.id === 'riepilogo' ? <TabRiepilogo /> : null}
               {activeTab === tab.id && tab.id === 'cba' ? <TabCBA /> : null}
               {activeTab === tab.id && tab.id === 'mca' ? <TabMCA /> : null}
-              {activeTab === tab.id && tab.id === 'risk' ? <TabRisk /> : null}
+              {activeTab === tab.id && tab.id === 'risk' ? <TabSensitivita /> : null}
               {activeTab === tab.id && tab.id === 'impatto' ? <TabImpatto /> : null}
-              {activeTab === tab.id && tab.id === 'sensitivita' ? <TabSensitivita /> : null}
             </div>
           ))}
         </div>

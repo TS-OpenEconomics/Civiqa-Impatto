@@ -4,14 +4,6 @@ import { getQuestionsForFabbisogno, loadPocData } from '../../../data/poc_docfap
 import type { SzQuestion } from '../../../data/poc_docfap/sz_questions_all'
 import { useWizard } from '../../../hooks/useWizard'
 
-function CheckMark() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-      <path d="M3 7.2l2.3 2.3L11 4.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
 export function ScenarioZeroQuestions() {
   const { state, setScenarioZeroAnswers, setScenarioZeroNarrative } = useWizard()
   const [questions, setQuestions] = useState<SzQuestion[]>([])
@@ -27,11 +19,6 @@ export function ScenarioZeroQuestions() {
       setLoaded(true)
     })
   }, [state.fabId])
-
-  // Sincronizza le risposte locali quando lo store cambia dall'esterno (es. Autoriempi).
-  useEffect(() => {
-    setAnswers(state.scenarioZeroAnswers)
-  }, [state.scenarioZeroAnswers])
 
   function buildNarrative(
     qs: SzQuestion[],
@@ -94,46 +81,44 @@ export function ScenarioZeroQuestions() {
 
   return (
     <div style={rootStyle}>
-      <style>{`.sz-option:focus-within { box-shadow: 0 0 0 2px var(--color-border-focus); }`}</style>
       {questions.map((q) => (
         <fieldset key={q.questionId} style={fieldsetStyle}>
           <legend style={legendStyle}>{q.text}</legend>
-          <div style={optionsGridStyle}>
-            {q.opzioni.map((o) => {
-              const isRadio = q.tipo === 'radio'
-              const selected = isRadio
-                ? (answers[q.questionId] as string | undefined) === o.id
-                : ((answers[q.questionId] as string[] | undefined) ?? []).includes(o.id)
-              return (
-                <label
-                  key={o.id}
-                  className="sz-option"
-                  style={{ ...optionBoxStyle, ...(selected ? optionBoxSelectedStyle : null) }}
-                >
+          {q.tipo === 'radio' ? (
+            <div style={optionsGridStyle}>
+              {q.opzioni.map((o) => (
+                <label key={o.id} style={radioLabelStyle}>
                   <input
-                    type={isRadio ? 'radio' : 'checkbox'}
+                    type="radio"
                     name={q.questionId}
                     value={o.id}
-                    checked={selected}
-                    onChange={(e) =>
-                      isRadio
-                        ? handleSingleChange(q.questionId, o.id)
-                        : handleMultiChange(q.questionId, o.id, e.target.checked)
-                    }
-                    style={srOnlyInput}
+                    checked={(answers[q.questionId] as string | undefined) === o.id}
+                    onChange={() => handleSingleChange(q.questionId, o.id)}
+                    style={inputStyle}
                   />
-                  <span
-                    className="docfap-option-indicator"
-                    aria-hidden="true"
-                    style={{ ...indicatorStyle, ...(selected ? indicatorSelectedStyle : null) }}
-                  >
-                    {selected ? <CheckMark /> : null}
-                  </span>
-                  <span style={optionLabelStyle}>{o.label}</span>
+                  {o.label}
                 </label>
-              )
-            })}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div style={optionsGridStyle}>
+              {q.opzioni.map((o) => {
+                const selected = (answers[q.questionId] as string[] | undefined) ?? []
+                return (
+                  <label key={o.id} style={checkboxLabelStyle}>
+                    <input
+                      type="checkbox"
+                      value={o.id}
+                      checked={selected.includes(o.id)}
+                      onChange={(e) => handleMultiChange(q.questionId, o.id, e.target.checked)}
+                      style={inputStyle}
+                    />
+                    {o.label}
+                  </label>
+                )
+              })}
+            </div>
+          )}
         </fieldset>
       ))}
     </div>
@@ -141,42 +126,13 @@ export function ScenarioZeroQuestions() {
 }
 
 const srOnly: CSSProperties = { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' }
-const srOnlyInput: CSSProperties = { position: 'absolute', opacity: 0, width: 1, height: 1, margin: 0 }
 const rootStyle: CSSProperties = { display: 'grid', gap: 'var(--spacing-stack-m)' }
 const fieldsetStyle: CSSProperties = { border: '1px solid var(--color-border-secondary-light)', borderRadius: 'var(--radius-smooth)', padding: 'var(--spacing-inset-m)', margin: 0 }
 const legendStyle: CSSProperties = { padding: '0 var(--spacing-inline-s)', fontWeight: 600, color: 'var(--color-text-primary)' }
 const optionsGridStyle: CSSProperties = { display: 'grid', gap: 'var(--spacing-stack-xs)', marginTop: 'var(--spacing-stack-s)' }
-const optionBoxStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 'var(--spacing-inline-s)',
-  padding: '12px var(--spacing-inset-s)',
-  border: '1px solid var(--color-border-secondary-light)',
-  borderRadius: 'var(--radius-smooth)',
-  background: 'var(--color-background-inverse)',
-  cursor: 'pointer',
-  color: 'var(--color-text-primary)',
-}
-const optionBoxSelectedStyle: CSSProperties = {
-  borderColor: 'var(--color-border-primary)',
-  background: 'var(--color-background-primary-lighter)',
-}
-const indicatorStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 18,
-  height: 18,
-  flexShrink: 0,
-  border: '1px solid var(--color-border-secondary)',
-  background: 'var(--color-background-inverse)',
-  color: 'var(--color-text-inverse)',
-}
-const indicatorSelectedStyle: CSSProperties = {
-  background: 'var(--color-background-primary)',
-  borderColor: 'var(--color-background-primary)',
-}
-const optionLabelStyle: CSSProperties = { lineHeight: 1.4 }
+const radioLabelStyle: CSSProperties = { display: 'flex', alignItems: 'center', gap: 'var(--spacing-inline-s)', cursor: 'pointer', color: 'var(--color-text-primary)' }
+const checkboxLabelStyle: CSSProperties = { ...radioLabelStyle }
+const inputStyle: CSSProperties = { accentColor: 'var(--color-background-primary)', width: 16, height: 16 }
 const labelStyle: CSSProperties = { display: 'block', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 'var(--spacing-stack-xs)' }
 const textareaStyle: CSSProperties = { width: '100%', padding: 'var(--spacing-inset-s)', border: '1px solid var(--color-border-secondary)', borderRadius: 'var(--radius-smooth)', fontFamily: 'inherit', fontSize: 'inherit', color: 'var(--color-text-primary)', background: 'var(--color-background-inverse)', resize: 'vertical' }
 const freeTextContainerStyle: CSSProperties = { display: 'grid' }
