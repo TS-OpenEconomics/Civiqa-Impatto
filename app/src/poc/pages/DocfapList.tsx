@@ -403,7 +403,7 @@ export function DocfapList() {
           </div>
         </header>
 
-        <section aria-labelledby="docfap-evidenza" style={sectionStyle}>
+        <section aria-labelledby="docfap-evidenza" style={featuredSectionStyle}>
           <div style={sectionHeaderStyle}>
             <h2 id="docfap-evidenza" style={h2Style}>In evidenza</h2>
             <div style={carouselControlsStyle}>
@@ -688,6 +688,16 @@ const sectionStyle: CSSProperties = {
   padding: 'var(--spacing-inset-s)',
   display: 'grid',
   gap: 'var(--spacing-stack-s)',
+}
+
+const featuredSectionStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--spacing-stack-s)',
+  padding: 0,
+  margin: 0,
+  background: 'transparent',
+  border: 'none',
+  borderRadius: 0,
 }
 
 const sectionHeaderStyle: CSSProperties = {

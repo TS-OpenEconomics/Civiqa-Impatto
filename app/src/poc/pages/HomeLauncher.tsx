@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import civiqaLogo from '../assets/civiqa-logo.png'
 import colleferroStemma from '../assets/Logo_Comune_Colleferro.png.png'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme, toggleTheme } from '../../hooks/useTheme'
@@ -165,8 +166,11 @@ export function HomeLauncher() {
         {/* ── Header ── */}
         <header className="hl-header">
           <Link to="/" className="hl-logo" aria-label="Civiqa — torna alla homepage">
-            <span aria-hidden="true" style={{ lineHeight: 1 }}>■</span>
-            <span>Civiqa</span>
+            <img
+              src={civiqaLogo}
+              alt="Civiqa"
+              className="hl-wordmark"
+            />
           </Link>
           <div className="hl-header-right">
             <button

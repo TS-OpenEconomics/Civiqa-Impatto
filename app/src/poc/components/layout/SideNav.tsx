@@ -20,7 +20,7 @@ function IconDashboard({ size }: { size: number }) {
   )
 }
 
-function IconValutazione({ size }: { size: number }) {
+export function IconValutazione({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M4 17l5-5 3 3 8-8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

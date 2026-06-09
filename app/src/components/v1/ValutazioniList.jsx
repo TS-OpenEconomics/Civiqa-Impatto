@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useProjects } from "../../contexts/ProjectContext";
 import { useToast } from "../../hooks/useToast";
+import { IconValutazione } from "../../poc/components/layout/SideNav";
 import { Badge } from "../ui/Badge";
 import { Modal } from "../ui/Modal";
 import {
   IconArrowLeft,
   IconArrowRight,
-  IconChart,
   IconChevronDown,
   IconPin,
   IconSearch,
@@ -436,7 +436,7 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="max-w-4xl">
             <div className="flex items-center gap-3">
-              <IconChart className="h-7 w-7 text-ink-900" />
+              <IconValutazione size={28} />
               <h1 className="text-[22px] font-bold leading-none text-ink-900">Valutazione</h1>
             </div>
             <p className="mt-4 max-w-[900px] text-[14px] leading-[1.5] text-ink-900">

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { ECBA_DATA } from "./ecbaData";
 import { HoldingHandsCba } from "./HoldingHandsCba";
 
@@ -284,7 +284,7 @@ const MARKUP = `
     <div class="sec-head">Come si forma il valore netto <span class="info-i" data-tip="Grafico a cascata: dai benefici economici totali si sottraggono i costi e le esternalità negative, ottenendo il Valore Attuale Netto Economico.">i</span></div>
     <div class="sec-sub">Dai benefici totali ai costi e alle esternalità negative, fino al beneficio netto</div>
     <div class="card">
-      <div class="card-h">Ponte costi-benefici</div>
+      <div class="card-h">Impatto Sociale — da Investimento a Valore Sociale</div>
       <div class="card-sub">Valori attuali in M€ · orizzonte 30 anni · tasso 3%.</div>
       <div class="chart-box"><svg id="svg-wf" class="chart" viewBox="0 0 760 340"></svg></div>
       <div class="read"><h5>Come si legge</h5>
@@ -514,12 +514,32 @@ const MARKUP = `
 </div>
 `;
 
+const MARKUP_HTML = { __html: MARKUP };
+
+const EcbaStaticMarkup = memo(function EcbaStaticMarkup() {
+  return <div dangerouslySetInnerHTML={MARKUP_HTML} />;
+});
+
 export function EcbaResults({ project, onBack }) {
   const rootRef = useRef(null);
   const onBackRef = useRef(onBack);
   const projectRef = useRef(project);
   const pendingGuideActionRef = useRef(null);
   const [guideOpen, setGuideOpen] = useState(false);
+  const guideHandlers = useMemo(
+    () => ({
+      onClose: () => setGuideOpen(false),
+      onOpenMethodology: () => {
+        pendingGuideActionRef.current = "methodology";
+        setGuideOpen(false);
+      },
+      onGoToDetails: () => {
+        pendingGuideActionRef.current = "details";
+        setGuideOpen(false);
+      },
+    }),
+    [],
+  );
 
   // Tiene i ref allineati alle prop senza scriverli durante il render.
   useEffect(() => {
@@ -1238,19 +1258,13 @@ export function EcbaResults({ project, onBack }) {
   return (
     <div className="ecba-root" ref={rootRef}>
       <style>{CSS}</style>
-      <div dangerouslySetInnerHTML={{ __html: MARKUP }} />
+      <EcbaStaticMarkup />
       <HoldingHandsCba
         open={guideOpen}
         project={project}
-        onClose={() => setGuideOpen(false)}
-        onOpenMethodology={() => {
-          pendingGuideActionRef.current = "methodology";
-          setGuideOpen(false);
-        }}
-        onGoToDetails={() => {
-          pendingGuideActionRef.current = "details";
-          setGuideOpen(false);
-        }}
+        onClose={guideHandlers.onClose}
+        onOpenMethodology={guideHandlers.onOpenMethodology}
+        onGoToDetails={guideHandlers.onGoToDetails}
       />
     </div>
   );
