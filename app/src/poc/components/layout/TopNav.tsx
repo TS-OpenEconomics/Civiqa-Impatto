@@ -4,6 +4,7 @@ import colleferroStemma from '../../assets/Logo_Comune_Colleferro.png.png'
 import civiqaLogo from '../../assets/civiqa-logo.png'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useTheme, toggleTheme } from '../../../hooks/useTheme'
+import { IconValutazione } from './SideNav'
 
 /* ── Theme toggle (sun / moon) ─────────────────────────── */
 function ThemeToggle() {
@@ -80,15 +81,6 @@ function IconDocument() {
   )
 }
 
-function IconLineChart() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M4 17l5-5 3 3 8-8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M17 7h3v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
 function IconSearch() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -160,7 +152,7 @@ const PHASES: PhaseEntry[] = [
     to:    '/impatti',
     modules: [
       { label: 'Docfap',      icon: <IconDocument />,  active: true, to: '/impatti/docfap' },
-      { label: 'Valutazione', icon: <IconLineChart />, active: true, to: '/valutazioni' },
+      { label: 'Valutazione', icon: <IconValutazione size={16} />, active: true, to: '/valutazioni' },
     ],
   },
   {
