@@ -1,4 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ECBA_DATA } from "./ecbaData";
+import { HoldingHandsCba } from "./HoldingHandsCba";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Pagina ECBA — porting fedele del mockup `cba knowledge/civiqa_ecba_layout.html`.
@@ -7,78 +9,10 @@ import { useEffect, useRef } from "react";
 // dell'originale (`*`, `body`) non sfuggano al resto dell'app.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ===== DATA (mock, single object) — tutti i valori in M€ =====
-const DATA = {
-  // Ponte costi-benefici: i 40,7 M€ di spesa sono ripartiti tra costi economici
-  // (CAPEX+OPEX) ed esternalità negative monetizzate, così VANE = 53,1 − 36,2 − 4,5 = 12,4.
-  waterfall: { benefici: 53.1, costi: 36.2, esternalitaNeg: 4.5, vane: 12.4 },
-  // annual economic flows (pre-cumulation), scaled to VA totals
-  cashflow: (function () {
-    const cap = [14, 12, 5.2];
-    const cost = [];
-    const ben = [];
-    for (let t = 0; t <= 30; t++) {
-      let c = t < 3 ? cap[t] : 0.34;
-      if (t % 10 === 0 && t > 0) c += 1.0;
-      let b = t < 3 ? 0 : 2.3 - t * 0.02;
-      if (t === 30) b += 8.1;
-      if (b < 0) b = 0;
-      cost.push(c);
-      ben.push(b);
-    }
-    const sc = (a, tg) => {
-      const s = a.reduce((x, v) => x + v, 0);
-      return a.map((v) => (v * tg) / s);
-    };
-    return { cost: sc(cost, 40.7), ben: sc(ben, 53.1) };
-  })(),
-  donut: [
-    { label: "Partecipazione al lavoro e redditi", pct: 38, color: "#4400B3" },
-    { label: "Capitale umano / valore educativo", pct: 24, color: "#6E1AFF" },
-    { label: "Costi privati di cura evitati", pct: 18, color: "#ae81fd" },
-    { label: "Valorizzazione immobiliare", pct: 12, color: "#B9FF69" },
-    { label: "Efficienza energetica / emissioni", pct: 8, color: "#270065" },
-  ],
-  sensitivity: [
-    // VANE (M€) negli scenari sfavorevole/favorevole; base 12.4
-    { name: "Costi di investimento", sub: "±10%", low: 8.9, high: 15.9 },
-    { name: "Parametri delle esternalità", sub: "±10%", low: 9.8, high: 15.0 },
-    { name: "Tasso di crescita della domanda", sub: "±1 p.p.", low: 10.2, high: 14.6 },
-    { name: "Costi di gestione (OPEX)", sub: "±10%", low: 10.9, high: 13.9 },
-    { name: "Tasso di sconto sociale", sub: "±0,5 p.p.", low: 11.2, high: 13.6 },
-  ],
-  montecarlo: { start: -15, w: 5, freq: [1, 2, 5, 11, 18, 22, 18, 12, 7, 3, 1], base: 12.4 },
-  // ── Sezione rischio (porting della sezione rischio DOCFAP) ──────────────────
-  // Sintesi probabilistica del VANE (M€)
-  riskSummary: {
-    probPositive: 0.92,   // quota simulazioni con VANE > 0
-    median: 12.4,         // VANE mediano (M€)
-    mean: 12.1,           // VANE medio (M€)
-    std: 8.5,             // deviazione standard (M€)
-    p5: -3.2,             // 5° percentile (M€)
-    p95: 27.0,            // 95° percentile (M€)
-    criticalVar: "Costi di investimento",
-  },
-  // Elasticità |ε| del VANE: variazione % del VANE per +1% del parametro
-  elasticities: [
-    { param: "Costi investimento", value: 2.8 },
-    { param: "Esternalità", value: 2.1 },
-    { param: "Crescita domanda", value: 1.8 },
-    { param: "OPEX", value: 1.2 },
-    { param: "Tasso sconto", value: 0.9 },
-  ],
-  // Contributo normalizzato [0–1] di ciascun parametro alla varianza del VANE
-  variances: [
-    { param: "Costi investimento", value: 0.85 },
-    { param: "Esternalità", value: 0.70 },
-    { param: "Crescita domanda", value: 0.55 },
-    { param: "OPEX", value: 0.40 },
-    { param: "Tasso sconto", value: 0.30 },
-  ],
-  // Heatmap VANE (M€) al variare dei moltiplicatori di costo (righe) e beneficio (colonne)
-  // VANE(cm,bm) = benefici·bm − costiTotali·cm, con benefici 53,1 e costi totali 40,7
-  heatmap: { benefici: 53.1, costiTotali: 40.7, costMults: [0.8, 0.9, 1.0, 1.1, 1.2, 1.3], benefitMults: [0.8, 0.9, 1.0, 1.1, 1.2, 1.3] },
-};
+// Dati (mock) — fonte unica condivisa con il percorso guidato. Tutti i valori in M€.
+const DATA = ECBA_DATA;
+const SIMULATION_COUNT = DATA.simulationCount ?? 1000;
+const SIMULATION_COUNT_LABEL = new Intl.NumberFormat("it-IT").format(SIMULATION_COUNT);
 
 const CSS = `
 .ecba-root{
@@ -306,9 +240,9 @@ const MARKUP = `
 
   <!-- TABS -->
   <div class="tabs" id="tabs">
-    <button class="tab active" data-p="sintesi"><div class="t-name">Sintesi</div><div class="t-kpi">Valore Attuale Netto Economico +12,4 M€</div></button>
-    <button class="tab" data-p="ecba"><div class="t-name">Analisi Economica Costi-Benefici</div><div class="t-kpi">Rapporto Benefici/Costi 1,30</div></button>
-    <button class="tab" data-p="sens"><div class="t-name">Analisi del Rischio</div><div class="t-kpi">Valore Attuale Netto Economico &gt; 0 · 92%</div></button>
+    <button class="tab active" data-p="sintesi"><div class="t-name">Sintesi</div></button>
+    <button class="tab" data-p="ecba"><div class="t-name">Analisi Economica Costi-Benefici</div></button>
+    <button class="tab" data-p="sens"><div class="t-name">Analisi del Rischio</div></button>
   </div>
 
   <!-- ================= PANEL · SINTESI ================= -->
@@ -367,14 +301,14 @@ const MARKUP = `
     <div class="view-intro">L'andamento di <b>tutti i benefici e i costi</b> lungo i 30 anni: il <b>CAPEX</b> concentrato nei primi anni di costruzione, l'<b>OPEX</b> di gestione distribuito nel tempo, i benefici che maturano dall'entrata in esercizio. Tutti i valori sono cumulati e attualizzati al 3%.</div>
 
     <div class="card">
-      <div class="card-h">Flusso di cassa economico cumulato <span class="info-i" data-tip="Ogni linea è la somma progressiva nel tempo. Il flusso netto è la differenza fra benefici e costi cumulati.">i</span></div>
-      <div class="card-sub">Seleziona le voci da visualizzare. Valori in M€, cumulati e attualizzati.</div>
+      <div class="card-h">Flussi monetizzati — vita utile del progetto <span class="info-i" data-tip="Andamento annuo delle voci monetizzate e Valore Attuale Netto Economico cumulato. Usa i chip per mostrare o nascondere le singole dimensioni.">i</span></div>
+      <div class="card-sub">Seleziona le voci da visualizzare. Valori in M€ · Anno 0 = investimento iniziale.</div>
       <div class="chart-box"><svg id="svg-cf" class="chart" viewBox="0 0 760 400"></svg></div>
       <div class="legend" id="cf-legend"></div>
       <div class="read"><h5>Come si legge</h5>
-        <p>L'asse orizzontale è il <b>tempo</b> (anni dall'avvio). La linea <span style="color:var(--red-600);font-weight:800">dei costi</span> è mostrata <b>in negativo</b>: scende subito per il <b>CAPEX</b> di costruzione, poi prosegue piano in basso con l'<b>OPEX</b> annuale. La linea <span style="color:var(--green-700);font-weight:800">dei benefici</span> parte da zero e cresce man mano che il servizio produce effetti.</p>
-        <p>La linea <span class="key">viola</span> è il <b>flusso netto cumulato</b> (benefici − costi): è negativa nei primi anni, poi risale. Il punto in cui supera lo zero è il <b>payback sociale</b> — quando l'opera ha restituito alla collettività quanto è costata.</p></div>
-      <div class="takeaway">Il flusso netto torna positivo intorno all'<b>anno 14</b> e chiude a <b>+12,4 M€</b> a fine orizzonte.</div>
+        <p>L'asse orizzontale è il <b>tempo</b> (anni dall'avvio). La linea <span style="color:var(--green-700);font-weight:800">dei benefici annui</span> parte da zero e cresce man mano che il servizio produce effetti; la linea <span style="color:var(--red-600);font-weight:800">del flusso di cassa netto annuo</span> è negativa negli anni di investimento (CAPEX) e diventa positiva in esercizio.</p>
+        <p>La linea <span class="key">viola</span> è il <b>Valore Attuale Netto Economico cumulato</b>: negativo all'inizio, risale fino a chiudere positivo. Il punto in cui supera lo zero è il <b>payback sociale</b>. Con i <b>chip in alto</b> puoi mostrare o nascondere le singole componenti di beneficio.</p></div>
+      <div class="takeaway">Il Valore Attuale Netto Economico cumulato supera lo zero (payback sociale) intorno all'<b>anno 14</b> e chiude a <b>+12,4 M€</b>.</div>
     </div>
 
     <div class="card">
@@ -401,9 +335,9 @@ const MARKUP = `
     <div class="kpi-grid">
       <div class="kpi">
         <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18c3 0 4.5-11 9-11s6 11 9 11"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span><span class="kpi-label">Probabilità Valore Attuale Netto Economico &gt; 0</span></div>
-          <span class="info-i" data-tip="Quota di simulazioni Montecarlo (su 10.000) in cui il Valore Attuale Netto Economico resta positivo. Sintetizza la rischiosità complessiva del progetto.">i</span></div>
+          <span class="info-i" data-tip="Quota di simulazioni Montecarlo (su ${SIMULATION_COUNT_LABEL}) in cui il Valore Attuale Netto Economico resta positivo. Sintetizza la rischiosità complessiva del progetto.">i</span></div>
         <div class="kpi-num">92<span class="kpi-unit"> %</span></div>
-        <div class="kpi-desc">Su 10.000 scenari simulati · <span class="ok">rischio contenuto</span></div>
+        <div class="kpi-desc">Su ${SIMULATION_COUNT_LABEL} scenari simulati · <span class="ok">rischio contenuto</span></div>
       </div>
       <div class="kpi">
         <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><line x1="12" y1="4" x2="12" y2="20"/></svg></span><span class="kpi-label">Valore Attuale Netto Economico mediano</span></div>
@@ -441,7 +375,7 @@ const MARKUP = `
 
     <div class="card">
       <div class="card-h">Distribuzione probabilistica del Valore Attuale Netto Economico <span class="info-i" data-tip="Simulazione Montecarlo: distribuzione di frequenza del Valore Attuale Netto Economico assegnando distribuzioni di probabilità alle variabili critiche.">i</span></div>
-      <div class="card-sub">10.000 simulazioni · frequenza degli esiti del Valore Attuale Netto Economico (M€).</div>
+      <div class="card-sub">${SIMULATION_COUNT_LABEL} simulazioni · frequenza degli esiti del Valore Attuale Netto Economico (M€).</div>
       <div class="chart-box"><svg id="svg-mc" class="chart" viewBox="0 0 760 340"></svg></div>
       <div class="legend">
         <div class="lg"><span class="sw" style="background:var(--red-600)"></span><span>Scenari con Valore Attuale Netto Economico &lt; 0 (8%)</span></div>
@@ -584,6 +518,7 @@ export function EcbaResults({ project, onBack }) {
   const rootRef = useRef(null);
   const onBackRef = useRef(onBack);
   const projectRef = useRef(project);
+  const [guideOpen, setGuideOpen] = useState(false);
 
   // Tiene i ref allineati alle prop senza scriverli durante il render.
   useEffect(() => {
@@ -755,17 +690,20 @@ export function EcbaResults({ project, onBack }) {
       return r;
     }
     function buildCashflow() {
-      const benCum = cumul(DATA.cashflow.ben),
-        costCum = cumul(DATA.cashflow.cost);
-      const netCum = benCum.map((b, i) => +(b - costCum[i]).toFixed(3));
+      // Flussi monetizzati (come nei risultati DOCFAP): benefici annui, flusso netto
+      // annuo e Valore Attuale Netto Economico cumulato. Le componenti di beneficio
+      // sono attivabili/disattivabili dai chip in legenda.
+      const ben = DATA.cashflow.ben.map((v) => +v.toFixed(3));        // benefici annui
+      const cost = DATA.cashflow.cost;                               // costi annui (CAPEX+OPEX)
+      const netAnnual = ben.map((b, i) => +(b - cost[i]).toFixed(3)); // flusso netto annuo
+      const vaneCum = cumul(netAnnual);                              // VANE cumulato
       const series = [
-        { key: "net", label: "Flusso netto cumulato", color: "#4400B3", w: 3, data: netCum, on: true },
-        { key: "ben", label: "Benefici totali", color: "#1e7a45", w: 2.2, data: benCum, on: true },
-        // Costi mostrati in negativo (deflusso di cassa per la collettività)
-        { key: "cost", label: "Costi totali", color: "#c0392b", w: 2.2, data: costCum.map((v) => -v), on: true },
+        { key: "vane", label: "Valore Attuale Netto Economico cumulato", color: "#4400B3", w: 3, data: vaneCum, on: true },
+        { key: "ben", label: "Benefici totali (annui)", color: "#1e7a45", w: 2.2, data: ben, on: true },
+        { key: "net", label: "Flusso di cassa netto (annuo)", color: "#c0392b", w: 2.2, data: netAnnual, on: true },
       ];
       DATA.donut.forEach((d, i) =>
-        series.push({ key: "c" + i, label: d.label, color: d.color, w: 1.3, data: benCum.map((b) => +((b * d.pct) / 100).toFixed(3)), on: false }),
+        series.push({ key: "c" + i, label: d.label, color: d.color, w: 1.4, data: ben.map((b) => +((b * d.pct) / 100).toFixed(3)), on: false }),
       );
       CF = { series };
       // legend chips
@@ -786,6 +724,29 @@ export function EcbaResults({ project, onBack }) {
         ),
       );
       drawCashflow(true);
+    }
+    function showCashflowTip(clientX, clientY, t) {
+      const vis = CF.series.filter((s) => s.on);
+      const rows = vis
+        .map(
+          (s) =>
+            `<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-top:5px">
+               <span style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#33343f;line-height:1.3">
+                 <span style="width:10px;height:10px;flex:0 0 10px;border-radius:2px;background:${s.color};margin-top:2px"></span>${htmlEscape(s.label)}
+               </span>
+               <b style="font-size:12.5px;color:var(--text-main);white-space:nowrap">${fmt1(s.data[t])} M€</b>
+             </div>`,
+        )
+        .join("");
+      chartTip.innerHTML = `<div class="ct-lab">Anno ${t}</div>${rows}`;
+      chartTip.classList.add("show");
+      const rootRect = root.getBoundingClientRect();
+      const tipW = 280;
+      let left = clientX - rootRect.left + root.scrollLeft + 16;
+      const maxLeft = root.clientWidth - tipW - 8;
+      if (left > maxLeft) left = clientX - rootRect.left + root.scrollLeft - tipW - 16;
+      chartTip.style.left = `${Math.max(8, left)}px`;
+      chartTip.style.top = `${clientY - rootRect.top + root.scrollTop + 14}px`;
     }
     function drawCashflow(animate) {
       const svg = q("#svg-cf");
@@ -813,28 +774,20 @@ export function EcbaResults({ project, onBack }) {
         x = (t) => padL + (t / (N - 1)) * plotW,
         y = (v) => padT + plotH - ((v - mn) / (mx - mn)) * plotH;
       let o = "";
+      // griglia orizzontale + asse Y
       for (let g = Math.ceil(mn / 10) * 10; g <= mx; g += 10) {
         o += `<line class="ax-line" x1="${padL}" y1="${y(g)}" x2="${W - padR}" y2="${y(g)}"/><text class="ax-txt" x="${padL - 6}" y="${y(g) + 3}" text-anchor="end">${g}</text>`;
       }
       o += `<line class="ax-zero" x1="${padL}" y1="${y(0)}" x2="${W - padR}" y2="${y(0)}"/>`;
+      // griglia verticale leggera + etichette anno
       for (let t = 0; t <= 30; t += 5) {
+        o += `<line class="ax-line" x1="${x(t)}" y1="${padT}" x2="${x(t)}" y2="${H - padB}" opacity=".5"/>`;
         o += `<text class="ax-txt" x="${x(t)}" y="${H - padB + 18}" text-anchor="middle">${t}</text>`;
       }
       o += `<text class="ax-txt" x="${W - padR}" y="${H - padB + 18}" text-anchor="end" style="font-weight:700;fill:var(--text-muted)">anno</text>`;
-      vis.forEach((s, si) => {
-        const pts = s.data.map((v, t) => `${x(t)},${y(v)}`).join(" ");
-        const dash = animate ? ` pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"` : "";
-        o += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="${s.w}" stroke-linejoin="round"${dash}>`;
-        if (animate) o += `<animate attributeName="stroke-dashoffset" from="1" to="0" dur="1.2s" begin="${0.2 + si * 0.08}s" fill="freeze"/>`;
-        o += `</polyline>`;
-        // Niente pallini visibili: punti-bersaglio trasparenti per il tooltip al click
-        s.data.forEach((v, t) => {
-          o += `<circle class="chart-point" cx="${x(t)}" cy="${y(v)}" r="8" fill="transparent" data-tip-label="${s.label}" data-tip-value="${fmt1(v)} M€" data-tip-sub="Anno ${t}"></circle>`;
-        });
-      });
-      // payback on net
-      const net = CF.series.find((s) => s.key === "net");
-      if (net.on) {
+      // payback sul VANE cumulato (sotto le linee)
+      const net = CF.series.find((s) => s.key === "vane");
+      if (net && net.on) {
         let pb = -1;
         for (let t = 2; t <= 30; t++) {
           if (net.data[t - 1] < 0 && net.data[t] >= 0) {
@@ -847,8 +800,50 @@ export function EcbaResults({ project, onBack }) {
           o += `<line x1="${px}" y1="${padT}" x2="${px}" y2="${H - padB}" stroke="#4400B3" stroke-width="1" stroke-dasharray="4 3" opacity=".45"/><text class="ax-txt" x="${px + 4}" y="${padT + 12}" style="fill:#4400B3;font-weight:700">payback · anno ${pb}</text>`;
         }
       }
+      // linee
+      vis.forEach((s, si) => {
+        const pts = s.data.map((v, t) => `${x(t)},${y(v)}`).join(" ");
+        const dash = animate ? ` pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"` : "";
+        o += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="${s.w}" stroke-linejoin="round" stroke-linecap="round"${dash}>`;
+        if (animate) o += `<animate attributeName="stroke-dashoffset" from="1" to="0" dur="1.2s" begin="${0.2 + si * 0.08}s" fill="freeze"/>`;
+        o += `</polyline>`;
+      });
+      // gruppo crosshair (popolato all'hover) + overlay trasparente che cattura il mouse
+      o += `<g id="cf-hover" style="display:none;pointer-events:none"></g>`;
+      o += `<rect id="cf-overlay" x="${padL}" y="${padT}" width="${plotW}" height="${plotH}" fill="transparent" style="cursor:crosshair"></rect>`;
       svg.innerHTML = o;
-      bindChartTips(svg);
+
+      // ===== Hover: linea-guida verticale + pallini + tooltip combinato (come nei risultati DOCFAP)
+      const overlay = svg.querySelector("#cf-overlay");
+      const hover = svg.querySelector("#cf-hover");
+      const yearFromClientX = (clientX) => {
+        const rect = svg.getBoundingClientRect();
+        const svgX = ((clientX - rect.left) / rect.width) * W;
+        const t = Math.round(((svgX - padL) / plotW) * (N - 1));
+        return Math.max(0, Math.min(N - 1, t));
+      };
+      const moveHover = (event) => {
+        const t = yearFromClientX(event.clientX);
+        const vx = x(t);
+        let h = `<line x1="${vx}" y1="${padT}" x2="${vx}" y2="${H - padB}" stroke="var(--blu-500)" stroke-width="1" opacity=".55"/>`;
+        CF.series
+          .filter((s) => s.on)
+          .forEach((s) => {
+            h += `<circle cx="${vx}" cy="${y(s.data[t])}" r="4.5" fill="#fff" stroke="${s.color}" stroke-width="2.5"/>`;
+          });
+        hover.innerHTML = h;
+        hover.style.display = "";
+        showCashflowTip(event.clientX, event.clientY, t);
+      };
+      overlay.addEventListener("mousemove", moveHover, { signal });
+      overlay.addEventListener(
+        "mouseleave",
+        () => {
+          hover.style.display = "none";
+          closeChartTip();
+        },
+        { signal },
+      );
     }
 
     // ===== DONUT =====
@@ -1149,6 +1144,13 @@ export function EcbaResults({ project, onBack }) {
     }
     const metoBtn = q(".js-metodologia");
     if (metoBtn) metoBtn.addEventListener("click", openModal, { signal });
+
+    // Banner "La convenienza in parole semplici" → apre il percorso guidato
+    const guideBanner = q(".simple-banner");
+    if (guideBanner) {
+      guideBanner.style.cursor = "pointer";
+      guideBanner.addEventListener("click", () => setGuideOpen(true), { signal });
+    }
     const modalX = q(".js-modal-x");
     if (modalX) modalX.addEventListener("click", closeModal, { signal });
     const modalBg = q("#modal");
@@ -1216,6 +1218,19 @@ export function EcbaResults({ project, onBack }) {
     <div className="ecba-root" ref={rootRef}>
       <style>{CSS}</style>
       <div dangerouslySetInnerHTML={{ __html: MARKUP }} />
+      <HoldingHandsCba
+        open={guideOpen}
+        project={project}
+        onClose={() => setGuideOpen(false)}
+        onOpenMethodology={() => {
+          setGuideOpen(false);
+          rootRef.current?.querySelector(".js-metodologia")?.click();
+        }}
+        onGoToDetails={() => {
+          setGuideOpen(false);
+          rootRef.current?.querySelector('.tab[data-p="ecba"]')?.click();
+        }}
+      />
     </div>
   );
 }

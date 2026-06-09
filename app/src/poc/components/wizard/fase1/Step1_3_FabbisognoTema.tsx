@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { NEEDS_DOCFAP } from '../../../data/poc_docfap/fabbisogni_v2'
 import { useWizard } from '../../../hooks/useWizard'
 import { InputField } from '../../ui/InputField'
@@ -181,14 +181,77 @@ function ThemeBadgeIcon({ themeId }: { themeId: string }) {
   }
 }
 
+function IconCheck() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M3 7.2l2.3 2.3L11 4.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function RadioCircle({ selected }: { selected: boolean }) {
+  // Le classi `docfap-option-indicator` / `radio-option__dot` sono nella whitelist
+  // del tema POC (poc-theme.css) che ripristina border-radius:50% sotto al reset
+  // globale `border-radius:0 !important`.
+  return (
+    <span
+      className="docfap-option-indicator"
+      aria-hidden="true"
+      style={{ ...radioCircleStyle, ...(selected ? radioCircleSelectedStyle : null) }}
+    >
+      {selected ? <span className="radio-option__dot" style={radioDotStyle} /> : null}
+    </span>
+  )
+}
+
+// ── Lock-in accordion (replica della sezione "Categoria di intervento" del
+//    wizard di Valutazione: cerchio numerato, check, riepilogo, "Modifica") ────
+
+function LockAccordion({
+  number,
+  title,
+  selectedLabel,
+  isCompleted,
+  onEdit,
+  children,
+}: {
+  number: number
+  title: string
+  selectedLabel?: string | null
+  isCompleted: boolean
+  onEdit: () => void
+  children: ReactNode
+}) {
+  return (
+    <section style={{ ...accordionCardStyle, ...(isCompleted ? null : accordionCardActiveStyle) }}>
+      <div style={accordionHeaderStyle}>
+        <span className="docfap-accordion-num" style={accordionNumberStyle}>{isCompleted ? <IconCheck /> : number}</span>
+        <div style={accordionHeaderTextStyle}>
+          <p style={isCompleted ? accordionTitleDoneStyle : accordionTitleStyle}>{title}</p>
+          {isCompleted && selectedLabel ? (
+            <p style={accordionSelectedLabelStyle}>{selectedLabel}</p>
+          ) : null}
+        </div>
+        {isCompleted ? (
+          <button type="button" onClick={onEdit} className="step1-3-interactive" style={accordionEditButtonStyle}>
+            Modifica
+          </button>
+        ) : null}
+      </div>
+      {!isCompleted ? <div style={accordionBodyStyle}>{children}</div> : null}
+    </section>
+  )
+}
+
 export function Step1_3_FabbisognoTema() {
   const { state, setFab, setCluster } = useWizard()
 
-  const initialThemeId = state.temaId ?? null
-  const [selectedThemeId, setSelectedThemeId] = useState<string | null>(initialThemeId)
+  const [mode, setMode] = useState<'guided' | 'search'>('guided')
+  const [selectedThemeId, setSelectedThemeId] = useState<string | null>(state.temaId ?? null)
+  // revealLevel: 1 = scelta tema · 2 = tema bloccato, scelta fabbisogno
+  const [revealLevel, setRevealLevel] = useState<number>(() => (state.temaId ? 2 : 1))
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [mode, setMode] = useState<'guided' | 'search'>('guided')
 
   const selectedTheme = useMemo(
     () => TEMI.find((t) => t.id === selectedThemeId) ?? null,
@@ -207,9 +270,16 @@ export function Step1_3_FabbisognoTema() {
     return () => window.clearTimeout(timer)
   }, [searchTerm])
 
+  // Sincronizza con lo store quando cambia dall'esterno (es. Autoriempi).
   useEffect(() => {
-    setSelectedThemeId(initialThemeId)
-  }, [initialThemeId])
+    setSelectedThemeId(state.temaId ?? null)
+    setRevealLevel(state.temaId ? 2 : 1)
+  }, [state.temaId])
+
+  const needsByTheme = useMemo(() => {
+    if (!selectedThemeId) return []
+    return NEEDS_DOCFAP.filter((n) => n.tema_code === selectedThemeId)
+  }, [selectedThemeId])
 
   const filteredNeeds = useMemo(() => {
     const query = debouncedSearch.trim()
@@ -224,12 +294,10 @@ export function Step1_3_FabbisognoTema() {
   }, [debouncedSearch])
 
   const onSelectTheme = (themeId: string) => {
-    if (themeId === selectedThemeId) return
     setSelectedThemeId(themeId)
-    setSearchTerm('')
-    setDebouncedSearch('')
     setFab(null, themeId)
     setCluster(null)
+    setRevealLevel(2) // blocca il tema e mostra la scelta del fabbisogno
   }
 
   const onSelectFabbisogno = (fabCode: string) => {
@@ -238,26 +306,59 @@ export function Step1_3_FabbisognoTema() {
     setSelectedThemeId(need.tema_code)
     setFab(need.code, need.tema_code)
     setCluster(need.cluster_mca === 'NONE' ? null : need.cluster_mca)
+    setRevealLevel(2)
   }
 
-  const needsByTheme = useMemo(() => {
-    if (!selectedThemeId) return []
-    return NEEDS_DOCFAP.filter((n) => n.tema_code === selectedThemeId)
-  }, [selectedThemeId])
+  const editTheme = () => {
+    setRevealLevel(1)
+  }
+
+  // Cambio modalità: azzera lo stato transitorio di ricerca così non resta
+  // evidenziato un risultato "vecchio" passando da una modalità all'altra.
+  const changeMode = (nextMode: 'guided' | 'search') => {
+    if (nextMode === mode) return
+    setMode(nextMode)
+    setSearchTerm('')
+    setDebouncedSearch('')
+  }
 
   return (
-    <div style={rootStyle}>
-      <section style={modeGridStyle}>
-        <section style={mode === 'guided' ? { ...modeCardStyle, ...modeCardActiveStyle } : modeCardStyle}>
-          <button type="button" style={modeHeaderButtonStyle} onClick={() => setMode('guided')}>
-            <span style={modeTitleStyle}>Percorso guidato</span>
-            <span style={modeMetaStyle}>
-              {selectedTheme ? selectedNeed ? `${selectedTheme.label} · ${selectedNeed.label}` : selectedTheme.label : 'Tema + fabbisogno'}
-            </span>
+    <div
+      className="s13-root"
+      style={{ ...rootStyle, gridTemplateColumns: selectedNeed ? 'minmax(0, 1fr) minmax(300px, 380px)' : '1fr' }}
+    >
+      <div style={leftColStyle}>
+      {/* Toggle modalità (Percorso guidato / Cerca fabbisogno) */}
+        <div style={modeToggleStyle}>
+          <button
+            type="button"
+            onClick={() => changeMode('guided')}
+            className="step1-3-interactive"
+            style={mode === 'guided' ? modeButtonActiveStyle : modeButtonStyle}
+          >
+            Percorso guidato
           </button>
+          <span style={modeDividerStyle} />
+          <button
+            type="button"
+            onClick={() => changeMode('search')}
+            className="step1-3-interactive"
+            style={mode === 'search' ? modeButtonActiveStyle : modeButtonStyle}
+          >
+            Cerca fabbisogno
+          </button>
+        </div>
 
-          {mode === 'guided' ? (
-            <div style={modeBodyStyle}>
+        {mode === 'guided' ? (
+          <div style={accordionStackStyle}>
+            {/* Step 1 · Tema */}
+            <LockAccordion
+              number={1}
+              title="Tema"
+              selectedLabel={selectedTheme?.label}
+              isCompleted={revealLevel > 1 && !!selectedTheme}
+              onEdit={editTheme}
+            >
               <fieldset style={themeListStyle}>
                 <legend style={srOnlyStyle}>Tema del fabbisogno</legend>
                 {TEMI.map((theme) => {
@@ -274,9 +375,9 @@ export function Step1_3_FabbisognoTema() {
                         value={theme.id}
                         checked={isSelected}
                         onChange={() => onSelectTheme(theme.id)}
-                        style={radioStyle}
+                        style={hiddenInputStyle}
                       />
-                      <span aria-hidden="true" style={themeCodeStyle}>
+                      <span aria-hidden="true" className="docfap-theme-icon" style={themeIconStyle}>
                         <ThemeBadgeIcon themeId={theme.id} />
                       </span>
                       <span style={themeTextStyle}>{theme.label}</span>
@@ -284,107 +385,112 @@ export function Step1_3_FabbisognoTema() {
                   )
                 })}
               </fieldset>
+            </LockAccordion>
 
-              {selectedTheme ? (
-                <div style={guidedListWrapStyle}>
-                  <div style={guidedHeaderStyle}>
-                    <h3 style={guidedTitleStyle}>Fabbisogni di {selectedTheme.label}</h3>
-                    <span style={guidedCountStyle}>{needsByTheme.length} opzioni</span>
-                  </div>
-                  <div
-                    role="listbox"
-                    aria-label="Fabbisogni del tema selezionato"
-                    aria-activedescendant={state.fabId ? `fab-option-${state.fabId}` : undefined}
-                    style={needListStyle}
-                  >
-                    {needsByTheme.map((need) => {
-                      const isSelected = state.fabId === need.code
-                      return (
-                        <button
-                          key={need.code}
-                          id={`fab-option-${need.code}`}
-                          type="button"
-                          role="option"
-                          aria-selected={isSelected}
-                          className={`step1-3-interactive${isSelected ? ' step1-3-selected' : ''}`}
-                          onClick={() => onSelectFabbisogno(need.code)}
-                          style={isSelected ? { ...needOptionStyle, ...selectedNeedOptionStyle } : needOptionStyle}
-                        >
-                          <span style={searchResultHeaderStyle}>
-                            <span style={searchResultLabelStyle}>{need.label}</span>
-                            <span style={searchResultThemeStyle}>{need.code}</span>
-                          </span>
-                          <span style={searchResultSubLabelStyle}>{need.description}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
+            {/* Step 2 · Fabbisogno */}
+            {revealLevel >= 2 && selectedTheme ? (
+              <LockAccordion
+                number={2}
+                title="Fabbisogno"
+                selectedLabel={selectedNeed?.label}
+                isCompleted={false}
+                onEdit={() => {}}
+              >
+                <div style={guidedHeaderStyle}>
+                  <span style={guidedCountStyle}>{needsByTheme.length} opzioni per {selectedTheme.label}</span>
                 </div>
-              ) : null}
-            </div>
-          ) : null}
-        </section>
-
-        <section style={mode === 'search' ? { ...modeCardStyle, ...modeCardActiveStyle } : modeCardStyle}>
-          <button type="button" style={modeHeaderButtonStyle} onClick={() => setMode('search')}>
-            <span style={modeTitleStyle}>Cerca fabbisogno</span>
-            <span style={modeMetaStyle}>{selectedNeed ? selectedNeed.label : 'Ricerca diretta'}</span>
-          </button>
-
-          {mode === 'search' ? (
-            <div style={{ ...modeBodyStyle, ...searchBoxStyle }}>
-              <InputField
-                label="Ricerca assistita fabbisogno"
-                value={searchTerm}
-                onChange={setSearchTerm}
-                placeholder="Cerca per titolo o descrizione del fabbisogno"
-                ariaLabel="Ricerca assistita fabbisogno"
-                helperText="Selezionando un risultato vengono impostati automaticamente macro tema e fabbisogno."
-              />
-
-              {debouncedSearch.trim().length >= 2 && (
-                <div role="listbox" aria-label="Risultati ricerca fabbisogno" style={searchResultsStyle}>
-                  {filteredNeeds.length > 0 && (
-                    <p style={searchCountStyle} aria-live="polite">
-                      {filteredNeeds.length} fabbisogn{filteredNeeds.length === 1 ? 'o' : 'i'} trovat{filteredNeeds.length === 1 ? 'o' : 'i'}
-                    </p>
-                  )}
-                  {filteredNeeds.map((need) => {
-                    const themeLabel = TEMI.find((t) => t.id === need.tema_code)?.label ?? need.tema_code
+                <div
+                  role="listbox"
+                  aria-label="Fabbisogni del tema selezionato"
+                  aria-activedescendant={state.fabId ? `fab-option-${state.fabId}` : undefined}
+                  style={needListStyle}
+                >
+                  {needsByTheme.map((need) => {
+                    const isSelected = state.fabId === need.code
                     return (
                       <button
                         key={need.code}
+                        id={`fab-option-${need.code}`}
                         type="button"
                         role="option"
+                        aria-selected={isSelected}
                         className="step1-3-interactive"
                         onClick={() => onSelectFabbisogno(need.code)}
-                        style={searchResultOptionStyle}
+                        style={isSelected ? { ...needOptionStyle, ...needOptionSelectedStyle } : needOptionStyle}
                       >
-                        <span style={searchResultHeaderStyle}>
-                          <span style={searchResultLabelStyle}>{need.label}</span>
-                          <span style={searchResultThemeStyle}>{themeLabel}</span>
+                        <RadioCircle selected={isSelected} />
+                        <span style={needOptionTextStyle}>
+                          <span style={needOptionHeaderStyle}>
+                            <span style={needOptionLabelStyle}>{need.label}</span>
+                            <span style={needOptionCodeStyle}>{need.code}</span>
+                          </span>
+                          <span style={needOptionSubLabelStyle}>{need.description}</span>
                         </span>
-                        <span style={searchResultSubLabelStyle}>{need.description}</span>
                       </button>
                     )
                   })}
-
-                  {filteredNeeds.length === 0 && (
-                    <p style={emptySearchStateStyle} aria-live="polite">
-                      Nessun fabbisogno trovato per "{debouncedSearch.trim()}". Prova con un termine diverso o usa il percorso guidato.
-                    </p>
-                  )}
                 </div>
-              )}
-            </div>
-          ) : null}
-        </section>
-      </section>
+              </LockAccordion>
+            ) : null}
+          </div>
+        ) : (
+          <div style={searchCardStyle}>
+            <InputField
+              label="Ricerca assistita fabbisogno"
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Cerca per titolo o descrizione del fabbisogno"
+              ariaLabel="Ricerca assistita fabbisogno"
+              helperText="Selezionando un risultato vengono impostati automaticamente macro tema e fabbisogno."
+            />
 
-      <section aria-live="polite" style={detailsBoxStyle}>
-        <h3 style={detailsTitleStyle}>Dettagli fabbisogno selezionato</h3>
+            {debouncedSearch.trim().length >= 2 && (
+              <div role="listbox" aria-label="Risultati ricerca fabbisogno" style={needListStyle}>
+                {filteredNeeds.length > 0 && (
+                  <p style={searchCountStyle} aria-live="polite">
+                    {filteredNeeds.length} fabbisogn{filteredNeeds.length === 1 ? 'o' : 'i'} trovat{filteredNeeds.length === 1 ? 'o' : 'i'}
+                  </p>
+                )}
+                {filteredNeeds.map((need) => {
+                  const themeLabel = TEMI.find((t) => t.id === need.tema_code)?.label ?? need.tema_code
+                  const isSelected = state.fabId === need.code
+                  return (
+                    <button
+                      key={need.code}
+                      type="button"
+                      role="option"
+                      aria-selected={isSelected}
+                      className="step1-3-interactive"
+                      onClick={() => onSelectFabbisogno(need.code)}
+                      style={isSelected ? { ...needOptionStyle, ...needOptionSelectedStyle } : needOptionStyle}
+                    >
+                      <RadioCircle selected={isSelected} />
+                      <span style={needOptionTextStyle}>
+                        <span style={needOptionHeaderStyle}>
+                          <span style={needOptionLabelStyle}>{need.label}</span>
+                          <span style={needOptionCodeStyle}>{themeLabel}</span>
+                        </span>
+                        <span style={needOptionSubLabelStyle}>{need.description}</span>
+                      </span>
+                    </button>
+                  )
+                })}
 
-        {selectedNeed ? (
+                {filteredNeeds.length === 0 && (
+                  <p style={emptySearchStateStyle} aria-live="polite">
+                    Nessun fabbisogno trovato per "{debouncedSearch.trim()}". Prova con un termine diverso o usa il percorso guidato.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Dettagli — pannello a destra, visibile dopo aver selezionato un fabbisogno */}
+      {selectedNeed ? (
+        <aside aria-live="polite" style={detailsBoxStyle}>
+          <h3 style={detailsTitleStyle}>Dettagli fabbisogno selezionato</h3>
           <dl style={detailsListStyle}>
             <div style={detailsRowStyle}>
               <dt style={detailsTermStyle}>Descrizione</dt>
@@ -398,7 +504,7 @@ export function Step1_3_FabbisognoTema() {
                   <div style={detailsBlockStyle}>
                     {selectedNeed.missions.map((mission) => (
                       <div key={mission.code} style={codeItemStyle}>
-                        <span style={codeTagStyle}>{mission.code}</span>
+                        <span className="docfap-code-tag" style={codeTagStyle}>{mission.code}</span>
                         <span>{mission.label}</span>
                       </div>
                     ))}
@@ -414,7 +520,7 @@ export function Step1_3_FabbisognoTema() {
                   <div style={detailsBlockStyle}>
                     {selectedNeed.rso.map((rso) => (
                       <div key={rso.code} style={codeItemStyle}>
-                        <span style={codeTagStyle}>{rso.code}</span>
+                        <span className="docfap-code-tag" style={codeTagStyle}>{rso.code}</span>
                         <span>{rso.label}</span>
                       </div>
                     ))}
@@ -430,7 +536,7 @@ export function Step1_3_FabbisognoTema() {
                   <div style={detailsBlockStyle}>
                     {selectedNeed.funds.map((fund) => (
                       <div key={fund.code} style={codeItemStyle}>
-                        <span style={codeTagStyle}>{fund.code}</span>
+                        <span className="docfap-code-tag" style={codeTagStyle}>{fund.code}</span>
                         <span>{fund.label}</span>
                       </div>
                     ))}
@@ -439,12 +545,8 @@ export function Step1_3_FabbisognoTema() {
               </div>
             )}
           </dl>
-        ) : (
-          <p style={detailsEmptyStyle}>
-            Seleziona un fabbisogno dal percorso guidato o dalla ricerca per visualizzare i dettagli.
-          </p>
-        )}
-      </section>
+        </aside>
+      ) : null}
 
       <style>{`
         .step1-3-interactive:focus-visible,
@@ -456,75 +558,154 @@ export function Step1_3_FabbisognoTema() {
           outline: 2px solid var(--color-border-primary-light);
           outline-offset: -2px;
         }
+        @media (max-width: 900px) {
+          .s13-root { grid-template-columns: 1fr !important; }
+        }
       `}</style>
-
-      <div style={srOnlyStyle}>
-        {selectedTheme ? `Tema selezionato: ${selectedTheme.label}` : 'Nessun tema selezionato'}
-      </div>
     </div>
   )
 }
 
+// ── Layout ────────────────────────────────────────────────────────────────────
+
 const rootStyle: CSSProperties = {
   display: 'grid',
-  gap: 'var(--spacing-stack-s)',
-}
-
-const modeGridStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-  gap: 'var(--spacing-inline-s)',
+  gap: 'var(--spacing-inline-l)',
   alignItems: 'start',
+  width: '100%',
 }
 
-const modeCardStyle: CSSProperties = {
+// Colonna sinistra: toggle modalità + selezione (guidata o ricerca)
+const leftColStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--spacing-stack-s)',
+  minWidth: 0,
+}
+
+// ── Mode toggle ─────────────────────────────────────────────────────────────
+
+const modeToggleStyle: CSSProperties = {
+  display: 'flex',
+  maxWidth: '420px',
+  overflow: 'hidden',
   border: '1px solid var(--color-border-secondary-light)',
   borderRadius: 'var(--radius-smooth)',
-  background: 'var(--color-background-inverse)',
-  overflow: 'hidden',
 }
 
-const modeCardActiveStyle: CSSProperties = {
-  borderColor: 'var(--color-border-primary-light)',
-  boxShadow: 'inset 0 3px 0 var(--color-border-primary-light)',
-}
-
-const modeHeaderButtonStyle: CSSProperties = {
-  width: '100%',
-  minHeight: '74px',
+const modeButtonStyle: CSSProperties = {
+  flex: 1,
   border: 'none',
-  background: 'transparent',
-  padding: 'var(--spacing-inset-s)',
-  display: 'grid',
-  gap: '4px',
-  textAlign: 'left',
+  background: 'var(--color-background-inverse)',
+  padding: '12px',
   cursor: 'pointer',
-}
-
-const modeTitleStyle: CSSProperties = {
-  color: 'var(--color-text-primary)',
-  fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-  fontSize: 'var(--type-body-s-size, 16px)',
-  fontWeight: 700,
-}
-
-const modeMetaStyle: CSSProperties = {
   color: 'var(--color-text-primary-light)',
   fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
   fontSize: 'var(--type-body-xs-size, 13px)',
-  lineHeight: 1.35,
+  fontWeight: 700,
 }
 
-const modeBodyStyle: CSSProperties = {
+const modeButtonActiveStyle: CSSProperties = {
+  ...modeButtonStyle,
+  background: 'var(--color-background-primary)',
+  color: 'var(--color-text-inverse)',
+}
+
+const modeDividerStyle: CSSProperties = {
+  width: '1px',
+  background: 'var(--color-border-secondary-light)',
+}
+
+// ── Lock-in accordion ────────────────────────────────────────────────────────
+
+const accordionStackStyle: CSSProperties = {
   display: 'grid',
-  gap: 'var(--spacing-stack-s)',
-  borderTop: '1px solid var(--color-border-secondary-light)',
+  gap: 'var(--spacing-stack-xs)',
+}
+
+const accordionCardStyle: CSSProperties = {
+  overflow: 'hidden',
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
+  background: 'var(--color-background-inverse)',
+}
+
+const accordionCardActiveStyle: CSSProperties = {
+  borderColor: 'var(--color-border-primary-light)',
+}
+
+const accordionHeaderStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 'var(--spacing-inline-s)',
   padding: 'var(--spacing-inset-s)',
 }
 
+const accordionNumberStyle: CSSProperties = {
+  flexShrink: 0,
+  width: '28px',
+  height: '28px',
+  borderRadius: '50%',
+  background: 'var(--color-background-primary)',
+  color: 'var(--color-text-inverse)',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontWeight: 700,
+  fontSize: 'var(--type-body-xs-size, 13px)',
+}
+
+const accordionHeaderTextStyle: CSSProperties = {
+  flex: 1,
+  minWidth: 0,
+  display: 'grid',
+  gap: '2px',
+}
+
+const accordionTitleStyle: CSSProperties = {
+  margin: 0,
+  color: 'var(--color-text-primary)',
+  fontWeight: 700,
+  fontSize: 'var(--type-body-s-size, 16px)',
+}
+
+const accordionTitleDoneStyle: CSSProperties = {
+  margin: 0,
+  color: 'var(--color-text-primary-light)',
+  fontSize: 'var(--type-body-xs-size, 13px)',
+}
+
+const accordionSelectedLabelStyle: CSSProperties = {
+  margin: 0,
+  color: 'var(--color-text-primary)',
+  fontWeight: 700,
+  fontSize: 'var(--type-body-s-size, 16px)',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+}
+
+const accordionEditButtonStyle: CSSProperties = {
+  flexShrink: 0,
+  border: 'none',
+  background: 'transparent',
+  cursor: 'pointer',
+  color: 'var(--color-text-secondary)',
+  fontWeight: 500,
+  fontSize: 'var(--type-body-xs-size, 13px)',
+}
+
+const accordionBodyStyle: CSSProperties = {
+  borderTop: '1px solid var(--color-border-secondary-light)',
+  padding: 'var(--spacing-inset-s)',
+  display: 'grid',
+  gap: 'var(--spacing-stack-xs)',
+}
+
+// ── Tema list ────────────────────────────────────────────────────────────────
+
 const themeListStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
   gap: '12px',
   border: 'none',
   padding: 0,
@@ -533,22 +714,23 @@ const themeListStyle: CSSProperties = {
 
 const themeRowStyle: CSSProperties = {
   position: 'relative',
-  display: 'grid',
-  gap: '4px',
-  padding: '16px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 'var(--spacing-inline-s)',
+  padding: '14px',
   border: '1px solid var(--color-border-secondary-light)',
   borderRadius: 'var(--radius-smooth)',
   background: 'var(--color-background-inverse)',
   cursor: 'pointer',
 }
 
-
-const themeCodeStyle: CSSProperties = {
+const themeIconStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  width: '44px',
-  height: '44px',
+  flexShrink: 0,
+  width: '40px',
+  height: '40px',
   borderRadius: 'var(--radius-rounded)',
   background: 'var(--color-background-primary-lighter)',
   color: 'var(--color-text-secondary)',
@@ -561,28 +743,12 @@ const themeTextStyle: CSSProperties = {
   fontWeight: 'var(--type-weight-bold, 700)',
 }
 
-const searchBoxStyle: CSSProperties = {
-  display: 'grid',
-  gap: 'var(--spacing-stack-xs)',
-  marginTop: 'var(--spacing-stack-xs)',
-}
-
-const guidedListWrapStyle: CSSProperties = {
-  display: 'grid',
-  gap: 'var(--spacing-stack-xs)',
-}
+// ── Fabbisogno list (guided + search) ────────────────────────────────────────
 
 const guidedHeaderStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'baseline',
-  justifyContent: 'space-between',
-  gap: '12px',
-}
-
-const guidedTitleStyle: CSSProperties = {
-  margin: 0,
-  color: 'var(--color-text-primary)',
-  fontSize: 'var(--type-body-s-size, 16px)',
+  justifyContent: 'flex-end',
 }
 
 const guidedCountStyle: CSSProperties = {
@@ -593,17 +759,14 @@ const guidedCountStyle: CSSProperties = {
 const needListStyle: CSSProperties = {
   display: 'grid',
   gap: 'var(--spacing-stack-xs)',
-  maxHeight: '320px',
+  maxHeight: '360px',
   overflowY: 'auto',
-  padding: 'var(--spacing-inset-xs)',
-  border: '1px solid var(--color-border-secondary-light)',
-  borderRadius: 'var(--radius-smooth)',
-  background: 'var(--color-background-inverse)',
 }
 
 const needOptionStyle: CSSProperties = {
-  display: 'grid',
-  gap: '4px',
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: 'var(--spacing-inline-s)',
   textAlign: 'left',
   background: 'var(--color-background-inverse)',
   border: '1px solid var(--color-border-secondary-light)',
@@ -613,48 +776,30 @@ const needOptionStyle: CSSProperties = {
   cursor: 'pointer',
 }
 
-const selectedNeedOptionStyle: CSSProperties = {
+const needOptionSelectedStyle: CSSProperties = {
   background: 'var(--color-background-primary-lighter)',
   borderColor: 'var(--color-border-primary-light)',
-  boxShadow: 'inset 4px 0 0 var(--color-border-primary-light)',
 }
 
-const searchResultsStyle: CSSProperties = {
-  display: 'grid',
-  gap: 'var(--spacing-stack-xs)',
-  maxHeight: '320px',
-  overflowY: 'auto',
-  padding: 'var(--spacing-inset-xs)',
-  border: '1px solid var(--color-border-secondary-light)',
-  borderRadius: 'var(--radius-smooth)',
-  background: 'var(--color-background-inverse)',
-}
-
-const searchResultOptionStyle: CSSProperties = {
+const needOptionTextStyle: CSSProperties = {
   display: 'grid',
   gap: '4px',
-  textAlign: 'left',
-  background: 'var(--color-background-inverse)',
-  border: '1px solid var(--color-border-secondary-light)',
-  borderRadius: 'var(--radius-smooth)',
-  padding: 'var(--spacing-inset-squish-s)',
-  color: 'var(--color-text-primary)',
-  cursor: 'pointer',
+  minWidth: 0,
 }
 
-const searchResultHeaderStyle: CSSProperties = {
+const needOptionHeaderStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'baseline',
   justifyContent: 'space-between',
   gap: '12px',
 }
 
-const searchResultLabelStyle: CSSProperties = {
+const needOptionLabelStyle: CSSProperties = {
   fontWeight: 700,
   fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
 }
 
-const searchResultThemeStyle: CSSProperties = {
+const needOptionCodeStyle: CSSProperties = {
   color: 'var(--color-text-secondary)',
   fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
   fontSize: 'var(--type-body-xs-size, 14px)',
@@ -662,10 +807,19 @@ const searchResultThemeStyle: CSSProperties = {
   flexShrink: 0,
 }
 
-const searchResultSubLabelStyle: CSSProperties = {
+const needOptionSubLabelStyle: CSSProperties = {
   color: 'var(--color-text-primary-light)',
   fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
   fontSize: 'var(--type-body-xs-size, 14px)',
+}
+
+const searchCardStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--spacing-stack-s)',
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
+  background: 'var(--color-background-inverse)',
+  padding: 'var(--spacing-inset-m)',
 }
 
 const searchCountStyle: CSSProperties = {
@@ -682,16 +836,51 @@ const emptySearchStateStyle: CSSProperties = {
   color: 'var(--color-text-primary-light)',
 }
 
+// ── Radio circle ─────────────────────────────────────────────────────────────
+
+const radioCircleStyle: CSSProperties = {
+  flexShrink: 0,
+  width: '20px',
+  height: '20px',
+  marginTop: '2px',
+  borderRadius: '50%',
+  border: '2px solid var(--color-border-secondary)',
+  background: 'var(--color-background-inverse)',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}
+
+const radioCircleSelectedStyle: CSSProperties = {
+  borderColor: 'var(--color-border-primary)',
+}
+
+const radioDotStyle: CSSProperties = {
+  width: '10px',
+  height: '10px',
+  borderRadius: '50%',
+  background: 'var(--color-background-primary)',
+}
+
+// ── Details box (colonna destra) ─────────────────────────────────────────────
+
 const detailsBoxStyle: CSSProperties = {
   border: '1px solid var(--color-border-secondary-light)',
   borderRadius: 'var(--radius-smooth)',
   background: 'var(--color-background-secondary-lightest)',
   padding: 'var(--spacing-inset-m)',
+  // Pannello contestuale: resta visibile a fianco mentre si scorre la lista
+  position: 'sticky',
+  top: 'var(--spacing-inset-m)',
+  alignSelf: 'start',
+  maxHeight: 'calc(100vh - 120px)',
+  overflowY: 'auto',
 }
 
 const detailsTitleStyle: CSSProperties = {
   margin: '0 0 var(--spacing-stack-s)',
   color: 'var(--color-text-primary)',
+  fontSize: 'var(--type-body-s-size, 16px)',
 }
 
 const detailsListStyle: CSSProperties = {
@@ -740,12 +929,7 @@ const codeTagStyle: CSSProperties = {
   flexShrink: 0,
 }
 
-const detailsEmptyStyle: CSSProperties = {
-  margin: 0,
-  color: 'var(--color-text-primary-light)',
-}
-
-const radioStyle: CSSProperties = {
+const hiddenInputStyle: CSSProperties = {
   position: 'absolute',
   width: '1px',
   height: '1px',

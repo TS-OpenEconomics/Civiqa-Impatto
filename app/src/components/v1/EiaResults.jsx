@@ -65,7 +65,6 @@ const inp = d.input ?? {};
 const comps = d.components ?? {};
 const rawGeo = d.geography ?? {};
 const sectItems = d.sectors?.items ?? [];
-const previews = d.previews ?? {};
 
 const byPerimeter = rawSyn.by_perimeter ?? {};
 const perCapita = rawSyn.per_capita ?? {};
@@ -114,18 +113,6 @@ const TABS = [
   { id: "esplora", label: "Approfondimento" },
 ];
 
-const TAB_PREVIEWS = {
-  sintesi: cleanText(previews.sintesi ?? "3,56 M€ PIL"),
-  componenti: cleanText(previews.componenti ?? "44% diretto"),
-  geografia: cleanText(previews.geografia ?? "84% in regione"),
-  settori: cleanText(previews.settori ?? "Costruzioni leader"),
-  esplora: cleanText(previews.esplora ?? "Approfondimento dati"),
-};
-
-;
-;
-;
-;
 
 const GEO_DIMS = [
   { id: "production", label: "Produzione" },
@@ -241,16 +228,6 @@ function buildSegmentComponentValues(data, segment) {
     direct: segmentDirect,
     indirect: spilloverTotal > 0 ? residual * (indirect / spilloverTotal) : 0,
     induced: spilloverTotal > 0 ? residual * (induced / spilloverTotal) : 0,
-  };
-}
-
-function buildPerimeterPreview() {
-  return {
-    sintesi: TAB_PREVIEWS.sintesi,
-    componenti: TAB_PREVIEWS.componenti,
-    geografia: TAB_PREVIEWS.geografia,
-    settori: TAB_PREVIEWS.settori,
-    esplora: TAB_PREVIEWS.esplora,
   };
 }
 
@@ -389,7 +366,6 @@ export function EiaResults({ project, analysis, onBack }) {
         <div className="overflow-hidden border border-ink-100 bg-white">
           <TabBar
             activeTab={tab}
-            previews={buildPerimeterPreview()}
             onChange={handleTabChange}
           />
           <div className="border-t border-ink-100 bg-white px-4 py-6 md:px-6">
@@ -433,7 +409,7 @@ export function EiaResults({ project, analysis, onBack }) {
   );
 }
 
-function TabBar({ activeTab, previews, onChange }) {
+function TabBar({ activeTab, onChange }) {
   return (
     <div className="flex overflow-x-auto">
       {TABS.map((t, idx) => {
@@ -449,11 +425,8 @@ function TabBar({ activeTab, previews, onChange }) {
             ].join(" ")}
             style={{ minHeight: 64 }}
           >
-            <span className="flex w-full flex-col gap-1">
+            <span className="flex w-full items-center justify-center">
               <span className="text-[16px] font-bold leading-tight">{t.label}</span>
-              <span className={`text-xs ${active ? "text-white/85" : "text-ink-500"} hidden sm:block`}>
-                {previews[t.id]}
-              </span>
             </span>
           </button>
         );

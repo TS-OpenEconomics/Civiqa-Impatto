@@ -9,12 +9,27 @@ import type { CSSProperties, ReactNode } from 'react'
    le altre il viola del brand.
    ────────────────────────────────────────────────────────────────────────── */
 
-export const CHART_RECOMMENDED_COLOR = '#108a43'
-export const CHART_DEFAULT_COLOR = '#7c4dff'
-export const CHART_SERIES_COLORS = ['#4400b3', '#7c4dff', '#b79cff', '#0d7fa6']
+// Palette grafici: l'opzione scelta/raccomandata usa il viola scuro del brand
+// (lo stesso evidenziato nelle tabelle di riepilogo), le opzioni non scelte un
+// grigio neutro — così è immediato distinguere "cosa è cosa".
+export const CHART_CHOSEN_COLOR = '#5B21F7'
+export const CHART_UNCHOSEN_COLOR = '#9e9e9e'
+export const CHART_BASELINE_COLOR = '#c4c4c8'
+
+export const CHART_RECOMMENDED_COLOR = CHART_CHOSEN_COLOR
+export const CHART_DEFAULT_COLOR = CHART_UNCHOSEN_COLOR
+export const CHART_SERIES_COLORS = [CHART_CHOSEN_COLOR, CHART_UNCHOSEN_COLOR, '#b0b0b0', '#cfcfcf']
 
 export function altBarColor(isRecommended: boolean): string {
-  return isRecommended ? CHART_RECOMMENDED_COLOR : CHART_DEFAULT_COLOR
+  return isRecommended ? CHART_CHOSEN_COLOR : CHART_UNCHOSEN_COLOR
+}
+
+/** Colore di una serie/alternativa: scelta → viola scuro, baseline A0 → grigio
+ *  chiaro, altre alternative → grigio neutro. */
+export function altColor(altId: string, isRecommended: boolean): string {
+  if (isRecommended) return CHART_CHOSEN_COLOR
+  if (altId === 'A0') return CHART_BASELINE_COLOR
+  return CHART_UNCHOSEN_COLOR
 }
 
 /* ── Wrapper per un tab: grafico in alto, tabella sotto ── */

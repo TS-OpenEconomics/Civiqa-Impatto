@@ -6,17 +6,8 @@ import {
   ResponsiveContainer, ReferenceLine, Cell,
 } from 'recharts'
 import type { ScoreComposito, AlternativaData, AlternativaId } from '../../../types/docfap'
-import { getAlternativeDisplayLabel } from '../tableHelpers'
-
-// DS colours — primary purple + tints/shades for 2nd, 3rd alternative
-const ALT_COLORS: Record<string, string> = {
-  A0: '#888888',
-  A1: '#5B21F7',
-  A2: '#7c4dff',
-  A3: '#9945ff',
-  A4: '#c77dff',
-  A5: '#e6ccff',
-}
+import { getAlternativeDisplayLabel, getRecommendedAlternativeId } from '../tableHelpers'
+import { altColor } from '../chartHelpers'
 
 function annuityFactor(r: number, n: number): number {
   if (r === 0) return n
@@ -33,6 +24,7 @@ type ChartRow = Record<string, string | number>
 export function CbaWaterfallChart({ scores, alternative }: Props) {
   if (scores.length === 0) return null
 
+  const recommendedId = getRecommendedAlternativeId(scores)
   const altLabels: Record<string, string> = {}
   for (const s of scores) {
     altLabels[s.alternativaId] = getAlternativeDisplayLabel(s.alternativaId, alternative[s.alternativaId])
@@ -110,7 +102,7 @@ export function CbaWaterfallChart({ scores, alternative }: Props) {
               key={s.alternativaId}
               dataKey={s.alternativaId}
               name={s.alternativaId}
-              fill={ALT_COLORS[s.alternativaId] ?? '#5B21F7'}
+              fill={altColor(s.alternativaId, s.alternativaId === recommendedId)}
               radius={[2, 2, 0, 0]}
             />
           ))}

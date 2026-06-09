@@ -122,9 +122,16 @@
 .poc-scope [aria-label="Wizard DOCFAP"] .radio-option__dot,
 .poc-scope [aria-label="Wizard DOCFAP"] .cb-item__box,
 .poc-scope [aria-label="Wizard DOCFAP"] .docfap-option-indicator,
+.poc-scope [aria-label="Wizard DOCFAP"] .docfap-accordion-num,
+.poc-scope [aria-label="Wizard DOCFAP"] .docfap-theme-icon,
 .poc-scope .mca-dot,
 .poc-scope .mca-dot > span {
   border-radius: 50% !important;
+}
+
+/* Pillole codice (Missioni / RSO / Fondi) nel box dettagli fabbisogno: arrotondate */
+.poc-scope [aria-label="Wizard DOCFAP"] .docfap-code-tag {
+  border-radius: 9999px !important;
 }
 
 .font-mono-data {

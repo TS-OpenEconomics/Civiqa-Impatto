@@ -26,6 +26,8 @@ export interface WizardQuestionDefinition {
   subtitle: string
   content: ReactNode
   normRef?: string
+  /** Quando true il contenuto non è racchiuso nel box bianco centrale. */
+  bare?: boolean
 }
 
 export interface WizardSubStepDefinition {
@@ -531,8 +533,8 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
         <aside style={sidebarStyle} aria-label="Struttura wizard DOCFAP">
           <nav style={sidebarNavStyle}>
             <div role="list" style={phaseListStyle}>
-              <span aria-hidden="true" style={phaseRailTrackStyle} />
-              <span
+              <div aria-hidden="true" style={phaseRailTrackStyle} />
+              <div
                 aria-hidden="true"
                 style={{
                   ...phaseRailFillStyle,
@@ -542,15 +544,14 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
               {visibleSidebarPhases.map((phase) => {
                 const phaseIndex = phases.findIndex((candidate) => candidate.id === phase.id)
                 const isCurrentPhase = phaseIndex === position.phaseIndex
-                const isCompletedPhase =
-                  state.completedSteps.includes(phaseIndex) || phaseIndex < position.phaseIndex
-                const isCollapsed = openPhaseId !== phase.id
-                const isFuturePhase = !isCurrentPhase && !isCompletedPhase
+                const isCompletedPhase = phaseIndex < position.phaseIndex
+                const isFuturePhase = phaseIndex > position.phaseIndex
+                const isPhaseOpen = !isFuturePhase
 
                 return (
                   <section key={phase.id} role="listitem" style={phaseSectionStyle}>
                     <div style={phaseHeaderStyle}>
-                      <div style={phaseTimelineColStyle} aria-hidden={!isCompletedPhase ? true : undefined}>
+                      <div style={phaseTimelineColStyle} aria-hidden="true">
                         <span
                           className="wz-phase-dot"
                           style={{
@@ -559,17 +560,12 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
                             ...(isCompletedPhase ? phaseDotCompletedStyle : null),
                             ...(isFuturePhase ? phaseDotFutureStyle : null),
                           }}
-                          aria-label={isCompletedPhase ? 'Completato' : undefined}
                         >
                           {isCompletedPhase ? <IconCheckSmall /> : null}
                         </span>
                       </div>
 
-                      <button
-                        type="button"
-                        className="wizard-shell-interactive"
-                        onClick={() => togglePhase(phase.id)}
-                        aria-expanded={!isCollapsed}
+                      <div
                         style={{
                           ...phaseToggleStyle,
                           ...(isCurrentPhase ? phaseToggleCurrentStyle : null),
@@ -579,32 +575,27 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
                         <span style={phaseTitleRowStyle}>
                           <span>{phase.title}</span>
                         </span>
-                      </button>
+                      </div>
                     </div>
 
-                    {!isCollapsed && (
+                    {isPhaseOpen ? (
                       <ul style={subStepListStyle}>
                         {buildSidebarSubStepGroups(phase.substeps).map((group) => {
+                          const lastSubStepIndex = group.firstSubStepIndex + group.count - 1
                           const isCurrentSubStep =
-                            phaseIndex === position.phaseIndex &&
+                            isCurrentPhase &&
                             position.subStepIndex >= group.firstSubStepIndex &&
-                            position.subStepIndex < group.firstSubStepIndex + group.count
-
-                          const completedSegments = Array.from({ length: group.count }, (_, offset) => {
-                            const subStepIndex = group.firstSubStepIndex + offset
-                            const subStep = phase.substeps[subStepIndex]
-                            const totalQuestions = Math.max(1, subStep.questions.length)
-                            const completedQuestions = getCompletedQuestionsCount(
-                              phaseIndex,
-                              subStepIndex,
-                              totalQuestions,
-                            )
-
-                            return completedQuestions >= totalQuestions
-                          })
-                          const completedCount = completedSegments.filter(Boolean).length
-                          const totalQuestions = Math.max(1, group.count)
-                          const isCompletedSubStep = completedCount >= totalQuestions
+                            position.subStepIndex <= lastSubStepIndex
+                          const completedSteps = isCompletedPhase
+                            ? group.count
+                            : isFuturePhase
+                              ? 0
+                              : Array.from({ length: group.count }, (_, offset) => group.firstSubStepIndex + offset)
+                                  .filter((idx) => idx < position.subStepIndex).length
+                          const isCompletedSubStep = completedSteps >= group.count
+                          const canNavigate =
+                            isCompletedPhase ||
+                            (isCurrentPhase && group.firstSubStepIndex <= position.subStepIndex)
 
                           return (
                             <li key={`${phase.id}-${group.firstSubStepIndex}-${group.title}`} style={subStepItemStyle}>
@@ -612,39 +603,45 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
                                 type="button"
                                 className="wizard-shell-interactive"
                                 onClick={() => goTo({ phaseIndex, subStepIndex: group.firstSubStepIndex, questionIndex: 0 })}
+                                disabled={!canNavigate}
                                 aria-current={isCurrentSubStep ? 'step' : undefined}
                                 style={{
                                   ...subStepButtonStyle,
                                   ...(isCurrentSubStep ? subStepButtonCurrentStyle : null),
                                   ...(isCompletedSubStep ? subStepButtonCompletedStyle : null),
+                                  ...(!canNavigate ? subStepButtonDisabledStyle : null),
                                 }}
                               >
                                 <span style={subStepTitleStyle}>{group.title}</span>
                                 <span
                                   role="progressbar"
                                   aria-valuemin={0}
-                                  aria-valuemax={totalQuestions}
-                                  aria-valuenow={Math.min(completedCount, totalQuestions)}
+                                  aria-valuemax={group.count}
+                                  aria-valuenow={Math.min(completedSteps, group.count)}
                                   style={subStepSegmentedTrackStyle}
                                 >
-                                  {Array.from({ length: totalQuestions }, (_, i) => (
-                                    <span
-                                      key={i}
-                                      style={{
-                                        ...subStepSegmentStyle,
-                                        background: i < Math.min(completedCount, totalQuestions)
-                                          ? 'var(--color-background-primary)'
-                                          : 'var(--color-border-secondary-light)',
-                                      }}
-                                    />
-                                  ))}
+                                  {Array.from({ length: group.count }, (_, offset) => {
+                                    const idx = group.firstSubStepIndex + offset
+                                    const filled = isCompletedPhase || (isCurrentPhase && idx < position.subStepIndex)
+                                    return (
+                                      <span
+                                        key={offset}
+                                        style={{
+                                          ...subStepSegmentStyle,
+                                          background: filled
+                                            ? 'var(--color-background-primary)'
+                                            : 'var(--color-border-secondary-light)',
+                                        }}
+                                      />
+                                    )
+                                  })}
                                 </span>
                               </button>
                             </li>
                           )
                         })}
                       </ul>
-                    )}
+                    ) : null}
                   </section>
                 )
               })}
@@ -751,6 +748,7 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
                   ...questionBodyStyle,
                   ...(isIntroPhase ? questionBodyIntroStyle : null),
                   ...(isCompletionStep ? questionBodyCompletionStyle : null),
+                  ...(currentQuestion.bare ? questionBodyBareStyle : null),
                 }}
               >
                 {currentQuestion.content}
@@ -988,6 +986,12 @@ const subStepButtonCurrentStyle: CSSProperties = {
 
 const subStepButtonCompletedStyle: CSSProperties = {
   color: 'var(--color-text-secondary)',
+}
+
+const subStepButtonDisabledStyle: CSSProperties = {
+  cursor: 'default',
+  pointerEvents: 'none',
+  color: 'var(--color-text-disable)',
 }
 
 const subStepTitleStyle: CSSProperties = {
@@ -1255,6 +1259,12 @@ const questionBodyIntroStyle: CSSProperties = {
 }
 
 const questionBodyCompletionStyle: CSSProperties = {
+  padding: 0,
+  border: 'none',
+  background: 'transparent',
+}
+
+const questionBodyBareStyle: CSSProperties = {
   padding: 0,
   border: 'none',
   background: 'transparent',

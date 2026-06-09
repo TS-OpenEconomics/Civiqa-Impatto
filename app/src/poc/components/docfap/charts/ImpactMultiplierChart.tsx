@@ -8,7 +8,8 @@ import {
   Legend, ResponsiveContainer, ReferenceLine, LabelList,
 } from 'recharts'
 import type { ScoreComposito, AlternativaId, AlternativaData } from '../../../types/docfap'
-import { getAlternativeDisplayLabel } from '../tableHelpers'
+import { getAlternativeDisplayLabel, getRecommendedAlternativeId } from '../tableHelpers'
+import { altColor } from '../chartHelpers'
 
 // Mock Keynesian multipliers per alternative — derived from POC input-output tables.
 // A2 (new construction) has highest multiplier due to supply-chain activation.
@@ -20,15 +21,6 @@ const MULTIPLIERS: Record<string, { pil: number; produzione: number; redditi: nu
   A3: { pil: 1.28, produzione: 2.52, redditi: 1.12, occupati: 1.34 },
   A4: { pil: 1.55, produzione: 2.90, redditi: 1.30, occupati: 1.55 },
   A5: { pil: 1.45, produzione: 2.70, redditi: 1.22, occupati: 1.48 },
-}
-
-const ALT_COLORS: Record<string, string> = {
-  A0: '#9e9e9e',
-  A1: '#5B21F7',
-  A2: '#7c4dff',
-  A3: '#9945ff',
-  A4: '#c77dff',
-  A5: '#e6ccff',
 }
 
 const DIM_LABELS: { key: string; label: string }[] = [
@@ -66,6 +58,8 @@ const CustomTooltip = ({
 
 export function ImpactMultiplierChart({ scores, alternative }: Props) {
   if (scores.length === 0) return null
+
+  const recommendedId = getRecommendedAlternativeId(scores)
 
   const chartData: ChartRow[] = DIM_LABELS.map(({ key, label }) => {
     const row: ChartRow = { dim: label }
@@ -120,7 +114,7 @@ export function ImpactMultiplierChart({ scores, alternative }: Props) {
               key={s.alternativaId}
               dataKey={s.alternativaId}
               name={s.alternativaId}
-              fill={ALT_COLORS[s.alternativaId] ?? '#5B21F7'}
+              fill={altColor(s.alternativaId, s.alternativaId === recommendedId)}
               maxBarSize={52}
               radius={[3, 3, 0, 0]}
             >
@@ -128,7 +122,7 @@ export function ImpactMultiplierChart({ scores, alternative }: Props) {
                 dataKey={s.alternativaId}
                 position="top"
                 formatter={(v: number) => `${v.toFixed(1)}×`}
-                style={{ fontSize: 11, fill: ALT_COLORS[s.alternativaId] ?? '#5B21F7', fontWeight: 700 }}
+                style={{ fontSize: 11, fill: altColor(s.alternativaId, s.alternativaId === recommendedId), fontWeight: 700 }}
               />
             </Bar>
           ))}

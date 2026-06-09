@@ -1,32 +1,23 @@
-// ImpactDecompositionChart — horizontal stacked bar per alternative
-// Shows absolute macro-impact split into Diretto / Indiretto / Indotto
-// using fixed IO-model proportions (46.4 / 29.1 / 24.5 %).
-// Dimension switcher at top: PIL | Produzione | Redditi | Occupati.
+// ImpactDecompositionChart — confronto d'impatto tra gli interventi
+// Mostra le principali dimensioni macroeconomiche (PIL, Produzione, Redditi, in M€)
+// con colonne affiancate per intervento e, in verde, il vantaggio (+X M€)
+// dell'intervento con impatto maggiore su ciascuna dimensione.
 import type { CSSProperties } from 'react'
-import { useState } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, ResponsiveContainer, LabelList,
 } from 'recharts'
 import type { ScoreComposito, AlternativaId, AlternativaData } from '../../../types/docfap'
-import { getAlternativeDisplayLabel } from '../tableHelpers'
+import { getAlternativeDisplayLabel, getRecommendedAlternativeId } from '../tableHelpers'
+import { altColor } from '../chartHelpers'
 
-// IO-model shares (Italy — infrastructure investment, source: Banca d'Italia)
-const SHARE_DIRETTO   = 0.464
-const SHARE_INDIRETTO = 0.291
-const SHARE_INDOTTO   = 0.245   // = 1 - DIRETTO - INDIRETTO
+const GREEN = '#1f8c4a'
 
-const COLOR_DIRETTO   = '#5B21F7'
-const COLOR_INDIRETTO = '#c026d3'
-const COLOR_INDOTTO   = '#0891b2'
-
-type DimKey = 'pil' | 'produzione' | 'redditi' | 'occupati'
-
-const DIMS: { key: DimKey; label: string; unit: string }[] = [
-  { key: 'pil',       label: 'PIL',        unit: 'k€' },
-  { key: 'produzione', label: 'Produzione', unit: 'k€' },
-  { key: 'redditi',   label: 'Redditi',    unit: 'k€' },
-  { key: 'occupati',  label: 'Occupati',   unit: 'ETP' },
+type DimKey = 'pil' | 'produzione' | 'redditi'
+const DIMS: { key: DimKey; label: string }[] = [
+  { key: 'pil',        label: 'PIL' },
+  { key: 'produzione', label: 'Produzione' },
+  { key: 'redditi',    label: 'Redditi' },
 ]
 
 interface Props {
@@ -34,143 +25,114 @@ interface Props {
   alternative: Partial<Record<AlternativaId, AlternativaData>>
 }
 
-function getTotal(s: ScoreComposito, dim: DimKey): number {
-  switch (dim) {
-    case 'pil':       return s.pil
-    case 'produzione': return s.produzione
-    case 'redditi':   return s.redditi
-    case 'occupati':  return s.occupati
-  }
+function fmtM(v: number): string {
+  return `${v.toLocaleString('it-IT', { maximumFractionDigits: 1 })} M€`
 }
 
-function fmt(v: number, unit: string): string {
-  if (unit === 'ETP') return v.toLocaleString('it-IT', { maximumFractionDigits: 0 })
-  return `${Math.round(v).toLocaleString('it-IT')} ${unit}`
-}
-
-function truncateLabel(s: string, max = 34): string {
-  return s.length > max ? `${s.slice(0, max - 1)}…` : s
-}
-
-const CustomTooltip = ({
-  active, payload, unit,
-}: { active?: boolean; payload?: Array<{ name: string; value: number; fill: string }>; unit: string }) => {
-  if (!active || !payload?.length) return null
-  const total = payload.reduce((acc, p) => acc + p.value, 0)
-  const nameMap: Record<string, string> = {
-    diretto: 'Impatto Diretto',
-    indiretto: 'Impatto Indiretto',
-    indotto: 'Impatto Indotto',
-  }
-  return (
-    <div style={tooltipStyle}>
-      <p style={tooltipTitleStyle}>Totale: {fmt(total, unit)}</p>
-      {payload.map(p => (
-        <p key={p.name} style={{ margin: '2px 0', fontSize: 13, color: p.fill }}>
-          {nameMap[p.name] ?? p.name}: {fmt(p.value, unit)} ({((p.value / total) * 100).toFixed(1)}%)
-        </p>
-      ))}
-    </div>
-  )
-}
+type Row = { dim: string; leaderId: string | null; delta: number } & Record<string, string | number | null>
 
 export function ImpactDecompositionChart({ scores, alternative }: Props) {
-  const [dim, setDim] = useState<DimKey>('pil')
   if (scores.length === 0) return null
 
-  const dimMeta = DIMS.find(d => d.key === dim)!
-  const { unit } = dimMeta
+  const recommendedId = getRecommendedAlternativeId(scores)
 
-  const chartData = scores.map(s => {
-    const total = getTotal(s, dim)
-    const diretto   = total * SHARE_DIRETTO
-    const indiretto = total * SHARE_INDIRETTO
-    const indotto   = total - diretto - indiretto
-    return {
-      altId: s.alternativaId,
-      label: truncateLabel(getAlternativeDisplayLabel(s.alternativaId, alternative[s.alternativaId])),
-      diretto:   Math.round(diretto   * 10) / 10,
-      indiretto: Math.round(indiretto * 10) / 10,
-      indotto:   Math.round(indotto   * 10) / 10,
-    }
+  const chartData: Row[] = DIMS.map(({ key, label }) => {
+    const row: Row = { dim: label, leaderId: null, delta: 0 }
+    const vals = scores.map(s => ({ id: s.alternativaId, v: Number(s[key]) }))
+    for (const { id, v } of vals) row[id] = Math.round(v * 10) / 10
+    const sorted = [...vals].sort((a, b) => b.v - a.v)
+    row.leaderId = sorted[0]?.id ?? null
+    row.delta = sorted.length >= 2 ? Math.round((sorted[0].v - sorted[1].v) * 10) / 10 : 0
+    return row
   })
 
-  const barH = Math.max(scores.length * 64, 160)
+  const CustomTooltip = ({
+    active, payload, label,
+  }: { active?: boolean; payload?: Array<{ dataKey: string; value: number; fill: string }>; label?: string }) => {
+    if (!active || !payload?.length) return null
+    return (
+      <div style={tooltipStyle}>
+        <p style={tooltipTitleStyle}>{label}</p>
+        {payload.map(p => (
+          <p key={p.dataKey} style={{ margin: '2px 0', fontSize: 13, color: p.fill }}>
+            {getAlternativeDisplayLabel(p.dataKey as AlternativaId, alternative[p.dataKey as AlternativaId])}:{' '}
+            <strong>{fmtM(p.value)}</strong>
+          </p>
+        ))}
+      </div>
+    )
+  }
+
+  // Etichetta verde "+X M€" sopra la colonna dell'intervento vincente per dimensione
+  function makeDelta(altId: string) {
+    return (props: { x?: number; y?: number; width?: number; index?: number }) => {
+      const { x = 0, y = 0, width = 0, index = 0 } = props
+      const row = chartData[index]
+      if (!row || row.leaderId !== altId || row.delta <= 0) return null
+      return (
+        <text
+          x={x + width / 2}
+          y={y - 22}
+          textAnchor="middle"
+          style={{ fontSize: 13, fontWeight: 800, fill: GREEN }}
+        >
+          +{fmtM(row.delta)}
+        </text>
+      )
+    }
+  }
 
   return (
     <div style={cardStyle}>
-      <div style={headerRowStyle}>
-        <div>
-          <h3 style={titleStyle}>Impatto macroeconomico — Effetti Diretto, Indiretto e Indotto</h3>
-          <p style={subtitleStyle}>
-            Scomposizione dell'impatto secondo il modello input–output italiano (Banca d'Italia).
-            Effetto Diretto = attività di investimento; Indiretto = filiera; Indotto = consumi da reddito.
-          </p>
-        </div>
-        <div style={switcherStyle} role="group" aria-label="Seleziona dimensione">
-          {DIMS.map(d => (
-            <button
-              key={d.key}
-              type="button"
-              style={btnStyle(d.key === dim)}
-              onClick={() => setDim(d.key)}
-              aria-pressed={d.key === dim}
-            >
-              {d.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <h3 style={titleStyle}>Confronto d'impatto economico tra gli interventi</h3>
+      <p style={subtitleStyle}>
+        Principali dimensioni macroeconomiche attivate (valori in M€). In{' '}
+        <span style={{ color: GREEN, fontWeight: 700 }}>verde</span> il vantaggio dell'intervento con impatto
+        maggiore su ciascuna dimensione.
+      </p>
 
-      <ResponsiveContainer width="100%" height={barH + 56}>
-        <BarChart
-          data={chartData}
-          layout="vertical"
-          margin={{ top: 8, right: 80, bottom: 8, left: 8 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e8e8e8" />
+      <ResponsiveContainer width="100%" height={340}>
+        <BarChart data={chartData} margin={{ top: 40, right: 16, bottom: 8, left: 8 }} barGap={2} barCategoryGap="26%">
+          <CartesianGrid vertical={false} stroke="#e8e8e8" strokeDasharray="3 3" />
           <XAxis
-            type="number"
-            tick={{ fontSize: 11, fill: 'var(--color-text-primary-light, #555)' }}
-            tickFormatter={v => unit === 'ETP' ? String(Math.round(v)) : `${Math.round(v).toLocaleString('it-IT')}`}
+            dataKey="dim"
+            tick={{ fontSize: 13, fill: 'var(--color-text-primary, #222)', fontWeight: 600 }}
             axisLine={{ stroke: '#d0d0d0' }}
             tickLine={false}
           />
           <YAxis
-            type="category"
-            dataKey="label"
-            width={220}
-            tick={{ fontSize: 12, fill: 'var(--color-text-primary, #222)', fontWeight: 600 }}
+            tickFormatter={v => `${v.toLocaleString('it-IT')} M€`}
+            tick={{ fontSize: 11, fill: 'var(--color-text-primary-light, #555)' }}
             axisLine={false}
             tickLine={false}
           />
-          <Tooltip content={<CustomTooltip unit={unit} />} cursor={{ fill: 'rgba(0,0,0,0.04)' }} />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.04)' }} />
           <Legend
             iconType="square"
             iconSize={10}
-            wrapperStyle={{ fontSize: 13, paddingTop: 12 }}
-            formatter={(value: string) => {
-              const map: Record<string, string> = {
-                diretto: 'Impatto Diretto',
-                indiretto: 'Impatto Indiretto',
-                indotto: 'Impatto Indotto',
-              }
-              return map[value] ?? value
-            }}
+            wrapperStyle={{ fontSize: 13 }}
+            formatter={(value: string) =>
+              getAlternativeDisplayLabel(value as AlternativaId, alternative[value as AlternativaId])
+            }
           />
-          <Bar dataKey="diretto" stackId="a" fill={COLOR_DIRETTO} name="diretto" maxBarSize={32} />
-          <Bar dataKey="indiretto" stackId="a" fill={COLOR_INDIRETTO} name="indiretto" maxBarSize={32} />
-          <Bar dataKey="indotto" stackId="a" fill={COLOR_INDOTTO} name="indotto" maxBarSize={32} radius={[0, 3, 3, 0]}>
-            <LabelList
-              dataKey="indotto"
-              position="right"
-              formatter={(_: number, entry: { diretto?: number; indiretto?: number; indotto?: number }) => {
-                const total = (entry?.diretto ?? 0) + (entry?.indiretto ?? 0) + (entry?.indotto ?? 0)
-                return fmt(total, unit)
-              }}
-              style={{ fontSize: 11, fill: 'var(--color-text-primary-light, #666)', fontWeight: 600 }}
-            />
-          </Bar>
+          {scores.map(s => (
+            <Bar
+              key={s.alternativaId}
+              dataKey={s.alternativaId}
+              name={s.alternativaId}
+              fill={altColor(s.alternativaId, s.alternativaId === recommendedId)}
+              maxBarSize={56}
+              radius={[3, 3, 0, 0]}
+            >
+              <LabelList
+                dataKey={s.alternativaId}
+                position="top"
+                formatter={(v: number) => fmtM(v)}
+                style={{ fontSize: 10, fill: 'var(--color-text-primary-light, #777)', fontWeight: 600 }}
+              />
+              <LabelList content={makeDelta(s.alternativaId)} />
+            </Bar>
+          ))}
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -182,25 +144,8 @@ const cardStyle: CSSProperties = {
   background: 'var(--color-background-inverse)', border: '1px solid #d0d0d0',
   borderRadius: 'var(--radius-smooth)', padding: 'var(--spacing-inset-m)',
 }
-const headerRowStyle: CSSProperties = {
-  display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-  flexWrap: 'wrap', gap: '12px', marginBottom: '16px',
-}
 const titleStyle: CSSProperties = { margin: '0 0 4px', fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)' }
-const subtitleStyle: CSSProperties = { margin: 0, fontSize: 13, color: 'var(--color-text-primary-light)', lineHeight: 1.5, maxWidth: 560 }
-const switcherStyle: CSSProperties = { display: 'flex', gap: '6px', flexWrap: 'wrap', flexShrink: 0 }
-function btnStyle(isActive: boolean): CSSProperties {
-  return {
-    padding: '4px 12px',
-    border: isActive ? '2px solid #5B21F7' : '1px solid #d0d0d0',
-    borderRadius: 'var(--radius-smooth)',
-    background: isActive ? '#5B21F7' : 'var(--color-background-inverse)',
-    color: isActive ? '#fff' : 'var(--color-text-primary)',
-    fontSize: 13, fontWeight: isActive ? 700 : 400, cursor: 'pointer',
-    fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-    transition: 'background 0.15s, color 0.15s',
-  }
-}
+const subtitleStyle: CSSProperties = { margin: '0 0 8px', fontSize: 13, color: 'var(--color-text-primary-light)', lineHeight: 1.5, maxWidth: 620 }
 const tooltipStyle: CSSProperties = {
   background: 'var(--color-background-inverse)', border: '1px solid #d0d0d0',
   borderRadius: 'var(--radius-smooth)', padding: '8px 12px', fontSize: 13,

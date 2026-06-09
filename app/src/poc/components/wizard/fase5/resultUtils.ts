@@ -58,14 +58,15 @@ export function getAltLabel(
 }
 
 // ── Colori chart ────────────────────────────────────────────────────────────
-// Variazioni di opacità del primary #5B21F7 — indice 0 = raccomandata (pieno)
+// Indice 0 = opzione scelta/raccomandata → viola scuro del brand.
+// Le altre opzioni → grigio neutro, così è immediato distinguere "cosa è cosa".
 
 const ALT_FILLS = [
   '#5B21F7',
-  'rgba(91,33,247,0.55)',
-  'rgba(91,33,247,0.35)',
-  'rgba(91,33,247,0.22)',
-  'rgba(91,33,247,0.14)',
+  '#9e9e9e',
+  '#bdbdbd',
+  '#d0d0d0',
+  '#e0e0e0',
 ] as const
 
 export function getAltFill(colorIndex: number): string {

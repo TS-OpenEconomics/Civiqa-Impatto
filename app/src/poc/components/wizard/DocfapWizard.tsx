@@ -281,6 +281,7 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
                 title: 'Quale fabbisogno deve soddisfare il progetto?',
                 subtitle: 'Seleziona prima il macro tema oppure cerca direttamente il fabbisogno specifico.',
                 normRef: 'Art. 2, c.2',
+                bare: true,
                 content: <Step1_3_FabbisognoTema />,
               },
             ],
