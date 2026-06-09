@@ -690,8 +690,8 @@ function Sidebar({ stepIdx }) {
 function QuestionHeader({ title, description, type }) {
   return (
     <div className="mb-8">
-      <h2 className="max-w-4xl text-[22px] font-bold leading-[1.2] text-ink-900">{title}</h2>
-      {description ? <p className="mt-3 max-w-5xl text-[14px] leading-[1.5] text-ink-900">{description}</p> : null}
+      <h2 className="max-w-5xl text-[22px] font-bold leading-[1.2] text-ink-900">{title}</h2>
+      {description ? <p className="mt-3 max-w-6xl text-[14px] leading-[1.5] text-ink-900">{description}</p> : null}
       {type ? <p className="mt-5 text-[14px] text-ink-900">{type}</p> : null}
     </div>
   );
@@ -717,7 +717,7 @@ function TextInput({ label, hint, value, onChange, placeholder, optional }) {
 
 function RadioCards({ options, value, onChange, descriptions }) {
   return (
-    <div className="max-w-3xl space-y-3">
+    <div className="max-w-5xl space-y-3">
       {options.map((option) => (
         <button
           key={option}
@@ -740,7 +740,7 @@ function RadioCards({ options, value, onChange, descriptions }) {
 
 function RadioList({ options, value, onChange }) {
   return (
-    <div className="max-w-3xl overflow-hidden border border-ink-100 bg-white">
+    <div className="max-w-5xl overflow-hidden border border-ink-100 bg-white">
       {options.map((option, index) => (
         <button
           key={option}
@@ -1711,7 +1711,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
         <Sidebar stepIdx={stepIdx} />
 
         <div className="flex-1 overflow-y-auto bg-[#f3f3f3]">
-          <div className="px-8 py-8">
+          <div className="mx-auto w-full max-w-[1280px] px-10 py-8">
             {["anagrafica", "classificazione", "durata"].includes(step.id) && (
               <div className="mb-5 flex justify-end">
                 <button
@@ -1730,7 +1730,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                   description="Inserisci nome, descrizione e stato di avanzamento. Queste informazioni servono a contestualizzare il progetto e a impostare il percorso di valutazione più appropriato."
                 />
 
-                <div className="max-w-3xl space-y-3">
+                <div className="max-w-5xl space-y-3">
                   {/* Section 1: Anagrafica */}
                   <ClassAccordion
                     number="1"
@@ -1933,7 +1933,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                   description="Indica le dimensioni principali del progetto. Questi dati saranno usati per stimare il CAPEX e alimentare i benefici attesi."
                 />
                 {profiloTemplate ? (
-                  <div className="max-w-3xl overflow-hidden border border-ink-100 bg-white">
+                  <div className="max-w-5xl overflow-hidden border border-ink-100 bg-white">
                     <div className="flex items-center gap-3 border-b border-ink-100 bg-[#f7f7fa] px-5 py-3">
                       <p className="text-[14px] font-semibold text-ink-900">{profiloTemplate.titolo}</p>
                       <span className="ml-auto text-[11px] font-medium text-ink-400">{draft.categoria_intervento}</span>
@@ -1958,7 +1958,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                     </div>
                   </div>
                 ) : (
-                  <div className="max-w-3xl border border-ink-100 bg-white p-6">
+                  <div className="max-w-5xl border border-ink-100 bg-white p-6">
                     <p className="text-[14px] text-ink-600">
                       Nessun parametro specifico disponibile per{" "}
                       <strong>{draft.categoria_intervento || "questa categoria"}</strong>.
@@ -1975,7 +1975,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                   title="Quale sarà la durata del progetto?"
                   description="Indica il periodo previsto dalla fase di avvio lavori alla piena operatività. Questa informazione è importante per programmare correttamente le attività, stimare i costi e valutare la sostenibilità nel tempo e i benefici nel progetto."
                 />
-                <div className="grid max-w-3xl grid-cols-1 gap-5 md:grid-cols-2">
+                <div className="grid max-w-5xl grid-cols-1 gap-5 md:grid-cols-2">
                   <DatePickerField
                     label="Data di inizio"
                     hint="Formato data gg/mm/aaaa"

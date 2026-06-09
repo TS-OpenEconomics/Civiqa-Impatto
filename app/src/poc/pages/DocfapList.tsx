@@ -297,7 +297,7 @@ function FeaturedDocfapCard({ item, onOpen }: { item: DocfapRecord; onOpen: () =
       </div>
 
       <button type="button" style={detailButtonStyle} onClick={onOpen}>
-        {item.stato === 'Completato' ? 'Vai al dettaglio' : 'Continua nel wizard'} <IconArrowRight />
+        {item.stato === 'Completato' ? 'Vai al dettaglio' : 'Concludi Docfap'} <IconArrowRight />
       </button>
     </article>
   )
@@ -541,7 +541,7 @@ export function DocfapList() {
                           aria-label={
                             row.stato === 'Completato'
                               ? `Apri dettaglio ${row.nomeIntervento}`
-                              : `Continua nel wizard ${row.nomeIntervento}`
+                              : `Concludi Docfap ${row.nomeIntervento}`
                           }
                         >
                           <IconArrowRight />

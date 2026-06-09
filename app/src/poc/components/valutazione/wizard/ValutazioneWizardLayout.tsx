@@ -489,7 +489,7 @@ const contentColumnStyle: CSSProperties = {
 
 const contentColumnRegularStyle: CSSProperties = {
   ...contentColumnStyle,
-  maxWidth: 'min(1280px, calc(100vw - 64px))',
+  maxWidth: 'none',
   justifySelf: 'stretch',
 }
 
@@ -545,9 +545,9 @@ const closeButtonStyle: CSSProperties = {
 }
 
 const mainAreaStyle: CSSProperties = {
-  overflow: 'hidden',
+  overflowY: 'auto',
   minHeight: 'calc(100vh - 64px - 56px)',
-  padding: '48px clamp(36px, 4vw, 64px) 24px',
+  padding: '32px clamp(32px, 4vw, 64px) 24px',
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'flex-start',
@@ -572,7 +572,7 @@ const introMainContentStyle: CSSProperties = {
 
 const mainAreaContentStyle: CSSProperties = {
   width: '100%',
-  maxWidth: '880px',
+  maxWidth: 'min(1180px, 100%)',
   height: '100%',
   margin: '0 auto',
   display: 'grid',
