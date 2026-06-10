@@ -53,21 +53,31 @@ export function Step3_NomeAlternativa({ alternativaId }: Step3NomeAlternativaPro
   const [inputValue, setInputValue] = useState<string>(savedIsAuto ? defaultName : savedName)
   const [touched, setTouched] = useState(false)
 
+  const save = (value: string) => {
+    const trimmed = value.trim()
+    if (!trimmed) return
+    const base = current ?? { categoria: '', tipologia: '', quantita: 0, capex: 0, opex: 0, nome: '' }
+    addAlternativa(alternativaId as AlternativaId, { ...base, nome: trimmed })
+  }
+
   // Refresh the suggestion when categoria/tipologia change, unless the user customised it.
+  // Salva subito il nome suggerito nello store così il blocco "Nome" risulta completo
+  // senza dover sfocare il campo.
   useEffect(() => {
     const currentOldStyle = `${categoria} — ${tipologia}`
     const currentIsAuto = !savedName || savedName === currentOldStyle
-    if (currentIsAuto) setInputValue(defaultName)
+    if (currentIsAuto && defaultName) {
+      setInputValue(defaultName)
+      save(defaultName)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultName, savedName, categoria, tipologia])
 
   const isError = touched && inputValue.trim().length === 0
 
   const handleBlur = () => {
     setTouched(true)
-    const trimmed = inputValue.trim()
-    if (!trimmed) return
-    const base = current ?? { categoria: '', tipologia: '', quantita: 0, capex: 0, opex: 0, nome: '' }
-    addAlternativa(alternativaId as AlternativaId, { ...base, nome: trimmed })
+    save(inputValue)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -90,7 +100,7 @@ export function Step3_NomeAlternativa({ alternativaId }: Step3NomeAlternativaPro
             type="text"
             className="nome-field__input"
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => { setInputValue(e.target.value); save(e.target.value) }}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             placeholder={`es. "${defaultName || 'Nuova realizzazione asilo nido'}"`}

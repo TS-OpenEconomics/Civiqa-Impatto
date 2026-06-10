@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Skeleton, SkeletonText } from "../ui/Skeleton";
-import { Badge } from "../ui/Badge";
-import { ImpactIcon } from "../ui/ImpactIcon";
-import { Modal } from "../ui/Modal";
-import { useToast } from "../../hooks/useToast";
+import { Skeleton, SkeletonText } from "./ui/Skeleton";
+import { Badge } from "./ui/Badge";
+import { ImpactIcon } from "./ui/ImpactIcon";
+import { Modal } from "./ui/Modal";
+import { useToast } from "../hooks/useToast";
 
 function assetUrl(path) {
   const base = import.meta.env.BASE_URL ?? "/";

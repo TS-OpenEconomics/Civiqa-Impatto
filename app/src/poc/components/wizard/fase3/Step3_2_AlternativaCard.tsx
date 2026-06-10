@@ -57,6 +57,8 @@ type CardAlternativaId = 'A1' | 'A2' | 'A3'
 interface Step3_2AlternativaCardProps {
   alternativaId: CardAlternativaId
   optional?: boolean
+  /** Quando true non disegna la card esterna (è già dentro un blocco). */
+  embedded?: boolean
 }
 
 function defaultAlternative(): AlternativaData {
@@ -79,6 +81,7 @@ function getAlternativaOrdinalLabel(alternativaId: CardAlternativaId): string {
 export function Step3_2_AlternativaCard({
   alternativaId,
   optional = false,
+  embedded = false,
 }: Step3_2AlternativaCardProps) {
   const { state, addAlternativa, setCluster } = useWizard()
   const [expanded, setExpanded] = useState(!optional)
@@ -228,7 +231,7 @@ export function Step3_2_AlternativaCard({
   const isVisible = !optional || expanded
 
   return (
-    <section style={cardStyle} aria-label={alternativaLabel}>
+    <section style={embedded ? undefined : cardStyle} aria-label={alternativaLabel}>
       <style>{`
         .alt-card-collapse {
           overflow: hidden;
@@ -249,9 +252,12 @@ export function Step3_2_AlternativaCard({
         }
       `}</style>
 
-      <div style={cardHeaderStyle}>
-        <span style={cardLabelStyle}>{alternativaLabel}</span>
-        {optional && (
+      {/* Header interno solo quando la card è opzionale (step "Aggiungi alternative",
+          dove più card stanno insieme). Nello step di setup il titolo lo dà già il
+          WizardShell ("Configura Alternativa N") → evita il doppio titolo. */}
+      {optional && (
+        <div style={cardHeaderStyle}>
+          <span style={cardLabelStyle}>{alternativaLabel}</span>
           <button
             type="button"
             className="alt-card-toggle"
@@ -262,8 +268,8 @@ export function Step3_2_AlternativaCard({
           >
             {expanded ? 'Rimuovi' : 'Aggiungi alternativa'}
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       <div
         id={collapseId}
@@ -271,7 +277,7 @@ export function Step3_2_AlternativaCard({
         data-open={String(isVisible)}
         aria-hidden={!isVisible}
       >
-        <div style={contentStyle}>
+        <div style={embedded ? contentEmbeddedStyle : contentStyle}>
           {hasVoucherOption && (
             <SelectField
               label="Tipo alternativa"
@@ -454,6 +460,11 @@ const contentStyle: CSSProperties = {
   display: 'grid',
   gap: 'var(--spacing-stack-m)',
   padding: 'var(--spacing-inset-s)',
+}
+const contentEmbeddedStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--spacing-stack-m)',
+  padding: 0,
 }
 
 const sectionTitleStyle: CSSProperties = {

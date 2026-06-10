@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { Badge } from "../ui/Badge";
-import { useToast } from "../../hooks/useToast";
+import { Badge } from "./ui/Badge";
+import { useToast } from "../hooks/useToast";
 
 const RATING_SCALE = ["D", "CC", "C", "BB", "B", "BBB", "A", "A+", "AA", "AA+", "AAA"];
 

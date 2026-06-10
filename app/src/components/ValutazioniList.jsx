@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useProjects } from "../../contexts/ProjectContext";
-import { useToast } from "../../hooks/useToast";
-import { IconValutazione } from "../../poc/components/layout/SideNav";
-import { Badge } from "../ui/Badge";
-import { Modal } from "../ui/Modal";
+import { useProjects } from "../contexts/ProjectContext";
+import { useToast } from "../hooks/useToast";
+import { IconValutazione } from "../poc/components/layout/SideNav";
+import { Badge } from "./ui/Badge";
+import { Modal } from "./ui/Modal";
 import {
   IconArrowLeft,
   IconArrowRight,
@@ -11,8 +11,8 @@ import {
   IconPin,
   IconSearch,
   IconTrash,
-} from "../ui/Icons";
-import { Skeleton, SkeletonText } from "../ui/Skeleton";
+} from "./ui/Icons";
+import { Skeleton, SkeletonText } from "./ui/Skeleton";
 
 const ANALYSIS_ORDER = ["EIA", "ECBA", "ESG"];
 

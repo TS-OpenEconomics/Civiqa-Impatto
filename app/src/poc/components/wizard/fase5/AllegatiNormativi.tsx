@@ -15,16 +15,6 @@ interface UploadedFile {
 
 const ALLEGATI: AllegatoItem[] = [
   {
-    id: 'quadro-economico',
-    label: 'Quadro economico di progetto',
-    normRef: 'Art. 2, c.4, f)',
-  },
-  {
-    id: 'cronoprogramma',
-    label: 'Cronoprogramma delle fasi attuative',
-    normRef: 'Art. 2, c.4, e)',
-  },
-  {
     id: 'inquadramento-urbanistico',
     label: 'Inquadramento urbanistico e territoriale',
     normRef: 'Art. 2, c.4, b)',

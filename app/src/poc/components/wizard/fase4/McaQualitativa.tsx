@@ -21,7 +21,6 @@ const TIPOLOGIA_LABELS: Record<string, string> = {
 }
 
 type EvalScale = 'A' | 'M' | 'B' | 'N'
-
 const SCALE_OPTIONS: Array<{ value: EvalScale; label: string }> = [
   { value: 'A', label: 'Alto' },
   { value: 'M', label: 'Medio' },
@@ -42,13 +41,6 @@ function toTitleCase(str: string): string {
     .join(' ')
 }
 
-/** Groups items into chunks of `size` (used to render questions two-by-two). */
-function chunk<T>(items: T[], size: number): T[][] {
-  const out: T[][] = []
-  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size))
-  return out
-}
-
 export function McaQualitativa() {
   const { state, setMcaScores } = useWizard()
   const [questions, setQuestions] = useState<McaQuestion[]>([])
@@ -61,15 +53,10 @@ export function McaQualitativa() {
 
   useEffect(() => {
     const clusterIds = state.clusterId ? [state.clusterId] : []
-    let active = true
     loadPocData().then(() => {
-      if (!active) return
       setQuestions(getMatrixQuestions(clusterIds))
       setLoaded(true)
     })
-    return () => {
-      active = false
-    }
   }, [state.clusterId])
 
   const totalCells = questions.length * alternativeIds.length
@@ -87,33 +74,20 @@ export function McaQualitativa() {
 
   const allFilled = totalCells > 0 && filledCells === totalCells
 
-  // Questions grouped two-by-two into visual blocks.
-  const questionPairs = useMemo(() => chunk(questions, 2), [questions])
-
   function getAltLabel(altId: SupportedAlternativaId): string {
     const alt = state.alternative[altId]
-    if (alt?.nome) return alt.nome
-    if (alt?.categoria) {
-      const catRecord = INTERVENTION_CATEGORIES.find((c) => c.code === alt.categoria)
-      const catLabel = catRecord?.label ?? alt.categoria
-      const tipLabel = TIPOLOGIA_LABELS[alt.tipologia] ?? alt.tipologia
-      if (catLabel && tipLabel) return `${toTitleCase(catLabel)} — ${toTitleCase(tipLabel)}`
-    }
+    if (!alt) return `Alternativa ${altId.slice(1)}`
+    const catRecord = INTERVENTION_CATEGORIES.find(c => c.code === alt.categoria)
+    const catLabel = catRecord?.label ?? alt.categoria
+    const tipLabel = TIPOLOGIA_LABELS[alt.tipologia] ?? alt.tipologia
+    if (catLabel && tipLabel) return `${toTitleCase(catLabel)} — ${toTitleCase(tipLabel)}`
     return `Alternativa ${altId.slice(1)}`
   }
 
   if (!loaded) {
     return (
       <div role="status" aria-busy="true" style={{ padding: 'var(--spacing-inset-m)' }}>
-        <span style={srOnly}>Caricamento criteri di valutazione</span>
-      </div>
-    )
-  }
-
-  if (alternativeIds.length === 0) {
-    return (
-      <div style={emptyStyle}>
-        Definisci almeno un'alternativa progettuale per poterla valutare sui criteri qualitativi.
+        <span style={srOnly}>Caricamento domande MCA</span>
       </div>
     )
   }
@@ -121,106 +95,73 @@ export function McaQualitativa() {
   if (questions.length === 0) {
     return (
       <div style={emptyStyle}>
-        Nessun criterio di valutazione disponibile per il cluster selezionato.
+        Nessuna domanda MCA disponibile per il cluster selezionato.
       </div>
     )
   }
 
   return (
     <div style={rootStyle}>
-      <style>{interactiveStyles}</style>
-
+      <style>{selectStyles}</style>
       <p style={progressStyle}>
-        <strong style={{ color: 'var(--color-text-primary)' }}>{filledCells}</strong> / {totalCells} valutazioni
+        {filledCells} / {totalCells} celle compilate
       </p>
-
-      {alternativeIds.map((altId) => {
-        const scores = state.mcaScores[altId] ?? {}
-        let rowNum = 0
-
-        return (
-          <section key={altId} style={altSectionStyle} aria-label={`Valutazione ${getAltLabel(altId)}`}>
-            <h3 style={altTitleStyle} title={getAltLabel(altId)}>
-              {getAltLabel(altId)}
-            </h3>
-
-            <table style={tableStyle}>
-              <colgroup>
-                <col />
-                <col style={{ width: '76px' }} />
-                <col style={{ width: '76px' }} />
-                <col style={{ width: '76px' }} />
-                <col style={{ width: '76px' }} />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th scope="col" style={thCriterionStyle}>
-                    Criterio
-                  </th>
-                  {SCALE_OPTIONS.map((opt) => (
-                    <th key={opt.value} scope="col" style={thScaleStyle}>
-                      {opt.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-
-              {questionPairs.map((pair, pairIndex) => {
-                // Alternate the background per pair so the two linked questions read as one block.
-                const blockBg =
-                  pairIndex % 2 === 0 ? 'var(--color-background-inverse)' : 'var(--color-background-secondary-lightest)'
-                return (
-                  <tbody key={pairIndex}>
-                    {pair.map((q) => {
-                      rowNum += 1
-                      const current = scores[q.qCode] as EvalScale | undefined
-                      return (
-                        <tr key={q.qCode} role="radiogroup" aria-label={`${q.label || q.text} — ${getAltLabel(altId)}`}>
-                          <th scope="row" style={{ ...rowHeaderStyle, background: blockBg }}>
-                            <div style={rowHeaderInnerStyle}>
-                              <span style={rowNumStyle}>{rowNum}</span>
-                              <span style={rowLabelWrapStyle}>
-                                <span style={rowLabelStyle}>{q.label || q.text}</span>
-                                {q.label && q.text ? <span style={rowTextStyle}>{q.text}</span> : null}
-                              </span>
-                            </div>
-                          </th>
-                          {SCALE_OPTIONS.map((opt, optIndex) => {
-                            const selected = current === opt.value
-                            const isLast = optIndex === SCALE_OPTIONS.length - 1
-                            return (
-                              <td
-                                key={opt.value}
-                                style={{ ...dotCellStyle, ...(isLast ? dotCellLastStyle : null), background: blockBg }}
-                              >
-                                <button
-                                  type="button"
-                                  role="radio"
-                                  aria-checked={selected}
-                                  aria-label={opt.label}
-                                  className="mca-dot"
-                                  onClick={() => setMcaScores(altId, q.qCode, opt.value)}
-                                  style={{ ...dotStyle, ...(selected ? dotSelectedStyle : null) }}
-                                >
-                                  <span style={selected ? dotInnerSelectedStyle : dotInnerStyle} />
-                                </button>
-                              </td>
-                            )
-                          })}
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                )
-              })}
-            </table>
-          </section>
-        )
-      })}
-
+      <div style={tableWrapStyle}>
+        <table style={tableStyle}>
+          <colgroup>
+            <col style={{ width: '320px', minWidth: '220px' }} />
+            {alternativeIds.map((id) => (
+              <col key={id} style={{ minWidth: '180px' }} />
+            ))}
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col" style={thLabelStyle}>Domanda</th>
+              {alternativeIds.map((altId) => (
+                <th key={altId} scope="col" style={thAltStyle}>
+                  {getAltLabel(altId)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {questions.map((q, rowIndex) => (
+              <tr key={q.qCode} style={rowIndex % 2 === 1 ? trAltStyle : undefined}>
+                <th scope="row" style={rowHeaderStyle}>
+                  <span style={qLabelStyle}>{q.text}</span>
+                </th>
+                {alternativeIds.map((altId) => {
+                  const current = (state.mcaScores[altId] ?? {})[q.qCode] as EvalScale | undefined
+                  const cellId = `mca-${altId}-${q.qCode}`
+                  return (
+                    <td key={altId} style={tdStyle}>
+                      <select
+                        id={cellId}
+                        className="mca-select"
+                        value={current ?? ''}
+                        onChange={(e) => {
+                          const val = e.target.value as EvalScale
+                          if (val) setMcaScores(altId, q.qCode, val)
+                        }}
+                        aria-label={`${q.text} — ${getAltLabel(altId)}`}
+                        style={selectStyle(!!current)}
+                      >
+                        <option value="" disabled>—</option>
+                        {SCALE_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       {!allFilled && (
         <p style={hintStyle}>
-          Completa tutte le valutazioni per continuare — {totalCells - filledCells} mancanti
+          Compila tutte le celle per continuare — {totalCells - filledCells} risposte mancanti
         </p>
       )}
     </div>
@@ -229,21 +170,19 @@ export function McaQualitativa() {
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
-const interactiveStyles = `
-  .mca-dot:focus-visible {
+const selectStyles = `
+  .mca-select:focus {
     outline: none;
-    box-shadow: 0 0 0 2px var(--color-border-focus);
+    box-shadow: 0 0 0 1px rgba(110, 26, 255, 0.55);
   }
-  .mca-dot:hover { border-color: var(--color-background-primary); }
+  .mca-select:hover {
+    border-color: var(--color-border-secondary);
+  }
 `
 
 const srOnly: CSSProperties = {
-  position: 'absolute',
-  width: 1,
-  height: 1,
-  overflow: 'hidden',
-  clip: 'rect(0,0,0,0)',
-  whiteSpace: 'nowrap',
+  position: 'absolute', width: 1, height: 1, overflow: 'hidden',
+  clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap',
 }
 
 const rootStyle: CSSProperties = {
@@ -259,147 +198,88 @@ const progressStyle: CSSProperties = {
 
 const emptyStyle: CSSProperties = {
   padding: 'var(--spacing-inset-m)',
-  border: '1px solid var(--color-border-secondary-light)',
-  background: 'var(--color-background-secondary-lightest)',
-  color: 'var(--color-text-primary-light)',
+  border: '1px solid var(--color-border-warning)',
+  color: 'var(--color-text-warning)',
   borderRadius: 'var(--radius-smooth)',
-  fontSize: 'var(--type-body-s-size, 14px)',
 }
 
-const altSectionStyle: CSSProperties = {
-  display: 'grid',
-  gap: 'var(--spacing-stack-xs)',
-}
-
-const altTitleStyle: CSSProperties = {
-  margin: 0,
-  color: 'var(--color-text-primary)',
-  fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-  fontSize: 'var(--type-body-m-size, 16px)',
-  fontWeight: 700,
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
+const tableWrapStyle: CSSProperties = {
+  overflowX: 'auto',
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
 }
 
 const tableStyle: CSSProperties = {
   width: '100%',
-  borderCollapse: 'separate',
-  borderSpacing: '0 6px',
+  borderCollapse: 'collapse',
   fontSize: 'var(--type-body-s-size, 14px)',
 }
 
-const thCriterionStyle: CSSProperties = {
+const thLabelStyle: CSSProperties = {
   textAlign: 'left',
-  padding: '0 var(--spacing-inset-s) 4px',
-  color: 'var(--color-text-primary-lighter)',
-  fontWeight: 600,
-  fontSize: 'var(--type-body-xs-size, 12px)',
-  textTransform: 'uppercase',
-  letterSpacing: '0.04em',
+  padding: 'var(--spacing-inset-s)',
+  background: '#f0f0f0',
+  color: 'var(--color-text-primary)',
+  fontWeight: 700,
+  borderBottom: '1px solid #d0d0d0',
+  fontSize: 'var(--type-body-xs-size, 13px)',
+  letterSpacing: '0.02em',
 }
 
-const thScaleStyle: CSSProperties = {
+const thAltStyle: CSSProperties = {
   textAlign: 'center',
-  padding: '0 4px 4px',
-  color: 'var(--color-text-primary-lighter)',
-  fontWeight: 600,
-  fontSize: 'var(--type-body-xs-size, 12px)',
+  padding: 'var(--spacing-inset-s)',
+  background: '#f0f0f0',
+  color: 'var(--color-text-primary)',
+  fontWeight: 700,
+  borderBottom: '1px solid #d0d0d0',
+  borderLeft: '1px solid #d0d0d0',
+  fontSize: 'var(--type-body-xs-size, 13px)',
+  letterSpacing: '0.01em',
 }
 
 const rowHeaderStyle: CSSProperties = {
   textAlign: 'left',
+  padding: 'var(--spacing-inset-s)',
+  borderBottom: '1px solid var(--color-border-secondary-light)',
   verticalAlign: 'middle',
+}
+
+const qLabelStyle: CSSProperties = {
+  display: 'block',
+  color: 'var(--color-text-primary)',
+  fontWeight: 400,
+  lineHeight: 1.45,
+}
+
+const tdStyle: CSSProperties = {
   padding: 'var(--spacing-inset-xs) var(--spacing-inset-s)',
-  borderTop: '1px solid var(--color-border-secondary-light)',
   borderBottom: '1px solid var(--color-border-secondary-light)',
   borderLeft: '1px solid var(--color-border-secondary-light)',
-  borderTopLeftRadius: 'var(--radius-smooth)',
-  borderBottomLeftRadius: 'var(--radius-smooth)',
-}
-
-const rowHeaderInnerStyle: CSSProperties = {
-  display: 'flex',
-  gap: 'var(--spacing-inline-s)',
-  alignItems: 'flex-start',
-}
-
-const rowNumStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 22,
-  height: 22,
-  flexShrink: 0,
-  borderRadius: 'var(--radius-circle, 80px)',
-  background: 'var(--color-background-secondary-lightest)',
-  border: '1px solid var(--color-border-secondary)',
-  color: 'var(--color-text-primary-light)',
-  fontWeight: 700,
-  fontSize: '12px',
-}
-
-const rowLabelWrapStyle: CSSProperties = {
-  display: 'grid',
-  gap: '2px',
-  minWidth: 0,
-}
-
-const rowLabelStyle: CSSProperties = {
-  fontWeight: 700,
-  color: 'var(--color-text-primary)',
-  lineHeight: 1.3,
-}
-
-const rowTextStyle: CSSProperties = {
-  color: 'var(--color-text-primary-light)',
-  fontSize: 'var(--type-body-xs-size, 12px)',
-  lineHeight: 1.4,
-}
-
-const dotCellStyle: CSSProperties = {
   textAlign: 'center',
   verticalAlign: 'middle',
-  padding: 'var(--spacing-inset-xs) 4px',
-  borderTop: '1px solid var(--color-border-secondary-light)',
-  borderBottom: '1px solid var(--color-border-secondary-light)',
 }
 
-const dotCellLastStyle: CSSProperties = {
-  borderRight: '1px solid var(--color-border-secondary-light)',
-  borderTopRightRadius: 'var(--radius-smooth)',
-  borderBottomRightRadius: 'var(--radius-smooth)',
+const trAltStyle: CSSProperties = {
+  background: 'var(--color-background-secondary-lightest)',
 }
 
-const dotStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 22,
-  height: 22,
-  borderRadius: 'var(--radius-circle, 80px)',
-  border: '2px solid var(--color-border-secondary)',
-  background: 'var(--color-background-inverse)',
-  cursor: 'pointer',
-  padding: 0,
-}
-
-const dotSelectedStyle: CSSProperties = {
-  borderColor: 'var(--color-background-primary)',
-}
-
-const dotInnerStyle: CSSProperties = {
-  width: 10,
-  height: 10,
-  borderRadius: 'var(--radius-circle, 80px)',
-  background: 'transparent',
-}
-
-const dotInnerSelectedStyle: CSSProperties = {
-  width: 10,
-  height: 10,
-  borderRadius: 'var(--radius-circle, 80px)',
-  background: 'var(--color-background-primary)',
+function selectStyle(hasValue: boolean): CSSProperties {
+  return {
+    width: '100%',
+    maxWidth: '140px',
+    padding: '6px var(--spacing-inset-xs)',
+    border: `1px solid ${hasValue ? 'var(--color-border-primary)' : 'var(--color-border-secondary-light)'}`,
+    borderRadius: 'var(--radius-smooth)',
+    fontSize: 'var(--type-body-s-size, 14px)',
+    fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
+    fontWeight: hasValue ? 600 : 400,
+    color: hasValue ? 'var(--color-text-primary)' : 'var(--color-text-primary-light)',
+    background: hasValue ? 'var(--color-background-inverse)' : 'var(--color-background-secondary-lightest)',
+    cursor: 'pointer',
+    appearance: 'auto',
+    outline: 'none',
+  }
 }
 
 const hintStyle: CSSProperties = {
