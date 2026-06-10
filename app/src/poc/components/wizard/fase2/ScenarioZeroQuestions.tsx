@@ -20,6 +20,12 @@ export function ScenarioZeroQuestions() {
     })
   }, [state.fabId])
 
+  // Sincronizza le selezioni quando lo store cambia dall'esterno (es. Autoriempi):
+  // senza questo, lo stato locale `answers` resta fermo e l'autofill non si vede.
+  useEffect(() => {
+    setAnswers(state.scenarioZeroAnswers)
+  }, [state.scenarioZeroAnswers])
+
   function buildNarrative(
     qs: SzQuestion[],
     ans: Record<string, string | string[]>,

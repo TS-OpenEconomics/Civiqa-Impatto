@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import type { CSSProperties } from 'react'
 import { useWizard } from '../../../hooks/useWizard'
 import type { AlternativaId } from '../../../types/docfap'
@@ -6,6 +6,8 @@ import { getAlternativeDisplayLabel } from '../../docfap/tableHelpers'
 import { RadioGroup } from '../../ui/RadioGroup'
 import { SelectField } from '../../ui/SelectField'
 import { Textarea } from '../../ui/Textarea'
+import { ProgressiveBlocks } from '../../ui/ProgressiveBlocks'
+import type { ProgressiveBlockDef } from '../../ui/ProgressiveBlocks'
 
 const MOTIVAZIONE_MAX = 800
 
@@ -73,82 +75,103 @@ export function Step7_DecisioneRUP() {
     return () => window.clearTimeout(timeoutId)
   }, [selectableAlternativeIds, setDecisione, state.decisioneRUP])
 
-  const selectError = selectedAlt ? undefined : 'Seleziona un\'alternativa.'
-  const coerenzaError = coerenzaValue ? undefined : 'Indica se la scelta è coerente con la raccomandazione.'
-  const motivazioneError = motivazione.trim().length > 0 ? undefined : 'La motivazione della scelta è obbligatoria.'
+  const selectedAltLabel = selectedAlt
+    ? getAlternativeDisplayLabel(selectedAlt, state.alternative[selectedAlt])
+    : ''
+
+  const blocks: ProgressiveBlockDef[] = [
+    {
+      id: 'alternativa',
+      title: 'Alternativa selezionata dal RUP',
+      complete: selectedAlt.trim().length > 0,
+      summary: selectedAltLabel || undefined,
+      children: (
+        <SelectField
+          label="Alternativa selezionata dal RUP"
+          required
+          value={selectedAlt}
+          onChange={(value) => {
+            const nextAlt = value as AlternativaId
+            const coerenteAuto = isDecisioneCoerente(nextAlt, recommendedId)
+            setDecisione({
+              alternativaScelta: nextAlt,
+              coerente: coerenteAuto ?? true,
+              motivazione,
+              passiSuccessivi: '',
+            })
+          }}
+          options={options}
+          placeholder="— Seleziona alternativa —"
+          helperText={
+            recommendedLabel
+              ? `Raccomandazione sistema: ${recommendedLabel}`
+              : 'La raccomandazione sarà disponibile dopo il calcolo dello score finale.'
+          }
+        />
+      ),
+    },
+    {
+      id: 'coerenza',
+      title: 'Coerenza con la raccomandazione',
+      complete: coerenzaValue.length > 0,
+      summary: coerenzaValue === 'si' ? 'Coerente' : coerenzaValue === 'no' ? 'Scelta divergente' : undefined,
+      children: (
+        <div style={blockBodyStyle}>
+          <RadioGroup
+            legend="La scelta è coerente con la raccomandazione del sistema?"
+            required
+            value={coerenzaValue}
+            onChange={(value) => {
+              setDecisione({
+                alternativaScelta: (selectedAlt || (selectableAlternativeIds[0] ?? 'A1')) as AlternativaId,
+                coerente: value === 'si',
+                motivazione,
+                passiSuccessivi: '',
+              })
+            }}
+            options={[
+              { value: 'si', label: 'Sì — coerente' },
+              { value: 'no', label: 'No — scelta divergente' },
+            ]}
+          />
+
+          {hasDivergenza && (
+            <div role="note" style={promptDivergenteStyle}>
+              Specificare i fattori che hanno determinato la scelta diversa dalla raccomandazione.
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'motivazione',
+      title: 'Motivazione della scelta',
+      complete: motivazione.trim().length > 0,
+      summary: motivazione || undefined,
+      children: (
+        <Textarea
+          label="Motivazione della scelta"
+          required
+          maxLength={MOTIVAZIONE_MAX}
+          rows={4}
+          value={motivazione}
+          onChange={(value) => {
+            setDecisione({
+              alternativaScelta: (selectedAlt || (selectableAlternativeIds[0] ?? 'A1')) as AlternativaId,
+              coerente: coerenzaValue !== 'no',
+              motivazione: value,
+              passiSuccessivi: '',
+            })
+          }}
+          helperText="Motivazione obbligatoria (max 800 caratteri)."
+        />
+      ),
+    },
+  ]
 
   return (
     <div style={rootStyle}>
-      <SelectField
-        label="Alternativa selezionata dal RUP"
-        required
-        value={selectedAlt}
-        onChange={(value) => {
-          const nextAlt = value as AlternativaId
-          const coerenteAuto = isDecisioneCoerente(nextAlt, recommendedId)
-
-          setDecisione({
-            alternativaScelta: nextAlt,
-            coerente: coerenteAuto ?? true,
-            motivazione,
-            passiSuccessivi: '',
-          })
-        }}
-        options={options}
-        placeholder="— Seleziona alternativa —"
-        helperText={
-          recommendedLabel
-            ? `Raccomandazione sistema: ${recommendedLabel}`
-            : 'La raccomandazione sarà disponibile dopo il calcolo dello score finale.'
-        }
-        errorText={selectError}
-      />
-
-      <RadioGroup
-        legend="La scelta è coerente con la raccomandazione del sistema?"
-        required
-        value={coerenzaValue}
-        onChange={(value) => {
-          setDecisione({
-            alternativaScelta: (selectedAlt || (selectableAlternativeIds[0] ?? 'A1')) as AlternativaId,
-            coerente: value === 'si',
-            motivazione,
-            passiSuccessivi: '',
-          })
-        }}
-        options={[
-          { value: 'si', label: 'Sì — coerente' },
-          { value: 'no', label: 'No — scelta divergente' },
-        ]}
-        errorText={coerenzaError}
-      />
-
-      <div
-        aria-hidden={!hasDivergenza}
-        style={{
-          ...promptDivergenteStyle,
-          ...(hasDivergenza ? promptDivergenteVisibleStyle : promptDivergenteHiddenStyle),
-        }}
-      >
-        Specificare i fattori che hanno determinato la scelta diversa dalla raccomandazione.
-      </div>
-
-      <Textarea
-        label="Motivazione della scelta"
-        required
-        maxLength={MOTIVAZIONE_MAX}
-        value={motivazione}
-        onChange={(value) => {
-          setDecisione({
-            alternativaScelta: (selectedAlt || (selectableAlternativeIds[0] ?? 'A1')) as AlternativaId,
-            coerente: coerenzaValue !== 'no',
-            motivazione: value,
-            passiSuccessivi: '',
-          })
-        }}
-        errorText={motivazioneError}
-        helperText="Motivazione obbligatoria (max 800 caratteri)."
-      />
+      <ProgressiveBlocks blocks={blocks} />
     </div>
   )
 }
@@ -156,20 +179,17 @@ export function Step7_DecisioneRUP() {
 const rootStyle: CSSProperties = {
   display: 'grid',
   gap: 'var(--spacing-stack-m)',
+  width: '100%',
+}
+
+const blockBodyStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--spacing-stack-s)',
 }
 
 const promptDivergenteStyle: CSSProperties = {
   border: '1px solid var(--color-border-warning)',
-  borderRadius: 'var(--radius-smooth)',
   background: 'var(--color-background-warning-lighter)',
   color: 'var(--color-text-warning)',
   padding: 'var(--spacing-inset-s)',
-}
-
-const promptDivergenteVisibleStyle: CSSProperties = {
-  display: 'block',
-}
-
-const promptDivergenteHiddenStyle: CSSProperties = {
-  display: 'none',
 }

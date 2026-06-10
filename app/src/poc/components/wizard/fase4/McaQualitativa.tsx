@@ -218,10 +218,10 @@ const tableStyle: CSSProperties = {
 const thLabelStyle: CSSProperties = {
   textAlign: 'left',
   padding: 'var(--spacing-inset-s)',
-  background: '#f0f0f0',
-  color: 'var(--color-text-primary)',
+  background: 'var(--color-background-primary)',
+  color: 'var(--color-text-inverse)',
   fontWeight: 700,
-  borderBottom: '1px solid #d0d0d0',
+  borderBottom: '1px solid var(--color-background-primary)',
   fontSize: 'var(--type-body-xs-size, 13px)',
   letterSpacing: '0.02em',
 }
@@ -229,11 +229,11 @@ const thLabelStyle: CSSProperties = {
 const thAltStyle: CSSProperties = {
   textAlign: 'center',
   padding: 'var(--spacing-inset-s)',
-  background: '#f0f0f0',
-  color: 'var(--color-text-primary)',
+  background: 'var(--color-background-primary)',
+  color: 'var(--color-text-inverse)',
   fontWeight: 700,
-  borderBottom: '1px solid #d0d0d0',
-  borderLeft: '1px solid #d0d0d0',
+  borderBottom: '1px solid var(--color-background-primary)',
+  borderLeft: '1px solid rgba(255,255,255,0.25)',
   fontSize: 'var(--type-body-xs-size, 13px)',
   letterSpacing: '0.01em',
 }

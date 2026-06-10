@@ -123,16 +123,19 @@ const CSS = `
 .ecba-root .chart-box{margin-top:20px;overflow-x:auto}
 .ecba-root svg.chart{width:100%;height:auto;display:block;overflow:visible;margin:0 auto}
 .ecba-root #svg-wf{max-width:720px}
-.ecba-root #svg-cf{max-width:760px}
+.ecba-root #svg-cf{width:100%;max-width:1400px;max-height:440px}
 .ecba-root #svg-mc{max-width:760px}
 .ecba-root #svg-heat{max-width:720px}
-.ecba-root #svg-dn{width:420px !important;max-width:420px !important;flex:0 0 420px !important}
+.ecba-root #svg-dn{width:320px !important;max-width:320px !important;flex:0 0 320px !important}
 /* due grafici spider affiancati */
 .ecba-root .card-row{display:flex;gap:16px;align-items:stretch}
 .ecba-root .card-row > .card{flex:1 1 0;min-width:0;margin-top:16px}
 .ecba-root .legend{display:flex;flex-wrap:wrap;gap:10px 12px;margin-top:18px}
 .ecba-root .lg{display:flex;align-items:center;gap:8px;font-size:13px}
 .ecba-root .lg .sw{width:13px;height:13px;flex:0 0 13px}
+.ecba-root #dn-legend .lg{font-size:15px;gap:12px}
+.ecba-root #dn-legend .lg .sw{width:15px;height:15px;flex:0 0 15px}
+.ecba-root #dn-legend .lg b{font-size:15px}
 .ecba-root .lg-chip{display:flex;align-items:center;gap:8px;font-size:12.5px;border:1px solid var(--grey-line);padding:6px 11px;cursor:pointer;user-select:none;background:#fff}
 .ecba-root .lg-chip .sw{width:11px;height:11px;flex:0 0 11px}
 .ecba-root .lg-chip.off{opacity:.4} .ecba-root .lg-chip:hover{border-color:var(--blu-400)}
@@ -151,6 +154,7 @@ const CSS = `
 .ecba-root .connector{stroke:#c4c4be;stroke-width:1;stroke-dasharray:3 3}
 .ecba-root .chart-hit{cursor:pointer;pointer-events:all}
 .ecba-root .chart-hit:hover{filter:brightness(.96)}
+.ecba-root .chart-hit:focus,.ecba-root .chart-hit:focus-visible,.ecba-root .chart-point:focus,.ecba-root .chart-point:focus-visible,.ecba-root svg.chart:focus{outline:none}
 .ecba-root .chart-point{cursor:pointer;pointer-events:all;transition:r .12s ease,opacity .12s ease}
 .ecba-root .chart-tip{position:absolute;z-index:1600;display:none;min-width:190px;max-width:280px;background:#fff;border-left:2px solid var(--blu-500);box-shadow:0 12px 32px rgba(14,14,16,.18);padding:12px 14px;pointer-events:none}
 .ecba-root .chart-tip.show{display:block}
@@ -303,7 +307,7 @@ const MARKUP = `
     <div class="card">
       <div class="card-h">Flussi monetizzati — vita utile del progetto <span class="info-i" data-tip="Andamento annuo delle voci monetizzate e Valore Attuale Netto Economico cumulato. Usa i chip per mostrare o nascondere le singole dimensioni.">i</span></div>
       <div class="card-sub">Seleziona le voci da visualizzare. Valori in M€ · Anno 0 = investimento iniziale.</div>
-      <div class="chart-box"><svg id="svg-cf" class="chart" viewBox="0 0 760 400"></svg></div>
+      <div class="chart-box"><svg id="svg-cf" class="chart" viewBox="0 0 1200 360"></svg></div>
       <div class="legend" id="cf-legend"></div>
       <div class="read"><h5>Come si legge</h5>
         <p>L'asse orizzontale è il <b>tempo</b> (anni dall'avvio). La linea <span style="color:var(--green-700);font-weight:800">dei benefici annui</span> parte da zero e cresce man mano che il servizio produce effetti; la linea <span style="color:var(--red-600);font-weight:800">del flusso di cassa netto annuo</span> è negativa negli anni di investimento (CAPEX) e diventa positiva in esercizio.</p>
@@ -314,9 +318,9 @@ const MARKUP = `
     <div class="card">
       <div class="card-h">Composizione dei benefici <span class="info-i" data-tip="Quota di ciascuna esternalità sul totale dei benefici economici attualizzati.">i</span></div>
       <div class="card-sub">Da cosa sono fatti i 53,1 M€ di benefici (valori attuali).</div>
-      <div class="chart-box" style="display:flex;gap:30px;align-items:center;flex-wrap:wrap">
-        <svg id="svg-dn" class="chart" viewBox="0 0 300 300" style="max-width:300px;flex:0 0 280px"></svg>
-        <div class="legend" id="dn-legend" style="flex:1;flex-direction:column;align-items:stretch;gap:12px;margin-top:0"></div>
+      <div class="chart-box" style="display:flex;gap:48px;align-items:center;justify-content:center;flex-wrap:wrap">
+        <svg id="svg-dn" class="chart" viewBox="0 0 300 300" style="max-width:320px;flex:0 0 320px;margin:0"></svg>
+        <div class="legend" id="dn-legend" style="flex:0 1 380px;max-width:380px;flex-direction:column;align-items:stretch;gap:12px;margin-top:0"></div>
       </div>
       <div class="read"><h5>Come si legge</h5>
         <p>Ogni spicchio è una <b>fonte di beneficio</b> e la sua ampiezza è la quota sul totale. La voce maggiore è la <b>partecipazione al lavoro</b> resa possibile dal servizio; seguono capitale umano e costi di cura evitati.</p>
@@ -791,8 +795,8 @@ export function EcbaResults({ project, onBack }) {
     }
     function drawCashflow(animate) {
       const svg = q("#svg-cf");
-      const W = 760,
-        H = 400,
+      const W = 1200,
+        H = 360,
         padL = 52,
         padR = 22,
         padT = 20,

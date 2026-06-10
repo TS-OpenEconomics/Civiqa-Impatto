@@ -185,9 +185,10 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
           const m = subStepId.match(/^fase3-(a[123])-(setup|params|nome)$/)
           if (m) {
             const altId = m[1].toUpperCase() as SupportedAlternativaId
+            // fillAlternativaSetup imposta categoria, tipologia E nome in un'unica
+            // addAlternativa: NON chiamare anche fillAlternativaNome, che leggendo
+            // lo stato vecchio dalla closure sovrascriverebbe (azzerando) categoria/tipologia.
             fillAlternativaSetup(altId)
-            // Lo step "setup" ora include anche il nome (box 2).
-            if (m[2] === 'setup') fillAlternativaNome(altId)
           }
           return
         }
@@ -383,6 +384,7 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
                 title: 'Formalizza la decisione del RUP',
                 subtitle: "Seleziona l'alternativa preferita e motiva la scelta conclusiva.",
                 normRef: 'Art. 2, c.4, g) + c.7',
+                bare: true,
                 content: <Step7_DecisioneRUP />,
               },
             ],
