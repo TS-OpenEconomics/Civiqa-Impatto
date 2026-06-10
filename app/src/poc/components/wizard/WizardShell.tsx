@@ -1138,7 +1138,10 @@ const closeButtonStyle: CSSProperties = {
 
 const mainAreaStyle: CSSProperties = {
   overflowY: 'auto',
-  minHeight: 'calc(100vh - 64px - 56px)',
+  // height (non minHeight): vincola l'area di scroll così scrolla INTERNAMENTE e
+  // il paddingBottom resta visibile sopra il footer fisso. Con minHeight l'area
+  // cresceva col contenuto e il footer ne copriva il fondo (gap "mangiato").
+  height: 'calc(100vh - 64px - 56px)',
   padding: '32px clamp(36px, 4vw, 64px) 24px',
   display: 'flex',
   justifyContent: 'center',
@@ -1163,7 +1166,9 @@ const introMainContentStyle: CSSProperties = {
 const mainAreaContentStyle: CSSProperties = {
   width: '100%',
   maxWidth: '880px',
-  height: '100%',
+  // minHeight (non height): col contenuto che trabocca, height:100% lasciava il
+  // paddingBottom a metà scroll → l'ultima card finiva incollata al footer.
+  minHeight: '100%',
   margin: '0 auto',
   display: 'grid',
   gap: 'var(--spacing-stack-m)',

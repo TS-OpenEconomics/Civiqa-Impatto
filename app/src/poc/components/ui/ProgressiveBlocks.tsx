@@ -40,18 +40,21 @@ export function ProgressiveBlocks({ blocks }: ProgressiveBlocksProps) {
   })
   const [editingId, setEditingId] = useState<string | null>(null)
 
+  // Se tutti i blocchi sono già completi (es. dopo Autoriempi che imposta i dati
+  // dall'esterno), mostrali tutti come recap invece di lasciarli "bloccati".
+  const allComplete = blocks.length > 0 && blocks.every((b) => b.complete)
+
   return (
     <div className="grid gap-3">
       {blocks.map((block, index) => {
         const number = index + 1
         const isEditing = editingId === block.id
-        const locked = index > step && !isEditing
+        const expanded = isEditing || (!allComplete && index === step)
+        const locked = !allComplete && !isEditing && index > step
 
         if (locked) {
           return <LockedBlock key={block.id} number={number} title={block.title} />
         }
-
-        const expanded = index === step || isEditing
 
         if (!expanded) {
           return (

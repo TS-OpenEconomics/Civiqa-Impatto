@@ -229,6 +229,15 @@ export function InputParamsStep({ alternativaId }: Props) {
     }
   }
 
+  // Stepper della quota OPEX (% del CAPEX): è il controllo primario, il valore in
+  // €/anno si ricalcola via handleOpexPctChange (come nel wizard di Valutazione).
+  function stepOpexPct(delta: number) {
+    const cur = parseFloat(opexPctStr)
+    const base = isNaN(cur) ? (computed?.opexPctMed ?? 3) : cur
+    const next = Math.round((base + delta) * 10) / 10
+    handleOpexPctChange(String(Math.max(0, Math.min(100, next))))
+  }
+
   // ── Auto-save to wizard store ─────────────────────────────────────────────
 
   useEffect(() => {
@@ -390,6 +399,25 @@ export function InputParamsStep({ alternativaId }: Props) {
           <div style={cardHeaderStyle}>Valori stimati — conferma o modifica</div>
 
           <div style={resultsRowStyle}>
+            {/* Durata — prima */}
+            <div style={resultPanelStyle}>
+              <span style={resultFieldLabelStyle}>Durata stimata</span>
+              <div style={panelInputRowStyle}>
+                <input
+                  id={`dur-${alternativaId}`}
+                  type="text"
+                  inputMode="numeric"
+                  value={displayInt(durationStr, focusedField === `dur-${alternativaId}`)}
+                  onChange={(e) => setDurationStr(stripDots(e.target.value))}
+                  onFocus={() => setFocusedField(`dur-${alternativaId}`)}
+                  onBlur={() => setFocusedField(null)}
+                  style={panelInputStyle}
+                  aria-label="Durata cantiere in mesi"
+                />
+                <span style={udmBadgeStyle}>mesi</span>
+              </div>
+            </div>
+
             {/* CAPEX */}
             <div style={resultPanelStyle}>
               <div style={resultFieldHeaderStyle}>
@@ -423,8 +451,8 @@ export function InputParamsStep({ alternativaId }: Props) {
               </div>
             </div>
 
-            {/* OPEX */}
-            <div style={resultPanelStyle}>
+            {/* OPEX — stesso campo valore di CAPEX + stepper % secondario sotto */}
+            <div style={{ ...resultPanelStyle, borderBottom: 'none' }}>
               <span style={resultFieldLabelStyle}>OPEX annuo stimato</span>
               {computed && (
                 <div style={minMaxRowStyle}>
@@ -433,7 +461,7 @@ export function InputParamsStep({ alternativaId }: Props) {
                   <span style={minMaxItemStyle}>Max <strong>{computed.opexPctMax}%</strong></span>
                 </div>
               )}
-              <div style={opexInputsRowStyle}>
+              <div style={panelInputRowStyle}>
                 <input
                   id={`opex-val-${alternativaId}`}
                   type="text"
@@ -446,40 +474,38 @@ export function InputParamsStep({ alternativaId }: Props) {
                   aria-label="OPEX annuo in euro"
                 />
                 <span style={udmBadgeStyle}>€/anno</span>
-                <div style={opexPctBlockStyle}>
+              </div>
+
+              {/* Stepper percentuale (secondario): quota sul CAPEX, ricalcola il valore */}
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <span className="text-[12px] text-ink-500">Quota sul CAPEX</span>
+                <button
+                  type="button"
+                  onClick={() => stepOpexPct(-0.1)}
+                  aria-label="Diminuisci quota OPEX"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center border border-ink-200 bg-white text-[18px] font-bold text-ink-600 hover:border-ink-400 hover:bg-[#fafafa]"
+                >
+                  −
+                </button>
+                <div className="relative w-[84px]">
                   <input
                     id={`opex-pct-${alternativaId}`}
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
                     value={opexPctStr}
+                    inputMode="decimal"
                     onChange={(e) => handleOpexPctChange(e.target.value)}
-                    style={pctInputStyle}
+                    className="h-8 w-full border border-ink-200 px-2 pr-6 text-center text-[14px] font-semibold text-ink-900 focus:border-brand-violet focus:outline-none"
                     aria-label="OPEX come percentuale del CAPEX"
                   />
-                  <span style={udmBadgeStyle}>%</span>
+                  <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[12px] text-ink-400">%</span>
                 </div>
-              </div>
-            </div>
-
-            {/* Duration */}
-            <div style={{ ...resultPanelStyle, borderRight: 'none' }}>
-              <span style={resultFieldLabelStyle}>Durata stimata</span>
-              <div style={minMaxRowStyle} aria-hidden="true" />
-              <div style={panelInputRowStyle}>
-                <input
-                  id={`dur-${alternativaId}`}
-                  type="text"
-                  inputMode="numeric"
-                  value={displayInt(durationStr, focusedField === `dur-${alternativaId}`)}
-                  onChange={(e) => setDurationStr(stripDots(e.target.value))}
-                  onFocus={() => setFocusedField(`dur-${alternativaId}`)}
-                  onBlur={() => setFocusedField(null)}
-                  style={panelInputStyle}
-                  aria-label="Durata cantiere in mesi"
-                />
-                <span style={udmBadgeStyle}>mesi</span>
+                <button
+                  type="button"
+                  onClick={() => stepOpexPct(0.1)}
+                  aria-label="Aumenta quota OPEX"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center border border-ink-200 bg-white text-[18px] font-bold text-brand-violet hover:border-brand-violet hover:bg-brand-violet-soft"
+                >
+                  +
+                </button>
               </div>
             </div>
           </div>
@@ -642,22 +668,19 @@ const resultsTitleStyle: CSSProperties = {
 }
 
 const resultsRowStyle: CSSProperties = {
+  // Impilati in verticale: nessuna adiacenza orizzontale tra le colonne → niente
+  // sovrapposizioni (la "€" di CAPEX non può toccare l'input OPEX). Ogni metrica
+  // ha tutta la larghezza della card, quindi gli input OPEX stanno comodi.
   display: 'grid',
-  // OPEX ha due input (valore + %) quindi serve più largo di CAPEX/Durata.
-  gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.7fr) minmax(0, 1fr)',
-  // Gap reale tra le colonne (niente divisori a filo): evita che la "€" di CAPEX
-  // tocchi/si sovrapponga all'input OPEX.
-  columnGap: '28px',
-  rowGap: '16px',
-  padding: 'var(--spacing-inset-m) var(--spacing-inset-m) var(--spacing-inset-m)',
+  gridTemplateColumns: '1fr',
 }
 
 const resultPanelStyle: CSSProperties = {
   display: 'grid',
   gap: 'var(--spacing-stack-xs)',
-  // Niente padding/divisori sul pannello: spaziatura e separazione sono gestite
-  // dal columnGap della riga. minWidth:0 lascia restringere gli input flessibili.
   minWidth: 0,
+  padding: 'var(--spacing-inset-s) var(--spacing-inset-m)',
+  borderBottom: '1px solid var(--color-border-secondary-light)',
 }
 
 const resultFieldHeaderStyle: CSSProperties = {
