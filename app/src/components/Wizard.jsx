@@ -1,52 +1,31 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LeafletMap } from "./map/LeafletMap";
 import { findNearest, geocodeAddress } from "../lib/geocoding";
+import { mopData, interventionTypes } from "../poc/data/mockMOPTaxonomy";
+import { INTERVENTION_CATEGORIES } from "../poc/data/poc_docfap/intervention_categories_layer3";
+import { getCostiByCategory, calcolaCostoTipologia } from "../poc/data/poc_docfap/costi_per_tipologia";
 
-const SETTORI_DATA = {
-  "Infrastrutture sociali": {
-    nace: "F41.20",
-    sottosettori: {
-      "Istruzione e formazione": ["Scuole e asili", "Università e ricerca", "Formazione professionale", "Servizi integrativi"],
-      "Sanità e assistenza": ["Ospedali e cliniche", "Strutture per anziani", "Centri di salute", "Assistenza domiciliare"],
-      "Cultura e sport": ["Biblioteche e musei", "Impianti sportivi", "Spazi culturali", "Teatri e auditorium"],
-      "Edilizia residenziale pubblica": ["Riqualificazione alloggi", "Nuova costruzione ERP", "Manutenzione straordinaria"],
-    },
-  },
-  "Infrastrutture di trasporto": {
-    nace: "F42.11",
-    sottosettori: {
-      "Strade e autostrade": ["Nuova viabilità", "Adeguamento e manutenzione", "Sicurezza stradale", "Gallerie e ponti"],
-      "Ferrovie e metropolitane": ["Linee ferroviarie", "Metropolitane e tram", "Stazioni e interscambi", "Alta velocità"],
-      "Porti e aeroporti": ["Infrastrutture portuali", "Piste e terminal aeroportuali", "Logistica e magazzini"],
-      "Mobilità urbana": ["Piste ciclabili", "ZTL e aree pedonali", "Parcheggi e nodi di scambio", "Bus rapid transit"],
-    },
-  },
-  "Infrastrutture ambientali e risorse idriche": {
-    nace: "E36.00",
-    sottosettori: {
-      "Risorse idriche e acque reflue": ["Reti fognarie", "Reti idriche urbane", "Corpi idrici: Miglioramento della qualità", "Impianti depurazione acque", "Reti idriche rurali"],
-      "Difesa del suolo e prevenzione": ["Protezione idrogeologica", "Bonifica siti inquinati", "Gestione alluvioni", "Stabilizzazione versanti"],
-      "Valorizzazione dell'ambiente": ["Parchi e aree naturali", "Biodiversità ed ecosistemi", "Paesaggio rurale"],
-      "Smaltimento rifiuti": ["Raccolta differenziata", "Compostaggio e digestione anaerobica", "Termovalorizzatori"],
-    },
-  },
-  "Attività produttive, ricerca e impresa sociale": {
-    nace: "M72.19",
-    sottosettori: {
-      "Ricerca e sviluppo": ["Laboratori e centri di ricerca", "Incubatori di imprese", "Trasferimento tecnologico"],
-      "Impresa sociale e terzo settore": ["Cooperative sociali", "Fondazioni e ONG", "Inserimento lavorativo"],
-      "Zone economiche speciali": ["Aree industriali", "Poli produttivi integrati", "Distretti tecnologici"],
-    },
-  },
-  "Telecomunicazioni e tecnologie informatiche": {
-    nace: "J61.10",
-    sottosettori: {
-      "Reti a banda larga": ["Fibra ottica FTTH", "Fibra ottica FTTC", "Connettività rurale e montana"],
-      "Infrastrutture digitali pubbliche": ["Cloud PA", "Cybersecurity pubblica", "Servizi digitali ai cittadini"],
-      "Smart city": ["Sensori e IoT urbano", "Mobilità connessa", "Illuminazione intelligente"],
-    },
-  },
+// La classificazione dell'intervento usa la tassonomia MOP reale (settori,
+// sotto-settori e categorie di intervento) definita in
+// app/src/poc/data/mockMOPTaxonomy.ts. Qui sotto solo un lookup NACE per
+// settore (campo descrittivo, non usato nei calcoli) e gli helper basati su
+// label che il wizard si aspetta.
+const NACE_BY_SECTOR = {
+  "Infrastrutture ambientali e risorse idriche": "E36.00",
+  "Infrastrutture del settore energetico": "D35.00",
+  "Infrastrutture di trasporto": "F42.11",
+  "Infrastrutture per l'attrezzatura di aree produttive": "F42.99",
+  "Infrastrutture per telecomunicazioni e tecnologie informatiche": "J61.10",
+  "Infrastrutture sociali": "F41.20",
+  "Istruzione, formazione e sostegni per il mercato del lavoro": "P85.59",
+  "Opere, impianti ed attrezzature per attività produttive, e la ricerca e l'impresa sociale": "M72.19",
+  "Ricerca sviluppo tecnologico ed innovazione": "M72.19",
+  "Servizi per la P.A. e per la collettività": "O84.11",
 };
+
+function naceForSettore(settore) {
+  return NACE_BY_SECTOR[settore] ?? "";
+}
 
 const STATI = ["In preparazione", "In approvazione", "Approvato"];
 const STATO_DESCRIPTIONS = {
@@ -56,8 +35,8 @@ const STATO_DESCRIPTIONS = {
     "Il progetto è stato predisposto e presentato agli organi competenti ed è in attesa di autorizzazione o parere.",
   Approvato: "Il progetto ha ottenuto l'approvazione formale necessaria e può procedere verso le fasi attuative ed esecutive.",
 };
-const SETTORI = Object.keys(SETTORI_DATA);
-const TIPI = ["Nuova realizzazione", "Ristrutturazione", "Recupero", "Manutenzione", "Efficientamento"];
+const SETTORI = mopData.map((s) => s.label);
+const TIPI = interventionTypes.map((t) => t.label);
 const ANNI = ["2025", "2026", "2027", "2028", "2029", "2030", "2031"];
 const TASSO_DEFAULT = "3";
 const STEP_AUTOFILL_LABEL = "Autoriempi questa pagina";
@@ -68,9 +47,9 @@ const DEMO_AUTOFILL = {
     "Realizzazione di un nuovo asilo nido comunale per 100 bambini, con l'obiettivo di aumentare l'offerta di servizi educativi per la prima infanzia, ridurre il divario territoriale nell'accesso ai servizi e favorire la conciliazione lavoro-famiglia.",
   stato: "In preparazione",
   settore: "Infrastrutture sociali",
-  sotto_settore: "Istruzione e formazione",
-  categoria_intervento: "Scuole e asili",
-  tipo_intervento: "Nuova realizzazione",
+  sotto_settore: "Sociali e scolastiche",
+  categoria_intervento: "Asili nido",
+  tipo_intervento: "Nuova Costruzione",
   data_inizio: "2025-09-01",
   data_fine: "2027-09-01",
   localizzazione: "Via della Repubblica 15 - 80131, Napoli NA",
@@ -375,6 +354,81 @@ const PROFILO_TEMPLATES = {
   },
 };
 
+// ── Profilo CAPEX da costi parametrici reali ─────────────────────────────────
+// Il calcolo del CAPEX usa i costi parametrici reali (COSTI_PER_TIPOLOGIA):
+// CAPEX = costo parametrico × quantità fisica. La categoria MOP scelta viene
+// agganciata per label alla categoria del catalogo costi per recuperarne
+// codice, unità di misura e range di costo (min/med/max).
+const normCatLabel = (s) =>
+  (s ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+const CAT_CODE_BY_LABEL = new Map(
+  INTERVENTION_CATEGORIES.map((c) => [normCatLabel(c.label), c.code]),
+);
+
+// tipo_intervento (label tassonomia MOP) → codice tipologia COSTI_PER_TIPOLOGIA
+const TIPO_TO_COSTI = {
+  "Nuova Costruzione": "NUOVA_REALIZZAZIONE",
+  Ristrutturazione: "RISTRUTTURAZIONE",
+  Restauro: "RESTAURO",
+  Recupero: "RECUPERO",
+  Efficientamento: "RISTRUTTURAZIONE_CON_EE",
+};
+
+function physicalUnitFromUdm(udm) {
+  return (udm ?? "").replace(/^€\s*\/\s*/, "").trim() || "unità";
+}
+
+/** Costruisce un profilo CAPEX (CP × quantità) dai costi parametrici reali. */
+function buildProfiloFromCosti(categoriaLabel, tipoLabel) {
+  if (!categoriaLabel) return null;
+  const code = CAT_CODE_BY_LABEL.get(normCatLabel(categoriaLabel));
+  if (!code) return null;
+  const records = getCostiByCategory(code);
+  if (records.length === 0) return null;
+  const tipoCode = TIPO_TO_COSTI[tipoLabel] ?? "NUOVA_REALIZZAZIONE";
+  const costo =
+    calcolaCostoTipologia(records[0], tipoCode) ??
+    calcolaCostoTipologia(records[0], "NUOVA_REALIZZAZIONE");
+  if (!costo) return null;
+  const unit = physicalUnitFromUdm(costo.udm);
+  const fmtIt = (n) => new Intl.NumberFormat("it-IT").format(n);
+  return {
+    titolo: `${categoriaLabel} — costo parametrico`,
+    udm: costo.udm,
+    campi: [
+      { id: "quantita", label: "Quantità", unit, placeholder: "es. 1.000" },
+      {
+        id: "cp",
+        label: "Costo parametrico",
+        unit: costo.udm,
+        default: costo.val_med,
+        hint: `Range parametrico ${fmtIt(costo.val_min)}–${fmtIt(costo.val_max)} ${costo.udm}`,
+      },
+    ],
+    stimaCapex: (p) => profiloNum(p.quantita) * profiloNum(p.cp, costo.val_med),
+  };
+}
+
+/**
+ * Profilo per il calcolo CAPEX. Preferisce i costi parametrici reali del
+ * catalogo costi; ricade sui template fisici hardcoded (PROFILO_TEMPLATES) per
+ * le categorie che non trovano corrispondenza nel catalogo.
+ */
+function resolveProfilo(categoria, sotto, tipo) {
+  return (
+    buildProfiloFromCosti(categoria, tipo) ??
+    PROFILO_TEMPLATES[categoria] ??
+    PROFILO_TEMPLATES[sotto] ??
+    null
+  );
+}
+
 const STEPS = [
   { id: "anagrafica",      group: 0, sublabel: "Anagrafica e stato" },
   { id: "classificazione", group: 0, sublabel: "Classificazione intervento" },
@@ -437,22 +491,27 @@ function buildDefaultKpi(capex, opexYears, cantiereYears) {
   return kpi;
 }
 
+function findSettore(settore) {
+  return mopData.find((s) => s.label === settore);
+}
+
 function getSottosettori(settore) {
-  return Object.keys(SETTORI_DATA[settore]?.sottosettori ?? {});
+  return (findSettore(settore)?.subSectors ?? []).map((ss) => ss.label);
 }
 
 function getCategorie(settore, sotto) {
-  return SETTORI_DATA[settore]?.sottosettori[sotto] ?? [];
+  const subSector = findSettore(settore)?.subSectors.find((ss) => ss.label === sotto);
+  return (subSector?.categories ?? []).map((c) => c.label);
 }
 
 function getAllCategorie() {
-  return Object.entries(SETTORI_DATA).flatMap(([settore, settoreData]) =>
-    Object.entries(settoreData.sottosettori).flatMap(([sotto_settore, categorie]) =>
-      categorie.map((categoria) => ({
-        settore,
-        sotto_settore,
-        categoria,
-        nace_code: settoreData.nace,
+  return mopData.flatMap((settore) =>
+    settore.subSectors.flatMap((sotto) =>
+      sotto.categories.map((categoria) => ({
+        settore: settore.label,
+        sotto_settore: sotto.label,
+        categoria: categoria.label,
+        nace_code: naceForSettore(settore.label),
       })),
     ),
   );
@@ -560,7 +619,7 @@ function buildDraft(project) {
     descrizione: project.descrizione ?? "",
     stato: project.stato || "",
     settore,
-    nace_code: conf.nace_code || SETTORI_DATA[settore]?.nace || "",
+    nace_code: conf.nace_code || naceForSettore(settore) || "",
     sotto_settore: sotto,
     categoria_intervento: categoria,
     tipo_intervento: TIPI.includes(conf.tipo_intervento) ? conf.tipo_intervento : "",
@@ -1295,7 +1354,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
   function autoFillBenefici() {
     const capex = Number(draft.capex) || 0;
     setDraft((prev) => {
-      const tmpl = PROFILO_TEMPLATES[prev.categoria_intervento];
+      const tmpl = resolveProfilo(prev.categoria_intervento, prev.sotto_settore, prev.tipo_intervento);
       const endYear = prev.data_fine ? new Date(prev.data_fine + "T00:00:00").getFullYear() + 1 : null;
       const years = endYear ? Array.from({ length: Number(prev.vita_utile) || 20 }, (_, i) => String(endYear + i)) : [];
       const cantiereYrs = yearRangeFromDates(prev.data_inizio, prev.data_fine);
@@ -1367,7 +1426,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
   }
 
   function handleSettoreChange(settore) {
-    const nace = SETTORI_DATA[settore]?.nace ?? "";
+    const nace = naceForSettore(settore);
     setClassificationRevealLevel(2);
     setDraft((prev) => ({ ...prev, settore, nace_code: nace, sotto_settore: "", categoria_intervento: "", tipo_intervento: "" }));
   }
@@ -1585,8 +1644,8 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
   const opexBenchmark = useMemo(() => OPEX_BENCHMARKS[draft.settore] ?? OPEX_BENCHMARK_DEFAULT, [draft.settore]);
   const vitaUtileBenchmark = useMemo(() => VITA_UTILE_BENCHMARKS[draft.settore] ?? VITA_UTILE_DEFAULT, [draft.settore]);
   const profiloTemplate = useMemo(
-    () => PROFILO_TEMPLATES[draft.categoria_intervento] ?? PROFILO_TEMPLATES[draft.sotto_settore] ?? null,
-    [draft.categoria_intervento, draft.sotto_settore],
+    () => resolveProfilo(draft.categoria_intervento, draft.sotto_settore, draft.tipo_intervento),
+    [draft.categoria_intervento, draft.sotto_settore, draft.tipo_intervento],
   );
   const profiloCapexStima = useMemo(
     () => profiloTemplate?.stimaCapex?.(draft.profilo_dati) ?? 0,
@@ -1607,7 +1666,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
   useEffect(() => {
     if (step.id !== "profilo") return;
     setDraft((prev) => {
-      const tpl = PROFILO_TEMPLATES[prev.categoria_intervento] ?? PROFILO_TEMPLATES[prev.sotto_settore];
+      const tpl = resolveProfilo(prev.categoria_intervento, prev.sotto_settore, prev.tipo_intervento);
       if (!tpl) return prev;
       const dati = { ...prev.profilo_dati };
       let changed = false;
@@ -1627,7 +1686,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
     if (step.id !== "capex") return;
     setDraft((prev) => {
       if (prev.capex) return prev;
-      const tpl = PROFILO_TEMPLATES[prev.categoria_intervento] ?? PROFILO_TEMPLATES[prev.sotto_settore];
+      const tpl = resolveProfilo(prev.categoria_intervento, prev.sotto_settore, prev.tipo_intervento);
       const stima = tpl?.stimaCapex?.(prev.profilo_dati);
       const capex = stima && stima > 0
         ? String(Math.round(stima))
