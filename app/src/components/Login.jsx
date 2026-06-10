@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useAuth } from "../../contexts/AuthContext";
-import { useTheme, toggleTheme } from "../../hooks/useTheme";
-import { Modal } from "../ui/Modal";
-import { IconChevronDown, IconEye, IconEyeOff, IconOEBlack, IconOEWhite } from "../ui/Icons";
+import { useAuth } from "../contexts/AuthContext";
+import { useTheme, toggleTheme } from "../hooks/useTheme";
+import { Modal } from "./ui/Modal";
+import { IconChevronDown, IconEye, IconEyeOff, IconOEBlack, IconOEWhite } from "./ui/Icons";
 
 // Credenziali demo precompilate: in questa build l'accesso è immediato (basta "Accedi").
 const DEMO_EMAIL = "demo@civiqa.it";

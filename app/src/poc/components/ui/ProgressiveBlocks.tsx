@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
 export interface ProgressiveBlockDef {
   /** Identificatore stabile del blocco. */
@@ -12,6 +12,8 @@ export interface ProgressiveBlockDef {
   children: ReactNode
   /** Riepilogo mostrato quando il blocco è completato e collassato. */
   summary?: ReactNode
+  /** Etichetta del bottone di conferma (default "Conferma"). */
+  confirmLabel?: string
 }
 
 interface ProgressiveBlocksProps {
@@ -19,15 +21,14 @@ interface ProgressiveBlocksProps {
 }
 
 /**
- * Blocchi impilati con avanzamento esplicito:
- * - il blocco attivo (frontiera) resta aperto finché l'utente non preme
- *   "Conferma" — così eventuali campi condizionali o avvisi restano visibili e
- *   il blocco non si chiude da solo al primo click;
- * - i blocchi confermati collassano in una riga di recap con check + "Modifica";
- * - i blocchi successivi alla frontiera sono sbiaditi con un lucchetto.
- *
- * Usato in DOCFAP "Descrivi il Fabbisogno" (3 blocchi) e in Valutazione
- * "Anagrafica" (2 blocchi: anagrafica + stato).
+ * Blocchi impilati con avanzamento esplicito, allineati alle "forme" del wizard
+ * di Valutazione (componente ClassAccordion in components/Wizard.jsx):
+ * - badge tondo viola con numero (attivo) o ✓ (completato);
+ * - "Modifica" come testo viola senza bordo;
+ * - box bianco squadrato; bordo viola/40 quando attivo, ink-100 quando completato;
+ * - il blocco attivo resta aperto finché non si preme "Conferma" (così campi
+ *   condizionali e avvisi restano visibili e il blocco non si chiude da solo);
+ * - i blocchi successivi alla frontiera sono visibili ma sbiaditi con lucchetto.
  */
 export function ProgressiveBlocks({ blocks }: ProgressiveBlocksProps) {
   // `step` = indice del blocco frontiera (attivo). I blocchi < step sono
@@ -40,8 +41,7 @@ export function ProgressiveBlocks({ blocks }: ProgressiveBlocksProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
 
   return (
-    <div style={listStyle}>
-      <style>{INTERACTIVE_STYLES}</style>
+    <div className="grid gap-3">
       {blocks.map((block, index) => {
         const number = index + 1
         const isEditing = editingId === block.id
@@ -57,7 +57,6 @@ export function ProgressiveBlocks({ blocks }: ProgressiveBlocksProps) {
           return (
             <CompletedBlock
               key={block.id}
-              number={number}
               title={block.title}
               summary={block.summary}
               onEdit={() => setEditingId(block.id)}
@@ -71,6 +70,7 @@ export function ProgressiveBlocks({ blocks }: ProgressiveBlocksProps) {
             number={number}
             title={block.title}
             complete={block.complete}
+            confirmLabel={block.confirmLabel ?? 'Conferma'}
             onConfirm={() => {
               if (isEditing) {
                 setEditingId(null)
@@ -87,299 +87,99 @@ export function ProgressiveBlocks({ blocks }: ProgressiveBlocksProps) {
   )
 }
 
-function NumberBadge({ children, variant }: { children: ReactNode; variant: 'active' | 'done' | 'locked' }) {
-  return (
-    <span
-      aria-hidden="true"
-      style={{
-        ...badgeStyle,
-        ...(variant === 'active' ? badgeActiveStyle : null),
-        ...(variant === 'done' ? badgeDoneStyle : null),
-        ...(variant === 'locked' ? badgeLockedStyle : null),
-      }}
-    >
-      {children}
-    </span>
-  )
-}
-
 function ActiveBlock({
   number,
   title,
   complete,
+  confirmLabel,
   onConfirm,
   children,
 }: {
   number: number
   title: string
   complete: boolean
+  confirmLabel: string
   onConfirm: () => void
   children: ReactNode
 }) {
   return (
-    <section style={{ ...cardStyle, ...cardActiveStyle }}>
-      <header style={headerStyle}>
-        <NumberBadge variant="active">{number}</NumberBadge>
-        <h2 style={titleStyle}>{title}</h2>
-      </header>
-      <div style={bodyStyle}>{children}</div>
-      <div style={footerStyle}>
+    <div className="overflow-hidden border border-brand-violet/40 bg-white">
+      <div className="flex items-center gap-3 px-5 py-4">
+        <span className="docfap-accordion-num flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-violet text-[12px] font-bold text-white">
+          {number}
+        </span>
+        <p className="text-[13px] font-semibold text-ink-900">{title}</p>
+      </div>
+      <div className="border-t border-[#ececf1] px-5 pb-5 pt-4">
+        <div className="grid gap-4">{children}</div>
         <button
           type="button"
-          className="pb-interactive"
-          style={{ ...confirmButtonStyle, ...(complete ? null : confirmButtonDisabledStyle) }}
           onClick={onConfirm}
           disabled={!complete}
+          className="mt-5 flex items-center gap-2 bg-brand-violet px-5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-violet-dark disabled:cursor-not-allowed disabled:opacity-40"
         >
-          Conferma
+          {confirmLabel}
+          <span className="text-[16px] leading-none">&rarr;</span>
         </button>
       </div>
-    </section>
+    </div>
   )
 }
 
 function CompletedBlock({
-  number,
   title,
   summary,
   onEdit,
 }: {
-  number: number
   title: string
   summary?: ReactNode
   onEdit: () => void
 }) {
   return (
-    <section style={{ ...cardStyle, ...cardDoneStyle }}>
-      <div style={recapRowStyle}>
-        <NumberBadge variant="done">
-          <CheckIcon />
-        </NumberBadge>
-        <div style={recapTextStyle}>
-          <span style={recapTitleStyle}>{title}</span>
-          {summary ? <span style={recapSummaryStyle}>{summary}</span> : null}
+    <div className="overflow-hidden border border-ink-100 bg-white">
+      <div className="flex items-center gap-3 px-5 py-4">
+        <span className="docfap-accordion-num flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-violet text-[12px] font-bold text-white">
+          &#10003;
+        </span>
+        <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[13px] text-ink-400">{title}</p>
+            {summary ? (
+              <p className="mt-0.5 truncate text-[15px] font-semibold text-ink-900">{summary}</p>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            onClick={onEdit}
+            className="shrink-0 text-[13px] font-medium text-brand-violet hover:underline"
+          >
+            Modifica
+          </button>
         </div>
-        <button type="button" className="pb-interactive" style={editButtonStyle} onClick={onEdit}>
-          <PencilIcon />
-          Modifica
-        </button>
       </div>
-    </section>
+    </div>
   )
 }
 
 function LockedBlock({ number, title }: { number: number; title: string }) {
   return (
-    <section style={{ ...cardStyle, ...cardLockedStyle }} aria-disabled="true">
-      <div style={lockedRowStyle}>
-        <NumberBadge variant="locked">{number}</NumberBadge>
-        <span style={lockedTitleStyle}>{title}</span>
-        <span style={lockIconWrapStyle} aria-hidden="true">
-          <LockIcon />
+    <div className="overflow-hidden border border-ink-100 bg-white opacity-55" aria-disabled="true">
+      <div className="flex items-center gap-3 px-5 py-4">
+        <span className="docfap-accordion-num flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink-200 text-[12px] font-bold text-ink-500">
+          {number}
         </span>
+        <p className="flex-1 text-[13px] font-medium text-ink-500">{title}</p>
+        <LockIcon />
       </div>
-    </section>
-  )
-}
-
-function CheckIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12.5l4 4L19 7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function PencilIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M4 20h4l10-10-4-4L4 16v4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-      <path d="M13.5 6.5l4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
+    </div>
   )
 }
 
 function LockIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0 text-ink-400">
       <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.8" />
       <path d="M8 10V7a4 4 0 018 0v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   )
-}
-
-const INTERACTIVE_STYLES = `
-  .pb-interactive:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--color-border-focus);
-  }
-`
-
-const listStyle: CSSProperties = {
-  display: 'grid',
-  gap: 'var(--spacing-stack-s)',
-}
-
-const cardStyle: CSSProperties = {
-  border: '1px solid var(--color-border-secondary-light)',
-  borderRadius: 'var(--radius-smooth)',
-  background: 'var(--color-background-inverse)',
-  overflow: 'hidden',
-}
-
-const cardActiveStyle: CSSProperties = {
-  borderColor: 'var(--color-border-primary-light)',
-  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-}
-
-const cardDoneStyle: CSSProperties = {}
-
-const cardLockedStyle: CSSProperties = {
-  background: 'var(--color-background-secondary-lightest, var(--color-background-inverse))',
-  opacity: 0.55,
-}
-
-const headerStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 'var(--spacing-inline-xs)',
-  padding: 'var(--spacing-inset-s) var(--spacing-inset-s) 0',
-}
-
-const titleStyle: CSSProperties = {
-  margin: 0,
-  color: 'var(--color-text-primary)',
-  fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-  fontSize: 'var(--type-body-m-size, 18px)',
-  fontWeight: 'var(--type-weight-bold, 700)',
-}
-
-const bodyStyle: CSSProperties = {
-  display: 'grid',
-  gap: 'var(--spacing-stack-s)',
-  padding: 'var(--spacing-inset-s)',
-}
-
-const footerStyle: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'flex-end',
-  padding: '0 var(--spacing-inset-s) var(--spacing-inset-s)',
-}
-
-const recapRowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 'var(--spacing-inline-xs)',
-  padding: 'var(--spacing-inset-s)',
-}
-
-const recapTextStyle: CSSProperties = {
-  display: 'grid',
-  gap: '2px',
-  flex: 1,
-  minWidth: 0,
-}
-
-const recapTitleStyle: CSSProperties = {
-  color: 'var(--color-text-primary)',
-  fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-  fontSize: 'var(--type-body-s-size, 16px)',
-  fontWeight: 'var(--type-weight-bold, 700)',
-}
-
-const recapSummaryStyle: CSSProperties = {
-  color: 'var(--color-text-primary-light)',
-  fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-  fontSize: 'var(--type-body-xs-size, 14px)',
-  lineHeight: 1.4,
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-}
-
-const lockedRowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 'var(--spacing-inline-xs)',
-  padding: 'var(--spacing-inset-s)',
-}
-
-const lockedTitleStyle: CSSProperties = {
-  flex: 1,
-  minWidth: 0,
-  color: 'var(--color-text-primary-light)',
-  fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-  fontSize: 'var(--type-body-s-size, 16px)',
-  fontWeight: 'var(--type-weight-medium, 500)',
-}
-
-const lockIconWrapStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: 'var(--color-text-primary-light)',
-}
-
-const badgeStyle: CSSProperties = {
-  flexShrink: 0,
-  width: '28px',
-  height: '28px',
-  aspectRatio: '1 / 1',
-  borderRadius: '999px',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-  fontSize: 'var(--type-body-xs-size, 14px)',
-  fontWeight: 'var(--type-weight-bold, 700)',
-  boxSizing: 'border-box',
-}
-
-const badgeActiveStyle: CSSProperties = {
-  background: 'var(--color-background-primary)',
-  color: 'var(--color-text-inverse)',
-}
-
-const badgeDoneStyle: CSSProperties = {
-  background: 'var(--color-background-primary)',
-  color: 'var(--color-text-inverse)',
-}
-
-const badgeLockedStyle: CSSProperties = {
-  background: 'var(--color-background-disable, var(--color-border-secondary-light))',
-  color: 'var(--color-text-primary-light)',
-}
-
-const buttonBaseStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '6px',
-  cursor: 'pointer',
-  fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-  fontSize: 'var(--type-body-xs-size, 14px)',
-  fontWeight: 'var(--type-weight-bold, 700)',
-  borderRadius: 'var(--radius-smooth)',
-  padding: '8px 16px',
-}
-
-const editButtonStyle: CSSProperties = {
-  ...buttonBaseStyle,
-  flexShrink: 0,
-  border: '1px solid var(--color-border-secondary-light)',
-  background: 'var(--color-background-inverse)',
-  color: 'var(--color-text-primary)',
-}
-
-const confirmButtonStyle: CSSProperties = {
-  ...buttonBaseStyle,
-  border: '1px solid var(--color-background-primary)',
-  background: 'var(--color-background-primary)',
-  color: 'var(--color-text-inverse)',
-}
-
-const confirmButtonDisabledStyle: CSSProperties = {
-  cursor: 'not-allowed',
-  border: '1px solid var(--color-background-disable, var(--color-border-secondary-light))',
-  background: 'var(--color-background-disable, var(--color-border-secondary-light))',
-  color: 'var(--color-text-disable, var(--color-text-primary-light))',
 }

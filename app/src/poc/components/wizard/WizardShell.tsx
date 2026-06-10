@@ -1208,9 +1208,10 @@ const questionHeadingStyle: CSSProperties = {
   outline: 'none', // h2 riceve focus programmatico (a11y) → niente riquadro nero
   color: 'var(--color-text-primary)',
   fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-  fontSize: 'var(--type-heading-m-size, 32px)',
+  // Allineato al QuestionHeader di Valutazione (22px bold), non più 32px.
+  fontSize: '22px',
   fontWeight: 'var(--type-weight-bold, 700)',
-  lineHeight: 'var(--type-heading-l-lh, 1.2)',
+  lineHeight: 1.2,
 }
 
 const questionHeadingIntroStyle: CSSProperties = {
@@ -1219,14 +1220,15 @@ const questionHeadingIntroStyle: CSSProperties = {
 }
 
 const normRefBadgeStyle: CSSProperties = {
+  // Riferimento normativo reso discreto (Valutazione non ha pill colorate):
+  // testo piccolo, grigio, senza riempimento/bordo viola.
   display: 'inline-flex',
   alignItems: 'center',
   gap: '5px',
-  padding: '3px 10px 3px 7px',
-  borderRadius: 'var(--radius-rounded, 40px)',
-  background: 'var(--color-background-primary-lighter)',
-  border: '1px solid var(--color-border-primary-light)',
-  color: 'var(--color-text-primary)',
+  padding: 0,
+  background: 'transparent',
+  border: 'none',
+  color: 'var(--color-text-primary-light)',
   fontFamily: 'var(--font-family-0, "Atkinson Hyperlegible Mono", monospace)',
   fontSize: '11px',
   fontWeight: 500,
@@ -1237,10 +1239,11 @@ const normRefBadgeStyle: CSSProperties = {
 
 const questionSubtitleStyle: CSSProperties = {
   margin: 0,
-  color: 'var(--color-text-primary-light)',
+  // Allineato a Valutazione: descrizione 14px, testo primario.
+  color: 'var(--color-text-primary)',
   fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-  fontSize: 'var(--type-body-s-size, 16px)',
-  lineHeight: 'var(--type-body-m-lh, 1.35)',
+  fontSize: '14px',
+  lineHeight: 1.5,
 }
 
 const questionSubtitleIntroStyle: CSSProperties = {

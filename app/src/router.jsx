@@ -2,25 +2,25 @@ import { lazy, Suspense } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
 import { useProjects } from "./contexts/ProjectContext";
-import { Login } from "./components/v1/Login";
-import { ValutazioniList } from "./components/v1/ValutazioniList";
-import { Wizard } from "./components/v1/Wizard";
-import { ProjectDetail } from "./components/v1/ProjectDetail";
+import { Login } from "./components/Login";
+import { ValutazioniList } from "./components/ValutazioniList";
+import { Wizard } from "./components/Wizard";
+import { ProjectDetail } from "./components/ProjectDetail";
 import { EiaScenario } from "./components/EiaScenario";
 
 // Lazy-loaded per escludere Plotly dal bundle principale
 const EiaResults = lazy(() =>
-  import("./components/v1/EiaResults").then((m) => ({ default: m.EiaResults })),
+  import("./components/EiaResults").then((m) => ({ default: m.EiaResults })),
 );
 const EcbaResults = lazy(() =>
-  import("./components/v1/EcbaResults").then((m) => ({ default: m.EcbaResults })),
+  import("./components/EcbaResults").then((m) => ({ default: m.EcbaResults })),
 );
 const EsgResults = lazy(() =>
-  import("./components/v1/EsgResults").then((m) => ({ default: m.EsgResults })),
+  import("./components/EsgResults").then((m) => ({ default: m.EsgResults })),
 );
 import { ConfigurationSummary } from "./components/ConfigurationSummary";
 import { ConfigurationComplete } from "./components/ConfigurationComplete";
-import { ValutazioneIntro } from "./components/v1/ValutazioneIntro";
+import { ValutazioneIntro } from "./components/ValutazioneIntro";
 import { AnalysisRunning } from "./components/AnalysisRunning";
 import { AnalysisRunningBoth } from "./components/AnalysisRunningBoth";
 import { EiaRunning } from "./components/EiaRunning";
