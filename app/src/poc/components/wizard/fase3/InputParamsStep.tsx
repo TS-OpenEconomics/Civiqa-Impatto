@@ -267,8 +267,9 @@ export function InputParamsStep({ alternativaId }: Props) {
     <div style={rootStyle}>
       {/* ── CP selector ── */}
       {costoData && (
-        <fieldset style={fieldsetStyle}>
-          <legend style={legendStyle}>Costo parametrico (CP)</legend>
+        <section style={cardStyle}>
+          <div style={cardHeaderStyle}>Costo parametrico (CP)</div>
+          <div style={cardBodyStyle}>
           <style>{`
             .cp-slider-${alternativaId}:focus-visible {
               outline: none;
@@ -352,12 +353,14 @@ export function InputParamsStep({ alternativaId }: Props) {
               <span>max {costoData.val_max.toLocaleString('it-IT')}</span>
             </div>
           </div>
-        </fieldset>
+          </div>
+        </section>
       )}
 
       {/* ── Quantity input ── */}
-      <fieldset style={fieldsetStyle}>
-        <legend style={legendStyle}>Quantità fisica dell'intervento</legend>
+      <section style={cardStyle}>
+        <div style={cardHeaderStyle}>Quantità fisica dell'intervento</div>
+        <div style={cardBodyStyle}>
         <div style={fieldRowStyle}>
           <label htmlFor={`ip-qty-${alternativaId}`} style={labelStyle}>
             Quantità totale
@@ -378,12 +381,13 @@ export function InputParamsStep({ alternativaId }: Props) {
             aria-label={`Quantità totale${physUnit ? ` in ${physUnit}` : ''}`}
           />
         </div>
-      </fieldset>
+        </div>
+      </section>
 
       {/* ── Editable results ── */}
       {showResults ? (
-        <div style={resultsStyle} role="region" aria-label="Valori stimati — conferma o modifica">
-          <h3 style={resultsTitleStyle}>Valori stimati — conferma o modifica</h3>
+        <section style={cardStyle} role="region" aria-label="Valori stimati — conferma o modifica">
+          <div style={cardHeaderStyle}>Valori stimati — conferma o modifica</div>
 
           <div style={resultsRowStyle}>
             {/* CAPEX */}
@@ -479,7 +483,7 @@ export function InputParamsStep({ alternativaId }: Props) {
               </div>
             </div>
           </div>
-        </div>
+        </section>
       ) : (
         <p style={hintStyle} aria-live="polite">
           Inserisci la quantità per calcolare e confermare CAPEX, OPEX e durata.
@@ -493,7 +497,28 @@ export function InputParamsStep({ alternativaId }: Props) {
 
 const rootStyle: CSSProperties = {
   display: 'grid',
-  gap: 'var(--spacing-stack-m)',
+  gap: 'var(--spacing-stack-s)',
+  width: '100%',
+}
+
+// Card-sezione in stile Valutazione (box bianco squadrato con header).
+const cardStyle: CSSProperties = {
+  border: '1px solid var(--color-border-secondary-light)',
+  background: 'var(--color-background-inverse)',
+  overflow: 'hidden',
+}
+const cardHeaderStyle: CSSProperties = {
+  borderBottom: '1px solid var(--color-border-secondary-light)',
+  padding: 'var(--spacing-inset-s) var(--spacing-inset-m)',
+  fontSize: '14px',
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+  fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
+}
+const cardBodyStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--spacing-stack-s)',
+  padding: 'var(--spacing-inset-m)',
 }
 
 const emptyStyle: CSSProperties = {
@@ -618,21 +643,20 @@ const resultsTitleStyle: CSSProperties = {
 
 const resultsRowStyle: CSSProperties = {
   display: 'grid',
-  // minmax(0, 1fr) consente alle colonne di restringersi sotto la larghezza del
-  // contenuto: senza, la colonna OPEX (più input) spingeva la riga oltre il
-  // contenitore e la colonna Durata veniva tagliata (overflow: hidden).
-  gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-  gap: '0',
+  // OPEX ha due input (valore + %) quindi serve più largo di CAPEX/Durata.
+  gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.7fr) minmax(0, 1fr)',
+  // Gap reale tra le colonne (niente divisori a filo): evita che la "€" di CAPEX
+  // tocchi/si sovrapponga all'input OPEX.
+  columnGap: '28px',
+  rowGap: '16px',
+  padding: 'var(--spacing-inset-m) var(--spacing-inset-m) var(--spacing-inset-m)',
 }
 
 const resultPanelStyle: CSSProperties = {
   display: 'grid',
   gap: 'var(--spacing-stack-xs)',
-  padding: 'var(--spacing-inset-m)',
-  borderRight: '1px solid var(--color-border-secondary-light)',
-  // Indispensabile: senza minWidth:0 il pannello (grid item) si dimensiona sul
-  // min-content dei suoi input e sfora la colonna minmax(0,1fr), tagliando
-  // "mesi"/Durata. Con minWidth:0 gli input flessibili si restringono.
+  // Niente padding/divisori sul pannello: spaziatura e separazione sono gestite
+  // dal columnGap della riga. minWidth:0 lascia restringere gli input flessibili.
   minWidth: 0,
 }
 

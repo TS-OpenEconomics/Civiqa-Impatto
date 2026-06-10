@@ -10,9 +10,8 @@ import { Step1_3_FabbisognoTema } from './fase1/Step1_3_FabbisognoTema'
 import { Step2_1_Problema } from './fase2/Step2_1_Problema'
 import { ScenarioZeroQuestions } from './fase2/ScenarioZeroQuestions'
 import { DatoContestoQ1 } from './fase2/DatoContestoQ1'
-import { Step3_2_AlternativaCard } from './fase3/Step3_2_AlternativaCard'
 import { InputParamsStep } from './fase3/InputParamsStep'
-import { Step3_NomeAlternativa } from './fase3/Step3_NomeAlternativa'
+import { Step3_AlternativaSetup } from './fase3/Step3_AlternativaSetup'
 import { Step3_AggiuntaAlternativa } from './fase3/Step3_AggiuntaAlternativa'
 import { McaQualitativa } from './fase4/McaQualitativa'
 import { AllegatiNormativi } from './fase5/AllegatiNormativi'
@@ -186,8 +185,9 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
           const m = subStepId.match(/^fase3-(a[123])-(setup|params|nome)$/)
           if (m) {
             const altId = m[1].toUpperCase() as SupportedAlternativaId
-            if (m[2] === 'nome') fillAlternativaNome(altId)
-            else fillAlternativaSetup(altId)
+            fillAlternativaSetup(altId)
+            // Lo step "setup" ora include anche il nome (box 2).
+            if (m[2] === 'setup') fillAlternativaNome(altId)
           }
           return
         }
@@ -206,9 +206,10 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
           questions: [
             {
               title: `Configura ${alternativaSidebarLabel}`,
-              subtitle: "Seleziona categoria e tipologia dell'alternativa progettuale.",
+              subtitle: "Seleziona categoria e tipologia, poi assegna un nome all'alternativa.",
               normRef: 'Art. 2, c.4, c)',
-              content: <Step3_2_AlternativaCard alternativaId={alternativaId} />,
+              bare: true,
+              content: <Step3_AlternativaSetup alternativaId={alternativaId} />,
             },
           ],
         },
@@ -220,19 +221,8 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
               title: `Parametri di ${alternativaSidebarLabel}`,
               subtitle: 'Parametri di costo e durata pre-elaborati per questa alternativa.',
               normRef: 'Art. 2, c.4, e) + f)',
+              bare: true,
               content: <InputParamsStep alternativaId={alternativaId} />,
-            },
-          ],
-        },
-        {
-          id: `fase3-${alternativaId.toLowerCase()}-nome`,
-          title: alternativaSidebarLabel,
-          questions: [
-            {
-              title: `Dai un nome a ${alternativaSidebarLabel}`,
-              subtitle: 'Usa un nome chiaro per distinguerla dalle altre opzioni.',
-              normRef: 'Art. 2, c.4, c)',
-              content: <Step3_NomeAlternativa alternativaId={alternativaId} />,
             },
           ],
         },
@@ -313,6 +303,7 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
                 title: 'Scenario zero — situazione attuale',
                 subtitle: 'Rispondi alle domande per costruire la narrativa dello scenario attuale.',
                 normRef: 'Art. 2, c.4, a)',
+                bare: true,
                 content: <ScenarioZeroQuestions />,
               },
             ],

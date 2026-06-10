@@ -138,8 +138,6 @@ export function Step2_1_Problema() {
 const rootStyle: CSSProperties = {
   display: 'grid',
   gap: 'var(--spacing-stack-m)',
-  maxWidth: '760px',
-  margin: '0 auto',
   width: '100%',
 }
 

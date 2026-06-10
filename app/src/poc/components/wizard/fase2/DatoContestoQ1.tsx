@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import type { CSSProperties } from 'react'
 import { getNeedByCode } from '../../../data/fabbisogni_v2'
 import { useWizard } from '../../../hooks/useWizard'
 
@@ -43,11 +42,11 @@ export function DatoContestoQ1() {
   const errorId = 'q1-value-error'
 
   return (
-    <div style={rootStyle}>
-      <label htmlFor={inputId} style={labelStyle}>
+    <div className="max-w-md">
+      <label htmlFor={inputId} className="text-[14px] font-semibold text-ink-900">
         {label}
       </label>
-      <p id={helperId} style={helperStyle}>
+      <p id={helperId} className="mb-2 mt-1 text-xs leading-[1.5] text-ink-400">
         Dato facoltativo — inserisci il valore numerico dell'indicatore. Puoi procedere anche senza compilare questo campo.
       </p>
       <input
@@ -60,29 +59,15 @@ export function DatoContestoQ1() {
         aria-required="false"
         aria-invalid={error !== null ? 'true' : undefined}
         aria-describedby={`${helperId}${error !== null ? ` ${errorId}` : ''}`}
-        style={inputStyle(error !== null)}
+        className={`h-11 w-full border bg-white px-3 text-[14px] text-ink-900 placeholder:text-ink-300 focus:outline-none ${
+          error !== null ? 'border-red-500 focus:border-red-500' : 'border-ink-200 focus:border-brand-violet'
+        }`}
       />
       {error !== null && (
-        <p id={errorId} role="alert" style={errorStyle}>
+        <p id={errorId} role="alert" className="mt-2 text-[13px] text-red-600">
           {error}
         </p>
       )}
     </div>
   )
 }
-
-const rootStyle: CSSProperties = { display: 'grid', gap: 'var(--spacing-stack-xs)', maxWidth: '360px' }
-const labelStyle: CSSProperties = { fontWeight: 600, color: 'var(--color-text-primary)' }
-const helperStyle: CSSProperties = { margin: 0, fontSize: 'var(--type-body-xs-size, 14px)', color: 'var(--color-text-primary-light)', lineHeight: 1.5 }
-function inputStyle(invalid: boolean): CSSProperties {
-  return {
-    padding: 'var(--spacing-inset-s)',
-    border: `1px solid ${invalid ? 'var(--color-border-danger)' : 'var(--color-border-secondary)'}`,
-    borderRadius: 'var(--radius-smooth)',
-    fontFamily: 'var(--font-family-0, "Atkinson Hyperlegible Mono", monospace)',
-    fontSize: 'var(--type-body-m-size, 16px)',
-    color: 'var(--color-text-primary)',
-    background: 'var(--color-background-inverse)',
-  }
-}
-const errorStyle: CSSProperties = { margin: 0, color: 'var(--color-text-danger)', fontSize: 'var(--type-body-s-size, 14px)' }

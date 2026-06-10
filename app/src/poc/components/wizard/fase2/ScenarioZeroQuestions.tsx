@@ -26,7 +26,7 @@ export function ScenarioZeroQuestions() {
   ): string {
     const fragments: string[] = []
     for (const q of qs) {
-      const answer = ans[q.questionId]  // USE questionId not qCode
+      const answer = ans[q.questionId]
       if (!answer) continue
       const selectedIds = Array.isArray(answer) ? answer : [answer]
       for (const id of selectedIds) {
@@ -63,15 +63,15 @@ export function ScenarioZeroQuestions() {
 
   if (questions.length === 0) {
     return (
-      <div style={freeTextContainerStyle}>
-        <label htmlFor="sz-narrative" style={labelStyle}>
+      <div className="grid gap-2">
+        <label htmlFor="sz-narrative" className="text-[14px] font-semibold text-ink-900">
           Descrivi la situazione attuale rispetto al fabbisogno
         </label>
         <textarea
           id="sz-narrative"
           aria-required="true"
           rows={5}
-          style={textareaStyle}
+          className="w-full border border-ink-200 bg-white px-3 py-3 text-[14px] text-ink-900 placeholder:text-ink-300 focus:border-brand-violet focus:outline-none"
           value={state.scenarioZeroNarrative}
           onChange={(e) => setScenarioZeroNarrative(e.target.value)}
         />
@@ -80,59 +80,67 @@ export function ScenarioZeroQuestions() {
   }
 
   return (
-    <div style={rootStyle}>
-      {questions.map((q) => (
-        <fieldset key={q.questionId} style={fieldsetStyle}>
-          <legend style={legendStyle}>{q.text}</legend>
-          {q.tipo === 'radio' ? (
-            <div style={optionsGridStyle}>
-              {q.opzioni.map((o) => (
-                <label key={o.id} style={radioLabelStyle}>
-                  <input
-                    type="radio"
-                    name={q.questionId}
-                    value={o.id}
-                    checked={(answers[q.questionId] as string | undefined) === o.id}
-                    onChange={() => handleSingleChange(q.questionId, o.id)}
-                    style={inputStyle}
-                  />
-                  {o.label}
-                </label>
-              ))}
-            </div>
-          ) : (
-            <div style={optionsGridStyle}>
-              {q.opzioni.map((o) => {
-                const selected = (answers[q.questionId] as string[] | undefined) ?? []
+    <div className="grid gap-5">
+      {questions.map((q) => {
+        const isMulti = q.tipo !== 'radio'
+        return (
+          <fieldset key={q.questionId} className="m-0 overflow-hidden border border-ink-200 bg-white p-0">
+            <legend className="float-left w-full border-b border-ink-100 px-5 py-4 text-[14px] font-semibold text-ink-900">
+              {q.text}
+              <span className="ml-2 text-[12px] font-normal text-ink-400">
+                {isMulti ? 'Selezione multipla' : 'Risposta singola'}
+              </span>
+            </legend>
+            <div className="clear-left">
+              {q.opzioni.map((o, index) => {
+                const isLast = index === q.opzioni.length - 1
+                const selected = isMulti
+                  ? ((answers[q.questionId] as string[] | undefined) ?? []).includes(o.id)
+                  : (answers[q.questionId] as string | undefined) === o.id
+                const onClick = isMulti
+                  ? () => handleMultiChange(q.questionId, o.id, !selected)
+                  : () => handleSingleChange(q.questionId, o.id)
                 return (
-                  <label key={o.id} style={checkboxLabelStyle}>
-                    <input
-                      type="checkbox"
-                      value={o.id}
-                      checked={selected.includes(o.id)}
-                      onChange={(e) => handleMultiChange(q.questionId, o.id, e.target.checked)}
-                      style={inputStyle}
-                    />
-                    {o.label}
-                  </label>
+                  <button
+                    key={o.id}
+                    type="button"
+                    onClick={onClick}
+                    aria-pressed={selected}
+                    className={`flex w-full items-center gap-3 px-5 py-4 text-left transition-colors ${
+                      isLast ? '' : 'border-b border-ink-100'
+                    } ${selected ? 'bg-brand-violet-soft' : 'hover:bg-[#fafafa]'}`}
+                  >
+                    {isMulti ? (
+                      <span
+                        className={`flex h-5 w-5 shrink-0 items-center justify-center border-2 ${
+                          selected ? 'border-brand-violet bg-brand-violet text-white' : 'border-ink-400 bg-white'
+                        }`}
+                      >
+                        {selected ? (
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M5 12.5l4 4L19 7" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        ) : null}
+                      </span>
+                    ) : (
+                      <span
+                        className={`docfap-option-indicator flex h-5 w-5 shrink-0 items-center justify-center border-2 ${
+                          selected ? 'border-brand-violet' : 'border-ink-400'
+                        }`}
+                      >
+                        {selected ? <span className="docfap-option-indicator block h-2.5 w-2.5 bg-brand-violet" /> : null}
+                      </span>
+                    )}
+                    <span className="text-[14px] text-ink-900">{o.label}</span>
+                  </button>
                 )
               })}
             </div>
-          )}
-        </fieldset>
-      ))}
+          </fieldset>
+        )
+      })}
     </div>
   )
 }
 
 const srOnly: CSSProperties = { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' }
-const rootStyle: CSSProperties = { display: 'grid', gap: 'var(--spacing-stack-m)' }
-const fieldsetStyle: CSSProperties = { border: '1px solid var(--color-border-secondary-light)', borderRadius: 'var(--radius-smooth)', padding: 'var(--spacing-inset-m)', margin: 0 }
-const legendStyle: CSSProperties = { padding: '0 var(--spacing-inline-s)', fontWeight: 600, color: 'var(--color-text-primary)' }
-const optionsGridStyle: CSSProperties = { display: 'grid', gap: 'var(--spacing-stack-xs)', marginTop: 'var(--spacing-stack-s)' }
-const radioLabelStyle: CSSProperties = { display: 'flex', alignItems: 'center', gap: 'var(--spacing-inline-s)', cursor: 'pointer', color: 'var(--color-text-primary)' }
-const checkboxLabelStyle: CSSProperties = { ...radioLabelStyle }
-const inputStyle: CSSProperties = { accentColor: 'var(--color-background-primary)', width: 16, height: 16 }
-const labelStyle: CSSProperties = { display: 'block', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 'var(--spacing-stack-xs)' }
-const textareaStyle: CSSProperties = { width: '100%', padding: 'var(--spacing-inset-s)', border: '1px solid var(--color-border-secondary)', borderRadius: 'var(--radius-smooth)', fontFamily: 'inherit', fontSize: 'inherit', color: 'var(--color-text-primary)', background: 'var(--color-background-inverse)', resize: 'vertical' }
-const freeTextContainerStyle: CSSProperties = { display: 'grid' }
