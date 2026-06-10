@@ -1,17 +1,17 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import staticResults from "../../mocks/eiaResults.json";
-import { Badge } from "../ui/Badge";
-import { ImpactIcon } from "../ui/ImpactIcon";
-import { ItalyMap } from "../ui/ItalyMap";
-import { ProvinceMap } from "../ui/ProvinceMap";
-import { PlotlyChart } from "../charts/PlotlyChart";
+import staticResults from "../mocks/eiaResults.json";
+import { Badge } from "./ui/Badge";
+import { ImpactIcon } from "./ui/ImpactIcon";
+import { ItalyMap } from "./ui/ItalyMap";
+import { ProvinceMap } from "./ui/ProvinceMap";
+import { PlotlyChart } from "./charts/PlotlyChart";
 import {
   IconArrowLeft,
   IconDownload,
-} from "../ui/Icons";
-import { useToast } from "../../hooks/useToast";
-import { computeProvinceDistribution } from "../../lib/eiaEngine";
+} from "./ui/Icons";
+import { useToast } from "../hooks/useToast";
+import { computeProvinceDistribution } from "../lib/eiaEngine";
 import { HoldingHands, HoldingHandsEntry } from "./HoldingHands";
 
 function assetUrl(path) {

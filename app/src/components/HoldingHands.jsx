@@ -11,8 +11,8 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import staticResults from "../../mocks/eiaResults.json";
-import { ImpactIcon } from "../ui/ImpactIcon";
+import staticResults from "../mocks/eiaResults.json";
+import { ImpactIcon } from "./ui/ImpactIcon";
 
 /* ─── Palette (allineata a tailwind.config.js) ─────────────────────────────── */
 const C = {

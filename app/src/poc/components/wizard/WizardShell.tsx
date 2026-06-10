@@ -311,7 +311,12 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
       const alt = state.alternative[altId]
       if (!alt) return false
       if (altMatch[2] === 'setup') {
-        return (alt.categoria ?? '').trim().length > 0 && (alt.tipologia ?? '').trim().length > 0
+        // Lo step setup ora contiene anche il nome (box 2).
+        return (
+          (alt.categoria ?? '').trim().length > 0 &&
+          (alt.tipologia ?? '').trim().length > 0 &&
+          (alt.nome ?? '').trim().length > 0
+        )
       }
       if (altMatch[2] === 'params') {
         return (alt.capex ?? 0) > 0
@@ -534,22 +539,32 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
           <nav style={sidebarNavStyle}>
             <div role="list" style={phaseListStyle}>
               <div aria-hidden="true" style={phaseRailTrackStyle} />
-              <div
-                aria-hidden="true"
-                style={{
-                  ...phaseRailFillStyle,
-                  transform: `scaleY(${visibleSidebarPhases.length > 1 ? Math.max(0, position.phaseIndex - 1) / (visibleSidebarPhases.length - 1) : 0})`,
-                }}
-              />
               {visibleSidebarPhases.map((phase) => {
                 const phaseIndex = phases.findIndex((candidate) => candidate.id === phase.id)
                 const isCurrentPhase = phaseIndex === position.phaseIndex
                 const isCompletedPhase = phaseIndex < position.phaseIndex
                 const isFuturePhase = phaseIndex > position.phaseIndex
                 const isPhaseOpen = !isFuturePhase
+                const isLastPhase = phaseIndex === phases.length - 1
+                // Avanzamento della barra dentro la fase corrente: parte ~a metà e
+                // avanza con i sotto-step; le fasi completate hanno la barra piena.
+                const currentRailFraction = Math.min(
+                  0.95,
+                  (position.subStepIndex + 0.5) / Math.max(1, phase.substeps.length),
+                )
 
                 return (
                   <section key={phase.id} role="listitem" style={phaseSectionStyle}>
+                    {isCompletedPhase || (isCurrentPhase && !isLastPhase) ? (
+                      <div
+                        aria-hidden="true"
+                        style={{
+                          ...phaseRailConnectorStyle,
+                          transformOrigin: 'top center',
+                          transform: `scaleY(${isCompletedPhase ? 1 : currentRailFraction})`,
+                        }}
+                      />
+                    ) : null}
                     <div style={phaseHeaderStyle}>
                       <div style={phaseTimelineColStyle} aria-hidden="true">
                         <span
@@ -623,6 +638,7 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
                                   {Array.from({ length: group.count }, (_, offset) => {
                                     const idx = group.firstSubStepIndex + offset
                                     const filled = isCompletedPhase || (isCurrentPhase && idx < position.subStepIndex)
+                                    const isCurrentSeg = isCurrentPhase && idx === position.subStepIndex
                                     return (
                                       <span
                                         key={offset}
@@ -630,7 +646,9 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
                                           ...subStepSegmentStyle,
                                           background: filled
                                             ? 'var(--color-background-primary)'
-                                            : 'var(--color-border-secondary-light)',
+                                            : isCurrentSeg
+                                              ? 'linear-gradient(to right, var(--color-background-primary) 50%, var(--color-border-secondary-light) 50%)'
+                                              : 'var(--color-border-secondary-light)',
                                         }}
                                       />
                                     )
@@ -1025,9 +1043,19 @@ const phaseRailTrackStyle: CSSProperties = {
   zIndex: 0,
 }
 
-const phaseRailFillStyle: CSSProperties = {
-  ...phaseRailTrackStyle,
+// Connettore viola disegnato per-fase: parte dal pallino della fase completata e
+// arriva esattamente al pallino della fase successiva (top 24px = centro pallino,
+// bottom -24px = centro pallino della sezione sotto). Sostituisce la vecchia barra
+// unica scalata con scaleY, che con 5 fasi di altezza diversa non raggiungeva il
+// pallino corrente.
+const phaseRailConnectorStyle: CSSProperties = {
+  position: 'absolute',
+  left: '12px',
+  top: '24px',
+  bottom: '-24px',
+  width: '2px',
   background: 'var(--color-background-primary)',
+  zIndex: 0,
 }
 
 const contentColumnStyle: CSSProperties = {
@@ -1141,7 +1169,9 @@ const mainAreaContentStyle: CSSProperties = {
   gap: 'var(--spacing-stack-m)',
   justifyItems: 'stretch',
   alignContent: 'start',
-  paddingBottom: '24px',
+  // Spazio extra in fondo: scrollando, l'ultima sezione non resta incollata
+  // alla barra dei bottoni fissa in basso.
+  paddingBottom: '64px',
 }
 
 const questionCardStyle: CSSProperties = {
@@ -1204,9 +1234,10 @@ const questionHeadingStyle: CSSProperties = {
   outline: 'none', // h2 riceve focus programmatico (a11y) → niente riquadro nero
   color: 'var(--color-text-primary)',
   fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-  fontSize: 'var(--type-heading-m-size, 32px)',
+  // Allineato al QuestionHeader di Valutazione (22px bold), non più 32px.
+  fontSize: '22px',
   fontWeight: 'var(--type-weight-bold, 700)',
-  lineHeight: 'var(--type-heading-l-lh, 1.2)',
+  lineHeight: 1.2,
 }
 
 const questionHeadingIntroStyle: CSSProperties = {
@@ -1215,14 +1246,15 @@ const questionHeadingIntroStyle: CSSProperties = {
 }
 
 const normRefBadgeStyle: CSSProperties = {
+  // Riferimento normativo reso discreto (Valutazione non ha pill colorate):
+  // testo piccolo, grigio, senza riempimento/bordo viola.
   display: 'inline-flex',
   alignItems: 'center',
   gap: '5px',
-  padding: '3px 10px 3px 7px',
-  borderRadius: 'var(--radius-rounded, 40px)',
-  background: 'var(--color-background-primary-lighter)',
-  border: '1px solid var(--color-border-primary-light)',
-  color: 'var(--color-text-primary)',
+  padding: 0,
+  background: 'transparent',
+  border: 'none',
+  color: 'var(--color-text-primary-light)',
   fontFamily: 'var(--font-family-0, "Atkinson Hyperlegible Mono", monospace)',
   fontSize: '11px',
   fontWeight: 500,
@@ -1233,10 +1265,11 @@ const normRefBadgeStyle: CSSProperties = {
 
 const questionSubtitleStyle: CSSProperties = {
   margin: 0,
-  color: 'var(--color-text-primary-light)',
+  // Allineato a Valutazione: descrizione 14px, testo primario.
+  color: 'var(--color-text-primary)',
   fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-  fontSize: 'var(--type-body-s-size, 16px)',
-  lineHeight: 'var(--type-body-m-lh, 1.35)',
+  fontSize: '14px',
+  lineHeight: 1.5,
 }
 
 const questionSubtitleIntroStyle: CSSProperties = {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { LeafletMap } from "../map/LeafletMap";
-import { findNearest, geocodeAddress } from "../../lib/geocoding";
+import { LeafletMap } from "./map/LeafletMap";
+import { findNearest, geocodeAddress } from "../lib/geocoding";
 
 const SETTORI_DATA = {
   "Infrastrutture sociali": {
@@ -834,6 +834,20 @@ function ClassAccordion({ number, title, selectedLabel, isCompleted, onEdit, chi
       {!isCompleted ? (
         <div className="border-t border-[#ececf1] px-5 pb-5 pt-4">{children}</div>
       ) : null}
+    </div>
+  );
+}
+
+function LockedAccordion({ number, title }) {
+  return (
+    <div className="overflow-hidden border border-ink-100 bg-white opacity-55" aria-disabled="true">
+      <div className="flex items-center gap-3 px-5 py-4">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink-200 text-[12px] font-bold text-ink-500">
+          {number}
+        </span>
+        <p className="flex-1 text-[13px] font-medium text-ink-500">{title}</p>
+        <LockIcon className="h-4 w-4 text-ink-400" />
+      </div>
     </div>
   );
 }
@@ -1803,7 +1817,9 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                         <span className="text-[16px] leading-none">→</span>
                       </button>
                     </ClassAccordion>
-                  ) : null}
+                  ) : (
+                    <LockedAccordion number="2" title="Stato del progetto" />
+                  )}
                 </div>
               </>
             ) : null}
