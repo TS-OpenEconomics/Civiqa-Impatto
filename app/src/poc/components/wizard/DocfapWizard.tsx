@@ -300,6 +300,7 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
                 title: 'Descrivi il Fabbisogno',
                 subtitle: 'Rendi esplicito il bisogno pubblico, la sua evidenza e il contesto attuale.',
                 normRef: 'Art. 2, c.2',
+                bare: true,
                 content: <Step2_1_Problema />,
               },
             ],

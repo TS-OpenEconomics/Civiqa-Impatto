@@ -534,13 +534,6 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
           <nav style={sidebarNavStyle}>
             <div role="list" style={phaseListStyle}>
               <div aria-hidden="true" style={phaseRailTrackStyle} />
-              <div
-                aria-hidden="true"
-                style={{
-                  ...phaseRailFillStyle,
-                  transform: `scaleY(${visibleSidebarPhases.length > 1 ? Math.max(0, position.phaseIndex - 1) / (visibleSidebarPhases.length - 1) : 0})`,
-                }}
-              />
               {visibleSidebarPhases.map((phase) => {
                 const phaseIndex = phases.findIndex((candidate) => candidate.id === phase.id)
                 const isCurrentPhase = phaseIndex === position.phaseIndex
@@ -550,6 +543,7 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
 
                 return (
                   <section key={phase.id} role="listitem" style={phaseSectionStyle}>
+                    {isCompletedPhase ? <div aria-hidden="true" style={phaseRailConnectorStyle} /> : null}
                     <div style={phaseHeaderStyle}>
                       <div style={phaseTimelineColStyle} aria-hidden="true">
                         <span
@@ -1025,9 +1019,19 @@ const phaseRailTrackStyle: CSSProperties = {
   zIndex: 0,
 }
 
-const phaseRailFillStyle: CSSProperties = {
-  ...phaseRailTrackStyle,
+// Connettore viola disegnato per-fase: parte dal pallino della fase completata e
+// arriva esattamente al pallino della fase successiva (top 24px = centro pallino,
+// bottom -24px = centro pallino della sezione sotto). Sostituisce la vecchia barra
+// unica scalata con scaleY, che con 5 fasi di altezza diversa non raggiungeva il
+// pallino corrente.
+const phaseRailConnectorStyle: CSSProperties = {
+  position: 'absolute',
+  left: '12px',
+  top: '24px',
+  bottom: '-24px',
+  width: '2px',
   background: 'var(--color-background-primary)',
+  zIndex: 0,
 }
 
 const contentColumnStyle: CSSProperties = {

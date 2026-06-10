@@ -618,7 +618,10 @@ const resultsTitleStyle: CSSProperties = {
 
 const resultsRowStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: '1fr 1fr 1fr',
+  // minmax(0, 1fr) consente alle colonne di restringersi sotto la larghezza del
+  // contenuto: senza, la colonna OPEX (più input) spingeva la riga oltre il
+  // contenitore e la colonna Durata veniva tagliata (overflow: hidden).
+  gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
   gap: '0',
 }
 
@@ -627,6 +630,10 @@ const resultPanelStyle: CSSProperties = {
   gap: 'var(--spacing-stack-xs)',
   padding: 'var(--spacing-inset-m)',
   borderRight: '1px solid var(--color-border-secondary-light)',
+  // Indispensabile: senza minWidth:0 il pannello (grid item) si dimensiona sul
+  // min-content dei suoi input e sfora la colonna minmax(0,1fr), tagliando
+  // "mesi"/Durata. Con minWidth:0 gli input flessibili si restringono.
+  minWidth: 0,
 }
 
 const resultFieldHeaderStyle: CSSProperties = {
@@ -679,7 +686,9 @@ const panelInputRowStyle: CSSProperties = {
 const opexInputsRowStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
+  flexWrap: 'wrap',
   gap: '8px',
+  rowGap: '8px',
 }
 
 const opexPctBlockStyle: CSSProperties = {

@@ -1,4 +1,4 @@
-export const TOTAL_VALUTAZIONE_STEPS = 14
+export const TOTAL_VALUTAZIONE_STEPS = 13
 
 export interface ValutazioneStepMeta {
   step: number
@@ -31,13 +31,12 @@ const STEP_DEFINITIONS: Array<Omit<ValutazioneStepMeta, 'phaseTitle' | 'substepT
   { step: 5, phaseId: 'profilazione', phaseTitle: 'Profilazione', substepId: 'classificazione', substepTitle: 'Classificazione del progetto' },
   { step: 6, phaseId: 'profilazione', phaseTitle: 'Profilazione', substepId: 'classificazione', substepTitle: 'Classificazione del progetto' },
   { step: 7, phaseId: 'profilazione', phaseTitle: 'Profilazione', substepId: 'classificazione', substepTitle: 'Classificazione del progetto' },
-  { step: 8, phaseId: 'profilazione', phaseTitle: 'Profilazione', substepId: 'classificazione', substepTitle: 'Classificazione del progetto' },
-  { step: 9, phaseId: 'contesto-operativo', phaseTitle: 'Contesto operativo', substepId: 'durata', substepTitle: 'Durata del progetto' },
-  { step: 10, phaseId: 'contesto-operativo', phaseTitle: 'Contesto operativo', substepId: 'localizzazione', substepTitle: 'Localizzazione' },
-  { step: 11, phaseId: 'contesto-operativo', phaseTitle: 'Contesto operativo', substepId: 'quantita-target', substepTitle: 'Quantità target' },
-  { step: 12, phaseId: 'parametri-economici', phaseTitle: 'Parametri economici', substepId: 'attualizzazione', substepTitle: 'Anno di attualizzazione' },
-  { step: 13, phaseId: 'parametri-economici', phaseTitle: 'Parametri economici', substepId: 'capex', substepTitle: 'CAPEX' },
-  { step: 14, phaseId: 'parametri-economici', phaseTitle: 'Parametri economici', substepId: 'opex', substepTitle: 'OPEX' },
+  { step: 8, phaseId: 'contesto-operativo', phaseTitle: 'Contesto operativo', substepId: 'durata', substepTitle: 'Durata del progetto' },
+  { step: 9, phaseId: 'contesto-operativo', phaseTitle: 'Contesto operativo', substepId: 'localizzazione', substepTitle: 'Localizzazione' },
+  { step: 10, phaseId: 'contesto-operativo', phaseTitle: 'Contesto operativo', substepId: 'quantita-target', substepTitle: 'Quantità target' },
+  { step: 11, phaseId: 'parametri-economici', phaseTitle: 'Parametri economici', substepId: 'attualizzazione', substepTitle: 'Anno di attualizzazione' },
+  { step: 12, phaseId: 'parametri-economici', phaseTitle: 'Parametri economici', substepId: 'capex', substepTitle: 'CAPEX' },
+  { step: 13, phaseId: 'parametri-economici', phaseTitle: 'Parametri economici', substepId: 'opex', substepTitle: 'OPEX' },
 ]
 
 const STEP_META = new Map<number, ValutazioneStepMeta>(
