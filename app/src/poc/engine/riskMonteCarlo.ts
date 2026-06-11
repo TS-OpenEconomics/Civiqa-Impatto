@@ -199,4 +199,65 @@ export const MC_MOCK_DATA: Record<string, MCData> = {
       bin(  4500,  5000, 17), bin(  5000,  5500, 10), bin(  5500,  6000,  5),
     ],
   },
+
+  // ── A4: alternativa aggiuntiva — performance intermedia, volatilità media ──
+  A4: {
+    summary: {
+      mean: 1800, std: 1700,
+      p5: -1100, p50: 1750, p95: 4900,
+      probNegative: 0.14,
+      probBest: 0.18,
+      nSimulations: 1000,
+    },
+    elasticities: [
+      { param: 'Benefici',     value: 5.4 },
+      { param: 'OPEX',         value: 3.1 },
+      { param: 'CAPEX',        value: 1.6 },
+      { param: 'Tasso sconto', value: 2.0 },
+    ],
+    variances: [
+      { param: 'Benefici',     value: 0.70 },
+      { param: 'OPEX',         value: 0.28 },
+      { param: 'CAPEX',        value: 0.24 },
+      { param: 'Tasso sconto', value: 0.15 },
+    ],
+    histogram: [
+      bin(-3000, -2500,  8), bin(-2500, -2000, 14), bin(-2000, -1500, 24),
+      bin(-1500, -1000, 38), bin(-1000,  -500, 54), bin( -500,     0, 66),
+      bin(     0,   500, 84), bin(   500,  1000, 98), bin(  1000,  1500, 112),
+      bin(  1500,  2000, 110), bin(  2000,  2500, 96), bin(  2500,  3000, 78),
+      bin(  3000,  3500, 58), bin(  3500,  4000, 40), bin(  4000,  4500, 26),
+      bin(  4500,  5000, 15), bin(  5000,  5500,  7),
+    ],
+  },
+
+  // ── A5: alternativa aggiuntiva — profilo prudente, bassa volatilità ────────
+  A5: {
+    summary: {
+      mean: 1400, std: 1200,
+      p5: -500, p50: 1380, p95: 3700,
+      probNegative: 0.09,
+      probBest: 0.12,
+      nSimulations: 1000,
+    },
+    elasticities: [
+      { param: 'Benefici',     value: 4.2 },
+      { param: 'OPEX',         value: 2.4 },
+      { param: 'CAPEX',        value: 1.1 },
+      { param: 'Tasso sconto', value: 1.6 },
+    ],
+    variances: [
+      { param: 'Benefici',     value: 0.65 },
+      { param: 'OPEX',         value: 0.26 },
+      { param: 'CAPEX',        value: 0.20 },
+      { param: 'Tasso sconto', value: 0.14 },
+    ],
+    histogram: [
+      bin(-2000, -1500, 10), bin(-1500, -1000, 22), bin(-1000,  -500, 40),
+      bin( -500,     0, 60), bin(     0,   500, 86), bin(   500,  1000, 108),
+      bin(  1000,  1500, 124), bin(  1500,  2000, 118), bin(  2000,  2500, 98),
+      bin(  2500,  3000, 74), bin(  3000,  3500, 50), bin(  3500,  4000, 30),
+      bin(  4000,  4500, 15), bin(  4500,  5000,  7),
+    ],
+  },
 }

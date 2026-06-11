@@ -101,14 +101,29 @@ const LIST_PRESETS = [
 
 
 
-function AnalysisBadges({ active = [], className = "", sizeClass = "px-3 py-1 text-[13px] font-bold" }) {
+function AnalysisBadges({ active = [], className = "", sizeClass = "px-3 py-1 text-[13px] font-bold", onOpenAnalysis }) {
   const activeSet = new Set(active);
 
   return (
     <div className={`flex flex-wrap gap-2 ${className}`}>
-      {ANALYSIS_ORDER.map((analysis) => (
-        <Badge key={analysis} type={analysis} dimmed={!activeSet.has(analysis)} className={sizeClass} />
-      ))}
+      {ANALYSIS_ORDER.map((analysis) => {
+        const isActive = activeSet.has(analysis);
+        if (isActive && onOpenAnalysis) {
+          return (
+            <button
+              key={analysis}
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onOpenAnalysis(analysis); }}
+              aria-label={`Vai all'analisi ${analysis}`}
+              title={`Vai all'analisi ${analysis}`}
+              className="transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-violet"
+            >
+              <Badge type={analysis} className={sizeClass} />
+            </button>
+          );
+        }
+        return <Badge key={analysis} type={analysis} dimmed={!isActive} className={sizeClass} />;
+      })}
     </div>
   );
 }
@@ -181,7 +196,35 @@ function ToolButton({ children, className = "", ...props }) {
   );
 }
 
-function ProjectAction({ action, onDelete, onDuplicate, onOpen, projectName }) {
+function CheckIcon({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M3 8.5l3.5 3.5L13 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconCopy({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="5" y="5" width="8" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M11 5V3.5A1.5 1.5 0 009.5 2H4a1.5 1.5 0 00-1.5 1.5V11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconShare({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="12" cy="3.5" r="2" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="4" cy="8" r="2" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="12" cy="12.5" r="2" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M5.7 7l4.6-2.6M5.7 9l4.6 2.6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ProjectAction({ onDelete, onDuplicate, onShare }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -191,47 +234,43 @@ function ProjectAction({ action, onDelete, onDuplicate, onOpen, projectName }) {
     return () => window.removeEventListener("click", close);
   }, [open]);
 
-  if (action === "trash") {
-    return (
-      <button
-        type="button"
-        onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
-        aria-label={`Elimina ${projectName}`}
-        className="text-[#d40000] transition-opacity hover:opacity-70"
-      >
-        <IconTrash className="h-7 w-7" />
-      </button>
-    );
-  }
-
   return (
     <div className="relative" onClick={(e) => e.stopPropagation()}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="Opzioni progetto"
-        className="flex items-center gap-1 px-1 text-brand-violet transition-opacity hover:opacity-70"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="flex h-8 w-7 flex-col items-center justify-center gap-[3px] text-brand-violet transition-opacity hover:opacity-70"
       >
-        <span className="h-[5px] w-[5px] rounded-full bg-current" />
-        <span className="h-[5px] w-[5px] rounded-full bg-current" />
-        <span className="h-[5px] w-[5px] rounded-full bg-current" />
+        <span className="h-[4px] w-[4px] rounded-full bg-current" />
+        <span className="h-[4px] w-[4px] rounded-full bg-current" />
+        <span className="h-[4px] w-[4px] rounded-full bg-current" />
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-10 mt-1 w-44 overflow-hidden rounded border border-ink-100 bg-white shadow-lg">
-          <button type="button" onClick={() => { setOpen(false); onOpen?.(); }} className="w-full px-4 py-2.5 text-left text-[13px] text-ink-700 hover:bg-ink-100/50">Apri</button>
-          <button type="button" onClick={() => { setOpen(false); onDuplicate?.(); }} className="w-full px-4 py-2.5 text-left text-[13px] text-ink-700 hover:bg-ink-100/50">Duplica</button>
-          <button type="button" onClick={() => { setOpen(false); onDelete?.(); }} className="w-full border-t border-ink-100 px-4 py-2.5 text-left text-[13px] text-red-600 hover:bg-red-50">Elimina</button>
+        <div role="menu" className="absolute right-0 top-full z-10 mt-1 w-48 overflow-hidden rounded border border-ink-100 bg-white shadow-lg">
+          <button type="button" onClick={() => { setOpen(false); onDuplicate?.(); }} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-[13px] text-ink-700 hover:bg-ink-100/50">
+            <IconCopy className="h-4 w-4" /> Duplica
+          </button>
+          <button type="button" onClick={() => { setOpen(false); onShare?.(); }} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-[13px] text-ink-700 hover:bg-ink-100/50">
+            <IconShare className="h-4 w-4" /> Condividi
+          </button>
+          <button type="button" onClick={() => { setOpen(false); onDelete?.(); }} className="flex w-full items-center gap-2.5 border-t border-ink-100 px-4 py-2.5 text-left text-[13px] text-red-600 hover:bg-red-50">
+            <IconTrash className="h-4 w-4" /> Elimina
+          </button>
         </div>
       )}
     </div>
   );
 }
 
-function ProjectListCard({ project, onOpen, onDelete, onDuplicate }) {
+function ProjectListCard({ project, onOpen, onDelete, onDuplicate, onShare, onOpenAnalysis }) {
+  const analyses = project.analyses || [];
   return (
     <article className="overflow-hidden border border-[#e4e4e4] bg-white">
-      <div className="grid border-b border-[#e6e6e6] lg:min-h-[96px] lg:grid-cols-[minmax(0,1fr)_370px_82px]">
-        <div className="min-w-0 px-5 py-5">
+      <div className="flex flex-wrap items-stretch border-b border-[#e6e6e6]">
+        <div className="min-w-0 flex-1 basis-[320px] px-5 py-5">
           <div className="flex flex-wrap items-center gap-3">
             <h3 className="text-[19px] font-bold text-ink-900">{project.nome}</h3>
             {project.bozza ? (
@@ -243,28 +282,31 @@ function ProjectListCard({ project, onOpen, onDelete, onDuplicate }) {
           </p>
         </div>
 
-        <div className="flex items-center justify-between gap-4 px-5 py-5 lg:border-l lg:border-[#e6e6e6]">
-          <div className="flex items-center gap-3">
-            <span className="text-[14px] font-semibold text-ink-900">Analisi</span>
-            <AnalysisBadges active={project.analyses || []} />
-          </div>
-          <ProjectAction
-            action={project.action}
-            projectName={project.nome}
-            onDelete={onDelete}
-            onDuplicate={onDuplicate}
-            onOpen={onOpen}
-          />
+        <div className="flex flex-col items-start justify-center gap-2 px-5 py-5 lg:border-l lg:border-[#e6e6e6]">
+          <span className="text-[14px] font-semibold text-ink-900">Analisi</span>
+          {analyses.length ? (
+            <>
+              <AnalysisBadges
+                active={analyses}
+                onOpenAnalysis={(analysis) => onOpenAnalysis?.(project.id, analysis)}
+              />
+              <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-green-600">
+                <CheckIcon className="h-3.5 w-3.5" />
+                {analyses.length} {analyses.length === 1 ? "analisi disponibile" : "analisi disponibili"}
+              </span>
+            </>
+          ) : (
+            <span className="text-[13px] text-ink-400">Nessuna analisi svolta</span>
+          )}
         </div>
 
-        <button
-          type="button"
-          onClick={onOpen}
-          className="flex h-[72px] items-center justify-center border-t border-[#e6e6e6] text-brand-violet transition-colors hover:bg-[#faf7ff] lg:h-auto lg:border-l lg:border-t-0"
-          aria-label={`Apri ${project.nome}`}
-        >
-          <span className="text-[36px] leading-none">&rarr;</span>
-        </button>
+        <div className="flex items-start px-4 py-4 lg:border-l lg:border-[#e6e6e6]">
+          <ProjectAction
+            onDelete={onDelete}
+            onDuplicate={onDuplicate}
+            onShare={onShare}
+          />
+        </div>
       </div>
 
       <div className="grid gap-x-8 gap-y-6 px-5 py-4 md:grid-cols-2 xl:grid-cols-3">
@@ -274,6 +316,18 @@ function ProjectListCard({ project, onOpen, onDelete, onDuplicate }) {
         <InfoBlock label="Inizio lavori" value={project.inizioLavori} />
         <InfoBlock label="Durata lavori" value={project.durataLavori} />
         <InfoBlock label="Stato del progetto" value={project.statoProgetto} />
+      </div>
+
+      <div className="flex justify-end px-5 pb-5">
+        <button
+          type="button"
+          onClick={onOpen}
+          className="inline-flex items-center gap-2 bg-brand-violet px-5 py-3 text-[15px] font-medium text-white transition-colors hover:bg-brand-violet-dark"
+          aria-label={project.bozza ? `Concludi il progetto ${project.nome}` : `Esplora il progetto ${project.nome}`}
+        >
+          <span>{project.bozza ? "Concludi" : "Esplora"}</span>
+          <IconArrowRight className="h-4 w-4" />
+        </button>
       </div>
     </article>
   );
@@ -319,7 +373,8 @@ function buildDisplayProject(workspace, index) {
     inizioLavori: preset.inizioLavori || workspace.project.ultima_modifica || "-",
     durataLavori: preset.durataLavori || workspace.project.configurazione.durata_progetto || "-",
     statoProgetto: preset.statoProgetto || workspace.project.stato || "-",
-    bozza: preset.bozza || workspace.project.stato === "Bozza",
+    // Un progetto con analisi svolte non può essere una bozza
+    bozza: (preset.bozza || workspace.project.stato === "Bozza") && availableAnalyses.length === 0,
     analyses: availableAnalyses,
     action: preset.action || "menu",
   };
@@ -327,7 +382,7 @@ function buildDisplayProject(workspace, index) {
 
 const STATUS_OPTIONS = ["Bozza", "In preparazione", "In approvazione", "Approvato"];
 
-export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
+export function ValutazioniList({ onOpenProject, onNewEvaluation, onOpenAnalysis }) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [showDraftsOnly, setShowDraftsOnly] = useState(false);
@@ -408,6 +463,15 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
     if (next) toast({ title: `"${name}" duplicato`, tone: "success" });
   }
 
+  function handleShare(project) {
+    try {
+      navigator.clipboard?.writeText(`${window.location.origin}/valutazioni/${project.id}`);
+    } catch {
+      /* clipboard non disponibile: ignora */
+    }
+    toast({ title: `Link di "${project.nome}" copiato`, tone: "success" });
+  }
+
   function handleConfirmDelete() {
     if (!confirmDel) return;
     deleteProject(confirmDel.id);
@@ -461,7 +525,7 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
           </button>
         </div>
 
-        <h2 className="mt-9 text-[18px] font-bold text-ink-900">In evidenza</h2>
+        <h2 className="mt-9 text-[18px] font-bold text-ink-900">Progetti in evidenza</h2>
 
         {isLoading ? (
           <div className="mt-5 flex gap-4">
@@ -509,6 +573,7 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
       </section>
 
       <section className="px-6 pb-10 xl:px-8">
+        <h2 className="mb-5 text-[18px] font-bold text-ink-900">Esplora i progetti</h2>
         <div className="border border-[#e6e6e6] bg-white px-5 py-5">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-4 text-[16px] text-ink-900">
             <span>Visualizza solo:</span>
@@ -651,7 +716,9 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
                 key={project.id}
                 project={project}
                 onOpen={() => onOpenProject(project.id)}
+                onOpenAnalysis={onOpenAnalysis}
                 onDuplicate={() => handleDuplicate(project.id, project.nome)}
+                onShare={() => handleShare(project)}
                 onDelete={() => setConfirmDel(project)}
               />
             ))

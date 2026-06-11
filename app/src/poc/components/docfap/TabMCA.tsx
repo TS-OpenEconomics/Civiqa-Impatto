@@ -22,7 +22,7 @@ import {
   formatScore,
   safeNumber,
 } from './tableHelpers'
-import { BarsChart, ChartCard, altBarColor, tabStackStyle } from './chartHelpers'
+import { BarsChart, ChartCard, altColor, tabStackStyle } from './chartHelpers'
 
 const SCALE_LABELS: Record<string, string> = {
   A: 'Alto',
@@ -59,7 +59,7 @@ export function TabMCA() {
   const groups = scores.map((score) => ({
     id: score.alternativaId,
     label: getAlternativeDisplayLabel(score.alternativaId, state.alternative[score.alternativaId]),
-    bars: [{ value: Number(safeNumber(score.mcaScore).toFixed(1)), color: altBarColor(score.alternativaId === recommendedId) }],
+    bars: [{ value: Number(safeNumber(score.mcaScore).toFixed(1)), color: altColor(score.alternativaId, score.alternativaId === recommendedId) }],
   }))
 
   return (

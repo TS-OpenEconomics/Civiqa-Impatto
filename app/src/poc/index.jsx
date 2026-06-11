@@ -11,6 +11,7 @@ export { HomeLauncher } from "./pages/HomeLauncher";
 export { ImpattDashboard } from "./pages/ImpattDashboard";
 export { DocfapList } from "./pages/DocfapList";
 export { DocfapDetail } from "./pages/DocfapDetail";
+export { DocfapMcaDetail } from "./pages/DocfapMcaDetail";
 export { PianificazioneModule } from "./components/pianificazione/PianificazioneModule";
 export { DataRoomPage } from "./pages/DataRoomPage";
 export { RisorsePage } from "./pages/RisorsePage";

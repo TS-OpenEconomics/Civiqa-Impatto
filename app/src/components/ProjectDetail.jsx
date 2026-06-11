@@ -118,20 +118,39 @@ const ANALYSIS_META = {
 
 // ── EIA KPI cards with icons ──────────────────────────────────────────────────
 
-function EiaKpiCards({ eia }) {
+function EiaKpiCards({ eia, settoreSpesa }) {
   const r = eia ?? {};
   const kpis = [
-    { label: "Spese attivate",          icon: "spese",       value: fmtM(r.shock_totale),       sub: "valore attuale" },
+    { label: "Spese effettuate",        icon: "spese",       value: fmtM(r.shock_totale),       sub: "valore attuale" },
     { label: "Valore della produzione", icon: "produzione",  value: fmtM(r.produzione?.totale), sub: "valore attuale" },
     { label: "PIL",                     icon: "pil",         value: fmtM(r.gva?.totale),        sub: "valore attuale" },
-    { label: "Occupazione",             icon: "occupazione", value: r.fte?.totale ? `${fmtIT(r.fte.totale, 0)} occupati` : "—", sub: "valore attuale" },
+    { label: "Occupazione",             icon: "occupazione", value: r.fte?.totale ? `${fmtIT(r.fte.totale, 0)} occupati` : "—", sub: "equivalenti tempo pieno (ETP)" },
     { label: "Redditi",                 icon: "redditi",     value: fmtM(r.redditi?.totale),    sub: "valore attuale" },
     { label: "Gettito fiscale",         icon: "gettito",     value: fmtM(r.gettito?.totale),    sub: "valore attuale" },
   ];
 
-  const topSettore = r.per_settore?.[0]?.settore ?? null;
+  const shock = r.shock_totale ?? 0;
+  const shockM = shock / 1_000_000;
+  const moltProd = r.moltiplicatore != null
+    ? r.moltiplicatore
+    : (shock > 0 && r.produzione?.totale ? r.produzione.totale / shock : null);
+  const moltPil = shock > 0 && r.gva?.totale ? r.gva.totale / shock : null;
+  const occPerM = shockM > 0 && r.fte?.totale ? r.fte.totale / shockM : null;
+
+  const settoreImpatto = r.per_settore?.[0]?.settore ?? null;
   const topRegione = r.per_territorio?.[0]?.regione ?? null;
-  const molt = r.moltiplicatore != null ? `${fmtIT(r.moltiplicatore, 2)}×` : null;
+
+  const moltChips = [
+    moltProd != null && { label: "Moltiplicatore di produzione", value: `${fmtIT(moltProd, 2)}×` },
+    moltPil != null && { label: "Moltiplicatore PIL", value: `${fmtIT(moltPil, 2)}×` },
+    occPerM != null && { label: "Occupati per milione di €", value: fmtIT(occPerM, 1) },
+  ].filter(Boolean);
+
+  const territorialChips = [
+    settoreSpesa && { label: "Settore principale di spesa", value: settoreSpesa },
+    settoreImpatto && { label: "Settore principalmente impattato", value: settoreImpatto },
+    topRegione && { label: "Regione principalmente impattata", value: topRegione },
+  ].filter(Boolean);
 
   return (
     <div className="space-y-3">
@@ -147,28 +166,26 @@ function EiaKpiCards({ eia }) {
           </div>
         ))}
       </div>
-      {(molt || topSettore || topRegione) && (
-        <div className="flex flex-wrap gap-2 pt-1">
-          {molt && (
-            <span className="flex items-center gap-1.5 rounded-full border border-ink-100 bg-white px-3 py-1 text-[12px]">
-              <span className="font-bold text-brand-violet">{molt}</span>
-              <span className="text-ink-400">moltiplicatore PIL</span>
-            </span>
-          )}
-          {topSettore && (
-            <span className="flex items-center gap-1.5 rounded-full border border-ink-100 bg-white px-3 py-1 text-[12px]">
-              <span className="text-ink-400">Settore principale:</span>
-              <span className="font-semibold text-ink-800">{topSettore}</span>
-            </span>
-          )}
-          {topRegione && (
-            <span className="flex items-center gap-1.5 rounded-full border border-ink-100 bg-white px-3 py-1 text-[12px]">
-              <span className="text-ink-400">Regione maggiormente impattata:</span>
-              <span className="font-semibold text-ink-800">{topRegione}</span>
-            </span>
-          )}
+      {(moltChips.length > 0 || territorialChips.length > 0) && (
+        <div className="grid grid-cols-1 gap-3 pt-1 md:grid-cols-2">
+          <EiaChipColumn chips={moltChips} />
+          <EiaChipColumn chips={territorialChips} />
         </div>
       )}
+    </div>
+  );
+}
+
+function EiaChipColumn({ chips }) {
+  if (!chips.length) return null;
+  return (
+    <div className="flex flex-col gap-2">
+      {chips.map((chip) => (
+        <span key={chip.label} className="flex items-center justify-between gap-2 rounded-full border border-ink-100 bg-white px-3 py-1.5 text-[12px]">
+          <span className="text-ink-400">{chip.label}</span>
+          <span className="text-right font-semibold text-ink-800">{chip.value}</span>
+        </span>
+      ))}
     </div>
   );
 }
@@ -178,24 +195,26 @@ function EiaKpiCards({ eia }) {
 function EcbaRows({ ecba }) {
   const r = ecba ?? {};
   const bcr = r.bcr ?? (r.benefici_totali && r.costi_totali ? r.benefici_totali / r.costi_totali : null);
-  const rows = [
-    { label: "Benefici economici", value: r.benefici_totali ? `€ ${fmtIT(r.benefici_totali)}` : "—", tone: "green" },
-    { label: "Costi economici",    value: r.costi_totali    ? `€ ${fmtIT(r.costi_totali)}`    : "—", tone: "red" },
-    { label: "VANE",               value: r.van != null     ? `€ ${fmtIT(r.van)}`             : "—", tone: r.van != null ? (r.van >= 0 ? "green" : "red") : null },
-    { label: "Payback period",     value: r.payback_period  ? `${r.payback_period} anni`       : "—", tone: null },
-    { label: "Rapporto B/C",       value: bcr               ? fmtIT(bcr, 2)                   : "—", tone: bcr != null ? (bcr >= 1 ? "green" : "red") : null },
-    { label: "TIRE",               value: r.irr != null     ? `${fmtIT(r.irr, 2)}%`           : "—", tone: null },
+  const cards = [
+    { label: "Benefici economici", value: r.benefici_totali ? `€ ${fmtIT(r.benefici_totali)}` : "—", sub: "valore attuale",          tone: "green" },
+    { label: "Costi economici",    value: r.costi_totali    ? `€ ${fmtIT(r.costi_totali)}`    : "—", sub: "valore attuale",          tone: "red" },
+    { label: "VANE",               value: r.van != null     ? `€ ${fmtIT(r.van)}`             : "—", sub: "valore attuale netto",    tone: r.van != null ? (r.van >= 0 ? "green" : "red") : null },
+    { label: "Payback period",     value: r.payback_period  ? `${r.payback_period}`           : "—", sub: "anni al rientro",         tone: null },
+    { label: "Rapporto B/C",       value: bcr               ? fmtIT(bcr, 2)                   : "—", sub: "benefici su costi",       tone: bcr != null ? (bcr >= 1 ? "green" : "red") : null },
+    { label: "TIRE",               value: r.irr != null     ? `${fmtIT(r.irr, 2)}%`           : "—", sub: "tasso interno di rendimento", tone: null },
   ];
+
   return (
-    <div className="ml-auto w-full max-w-sm space-y-2">
-      {rows.map((row) => (
-        <div key={row.label} className="flex items-center justify-between gap-3">
-          <span className="text-[13px] text-ink-700">{row.label}</span>
-          <span className={`shrink-0 rounded px-3 py-1 font-mono text-[12px] font-bold ${
-            row.tone === "green" ? "bg-green-100 text-green-800" :
-            row.tone === "red"   ? "bg-red-100 text-red-700" :
-                                   "bg-accent-lime text-ink-900"
-          }`}>{row.value}</span>
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {cards.map((c) => (
+        <div key={c.label} className="rounded border border-ink-100 bg-white p-4 shadow-sm">
+          <p className="text-[11px] font-bold uppercase leading-tight tracking-wide text-ink-700">{c.label}</p>
+          <p className={`mt-3 text-[22px] font-bold leading-tight ${
+            c.tone === "green" ? "text-green-700" :
+            c.tone === "red"   ? "text-red-600" :
+                                 "text-ink-900"
+          }`}>{c.value}</p>
+          <p className="mt-1 text-[11px] text-ink-400">{c.sub}</p>
         </div>
       ))}
     </div>
@@ -288,7 +307,7 @@ function EsgSummaryPanel({ esg }) {
 
 // ── Analysis card ─────────────────────────────────────────────────────────────
 
-function AnalysisCard({ id, analysis, results, onOpen, onDownloadReport }) {
+function AnalysisCard({ id, analysis, results, onOpen, onDownloadReport, settoreSpesa }) {
   const meta       = ANALYSIS_META[id];
   const hasResults = analysis?.status === "completed";
 
@@ -341,7 +360,7 @@ function AnalysisCard({ id, analysis, results, onOpen, onDownloadReport }) {
               </button>
             </div>
             <div className="flex-1">
-              {id === "eia"  && <EiaKpiCards     eia={results.eia} />}
+              {id === "eia"  && <EiaKpiCards     eia={results.eia} settoreSpesa={settoreSpesa} />}
               {id === "ecba" && <EcbaRows        ecba={results.ecba} />}
               {id === "esg"  && <EsgSummaryPanel esg={results.esg} />}
             </div>
@@ -355,11 +374,17 @@ function AnalysisCard({ id, analysis, results, onOpen, onDownloadReport }) {
 // ── Documentation section ─────────────────────────────────────────────────────
 
 const MOCK_DOCS = [
-  { id: 1, nome: "Piano di Fattibilità Tecnica.pdf",       data: "12/03/2025", proprietario: "Mario Rossi",   ext: "pdf"  },
-  { id: 2, nome: "Progetto Definitivo.pdf",                data: "15/03/2025", proprietario: "Luigi Bianchi", ext: "pdf"  },
-  { id: 3, nome: "Analisi Ambientale Preliminare.docx",    data: "18/03/2025", proprietario: "Sara Verdi",    ext: "docx" },
-  { id: 4, nome: "Relazione Tecnica Descrittiva.pdf",      data: "20/03/2025", proprietario: "Mario Rossi",   ext: "pdf"  },
-  { id: 5, nome: "Computo Metrico Estimativo.xlsx",        data: "22/03/2025", proprietario: "Anna Neri",     ext: "xlsx" },
+  { id: 1, nome: "Piano di Fattibilità Tecnica.pdf",       data: "12/03/2025", proprietario: "Mario Rossi",   ext: "pdf",  source: "precaricato" },
+  { id: 2, nome: "Progetto Definitivo.pdf",                data: "15/03/2025", proprietario: "Luigi Bianchi", ext: "pdf",  source: "precaricato" },
+  { id: 3, nome: "Analisi Ambientale Preliminare.docx",    data: "18/03/2025", proprietario: "Sara Verdi",    ext: "docx", source: "precaricato" },
+  { id: 4, nome: "Relazione Tecnica Descrittiva.pdf",      data: "20/03/2025", proprietario: "Mario Rossi",   ext: "pdf",  source: "precaricato" },
+  { id: 5, nome: "Computo Metrico Estimativo.xlsx",        data: "22/03/2025", proprietario: "Anna Neri",     ext: "xlsx", source: "precaricato" },
+];
+
+const DOC_TABS = [
+  { id: "fascicolo",   label: "Fascicolo Completo" },
+  { id: "precaricati", label: "Documenti precaricati" },
+  { id: "aggiunti",    label: "Documenti Aggiunti" },
 ];
 
 const EXT_CLS = {
@@ -421,7 +446,7 @@ function DocumentationSection({ ownerName }) {
   const { toast } = useToast();
   const fileInputRef = useRef(null);
   const [docs, setDocs] = useState(MOCK_DOCS);
-  const [docTab, setDocTab] = useState("caricati");
+  const [docTab, setDocTab] = useState("fascicolo");
   const [view, setView] = useState("lista");
   const [sortBy, setSortBy] = useState("data");
   const [page, setPage] = useState(1);
@@ -433,12 +458,16 @@ function DocumentationSection({ ownerName }) {
   }
 
   const sortedDocs = useMemo(() => {
-    const list = [...docs];
+    const list = docs.filter((doc) => {
+      if (docTab === "precaricati") return doc.source === "precaricato";
+      if (docTab === "aggiunti")    return doc.source === "aggiunto";
+      return true; // fascicolo completo
+    });
     if (sortBy === "nome") list.sort((a, b) => a.nome.localeCompare(b.nome, "it"));
     else if (sortBy === "proprietario") list.sort((a, b) => a.proprietario.localeCompare(b.proprietario, "it"));
     else list.sort((a, b) => parseItalianDate(b.data) - parseItalianDate(a.data));
     return list;
-  }, [docs, sortBy]);
+  }, [docs, sortBy, docTab]);
 
   const totalPages = Math.max(1, Math.ceil(sortedDocs.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -448,6 +477,8 @@ function DocumentationSection({ ownerName }) {
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
   }, [docs, page, totalPages]);
+
+  useEffect(() => { setPage(1); }, [docTab]);
 
   function handleDownload(doc) {
     toast({
@@ -469,8 +500,10 @@ function DocumentationSection({ ownerName }) {
       data: todayLabel(),
       proprietario: ownerName || "Utente",
       ext: extOf(file.name),
+      source: "aggiunto",
     }));
     setDocs((prev) => [...newDocs, ...prev]);
+    setDocTab("aggiunti");
     toast({
       title: files.length === 1 ? "Documento caricato" : `${files.length} documenti caricati`,
       tone: "success",
@@ -492,10 +525,7 @@ function DocumentationSection({ ownerName }) {
       <div className="overflow-hidden rounded border border-ink-100 bg-white">
         {/* Tabs */}
         <div className="flex border-b border-ink-100 px-5">
-          {[
-            { id: "caricati", label: "Documenti caricati" },
-            { id: "prodotti", label: "Documenti prodotti da OpenEconomics" },
-          ].map((t) => (
+          {DOC_TABS.map((t) => (
             <button
               key={t.id}
               type="button"
@@ -556,13 +586,13 @@ function DocumentationSection({ ownerName }) {
 
         {/* Document list / grid */}
         <div className="px-5 py-4">
-        {docTab !== "caricati" ? (
-          <div className="px-4 py-10 text-center text-[13px] text-ink-400">
-            Nessun documento prodotto da OpenEconomics disponibile.
-          </div>
-        ) : docs.length === 0 ? (
+        {sortedDocs.length === 0 ? (
           <div className="rounded border border-dashed border-ink-200 px-4 py-10 text-center text-[13px] text-ink-500">
-            Nessun documento caricato. Usa <span className="font-semibold">+ Carica documento</span> per aggiungerne.
+            {docTab === "precaricati"
+              ? "Nessun documento precaricato disponibile."
+              : docTab === "aggiunti"
+                ? <>Nessun documento aggiunto. Usa <span className="font-semibold">+ Carica documento</span> per aggiungerne.</>
+                : "Il fascicolo è vuoto. Usa + Carica documento per aggiungere documenti."}
           </div>
         ) : view === "griglia" ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -625,11 +655,11 @@ function DocumentationSection({ ownerName }) {
         </div>
 
         {/* Pagination — inside card */}
-        {docTab === "caricati" && docs.length > 0 && (
+        {sortedDocs.length > 0 && (
           <div className="flex items-center justify-between border-t border-ink-100 bg-white px-5 py-3 text-[12px] text-ink-500">
             <span>
-              Visualizzazione {start + 1}–{Math.min(start + PAGE_SIZE, docs.length)} di {docs.length}{" "}
-              {docs.length === 1 ? "documento" : "documenti"}
+              Visualizzazione {start + 1}–{Math.min(start + PAGE_SIZE, sortedDocs.length)} di {sortedDocs.length}{" "}
+              {sortedDocs.length === 1 ? "documento" : "documenti"}
             </span>
             {totalPages > 1 && (
               <div className="flex items-center gap-1">
@@ -892,7 +922,7 @@ export function ProjectDetail({
           </div>
         </div>
         <div className="space-y-4">
-          <AnalysisCard id="eia"  analysis={analyses?.eia}  results={results} onOpen={onOpenEia}  onDownloadReport={handleDownloadReport} />
+          <AnalysisCard id="eia"  analysis={analyses?.eia}  results={results} onOpen={onOpenEia}  onDownloadReport={handleDownloadReport} settoreSpesa={cfg.settore} />
           <AnalysisCard id="ecba" analysis={analyses?.ecba} results={results} onOpen={onOpenEcba} onDownloadReport={handleDownloadReport} />
           <AnalysisCard id="esg"  analysis={analyses?.esg}  results={results} onOpen={onOpenEsg}  onDownloadReport={handleDownloadReport} />
         </div>

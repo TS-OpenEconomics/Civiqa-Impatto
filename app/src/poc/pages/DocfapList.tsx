@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { DocfapWizard } from '../components/wizard/DocfapWizard'
@@ -6,8 +6,10 @@ import { loadDocfapDemo } from '../data/docfapDemo'
 import { wizardStore } from '../store/wizardStore'
 
 type DocfapStatus = 'Bozza' | 'Completato' | 'In corso'
-type AnalysisTag = 'CBA' | 'RISK'
+type AnalysisTag = 'EIA' | 'ECBA' | 'RISK' | 'MCA'
 type TabKey = 'ente' | 'territorio'
+
+const ALL_ANALYSES: AnalysisTag[] = ['EIA', 'ECBA', 'RISK', 'MCA']
 
 interface DocfapRecord {
   id: string
@@ -90,7 +92,7 @@ const DOCFAP_ENTE: DocfapRecord[] = [
     inizioLavori: '09/2026',
     durata: '24 mesi',
     statoProgetto: 'Progettazione definitiva',
-    analisiDisponibili: ['RISK'],
+    analisiDisponibili: [],
     hasScore: false,
   },
   {
@@ -124,7 +126,7 @@ const DOCFAP_ENTE: DocfapRecord[] = [
     inizioLavori: '11/2026',
     durata: '30 mesi',
     statoProgetto: 'Approvato',
-    analisiDisponibili: ['CBA', 'RISK'],
+    analisiDisponibili: ['EIA', 'ECBA', 'RISK', 'MCA'],
     hasScore: true,
   },
 ]
@@ -144,7 +146,7 @@ const DOCFAP_TERRITORIO: DocfapRecord[] = [
     inizioLavori: '01/2027',
     durata: '16 mesi',
     statoProgetto: 'Valutazione alternativa',
-    analisiDisponibili: ['RISK'],
+    analisiDisponibili: [],
     hasScore: false,
   },
   {
@@ -210,6 +212,103 @@ function IconTrash() {
   )
 }
 
+function IconCheck() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M3 8.5l3.5 3.5L13 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconDots() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <circle cx="10" cy="4" r="1.6" />
+      <circle cx="10" cy="10" r="1.6" />
+      <circle cx="10" cy="16" r="1.6" />
+    </svg>
+  )
+}
+
+function IconCopy() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="5" y="5" width="8" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M11 5V3.5A1.5 1.5 0 009.5 2H4a1.5 1.5 0 00-1.5 1.5V11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconShare() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="12" cy="3.5" r="2" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="4" cy="8" r="2" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="12" cy="12.5" r="2" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M5.7 7l4.6-2.6M5.7 9l4.6 2.6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function DocfapCardMenu({
+  onDuplicate,
+  onShare,
+  onDelete,
+}: {
+  onDuplicate: () => void
+  onShare: () => void
+  onDelete: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const close = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false)
+    }
+    window.addEventListener('click', close)
+    return () => window.removeEventListener('click', close)
+  }, [open])
+
+  const items: { label: string; icon: JSX.Element; onClick: () => void; danger?: boolean }[] = [
+    { label: 'Duplica', icon: <IconCopy />, onClick: onDuplicate },
+    { label: 'Condividi', icon: <IconShare />, onClick: onShare },
+    { label: 'Elimina', icon: <IconTrash />, onClick: onDelete, danger: true },
+  ]
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Opzioni progetto"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        style={menuTriggerStyle}
+      >
+        <IconDots />
+      </button>
+      {open && (
+        <div role="menu" style={menuDropdownStyle}>
+          {items.map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              role="menuitem"
+              onClick={() => { setOpen(false); item.onClick() }}
+              style={{ ...menuItemStyle, ...(item.danger ? menuItemDangerStyle : null) }}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function statusStyle(status: DocfapStatus): CSSProperties {
   if (status === 'Completato') {
     return { background: 'var(--color-background-success-lighter)', color: 'var(--color-text-success)' }
@@ -217,31 +316,28 @@ function statusStyle(status: DocfapStatus): CSSProperties {
   if (status === 'In corso') {
     return { background: 'var(--color-background-warning-lighter)', color: 'var(--color-text-warning)' }
   }
-  return { background: 'var(--color-background-secondary-lightest)', color: 'var(--color-text-primary-light)' }
+  // Bozza: stesso stile del badge "Bozza" di Valutazione (contorno viola, sfondo trasparente)
+  return {
+    background: 'transparent',
+    color: 'var(--color-background-primary)',
+    border: '1px solid var(--color-background-primary)',
+  }
+}
+
+// Colori ripresi dai badge analisi di Valutazione (tailwind: badge.eia/ecba/esg,
+// testo ink-900). RISK riusa la tinta ESG (teal), MCA una pastello ambra coerente.
+const ANALYSIS_ENABLED_STYLE: Record<AnalysisTag, CSSProperties> = {
+  EIA:  { background: '#F8A8E2', color: '#0E0E10', border: 'none' },
+  ECBA: { background: '#A8D8F8', color: '#0E0E10', border: 'none' },
+  RISK: { background: '#86E8DC', color: '#0E0E10', border: 'none' },
+  MCA:  { background: '#FBD9A8', color: '#0E0E10', border: 'none' },
 }
 
 function analysisStyle(tag: AnalysisTag, enabled: boolean): CSSProperties {
   if (!enabled) {
-    return {
-      background: 'var(--color-background-disable)',
-      color: 'var(--color-text-disable)',
-      border: '1px solid var(--color-border-secondary-light)',
-    }
+    return { background: '#E5E5E8', color: '#A3A3AA', border: 'none' }
   }
-
-  if (tag === 'CBA') {
-    return {
-      background: 'var(--color-background-warning-lighter)',
-      color: 'var(--color-text-warning)',
-      border: '1px solid var(--color-border-warning)',
-    }
-  }
-
-  return {
-    background: 'var(--color-background-success-lighter)',
-    color: 'var(--color-text-success)',
-    border: '1px solid var(--color-border-success)',
-  }
+  return ANALYSIS_ENABLED_STYLE[tag]
 }
 
 function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange: () => void; label: string }) {
@@ -289,16 +385,108 @@ function FeaturedDocfapCard({ item, onOpen }: { item: DocfapRecord; onOpen: () =
       </div>
 
       <div style={analysisWrapStyle}>
-        {(['CBA', 'RISK'] as const).map((tag) => (
+        {ALL_ANALYSES.map((tag) => (
           <span key={tag} style={{ ...analysisBadgeStyle, ...analysisStyle(tag, item.analisiDisponibili.includes(tag)) }}>
             {tag}
           </span>
         ))}
       </div>
+      {item.stato === 'Completato' ? (
+        <span style={analysisDoneStyle}>
+          <IconCheck /> Completate
+        </span>
+      ) : (
+        <span style={analysisPendingStyle}>In lavorazione</span>
+      )}
 
       <button type="button" style={detailButtonStyle} onClick={onOpen}>
         {item.stato === 'Completato' ? 'Vai al dettaglio' : 'Concludi Docfap'} <IconArrowRight />
       </button>
+    </article>
+  )
+}
+
+function DocfapInfoBlock({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p style={infoBlockLabelStyle}>{label}</p>
+      <p style={infoBlockValueStyle}>{value}</p>
+    </div>
+  )
+}
+
+function DocfapProjectCard({
+  row,
+  onOpen,
+  onDuplicate,
+  onShare,
+  onDelete,
+}: {
+  row: DocfapRecord
+  onOpen: () => void
+  onDuplicate: () => void
+  onShare: () => void
+  onDelete: () => void
+}) {
+  const completato = row.stato === 'Completato'
+  return (
+    <article style={listCardStyle}>
+      <div style={listCardHeaderStyle}>
+        <div style={listCardTitleColStyle}>
+          <div style={listCardTitleRowStyle}>
+            <h3 style={listCardTitleStyle}>{row.nomeIntervento}</h3>
+            <span style={{ ...statusBadgeStyle, ...statusStyle(row.stato) }}>{row.stato}</span>
+          </div>
+          <p style={listCardCupStyle}>
+            {row.cup ? `CUP ${row.cup}` : 'CUP non disponibile'}
+            <span style={{ margin: '0 8px' }}>-</span>
+            {`Creato il ${row.dataCreazione}`}
+          </p>
+        </div>
+
+        <div style={listCardAnalysisColStyle}>
+          <span style={listCardAnalysisLabelStyle}>Analisi</span>
+          <div style={analysisWrapStyle}>
+            {ALL_ANALYSES.map((tag) => (
+              <span key={tag} style={{ ...analysisBadgeStyle, ...analysisStyle(tag, row.analisiDisponibili.includes(tag)) }}>
+                {tag}
+              </span>
+            ))}
+          </div>
+          {completato ? (
+            <span style={analysisDoneStyle}>
+              <IconCheck /> Completate
+            </span>
+          ) : (
+            <span style={analysisPendingStyle}>In lavorazione</span>
+          )}
+        </div>
+
+        <div style={listCardMenuColStyle}>
+          <DocfapCardMenu onDuplicate={onDuplicate} onShare={onShare} onDelete={onDelete} />
+        </div>
+      </div>
+
+      <div style={listCardInfoGridStyle}>
+        <DocfapInfoBlock label="Proprietario" value={row.proprietario} />
+        <DocfapInfoBlock label="Settore" value={row.settore} />
+        <DocfapInfoBlock label="Tipo intervento" value={row.tipoIntervento} />
+        <DocfapInfoBlock label="Localizzazione" value={`${row.comune} (${row.provincia})`} />
+        <DocfapInfoBlock label="Inizio / durata lavori" value={`${row.inizioLavori} · ${row.durata}`} />
+        <DocfapInfoBlock label="Stato del progetto" value={row.statoProgetto} />
+      </div>
+
+      <div style={listCardFooterStyle}>
+        <button
+          type="button"
+          onClick={onOpen}
+          style={listCardExploreStyle}
+          aria-label={completato ? `Esplora il progetto ${row.nomeIntervento}` : `Concludi il Docfap ${row.nomeIntervento}`}
+        >
+          <span>{completato ? 'Esplora' : 'Concludi'}</span>
+          <IconArrowRight />
+        </button>
+      </div>
     </article>
   )
 }
@@ -315,8 +503,20 @@ export function DocfapList() {
   const [carouselIndex, setCarouselIndex] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState<number>(5)
+  const [removedIds, setRemovedIds] = useState<string[]>([])
+  const [extras, setExtras] = useState<Record<TabKey, DocfapRecord[]>>({ ente: [], territorio: [] })
+  const [notice, setNotice] = useState<string | null>(null)
 
-  const dataset = activeTab === 'ente' ? DOCFAP_ENTE : DOCFAP_TERRITORIO
+  useEffect(() => {
+    if (!notice) return
+    const timer = window.setTimeout(() => setNotice(null), 2600)
+    return () => window.clearTimeout(timer)
+  }, [notice])
+
+  const dataset = useMemo(() => {
+    const base = activeTab === 'ente' ? DOCFAP_ENTE : DOCFAP_TERRITORIO
+    return [...extras[activeTab], ...base].filter((row) => !removedIds.includes(row.id))
+  }, [activeTab, extras, removedIds])
 
   const featured = useMemo(() => dataset.filter((item) => item.stato !== 'Completato'), [dataset])
   const featuredVisible = featured.slice(carouselIndex, carouselIndex + 3)
@@ -379,12 +579,40 @@ export function DocfapList() {
     }
   }
 
+  const handleDuplicate = (row: DocfapRecord) => {
+    const copy: DocfapRecord = {
+      ...row,
+      id: `${row.id}-copy-${extras[activeTab].length + 1}`,
+      nomeIntervento: `${row.nomeIntervento} (copia)`,
+      stato: 'Bozza',
+      analisiDisponibili: [],
+      hasScore: false,
+    }
+    setExtras((prev) => ({ ...prev, [activeTab]: [copy, ...prev[activeTab]] }))
+    setNotice('Progetto duplicato come bozza')
+  }
+
+  const handleShare = (row: DocfapRecord) => {
+    try {
+      void navigator.clipboard?.writeText(`${window.location.origin}/impatti/docfap/detail`)
+    } catch {
+      /* clipboard non disponibile: ignora */
+    }
+    setNotice(`Link di "${row.nomeIntervento}" copiato negli appunti`)
+  }
+
+  const handleDelete = (row: DocfapRecord) => {
+    setRemovedIds((prev) => [...prev, row.id])
+    setNotice('Progetto eliminato')
+  }
+
   return (
     <>
       {showWizard ? (
         <DocfapWizard onClose={() => setShowWizard(false)} />
       ) : null}
       <main aria-label="Lista Docfap" className="docfap-home" style={mainStyle}>
+        {notice && <div role="status" style={noticeStyle}>{notice}</div>}
         <header style={headerStyle}>
           <div>
             <div style={titleRowStyle}>
@@ -405,7 +633,7 @@ export function DocfapList() {
 
         <section aria-labelledby="docfap-evidenza" style={featuredSectionStyle}>
           <div style={sectionHeaderStyle}>
-            <h2 id="docfap-evidenza" style={h2Style}>In evidenza</h2>
+            <h2 id="docfap-evidenza" style={h2Style}>Progetti in evidenza</h2>
             <div style={carouselControlsStyle}>
               <button
                 type="button"
@@ -432,6 +660,8 @@ export function DocfapList() {
             ))}
           </div>
         </section>
+
+        <h2 style={h2Style}>Esplora i progetti</h2>
 
         <section style={sectionStyle}>
           <div role="tablist" aria-label="Selezione lista Docfap" style={tabsWrapStyle}>
@@ -494,72 +724,26 @@ export function DocfapList() {
             />
           </div>
 
-          <div style={tableWrapStyle}>
-            <table style={tableStyle}>
-              <thead>
-                <tr>
-                  <th scope="col" style={thStyle}>Intervento</th>
-                  <th scope="col" style={thStyle}>Analisi</th>
-                  <th scope="col" style={thStyle}>Dettagli</th>
-                  <th scope="col" style={thStyle}>Azioni</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginated.map((row) => (
-                  <tr key={row.id}>
-                    <th scope="row" style={tdHeaderStyle}>
-                      <div style={cellMainStyle}>
-                        <strong>{row.nomeIntervento}</strong>
-                        <span style={{ ...statusBadgeStyle, ...statusStyle(row.stato) }}>{row.stato}</span>
-                      </div>
-                      <div style={cellSubStyle}>{row.cup ? `CUP ${row.cup}` : 'CUP non disponibile'}</div>
-                      <div style={cellSubStyle}>{`Creato il ${row.dataCreazione}`}</div>
-                    </th>
-                    <td style={tdStyle}>
-                      <div style={analysisWrapStyle}>
-                        {(['CBA', 'RISK'] as const).map((tag) => (
-                          <span key={tag} style={{ ...analysisBadgeStyle, ...analysisStyle(tag, row.analisiDisponibili.includes(tag)) }}>
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td style={tdStyle}>
-                      <div style={detailsGridStyle}>
-                        <span>{`${row.proprietario} - ${row.settore}`}</span>
-                        <span>{row.tipoIntervento}</span>
-                        <span>{`Inizio: ${row.inizioLavori} - Durata: ${row.durata}`}</span>
-                        <span>{`Stato progetto: ${row.statoProgetto}`}</span>
-                      </div>
-                    </td>
-                    <td style={tdStyle}>
-                      <div style={actionsWrapStyle}>
-                        <button
-                          type="button"
-                          style={actionButtonStyle}
-                          onClick={() => handleOpenProject(row)}
-                          aria-label={
-                            row.stato === 'Completato'
-                              ? `Apri dettaglio ${row.nomeIntervento}`
-                              : `Concludi Docfap ${row.nomeIntervento}`
-                          }
-                        >
-                          <IconArrowRight />
-                        </button>
-                        {row.stato === 'Bozza' && (
-                          <button type="button" style={dangerButtonStyle} aria-label={`Elimina bozza ${row.nomeIntervento}`}>
-                            <IconTrash />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        </section>
 
-          <nav role="navigation" aria-label="Paginazione risultati" style={paginationStyle}>
+        <div style={cardsListStyle}>
+          {paginated.length === 0 ? (
+            <div style={emptyStateStyle}>Nessun Docfap trovato con i filtri selezionati.</div>
+          ) : (
+            paginated.map((row) => (
+              <DocfapProjectCard
+                key={row.id}
+                row={row}
+                onOpen={() => handleOpenProject(row)}
+                onDuplicate={() => handleDuplicate(row)}
+                onShare={() => handleShare(row)}
+                onDelete={() => handleDelete(row)}
+              />
+            ))
+          )}
+        </div>
+
+        <nav role="navigation" aria-label="Paginazione risultati" style={paginationStyle}>
             <div style={paginationMetaStyle}>
               <label htmlFor="docfap-page-size">Record per pagina</label>
               <select
@@ -598,7 +782,6 @@ export function DocfapList() {
               </button>
             </div>
           </nav>
-        </section>
       </main>
     </>
   )
@@ -821,18 +1004,18 @@ const featuredFactValueStyle: CSSProperties = {
 
 const detailButtonStyle: CSSProperties = {
   marginTop: 'auto',
-  minHeight: '38px',
-  border: '1px solid var(--color-border-secondary-light)',
+  minHeight: '44px',
+  border: '1px solid var(--color-background-primary)',
   borderRadius: 'var(--radius-smooth)',
-  background: 'var(--color-background-inverse)',
-  color: 'var(--color-text-secondary)',
-  fontWeight: 700,
+  background: 'var(--color-background-primary)',
+  color: 'var(--color-text-inverse)',
+  fontWeight: 600,
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'space-between',
   gap: 'var(--spacing-inline-xxs, 4px)',
   cursor: 'pointer',
-  padding: '0 12px',
+  padding: '0 16px',
   textDecoration: 'none',
 }
 
@@ -927,50 +1110,193 @@ const inputStyle: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 
-const tableWrapStyle: CSSProperties = {
-  overflowX: 'auto',
+const cardsListStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--spacing-stack-s)',
+}
+
+const emptyStateStyle: CSSProperties = {
   border: '1px solid var(--color-border-secondary-light)',
   borderRadius: 'var(--radius-smooth)',
+  background: 'var(--color-background-inverse)',
+  padding: '48px 20px',
+  textAlign: 'center',
+  color: 'var(--color-text-primary-light)',
+  fontSize: 'var(--type-body-s-size, 15px)',
 }
 
-const tableStyle: CSSProperties = {
-  width: '100%',
-  borderCollapse: 'collapse',
-  minWidth: '940px',
+const noticeStyle: CSSProperties = {
+  border: '1px solid var(--color-border-primary-light)',
+  borderRadius: 'var(--radius-smooth)',
+  background: 'var(--color-background-primary-lighter)',
+  color: 'var(--color-text-secondary)',
+  padding: '10px 16px',
+  fontSize: 'var(--type-body-s-size, 14px)',
+  fontWeight: 600,
 }
 
-const thStyle: CSSProperties = {
-  textAlign: 'left',
-  padding: 'var(--spacing-inset-s)',
+const listCardStyle: CSSProperties = {
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
+  background: 'var(--color-background-inverse)',
+  overflow: 'hidden',
+}
+
+const listCardHeaderStyle: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'stretch',
   borderBottom: '1px solid var(--color-border-secondary-light)',
-  background: 'var(--color-background-secondary-lightest)',
-  color: 'var(--color-text-primary)',
 }
 
-const tdHeaderStyle: CSSProperties = {
-  textAlign: 'left',
-  verticalAlign: 'top',
-  padding: 'var(--spacing-inset-s)',
-  borderBottom: '1px solid var(--color-border-secondary-light)',
+const listCardTitleColStyle: CSSProperties = {
+  flex: '1 1 320px',
+  minWidth: 0,
+  padding: '20px',
 }
 
-const tdStyle: CSSProperties = {
-  verticalAlign: 'top',
-  padding: 'var(--spacing-inset-s)',
-  borderBottom: '1px solid var(--color-border-secondary-light)',
-}
-
-const cellMainStyle: CSSProperties = {
+const listCardTitleRowStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: 'var(--spacing-inline-xs)',
+  gap: '12px',
   flexWrap: 'wrap',
 }
 
-const cellSubStyle: CSSProperties = {
+const listCardTitleStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '19px',
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+}
+
+const listCardCupStyle: CSSProperties = {
+  margin: '12px 0 0',
+  fontSize: 'var(--type-body-m-size, 15px)',
   color: 'var(--color-text-primary-light)',
-  fontSize: 'var(--type-body-xs-size, 14px)',
-  marginTop: '2px',
+}
+
+const listCardAnalysisColStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  justifyContent: 'center',
+  gap: '8px',
+  padding: '20px',
+  borderLeft: '1px solid var(--color-border-secondary-light)',
+}
+
+const analysisDoneStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '4px',
+  fontSize: 'var(--type-body-xs-size, 13px)',
+  fontWeight: 600,
+  color: 'var(--color-text-success)',
+}
+
+const analysisPendingStyle: CSSProperties = {
+  fontSize: 'var(--type-body-xs-size, 13px)',
+  color: 'var(--color-text-primary-light)',
+}
+
+const listCardAnalysisLabelStyle: CSSProperties = {
+  fontSize: 'var(--type-body-s-size, 14px)',
+  fontWeight: 600,
+  color: 'var(--color-text-primary)',
+}
+
+const listCardMenuColStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  padding: '14px',
+  borderLeft: '1px solid var(--color-border-secondary-light)',
+}
+
+const menuTriggerStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '28px',
+  height: '32px',
+  padding: 0,
+  border: 'none',
+  background: 'transparent',
+  color: 'var(--color-background-primary)',
+  cursor: 'pointer',
+}
+
+const menuDropdownStyle: CSSProperties = {
+  position: 'absolute',
+  top: 'calc(100% + 4px)',
+  right: 0,
+  zIndex: 10,
+  minWidth: '180px',
+  background: 'var(--color-background-inverse)',
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
+  boxShadow: '0 6px 20px rgba(14, 14, 16, 0.12)',
+  overflow: 'hidden',
+}
+
+const menuItemStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '10px',
+  width: '100%',
+  padding: '10px 14px',
+  border: 'none',
+  background: 'transparent',
+  color: 'var(--color-text-primary)',
+  fontSize: 'var(--type-body-s-size, 14px)',
+  textAlign: 'left',
+  cursor: 'pointer',
+}
+
+const menuItemDangerStyle: CSSProperties = {
+  color: 'var(--color-text-error)',
+  borderTop: '1px solid var(--color-border-secondary-light)',
+}
+
+const listCardFooterStyle: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'flex-end',
+  padding: '0 20px 18px',
+}
+
+const listCardExploreStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '8px',
+  minHeight: '44px',
+  padding: '0 20px',
+  border: '1px solid var(--color-background-primary)',
+  borderRadius: 'var(--radius-smooth)',
+  background: 'var(--color-background-primary)',
+  color: 'var(--color-text-inverse)',
+  fontWeight: 600,
+  fontSize: 'var(--type-body-s-size, 15px)',
+  cursor: 'pointer',
+}
+
+const listCardInfoGridStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+  gap: '24px 32px',
+  padding: '16px 20px',
+}
+
+const infoBlockLabelStyle: CSSProperties = {
+  margin: 0,
+  fontSize: 'var(--type-body-s-size, 14px)',
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+}
+
+const infoBlockValueStyle: CSSProperties = {
+  margin: '8px 0 0',
+  fontSize: 'var(--type-body-m-size, 15px)',
+  color: 'var(--color-text-primary)',
+  lineHeight: 1.35,
 }
 
 const analysisWrapStyle: CSSProperties = {
@@ -982,37 +1308,11 @@ const analysisWrapStyle: CSSProperties = {
 const analysisBadgeStyle: CSSProperties = {
   borderRadius: 'var(--radius-rounded)',
   padding: '2px var(--spacing-inset-xs)',
-  fontSize: 'var(--type-body-xs-size, 14px)',
+  fontSize: 'var(--type-body-xs-size, 13px)',
   fontWeight: 700,
-}
-
-const detailsGridStyle: CSSProperties = {
-  display: 'grid',
-  gap: 'var(--spacing-stack-xxs, 4px)',
-  color: 'var(--color-text-primary)',
-}
-
-const actionsWrapStyle: CSSProperties = {
-  display: 'flex',
-  gap: 'var(--spacing-inline-xs)',
-}
-
-const actionButtonStyle: CSSProperties = {
-  border: '1px solid var(--color-border-secondary-light)',
-  borderRadius: 'var(--radius-smooth)',
-  background: 'var(--color-background-inverse)',
-  color: 'var(--color-text-secondary)',
-  minWidth: '32px',
-  minHeight: '32px',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  cursor: 'pointer',
-}
-
-const dangerButtonStyle: CSSProperties = {
-  ...actionButtonStyle,
-  color: 'var(--color-text-error)',
+  // Stesso font dei badge di Valutazione (Tailwind font-mono → JetBrains Mono)
+  fontFamily: 'var(--font-family-0, "JetBrains Mono", ui-monospace, monospace)',
+  letterSpacing: '0.025em',
 }
 
 const paginationStyle: CSSProperties = {

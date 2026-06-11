@@ -40,6 +40,7 @@ import {
   ImpattDashboard,
   DocfapList,
   DocfapDetail,
+  DocfapMcaDetail,
   PianificazioneModule,
   DataRoomPage,
   RisorsePage,
@@ -78,7 +79,10 @@ export function AppRouter() {
           <Route path="/impatti" element={<Navigate to="/impatti/docfap" replace />} />
           <Route path="/impatti/dashboard" element={<PocPage><ImpattDashboard /></PocPage>} />
           <Route path="/impatti/docfap" element={<PocPage><DocfapList /></PocPage>} />
-          <Route path="/impatti/docfap/detail" element={<PocPage><DocfapDetail /></PocPage>} />
+          {/* Sintesi DOCFAP + dettaglio MCA: layout Tailwind del modulo /valutazioni → montati RAW
+              (fuori da PocPage, il cui reset border-radius:0 azzererebbe gli angoli Tailwind). */}
+          <Route path="/impatti/docfap/detail" element={<DocfapDetail />} />
+          <Route path="/impatti/docfap/mca/:option" element={<DocfapMcaDetail />} />
           <Route path="/impatti/pianificazione" element={<PocPage><PianificazioneModule /></PocPage>} />
           <Route path="/impatti/composing" element={<PocPage><ComposingPlaceholder /></PocPage>} />
           {/* La "Valutazione" della POC è sostituita dal modulo impatto di app/ */}
@@ -124,6 +128,7 @@ function ValutazioniListRoute() {
   return (
     <ValutazioniList
       onOpenProject={(id) => navigate(`/valutazioni/${id}`)}
+      onOpenAnalysis={(id, analysis) => navigate(`/valutazioni/${id}/${analysis.toLowerCase()}/results`)}
       onNewEvaluation={() => {
         setDraftProject(createEmptyDraftProject());
         navigate("/valutazioni/nuova/intro");

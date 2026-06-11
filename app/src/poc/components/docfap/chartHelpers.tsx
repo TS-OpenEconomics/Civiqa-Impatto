@@ -20,16 +20,31 @@ export const CHART_RECOMMENDED_COLOR = CHART_CHOSEN_COLOR
 export const CHART_DEFAULT_COLOR = CHART_UNCHOSEN_COLOR
 export const CHART_SERIES_COLORS = [CHART_CHOSEN_COLOR, CHART_UNCHOSEN_COLOR, '#b0b0b0', '#cfcfcf']
 
+// Palette per le alternative NON raccomandate: colori distinti (il viola del brand
+// resta riservato alla raccomandata). Indicizzata sul numero dell'alternativa
+// (A1→0, A2→1, …) così con 3+ opzioni ogni serie resta distinguibile e nei grafici
+// raggruppati/radar non si fondono in un'unica barra.
+const ALT_DISTINCT_PALETTE = ['#0891b2', '#ca8a04', '#be185d', '#0d9488', '#7c3aed', '#b45309']
+
+/** Indice 0-based ricavato dall'id alternativa (A1→0, A2→1, …); -1 se non parsabile. */
+function altIndex(altId: string): number {
+  const n = parseInt(altId.replace(/\D/g, ''), 10)
+  return Number.isFinite(n) && n > 0 ? n - 1 : -1
+}
+
 export function altBarColor(isRecommended: boolean): string {
   return isRecommended ? CHART_CHOSEN_COLOR : CHART_UNCHOSEN_COLOR
 }
 
-/** Colore di una serie/alternativa: scelta → viola scuro, baseline A0 → grigio
- *  chiaro, altre alternative → grigio neutro. */
+/** Colore di una serie/alternativa: scelta → viola del brand, baseline A0 → grigio
+ *  chiaro, altre alternative → un colore distinto dalla palette (così 3+ alternative
+ *  restano sempre distinguibili nei grafici). */
 export function altColor(altId: string, isRecommended: boolean): string {
   if (isRecommended) return CHART_CHOSEN_COLOR
   if (altId === 'A0') return CHART_BASELINE_COLOR
-  return CHART_UNCHOSEN_COLOR
+  const i = altIndex(altId)
+  if (i < 0) return CHART_UNCHOSEN_COLOR
+  return ALT_DISTINCT_PALETTE[i % ALT_DISTINCT_PALETTE.length]
 }
 
 /* ── Wrapper per un tab: grafico in alto, tabella sotto ── */
