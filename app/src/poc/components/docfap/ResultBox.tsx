@@ -60,13 +60,13 @@ export function ResultBox({
     <div className="overflow-hidden rounded-lg border border-ink-100 bg-white shadow-sm">
       {/* Header */}
       <div className="flex items-center gap-4 border-b border-ink-100 px-6 py-4">
-        {iconSrc ? (
-          <img src={iconSrc} alt="" aria-hidden="true" className="h-12 w-12 shrink-0 object-contain" />
-        ) : (
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-brand-violet/10 text-brand-violet">
-            {icon}
-          </span>
-        )}
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-brand-violet/10 text-brand-violet">
+          {iconSrc ? (
+            <img src={iconSrc} alt="" aria-hidden="true" className="h-8 w-8 object-contain" />
+          ) : (
+            icon
+          )}
+        </span>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[17px] font-bold leading-tight text-ink-900">{title}</span>

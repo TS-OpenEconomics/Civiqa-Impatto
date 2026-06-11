@@ -299,7 +299,7 @@ export function DocfapDetail() {
           <MetaField label="Tema del fabbisogno" value={temaLabel} />
           <MetaField label="Fabbisogno specifico" value={fabLabel} />
           <MetaField label="Alternativa raccomandata" value={recommendedLabel} highlight />
-          <MetaField label="Punteggio finale" value={finalScoreLabel} highlight />
+          <MetaField label="Punteggio finale" value={finalScoreLabel} highlight emphasis="score" />
         </div>
       </div>
 
@@ -434,7 +434,30 @@ export function DocfapDetail() {
   )
 }
 
-function MetaField({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
+function MetaField({
+  label,
+  value,
+  highlight = false,
+  emphasis,
+}: {
+  label: string
+  value: string
+  highlight?: boolean
+  emphasis?: 'score'
+}) {
+  if (emphasis === 'score') {
+    const [score, scale] = value.split(' / ')
+    return (
+      <div className="px-6 py-4">
+        <p className="text-[11px] font-bold uppercase tracking-wide text-brand-violet">{label}</p>
+        <p className="mt-1 flex items-baseline gap-1.5 font-mono text-brand-violet" title={value}>
+          <span className="text-[24px] font-extrabold leading-none">{score}</span>
+          {scale && <span className="text-[12px] font-bold text-brand-violet/70">/ {scale}</span>}
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="px-6 py-4">
       <p className="text-[11px] font-medium text-ink-400">{label}</p>
