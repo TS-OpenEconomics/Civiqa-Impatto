@@ -406,6 +406,9 @@ function DocfapInfoBlock({ label, value }: { label: string; value: string }) {
 function DocfapProjectCard({
   row,
   onOpen,
+  onDuplicate,
+  onShare,
+  onDelete,
 }: {
   row: DocfapRecord
   onOpen: () => void
@@ -1110,6 +1113,16 @@ const emptyStateStyle: CSSProperties = {
   fontSize: 'var(--type-body-s-size, 15px)',
 }
 
+const noticeStyle: CSSProperties = {
+  border: '1px solid var(--color-border-primary-light)',
+  borderRadius: 'var(--radius-smooth)',
+  background: 'var(--color-background-primary-lighter)',
+  color: 'var(--color-text-secondary)',
+  padding: '10px 16px',
+  fontSize: 'var(--type-body-s-size, 14px)',
+  fontWeight: 600,
+}
+
 const listCardStyle: CSSProperties = {
   border: '1px solid var(--color-border-secondary-light)',
   borderRadius: 'var(--radius-smooth)',
@@ -1152,18 +1165,12 @@ const listCardCupStyle: CSSProperties = {
 
 const listCardAnalysisColStyle: CSSProperties = {
   display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '12px',
-  padding: '20px',
-  borderLeft: '1px solid var(--color-border-secondary-light)',
-}
-
-const listCardAnalysisInnerStyle: CSSProperties = {
-  display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
+  justifyContent: 'center',
   gap: '8px',
+  padding: '20px',
+  borderLeft: '1px solid var(--color-border-secondary-light)',
 }
 
 const analysisDoneStyle: CSSProperties = {
@@ -1186,31 +1193,77 @@ const listCardAnalysisLabelStyle: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 
-const listCardExploreStyle: CSSProperties = {
+const listCardMenuColStyle: CSSProperties = {
   display: 'flex',
-  flexDirection: 'column',
+  alignItems: 'flex-start',
+  padding: '14px',
+  borderLeft: '1px solid var(--color-border-secondary-light)',
+}
+
+const menuTriggerStyle: CSSProperties = {
+  display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: '2px',
-  minWidth: '96px',
-  padding: '0 16px',
-  border: 'none',
-  borderLeft: '1px solid var(--color-border-secondary-light)',
+  width: '36px',
+  height: '36px',
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
   background: 'var(--color-background-inverse)',
-  color: 'var(--color-background-primary)',
+  color: 'var(--color-text-secondary)',
   cursor: 'pointer',
 }
 
-const listCardExploreLabelStyle: CSSProperties = {
-  fontSize: '11px',
-  fontWeight: 700,
-  textTransform: 'uppercase',
-  letterSpacing: '0.04em',
+const menuDropdownStyle: CSSProperties = {
+  position: 'absolute',
+  top: 'calc(100% + 4px)',
+  right: 0,
+  zIndex: 10,
+  minWidth: '180px',
+  background: 'var(--color-background-inverse)',
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 'var(--radius-smooth)',
+  boxShadow: '0 6px 20px rgba(14, 14, 16, 0.12)',
+  overflow: 'hidden',
 }
 
-const listCardExploreArrowStyle: CSSProperties = {
-  fontSize: '26px',
-  lineHeight: 1,
+const menuItemStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '10px',
+  width: '100%',
+  padding: '10px 14px',
+  border: 'none',
+  background: 'transparent',
+  color: 'var(--color-text-primary)',
+  fontSize: 'var(--type-body-s-size, 14px)',
+  textAlign: 'left',
+  cursor: 'pointer',
+}
+
+const menuItemDangerStyle: CSSProperties = {
+  color: 'var(--color-text-error)',
+  borderTop: '1px solid var(--color-border-secondary-light)',
+}
+
+const listCardFooterStyle: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'flex-end',
+  padding: '0 20px 18px',
+}
+
+const listCardExploreStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '8px',
+  minHeight: '44px',
+  padding: '0 20px',
+  border: '1px solid var(--color-background-primary)',
+  borderRadius: 'var(--radius-smooth)',
+  background: 'var(--color-background-primary)',
+  color: 'var(--color-text-inverse)',
+  fontWeight: 600,
+  fontSize: 'var(--type-body-s-size, 15px)',
+  cursor: 'pointer',
 }
 
 const listCardInfoGridStyle: CSSProperties = {
@@ -1245,24 +1298,6 @@ const analysisBadgeStyle: CSSProperties = {
   padding: '2px var(--spacing-inset-xs)',
   fontSize: 'var(--type-body-xs-size, 14px)',
   fontWeight: 700,
-}
-
-const actionButtonStyle: CSSProperties = {
-  border: '1px solid var(--color-border-secondary-light)',
-  borderRadius: 'var(--radius-smooth)',
-  background: 'var(--color-background-inverse)',
-  color: 'var(--color-text-secondary)',
-  minWidth: '32px',
-  minHeight: '32px',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  cursor: 'pointer',
-}
-
-const dangerButtonStyle: CSSProperties = {
-  ...actionButtonStyle,
-  color: 'var(--color-text-error)',
 }
 
 const paginationStyle: CSSProperties = {
