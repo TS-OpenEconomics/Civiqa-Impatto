@@ -132,7 +132,18 @@ export function DocfapDetail() {
   }
 
   function optionFor(score: ScoreComposito): ResultBoxOption {
-    return { id: score.alternativaId, label: labelOf(score.alternativaId), isRecommended: score.alternativaId === recommendedId }
+    const alt = state.alternative[score.alternativaId]
+    const details: ResultBoxOption['details'] = []
+    if (alt?.capex != null) details.push({ label: 'CAPEX', value: `€ ${formatEuro(alt.capex)}` })
+    if (alt?.opex != null) details.push({ label: 'OPEX', value: `€ ${formatEuro(alt.opex)}` })
+    if (alt?.durataStimata) details.push({ label: 'Durata', value: `${alt.durataStimata} mesi` })
+
+    return {
+      id: score.alternativaId,
+      label: labelOf(score.alternativaId),
+      isRecommended: score.alternativaId === recommendedId,
+      details,
+    }
   }
 
   // Navigazione "analisi completa" per dimensione e opzione.

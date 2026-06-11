@@ -1,10 +1,11 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { AlternativaId } from '../../types/docfap'
 
 export interface ResultBoxOption {
   id: AlternativaId
   label: string
   isRecommended: boolean
+  details?: Array<{ label: string; value: string }>
 }
 
 export interface ResultBoxMetric {
@@ -36,7 +37,7 @@ interface ResultBoxProps {
   footnote?: string
 }
 
-const OPTION_COL = 'min-w-[150px]'
+const OPTION_COL = 'min-w-[240px]'
 
 /**
  * Box di sintesi di una dimensione di analisi del DOCFAP, a tutta larghezza,
@@ -56,6 +57,8 @@ export function ResultBox({
   onCompare,
   footnote,
 }: ResultBoxProps) {
+  const [openOptionId, setOpenOptionId] = useState<AlternativaId | null>(null)
+
   return (
     <div className="overflow-hidden rounded-lg border border-ink-100 bg-white shadow-sm">
       {/* Header */}
@@ -88,21 +91,39 @@ export function ResultBox({
               </th>
               {options.map((opt) => (
                 <th key={opt.id} className={`${OPTION_COL} px-3 pb-3 align-bottom`}>
-                  <div className="flex flex-col items-end gap-1 text-right">
-                    <span className="flex items-center gap-1.5">
-                      <span className={`inline-flex h-5 items-center px-1.5 font-mono text-[10px] font-bold ${opt.isRecommended ? 'bg-brand-violet text-white' : 'bg-ink-100 text-ink-600'}`}>
-                        {opt.id}
-                      </span>
-                      {opt.isRecommended && (
-                        <span className="inline-flex items-center bg-green-600 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
-                          Racc.
-                        </span>
-                      )}
+                  <div className="flex items-center gap-2.5 text-left">
+                    <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center font-mono text-[13px] font-extrabold leading-none ${opt.isRecommended ? 'bg-brand-violet text-white' : 'bg-ink-100 text-ink-600'}`}>
+                      {opt.id}
                     </span>
-                    <span className="block max-w-[160px] truncate text-[12px] font-bold text-ink-900" title={opt.label}>
-                      {opt.label}
-                    </span>
-                  </div>
+                    <div className="flex min-w-0 flex-1 flex-col items-start">
+                      <div className="relative w-full">
+                        <button
+                          type="button"
+                          onClick={() => setOpenOptionId(openOptionId === opt.id ? null : opt.id)}
+                          className="block w-full whitespace-normal break-words text-left text-[12px] font-bold leading-snug text-ink-900 transition-colors hover:text-brand-violet focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-violet/30"
+                          title={opt.label}
+                        >
+                          {opt.label}
+                        </button>
+                        {openOptionId === opt.id && (
+                          <div className="absolute left-0 top-full z-20 mt-2 w-64 rounded border border-ink-100 bg-white p-3 text-left shadow-lg">
+                            <p className="font-mono text-[10px] font-bold text-brand-violet">{opt.id}</p>
+                            <p className="mt-1 text-[12px] font-bold leading-snug text-ink-900">{opt.label}</p>
+                            {opt.details && opt.details.length > 0 && (
+                              <dl className="mt-2 space-y-1 border-t border-ink-100 pt-2 text-[11px]">
+                                {opt.details.map((detail) => (
+                                  <div key={detail.label} className="flex justify-between gap-3">
+                                    <dt className="text-ink-400">{detail.label}</dt>
+                                    <dd className="font-mono font-semibold text-ink-700">{detail.value}</dd>
+                                  </div>
+                                ))}
+                              </dl>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                        </div>
                 </th>
               ))}
             </tr>
@@ -148,27 +169,27 @@ export function ResultBox({
 
       {/* Azioni */}
       <div className="flex flex-col gap-2 border-t border-ink-100 bg-ink-100/20 px-6 py-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[12px] font-medium text-ink-500">{singleActionLabel}:</span>
+        <div className="flex flex-wrap items-start gap-2">
+          <span className="shrink-0 pt-2 text-[12px] font-medium text-ink-500">{singleActionLabel}:</span>
           {options.map((opt) => (
             <button
               key={opt.id}
               type="button"
               onClick={() => onOpenSingle(opt.id)}
               title={opt.label}
-              className="inline-flex items-center gap-1.5 rounded border border-ink-200 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-ink-700 transition-colors hover:border-brand-violet hover:text-brand-violet"
+              className="group inline-flex min-h-9 items-center gap-2 rounded border border-ink-200 bg-white px-2.5 py-1.5 text-left text-[12px] font-semibold leading-snug text-ink-700 transition-colors hover:border-brand-violet hover:text-brand-violet"
             >
-              <span className={`inline-flex h-4 items-center px-1 font-mono text-[10px] font-bold ${opt.isRecommended ? 'bg-brand-violet text-white' : 'bg-ink-100 text-ink-500'}`}>
+              <span className={`inline-flex h-6 w-6 shrink-0 items-center justify-center font-mono text-[10px] font-bold leading-none ${opt.isRecommended ? 'bg-brand-violet text-white' : 'bg-ink-100 text-ink-500'}`}>
                 {opt.id}
               </span>
-              <span className="max-w-[150px] truncate">{opt.label}</span>
-              <span aria-hidden="true">→</span>
+              <span className="whitespace-nowrap">{opt.label}</span>
+              <span className="ml-auto shrink-0 text-[16px] font-extrabold leading-none text-ink-700 transition-colors group-hover:text-brand-violet" aria-hidden="true">→</span>
             </button>
           ))}
           <button
             type="button"
             onClick={onCompare}
-            className="ml-auto inline-flex items-center gap-1.5 rounded bg-brand-violet px-4 py-1.5 text-[12px] font-semibold text-white transition-colors hover:bg-brand-violet-dark"
+            className="ml-auto inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded bg-brand-violet px-4 py-1.5 text-[12px] font-semibold text-white transition-colors hover:bg-brand-violet-dark"
           >
             <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4" />

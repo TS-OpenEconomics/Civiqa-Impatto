@@ -40,14 +40,15 @@ function calcTIR(capex: number, opex: number): number {
   return Math.round(((lo + hi) / 2) * 1000) / 10
 }
 
-function calcEconPOC(capex: number): {
+function calcEconPOC(capex: number, opex = 0): {
   pil: number; produzione: number; occupati: number; redditi: number
 } {
-  const m = capex / 1_000_000
+  const activationBase = capex > 0 ? capex : opex
+  const m = activationBase / 1_000_000
   return {
     pil: Math.round(m * 1.42 * 10) / 10,
     produzione: Math.round(m * 3.44 * 10) / 10,
-    occupati: Math.round((capex / 100_000) * 0.78),
+    occupati: Math.round((activationBase / 100_000) * 0.78),
     redditi: Math.round(m * 1.38 * 10) / 10,
   }
 }
@@ -96,7 +97,11 @@ export function runPOCAnalysis(): ScoreComposito[] {
   const van = { A1: calcVAN(ALT.A1.capex, ALT.A1.opex), A2: calcVAN(ALT.A2.capex, ALT.A2.opex), A3: calcVAN(ALT.A3.capex, ALT.A3.opex) }
   const bcr = { A1: calcBCR(ALT.A1.capex, ALT.A1.opex), A2: calcBCR(ALT.A2.capex, ALT.A2.opex), A3: calcBCR(ALT.A3.capex, ALT.A3.opex) }
   const tir = { A1: calcTIR(ALT.A1.capex, ALT.A1.opex), A2: calcTIR(ALT.A2.capex, ALT.A2.opex), A3: calcTIR(ALT.A3.capex, ALT.A3.opex) }
-  const eco = { A1: calcEconPOC(ALT.A1.capex), A2: calcEconPOC(ALT.A2.capex), A3: calcEconPOC(ALT.A3.capex) }
+  const eco = {
+    A1: calcEconPOC(ALT.A1.capex, ALT.A1.opex),
+    A2: calcEconPOC(ALT.A2.capex, ALT.A2.opex),
+    A3: calcEconPOC(ALT.A3.capex, ALT.A3.opex),
+  }
   const sens = {
     A1: meanArr(SENS.A1),
     A2: meanArr(SENS.A2),
