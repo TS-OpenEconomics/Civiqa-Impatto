@@ -1,4 +1,5 @@
 import { buildBeneficiCategorie, COLORE_VALORE_RESIDUO } from "./ecbaBenefits";
+import { buildBeneficiKpi } from "./cba/kpiBenefits";
 
 function npv(rate, flows) {
   return flows.reduce((sum, cf, t) => sum + cf / Math.pow(1 + rate / 100, t), 0);
@@ -33,9 +34,18 @@ export function computeEcba(project, eiaResults, setup) {
   const sector = conf.settore;
 
   // ── Benefici: categorie economiche monetizzate (esternalità / outcome) ──────
-  // Il flusso di benefici annuo è la somma delle categorie del catalogo CBA,
-  // disaccoppiato dalle componenti dell'analisi di impatto (GVA/gettito/redditi).
-  const categorieBase = buildBeneficiCategorie({ capex, sector });
+  // Sorgente primaria: i KPI specifici della categoria d'intervento (Layer 3 →
+  // Layer 2). Ogni KPI è una voce di beneficio, valutato dalla sua formula.
+  // Se la categoria non è risolvibile (nessun cat_code / label mappabile),
+  // si ricade sul catalogo placeholder parametrizzato sul CAPEX. Stessa forma
+  // di output in entrambi i casi: i consumer a valle restano invariati.
+  const kpiOverrides = setup?.kpiOverrides;
+  const categorieBase =
+    buildBeneficiKpi({
+      catCode: conf.cat_code,
+      categoriaInterventoLabel: conf.categoria_intervento,
+      overrides: kpiOverrides,
+    }) ?? buildBeneficiCategorie({ capex, sector });
   const annualBenefits = categorieBase.reduce((s, c) => s + c.valore_annuo, 0);
 
   // Fattore di annualità (attualizza un flusso costante su tutto l'orizzonte).

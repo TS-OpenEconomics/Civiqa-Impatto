@@ -365,17 +365,22 @@ export function DocfapDetail() {
         </div>
       )}
 
-      {/* Dati della configurazione (dettaglio) */}
+      {/* Dettagli del progetto */}
       <div className="mt-6 overflow-hidden border border-ink-100 bg-white">
         <div className="border-b border-ink-100 bg-white px-6 py-3">
-          <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Dati della configurazione</p>
+          <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Dettagli del progetto</p>
         </div>
-        <div className="grid grid-cols-1 gap-x-6 gap-y-4 bg-white px-6 py-4 sm:grid-cols-2 lg:grid-cols-3">
-          <ConfigItem label="Nominativo RUP" value={state.rup.nome || '—'} />
-          <ConfigItem label="Fonte finanziamento" value={state.intervento.fonteFinanziamento || '—'} />
+        <div className="grid grid-cols-1 gap-x-6 gap-y-4 bg-white px-6 py-4 sm:grid-cols-3">
+          <ConfigItem label="RUP" value={state.rup.nome || '—'} />
+          <ConfigItem label="Fonte di finanziamento" value={state.intervento.fonteFinanziamento || '—'} />
           <ConfigItem label="Urgenza" value={state.urgenza || '—'} />
-          <ConfigItem label="Scenario zero" value={state.scenarioZeroNarrative || '—'} />
         </div>
+        {state.scenarioZeroNarrative && (
+          <div className="border-t border-ink-100 px-6 py-4">
+            <p className="text-[11px] font-medium text-ink-400">Scenario di base — cosa accadrebbe senza l'intervento</p>
+            <p className="mt-1 max-w-3xl text-[13px] leading-relaxed text-ink-700">{state.scenarioZeroNarrative}</p>
+          </div>
+        )}
       </div>
 
       {/* Box analisi */}

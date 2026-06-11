@@ -92,7 +92,7 @@ const DOCFAP_ENTE: DocfapRecord[] = [
     inizioLavori: '09/2026',
     durata: '24 mesi',
     statoProgetto: 'Progettazione definitiva',
-    analisiDisponibili: ['RISK'],
+    analisiDisponibili: [],
     hasScore: false,
   },
   {
@@ -146,7 +146,7 @@ const DOCFAP_TERRITORIO: DocfapRecord[] = [
     inizioLavori: '01/2027',
     durata: '16 mesi',
     statoProgetto: 'Valutazione alternativa',
-    analisiDisponibili: ['RISK'],
+    analisiDisponibili: [],
     hasScore: false,
   },
   {
@@ -316,7 +316,12 @@ function statusStyle(status: DocfapStatus): CSSProperties {
   if (status === 'In corso') {
     return { background: 'var(--color-background-warning-lighter)', color: 'var(--color-text-warning)' }
   }
-  return { background: 'var(--color-background-secondary-lightest)', color: 'var(--color-text-primary-light)' }
+  // Bozza: stesso stile del badge "Bozza" di Valutazione (contorno viola, sfondo trasparente)
+  return {
+    background: 'transparent',
+    color: 'var(--color-background-primary)',
+    border: '1px solid var(--color-background-primary)',
+  }
 }
 
 // Colori ripresi dai badge analisi di Valutazione (tailwind: badge.eia/ecba/esg,
@@ -386,6 +391,13 @@ function FeaturedDocfapCard({ item, onOpen }: { item: DocfapRecord; onOpen: () =
           </span>
         ))}
       </div>
+      {item.stato === 'Completato' ? (
+        <span style={analysisDoneStyle}>
+          <IconCheck /> Completate
+        </span>
+      ) : (
+        <span style={analysisPendingStyle}>In lavorazione</span>
+      )}
 
       <button type="button" style={detailButtonStyle} onClick={onOpen}>
         {item.stato === 'Completato' ? 'Vai al dettaglio' : 'Concludi Docfap'} <IconArrowRight />
@@ -1204,12 +1216,12 @@ const menuTriggerStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  width: '36px',
-  height: '36px',
-  border: '1px solid var(--color-border-secondary-light)',
-  borderRadius: 'var(--radius-smooth)',
-  background: 'var(--color-background-inverse)',
-  color: 'var(--color-text-secondary)',
+  width: '28px',
+  height: '32px',
+  padding: 0,
+  border: 'none',
+  background: 'transparent',
+  color: 'var(--color-background-primary)',
   cursor: 'pointer',
 }
 
@@ -1296,8 +1308,11 @@ const analysisWrapStyle: CSSProperties = {
 const analysisBadgeStyle: CSSProperties = {
   borderRadius: 'var(--radius-rounded)',
   padding: '2px var(--spacing-inset-xs)',
-  fontSize: 'var(--type-body-xs-size, 14px)',
+  fontSize: 'var(--type-body-xs-size, 13px)',
   fontWeight: 700,
+  // Stesso font dei badge di Valutazione (Tailwind font-mono → JetBrains Mono)
+  fontFamily: 'var(--font-family-0, "JetBrains Mono", ui-monospace, monospace)',
+  letterSpacing: '0.025em',
 }
 
 const paginationStyle: CSSProperties = {

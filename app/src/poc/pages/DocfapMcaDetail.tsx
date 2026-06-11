@@ -118,22 +118,22 @@ export function DocfapMcaDetail() {
       </div>
 
       {/* Tabella criteri */}
-      <div className="mt-8 overflow-hidden rounded border border-ink-100 bg-white">
-        <div className="border-b border-ink-100 px-5 py-3">
+      <div className="mt-8 max-w-3xl overflow-hidden rounded border border-ink-100 bg-white">
+        <div className="border-b border-ink-100 px-4 py-2.5">
           <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Criteri qualitativi</p>
         </div>
         {!loaded ? (
-          <p className="px-5 py-10 text-center text-[13px] text-ink-400">Caricamento criteri MCA…</p>
+          <p className="px-4 py-8 text-center text-[13px] text-ink-400">Caricamento criteri MCA…</p>
         ) : questions.length === 0 ? (
-          <p className="px-5 py-10 text-center text-[13px] text-ink-400">
+          <p className="px-4 py-8 text-center text-[13px] text-ink-400">
             Nessun criterio qualitativo disponibile per il cluster selezionato.
           </p>
         ) : (
           <table className="w-full">
             <thead>
               <tr className="border-b border-ink-100 bg-ink-100/30">
-                <th className="px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-ink-500">Criterio</th>
-                <th className="px-5 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wide text-ink-500">Valutazione</th>
+                <th className="px-4 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-ink-500">Criterio</th>
+                <th className="w-28 px-4 py-2 text-right text-[10px] font-semibold uppercase tracking-wide text-ink-500">Valutazione</th>
               </tr>
             </thead>
             <tbody>
@@ -141,9 +141,9 @@ export function DocfapMcaDetail() {
                 const livello = answers[q.qCode]
                 return (
                   <tr key={q.qCode} className="border-b border-ink-100 last:border-0">
-                    <td className="px-5 py-3 text-[13px] text-ink-800">{q.text}</td>
-                    <td className="px-5 py-3 text-right">
-                      <span className={`inline-flex items-center px-2.5 py-1 text-[12px] font-semibold ${livello ? SCALE_CLS[livello] ?? 'bg-ink-100 text-ink-700' : 'bg-ink-100 text-ink-400'}`}>
+                    <td className="px-4 py-1.5 text-[12px] leading-snug text-ink-800">{q.text}</td>
+                    <td className="w-28 px-4 py-1.5 text-right">
+                      <span className={`inline-flex items-center px-2 py-0.5 text-[11px] font-semibold ${livello ? SCALE_CLS[livello] ?? 'bg-ink-100 text-ink-700' : 'bg-ink-100 text-ink-400'}`}>
                         {livello ? SCALE_LABELS[livello] ?? livello : '—'}
                       </span>
                     </td>

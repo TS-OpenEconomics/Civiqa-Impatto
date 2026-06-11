@@ -4,6 +4,7 @@ import { findNearest, geocodeAddress } from "../lib/geocoding";
 import { mopData, interventionTypes } from "../poc/data/mockMOPTaxonomy";
 import { INTERVENTION_CATEGORIES } from "../poc/data/poc_docfap/intervention_categories_layer3";
 import { getCostiByCategory, calcolaCostoTipologia } from "../poc/data/poc_docfap/costi_per_tipologia";
+import { buildKpiTemplate } from "../lib/cba/kpiBenefits";
 
 // La classificazione dell'intervento usa la tassonomia MOP reale (settori,
 // sotto-settori e categorie di intervento) definita in
@@ -493,9 +494,9 @@ const POC_KPI_TEMPLATE = [
   },
 ];
 
-function buildDefaultKpi(capex, opexYears, cantiereYears) {
+function buildDefaultKpi(template, capex, opexYears, cantiereYears) {
   const kpi = {};
-  POC_KPI_TEMPLATE.forEach(({ yearSource, kpis }) => {
+  template.forEach(({ yearSource, kpis }) => {
     const years = yearSource === "cantiere" ? cantiereYears : opexYears;
     kpis.forEach(({ id, estimateFn }) => {
       const stima = String(estimateFn({ capex }));
@@ -1371,8 +1372,8 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
       const endYear = prev.data_fine ? new Date(prev.data_fine + "T00:00:00").getFullYear() + 1 : null;
       const years = endYear ? Array.from({ length: Number(prev.vita_utile) || 20 }, (_, i) => String(endYear + i)) : [];
       const cantiereYrs = yearRangeFromDates(prev.data_inizio, prev.data_fine);
-      const kpi = buildDefaultKpi(capex, years, cantiereYrs);
-      POC_KPI_TEMPLATE.forEach(({ yearSource, kpis }) => {
+      const kpi = buildDefaultKpi(beneficiTemplates, capex, years, cantiereYrs);
+      beneficiTemplates.forEach(({ yearSource, kpis }) => {
         const activeYrs = yearSource === "cantiere" ? cantiereYrs : years;
         kpis.filter((k) => k.tipo === "input").forEach((k) => {
           const profiloVal = getProfiloInputValue(k.profiloKey, tmpl, prev.profilo_dati);
@@ -1390,13 +1391,13 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
     setBeneficiRevealLevel(0);
     setDraft((prev) => {
       const cleared = {};
-      POC_KPI_TEMPLATE.forEach(({ kpis }) => kpis.forEach(({ id }) => { cleared[id] = { stima: "", anni: {} }; }));
+      beneficiTemplates.forEach(({ kpis }) => kpis.forEach(({ id }) => { cleared[id] = { stima: "", anni: {} }; }));
       return { ...prev, benefici_kpi: cleared };
     });
   }
 
   function getActiveYearsForKpi(kpiId) {
-    const group = POC_KPI_TEMPLATE.find(({ kpis }) => kpis.some((k) => k.id === kpiId));
+    const group = beneficiTemplates.find(({ kpis }) => kpis.some((k) => k.id === kpiId));
     return group?.yearSource === "cantiere" ? projectYears : opexYears;
   }
 
@@ -1601,7 +1602,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
         const endYear = prev.data_fine ? new Date(prev.data_fine + "T00:00:00").getFullYear() + 1 : null;
         const years = endYear ? Array.from({ length: Number(prev.vita_utile) || 20 }, (_, i) => String(endYear + i)) : [];
         const cantiereYrs = yearRangeFromDates(prev.data_inizio, prev.data_fine);
-        return { ...prev, benefici_kpi: buildDefaultKpi(capex, years, cantiereYrs) };
+        return { ...prev, benefici_kpi: buildDefaultKpi(beneficiTemplates, capex, years, cantiereYrs) };
       });
     }
     setStepIdx((value) => value + 1);
@@ -1724,11 +1725,17 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
   }, [opexRevealLevel]);
   const opexTotale = useMemo(() => opexAnnualAmount * Number(draft.vita_utile), [opexAnnualAmount, draft.vita_utile]);
 
-  const beneficiTemplates = POC_KPI_TEMPLATE;
+  // I criteri di beneficio sono i KPI reali della categoria d'intervento
+  // (Layer 3 → Layer 2). Se la categoria non è risolvibile, si ricade sul
+  // template POC mock. Cambia con la categoria selezionata.
+  const beneficiTemplates = useMemo(
+    () => buildKpiTemplate({ categoriaInterventoLabel: draft.categoria_intervento }) ?? POC_KPI_TEMPLATE,
+    [draft.categoria_intervento],
+  );
   const beneficiFactorTotal = beneficiTemplates.length;
   const beneficiConfiguredCount = Math.min(beneficiRevealLevel, beneficiFactorTotal);
   const beneficiGroupStats = useMemo(() => {
-    return POC_KPI_TEMPLATE.map(({ group, esternalita, kpis, yearSource }) => {
+    return beneficiTemplates.map(({ group, esternalita, kpis, yearSource }) => {
       const activeYears = yearSource === "cantiere" ? projectYears : opexYears;
       const filled = kpis.filter(({ id }) => {
         const kpiData = draft.benefici_kpi?.[id];
@@ -1738,7 +1745,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
       }).length;
       return { group, esternalita, filled, total: kpis.length };
     });
-  }, [draft.benefici_kpi, opexYears, projectYears]);
+  }, [beneficiTemplates, draft.benefici_kpi, opexYears, projectYears]);
 
   const canProceed = (() => {
     switch (step.id) {

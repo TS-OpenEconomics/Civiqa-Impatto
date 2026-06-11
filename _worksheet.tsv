@@ -1,0 +1,537 @@
+DESC	CODE	TAB	VAL	N	METODO	CATEGORIE	CUR_LABEL	EX_KPI
+_agglom	FP-MOB-051	FP	0.05	2	CBA-Mkt	Economico – Agglomerazione	CUR=Elasticità produttività/accessibilità (agglomerazione Venables)	EX=B60e — Benefici agglomerazione: incremento produttività da maggiore accessibilità
+aliquota	FP-IST-148	FP	0.28	2	CBA-Mkt	Fiscale – Gettito addizionale ; Fiscale – Gettito aggiuntivo	CUR=aliquota	EX=Gettito IRPEF+contributi da nuovi occupati
+benchmark	FP-IST-119	FP	50	1	CBA-Mkt	Accessibilità – Attrattività modale	CUR=benchmark	EX=B71c — Incremento utenti ferroviari da stazione più accessibile e attrattiva
+C_auto	MF-MOB-010	MF	0.25	1	CBA-Mkt	Economico – Risparmio utenti	CUR=Costo operativo per km — auto privata	EX=B54e — Risparmio costi trasporto per utenti (vs auto o TPL)
+C_CCGT	MF-ENE-005	MF	80	1	CBA-Mkt	Energia – Efficienza termoelettrica	CUR=Costo marginale produzione da ciclo combinato gas	EX=Risparmio costi da upgrade tecnologico (gas → CCGT ad alta efficienza)
+C_CHP	MF-ENE-006	MF	11	1	CBA-Mkt	Energia – Risparmio bollette	CUR=Costo del calore da teleriscaldamento — CHP	EX=Risparmio bollette da distribuzione teleriscaldamento efficiente
+C_fermo	MF-LAV-003	MF	5000	1	CBA-Mkt	Produttività – Continuità produttiva	CUR=Risparmio sussidi pubblici per reinserito lavorativo	EX=Risparmio da riduzione fermi produttivi per carenza idrica
+C_gg	MF-LAV-003	MF	5000	1	CBA-Mkt	Continuità – Didattica	CUR=Risparmio sussidi pubblici per reinserito lavorativo	EX=Risparmio da continuità didattica senza interruzioni per inagibilità
+C_idrovia	MF-AMB-005	MF	0.025	1	CBA-Mkt	Logistica – Risparmio idrovia	CUR=Costo esterno per km percorso — PM e NOx veicoli	EX=B65a — Risparmio costi trasporto merci idrovia vs strada
+C_risparmio	MF-AMB-004	MF	15000	1	CBA-Mkt	Governance – Decisioni informate	CUR=Costo esterno per tonnellata di NOx emesso	EX=B89c — Risparmio da migliore pianificazione territoriale con dati ambientali
+compost	FP-AMB-055	FP	0.55	1	CBA-Mkt	Circolare – Compost valore agronomico	CUR=compost	EX=Risparmio fertilizzanti da compost prodotto da FORSU
+eff_elettrica	FP-ENE-003	FP	0.35	1	CBA-Mkt	Resilienza – Autoconsumo locale	CUR=Efficienza elettrica impianto CHP	EX=Riduzione dipendenza da rete: risparmio da autoconsumo energia CHP
+gestione	FP-IST-163	FP	50	1	CBA-Mkt	Ambiente – Gestione rifiuti funerari	CUR=gestione	EX=Risparmio da corretta gestione rifiuti da attività funeraria
+GG	FP-EDI-029	FP	30	1	CBA-Mkt	Continuità – Didattica	CUR=Superficie per addetto area industriale — infrastrutture	EX=Risparmio da continuità didattica senza interruzioni per inagibilità
+gg_fermo_rid	FP-IST-005	FP	3	1	CBA-Mkt	Produttività – Continuità produttiva	CUR=Standard ICOM superficie museo per visitatore	EX=Risparmio da riduzione fermi produttivi per carenza idrica
+Gini_rid	FP-IST-040	FP	0.05	1	CBA-Mkt	Equità – Riduzione disuguaglianza	CUR=QALY da reinserimento lavorativo vs disoccupazione	EX=TFP da ricerca sulle relazioni sociali: riduzione costi da disuguaglianza
+GJ_per_ab	FP-ENE-004	FP	50	1	CBA-Mkt	Energia – Risparmio bollette	CUR=Consumo termico medio per abitazione	EX=Risparmio bollette da distribuzione teleriscaldamento efficiente
+km_aut_anno	FP-MOB-043	FP	30000	1	CBA-Mkt	Logistica – VOC merci	CUR=km medi percorso auto su autostrada	EX=B56a — Risparmio costi operativi trasporto merci su autostrada
+LCOE_FER	MF-ENE-003	MF	55	1	CBA-Mkt	Energia – Risparmio bollette	CUR=Costo livellato energia rinnovabile — LCOE FER	EX=Risparmio per utenti da energia FER vs costo mercato
+m3_ha_anno	FP-IST-018	FP	2.5	1	CBA-Mkt	Legno – Produzione sostenibile	CUR=ROI scuola materna 3-6 anni (Heckman)	EX=B82c — VA da produzione legname (timber e biomassa) da foresta gestita
+margine	FP-TUR-048	FP	0.42	1	CBA-Mkt	Economico – RevPAR	CUR=margine	EX=VA da strutture complementari (B&B, appartamenti)
+margine	FP-TUR-050	FP	0.38	1	CBA-Mkt	Economico – RevPAR hotel	CUR=margine	EX=VA alberghiero da strutture classificate 1-5 stelle
+mq_risparmiati	FP-IST-005	FP	3	1	CBA-Mkt	Ambiente – Suolo	CUR=Standard ICOM superficie museo per visitatore	EX=B8c — Risparmio suolo da cimiterizzazione verticale o crematorio
+n_gg	FP-TUR-019	FP	220	1	CBA-Mkt	Modal shift – TPL	CUR=Spesa media diportista/nautica per giorno	EX=B58c — Incentivo all\'uso del TPL da park & ride: risparmio costi e CO2
+N_int_rid	FP-IST-005	FP	3	1	CBA-Mkt	Resilienza – Continuità servizi	CUR=Standard ICOM superficie museo per visitatore	EX=Risparmio VOLL da riduzione downtime servizi PA
+N_ore	FP-EDI-034	FP	4	1	CBA-Mkt	Sicurezza – Approvvigionamento	CUR=Superficie media data center per rack	EX=Riduzione costi da black-out nazionali evitati con rete AT robusta
+netto	MF-IST-133	MF	60	1	CBA-Mkt	Circolare – MPS recuperate	CUR=netto	EX=Valore materiale recuperato in impianti selezione/preparazione MPS
+netto	FP-AMB-056	FP	0.35	1	CBA-Mkt	Energia – Biometano DA	CUR=netto	EX=Produzione biometano da digestione anaerobica FORSU
+occ	FP-LAV-012	FP	0.35	1	CBA-Mkt	Economico – RevPAR	CUR=Deadweight occupazione — incentivi al lavoro	EX=VA da strutture complementari (B&B, appartamenti)
+ore	FP-TUR-002	FP	2	1	CBA-Mkt	Resilienza – Continuità servizi	CUR=Standard mq area archeologica per visitatore annuo	EX=Risparmio VOLL da riduzione downtime servizi PA
+Ore	FP-IST-005	FP	3	1	CBA-Mkt	Continuità – CWSI	CUR=Standard ICOM superficie museo per visitatore	EX=B93c — Risparmio costi da riduzione interruzioni idriche (CWSI)
+Ore	FP-EDI-034	FP	4	1	CBA-Mkt	Continuità – Interruzioni evitate	CUR=Superficie media data center per rack	EX=B98a — Risparmio CWSI da interruzioni idriche ridotte con serbatoi di regolazione
+Ore	FP-TUR-002	FP	2	2	CBA-Mkt	Resilienza – VOLL ; Resilienza – VOLL interruzioni	CUR=Standard mq area archeologica per visitatore annuo	EX=Riduzione costi da interruzioni: Value of Lost Load
+p	FP-AGR-003	FP	0.25	1	CBA-Mkt	Reinserimento – Riduzione recidiva	CUR=Quota SAU con colture permanenti	EX=Risparmio costi giustizia/detenzione da riduzione recidiva
+p	FP-ENE-003	FP	0.35	1	CBA-Mkt	Caregiver – Occupazione F	CUR=Efficienza elettrica impianto CHP	EX=Liberazione caregiver familiari: occupazione femminile
+p_brev	FP-IST-010	FP	0.015	2	CBA-Mkt	R&S – Output scientifica ; Innovazione – Output brevettuale	CUR=Elasticità reddito-dimensione classe (Hoxby)	EX=Brevetti, pubblicazioni e spin-off da infrastrutture ricerca
+p_brev	FP-IST-008	FP	0.008	2	CBA-Mkt	Brevetti – Output R&S agro ; R&S – Output generico bis	CUR=Standard Erasmus su laureati per 1.000 abitanti	EX=Brevetti e varietà protette da R&S agro-forestale locale
+p_brevetto	FP-IST-010	FP	0.015	1	CBA-Mkt	Innovazione – Brevetti	CUR=Elasticità reddito-dimensione classe (Hoxby)	EX=B7c — Brevetti e spin-off da ricerca universitaria
+p_errore_rid	FP-IST-003	FP	0.15	1	CBA-Mkt	Decisioni – Migliore pianificazione	CUR=Quota studenti universitari fuori sede	EX=Risparmio da riduzione errori pianificazione con dati adeguati
+p_fermo	FP-IST-040	FP	0.05	1	CBA-Mkt	Produttività – Continuità produttiva	CUR=QALY da reinserimento lavorativo vs disoccupazione	EX=Risparmio da riduzione fermi produttivi per carenza idrica
+P_inagib	FP-EDI-004	FP	0.05	1	CBA-Mkt	Continuità – Didattica	CUR=Quota stock abitativo in degrado annuo	EX=Risparmio da continuità didattica senza interruzioni per inagibilità
+p_ricarica_regimazione	FP-IST-040	FP	0.05	1	CBA-Mkt	Idrico – Ricarica falde	CUR=QALY da reinserimento lavorativo vs disoccupazione	EX=B77c — Aumento ricarica falde acquifere da laminazione naturale acque
+P_sisma	FP-IST-029	FP	0.002	1	CBA-Mkt	Continuità economica – Costi indiretti	CUR=Probabilità spin-off per ricercatore	EX=B83c — Riduzione costi indiretti da interruzione attività post-sisma (BCI approach)
+p_sovraffoll	FP-IST-009	FP	0.4	1	CBA-Mkt	Efficienza – Risparmio sistema	CUR=Quota bambini 3-6 anni su utenti servizi infanzia	EX=B_GIU-10 — Risparmio costi gestione da riduzione sovraffollamento carcerario
+p_spin	FP-IST-029	FP	0.002	1	CBA-Mkt	Innovazione – Output brevettuale	CUR=Probabilità spin-off per ricercatore	EX=Valore brevetti e licenze da laboratori di ricerca attrezzati
+p_spinoff	FP-IST-029	FP	0.002	1	CBA-Mkt	Innovazione – Brevetti	CUR=Probabilità spin-off per ricercatore	EX=B7c — Brevetti e spin-off da ricerca universitaria
+parziale	MF-LAV-025	MF	2500	1	CBA-Mkt	Welfare – Risparmio parziale	CUR=parziale	EX=Risparmio parziale sussidi (LPU non elimina ma riduce costo netto)
+PM_rimosso_ha	FP-IST-003	FP	0.15	2	CBA-Mkt/QALY	Qualità aria ; Qualità aria – Rimozione PM	CUR=Quota studenti universitari fuori sede	EX=B11d — Rimozione PM2.5 e NO2 da vegetazione urbana
+Prezzo_medio_MPS	MF-AMB-024	MF	75	1	CBA-Mkt	Circolare – Valore MPS	CUR=Prezzo medio materie prime seconde da raccolta differenziata	EX=Valore recupero materie prime seconde (MPS): carta, plastica, vetro, metalli
+rate	FP-ENE-039	FP	0.2	1	CBA-Mkt	Innovazione – Learning by doing	CUR=rate	EX=Riduzione futura costi FER da curva apprendimento (LBD effect)
+reddito	FP-IST-113	FP	22	3	CBA-Mkt/HC	Occupazione – Settore primario ; Occupazione – Pescatori	CUR=reddito	EX=B63b — Mantenimento occupazione nel settore pesca artigianale
+rendimento_privato	FP-LAV-022	FP	1	1	CBA-Mkt	Spillover – Esternalità R&S	CUR=Rendimento privato investimento R&S	EX=Benefici sociali non catturati da privato (esternalità positive R&S)
+Rendimento_sociale	FP-LAV-005	FP	3	1	CBA-Mkt	Spillover – Esternalità R&S	CUR=ULA industria per addetto	EX=Benefici sociali non catturati da privato (esternalità positive R&S)
+Rendimento_sociale	FP-IST-018	FP	2.5	1	CBA-Mkt	Spillover – Esternalità R&S generica	CUR=ROI scuola materna 3-6 anni (Heckman)	EX=Rendimento sociale da R&S generica non tematica
+Resa	MF-LAV-003	MF	5000	1	CBA-Mkt	Qualità – Premium	CUR=Risparmio sussidi pubblici per reinserito lavorativo	EX=Premium prezzo da qualità superiore su impianti moderni
+RevPAR	FP-TUR-047	FP	38	1	CBA-Mkt	Economico – RevPAR	CUR=RevPAR	EX=VA da strutture complementari (B&B, appartamenti)
+RevPAR	FP-MOB-006	FP	45	1	CBA-Mkt	Economico – RevPAR hotel	CUR=Benchmark accessibilità aeroportuale — soglia intervento	EX=VA alberghiero da strutture classificate 1-5 stelle
+Risp_sussidi	MF-LAV-003	MF	5000	1	CBA-Mkt	Welfare – Risparmio sussidi	CUR=Risparmio sussidi pubblici per reinserito lavorativo	EX=Risparmio sussidi disoccupazione da autoimpiego
+Risp_welfare	MF-LAV-003	MF	5000	2	CBA-Mkt	Welfare – Risparmio sussidi ; Sociale – Risparmio welfare	CUR=Risparmio sussidi pubblici per reinserito lavorativo	EX=Risparmio costi welfare da reinserimento (NASpI+servizi)
+risparmio	MF-IST-072	MF	800	1	CBA-Mkt	Efficienza – Costi operativi	CUR=Risparmio	EX=B70b — Risparmio costi operativi ferroviari da infrastrutture efficienti
+risparmio	MF-IST-114	MF	2000	1	CBA-Mkt	Imprese idroesigenti – Risparmio	CUR=risparmio	EX=B100d — Risparmio costi pre-trattamento per imprese che usano acqua di qualità
+risparmio	MF-IST-143	MF	900	1	CBA-Mkt	Sociale – Accesso alimentare	CUR=risparmio	EX=Risparmio spesa per famiglie vulnerabili da servizi annonari
+risparmio	MF-TUR-002	MF	12	2	CBA-Mkt	Congestione – Ridistribuzione ; Logistica – Km zero	CUR=Consumer surplus — visita a museo/bene culturale (TCM)	EX=Riduzione congestione turistica da ridistribuzione flussi
+risparmio	MF-AGR-001	MF	1800	1	CBA-Mkt	Agricoltura – Risparmio operativo	CUR=risparmio	EX=Risparmio costi operativi da fabbricati rurali adeguati
+risparmio	MF-AMB-023	MF	200	1	CBA-Mkt	Assicurativo – Risparmio premio	CUR=Costo interruzione servizio idrico — utenza industriale	EX=Riduzione costi assicurativi da minor rischio
+risparmio	MF-AMB-004	MF	15000	2	CBA-Mkt	Decisioni – Migliore pianificazione ; Governance – Informazione ambientale	CUR=Costo esterno per tonnellata di NOx emesso	EX=Risparmio da riduzione errori pianificazione con dati adeguati
+risparmio	MF-LAV-003	MF	5000	20	CBA-Mkt	Welfare – Risparmio NEET ; Welfare – Risparmio sussidi	CUR=Risparmio sussidi pubblici per reinserito lavorativo	EX=Risparmio welfare da riduzione NEET tramite tirocini
+risparmio	MF-IST-161	MF	10000	1	CBA-Mkt	Governance – Qualità decisioni	CUR=Risparmio	EX=Risparmio da migliore qualità decisioni PA
+Risparmio	MF-IST-127	MF	3500	2	CBA-Mkt	Produttività – Risparmio idrico ind. ; Imprese – Retention	CUR=Risparmio	EX=Risparmio costi idrici per imprese da rete dedicata vs pozzi privati
+Risparmio	MF-IST-151	MF	25	1	CBA-Mkt	Smart city – Risparmio PA	CUR=Risparmio	EX=Risparmio costi PA da servizi digitali integrati
+Risparmio	MF-LAV-003	MF	5000	1	CBA-Mkt	Imprese – Risparmio formazione	CUR=Risparmio sussidi pubblici per reinserito lavorativo	EX=Risparmio costi formazione interna per imprese che usano apprendistato
+Risparmio	MF-IST-159	MF	600	2	CBA-Mkt	PA – Efficienza generica ; PA – Risparmio errori	CUR=Risparmio	EX=Risparmio costi operativi PA da consulenza e assistenza tecnica generica
+Risparmio	MF-IST-161	MF	10000	1	CBA-Mkt	Governance – Qualità decisioni	CUR=Risparmio	EX=Risparmio da migliore qualità decisioni PA con supporto tecnico specializzato
+Risparmio	MF-IST-167	MF	50	1	CBA-Mkt	Ambiente – Gestione rifiuti funerari	CUR=Risparmio	EX=Risparmio da corretta gestione rifiuti da attività funeraria
+Risparmio	MF-MOB-018	MF	2500	1	CBA-Mkt	Logistica – Efficienza distribuzione	CUR=Risparmio	EX=Risparmio costi distribuzione alimentare da mercato all\'ingrosso efficiente
+Risparmio_breach	MF-AMB-004	MF	15000	1	CBA-Mkt	Sicurezza – Cybersecurity	CUR=Costo esterno per tonnellata di NOx emesso	EX=Risparmio da protezione dati sensibili su infrastrutture sicure
+Risparmio_carta	MF-AMB-023	MF	200	1	CBA-Mkt	PA – Efficienza digitale	CUR=Costo interruzione servizio idrico — utenza industriale	EX=Risparmio costi PA da digitalizzazione processi su server dedicati
+Risparmio_emergenza	MF-ENE-004	MF	5	1	CBA-Mkt	Sicurezza – Pubblica sicurezza	CUR=Value of Lost Load — costo interruzione fornitura elettrica	EX=Risparmio costi emergenze da comunicazioni radiotelefoniche sicure
+ROI_energia	FP-ENE-002	FP	15	1	CBA-Mkt	Energia – Smart grid perdite	CUR=ROI energetico risparmio per euro investito	EX=Risparmio energetico da riduzione perdite di rete elettrica (smart grid)
+SW	FP-IST-016	FP	0.18	2	CBA-Mkt	Agricoltura – Efficienza irrigazione ; Idrico – Risparmio irrigazione	CUR=Premium salariale ITS vs diploma superiore	EX=Risparmio idrico e incremento resa da rete irrigua interaziendale vs individuale
+SW_acqua	FP-IST-025	FP	0.35	1	CBA-Mkt	Idrico – Ricarica falde	CUR=Tasso di emigrazione laureati dal comune	EX=B77c — Aumento ricarica falde acquifere da laminazione naturale acque
+SW_irriguo	FP-IST-016	FP	0.18	2	CBA-Mkt	Idrico – Shadow price acqua ; Agricoltura – Shadow price acqua	CUR=Premium salariale ITS vs diploma superiore	EX=B97b — Risparmio costi approvvigionamento idrico agricolo (shadow price)
+SW_potabile	FP-AGR-019	FP	1.1	2	CBA-Mkt	Idrico – Risparmio perdite ; Idrico – Riutilizzo	CUR=EF risparmio MPS vs materie vergini (media ponderata)	EX=B93a — Risparmio risorsa idrica da riduzione perdite di rete (leakage control)
+SW_uso_plurimo	FP-IST-025	FP	0.35	2	CBA-Mkt	Idrico – Regolazione stagionale	CUR=Tasso di emigrazione laureati dal comune	EX=Risparmio idrico da accumulo per uso multiplo (irrigazione, potabile, industriale)
+tasso	FP-TUR-046	FP	0.005	1	CBA-Mkt	Assicurativo – Valore patrimoniale	CUR=tasso	EX=B26d — Valore assicurativo delle opere: riduzione rischio perdita per mancata conservazione
+TTM_risp	MF-AMB-004	MF	15000	1	CBA-Mkt	Innovazione – Time-to-market	CUR=Costo esterno per tonnellata di NOx emesso	EX=Risparmio costi/tempo da sperimentazione accelerata
+V_brev	MF-MOB-012	MF	350	3	CBA-Mkt	R&S – Output scientifica ; Accademia – Output ricerca	CUR=Costo esterno rumore stradale per esposto	EX=Brevetti, pubblicazioni e spin-off da infrastrutture ricerca
+V_pub	MF-LAV-003	MF	5000	1	CBA-Mkt	R&S – Output scientifica	CUR=Risparmio sussidi pubblici per reinserito lavorativo	EX=Brevetti, pubblicazioni e spin-off da infrastrutture ricerca
+V_pub	MF-ENE-004	MF	5	1	CBA-Mkt	Accademia – Output ricerca	CUR=Value of Lost Load — costo interruzione fornitura elettrica	EX=Pubblicazioni, brevetti, dottorati da ricerca universitaria
+vantaggio	MF-LAV-019	MF	1500	1	CBA-Mkt	Formazione – Anticipazione fabbisogni	CUR=vantaggio	EX=Risparmio da formazione anticipata su fabbisogni futuri
+VES	MF-LAV-003	MF	5000	1	CBA-Mkt	Turismo costiero – Risparmio erosione	CUR=Risparmio sussidi pubblici per reinserito lavorativo	EX=Risparmio erosione costiera + mantenimento attrattività balneare
+VES_costa	MF-LAV-003	MF	5000	1	CBA-Mkt	Ambiente – Anti-erosione costiera	CUR=Risparmio sussidi pubblici per reinserito lavorativo	EX=B80c — Risparmio da erosione costiera prevenuta: VES spiaggia + costi ripascimento evitati
+VES_suolo_urbano	FP-MOB-002	FP	18	1	CBA-Mkt	Ambiente – Suolo	CUR=Standard mq aerostazione per passeggero picco	EX=B8c — Risparmio suolo da cimiterizzazione verticale o crematorio
+VOLL_medio	FP-ENE-002	FP	15	1	CBA-Mkt	Sicurezza – Approvvigionamento	CUR=ROI energetico risparmio per euro investito	EX=Riduzione costi da black-out nazionali evitati con rete AT robusta
+ΔC_LBD	FP-LAV-018	FP	8	1	CBA-Mkt	Energia – Learning curve	CUR=Addetti per ettaro riconvertito (mix terziario/commerciale)	EX=Riduzione futura LCOE FER da R&S su tecnologie energetiche
+Δcosto	FP-IST-005	FP	3	2	CBA-Mkt	Logistica – Last-mile ; Logistica – Efficienza portuale	CUR=Standard ICOM superficie museo per visitatore	EX=Risparmio costi logistici da stoccaggio locale
+Δcosto	FP-AGR-027	FP	12	1	CBA-Mkt	Logistica – Km zero	CUR=Δcosto	EX=Risparmio logistico da trasformazione a km zero
+Δcosto	FP-IST-149	FP	4.5	1	CBA-Mkt	Logistica – Supply chain	CUR=Δcosto	EX=Risparmio costi supply chain da hub logistico locale
+Δcosto_intermod	FP-SAL-013	FP	0.018	1	CBA-Mkt	Logistica – Efficienza supply chain	CUR=Riduzione mortalità per 10 minuti di accesso rapido (Avdic)	EX=B68a — Risparmio costi logistici da intermodalità (camion+treno/nave)
+Δcosto_posa	MF-SAL-006	MF	60000	1	CBA-Mkt	Costi – Risparmio scavo	CUR=Valore di un QALY — standard IT	EX=Risparmio costi civili da posa cavi in dotti esistenti vs scavo
+ΔCosto_sovraffoll	MF-SIC-005	MF	8000	1	CBA-Mkt	Efficienza – Risparmio sistema	CUR=costo	EX=B_GIU-10 — Risparmio costi gestione da riduzione sovraffollamento carcerario
+ΔDurata	FP-IST-131	FP	60	2	CBA-Mkt/VoT	Continuità economica – Costi indiretti ; Efficienza – VoT giudiziario	CUR=ΔDurata	EX=B83c — Riduzione costi indiretti da interruzione attività post-sisma (BCI approach)
+ΔkWh_grado	FP-AMB-021	FP	0.035	1	CBA-Mkt	Clima – Riduzione UHI	CUR=Risparmio kWh per grado di riduzione UHI	EX=B85b — Risparmio energetico da riduzione isola di calore urbano
+ΔOre	FP-IST-004	FP	0.3	1	CBA-Mkt	Produttività – LAN/WiFi	CUR=Quota studenti fuori sede che utilizza residenza	EX=Risparmio ore lavoro da reti locali veloci in uffici e PA
+ΔOre	FP-MOB-006	FP	45	1	CBA-Mkt	PA – Efficienza digitale	CUR=Benchmark accessibilità aeroportuale — soglia intervento	EX=Risparmio costi PA da digitalizzazione processi su server dedicati
+ΔP	FP-AGR-006	FP	0.08	1	CBA-Mkt	Qualità – Premium	CUR=Quota aziende con laboratorio di trasformazione	EX=Premium prezzo da qualità superiore su impianti moderni
+ΔProd	FP-IST-024	FP	0.08	3	CBA-Mkt	Produttività – TFP ; Imprese – Produttività	CUR=Quota QALY cognitivo per bambino svantaggiato da nido	EX=+8% TFP da ammodernamento impianti commerciali
+ΔProd	FP-AGR-026	FP	0.12	1	CBA-Mkt	Produttività – Precision farming	CUR=ΔProd	EX=+12% TFP da meccanizzazione e precision farming
+ΔProd	FP-IST-003	FP	0.15	1	CBA-Mkt	Embodied tech – TFP	CUR=Quota studenti universitari fuori sede	EX=+15% TFP da nuovo macchinario industriale
+ΔProd	FP-IST-031	FP	0.06	4	CBA-Mkt/HC	Connettività – Banda larga ; Innovazione imprese – TFP	CUR=Elasticità agglomerazione R&S su TFP locale	EX=VA da connettività fibra/5G in area produttiva
+ΔProd	FP-LAV-002	FP	0.05	1	CBA-Mkt	TFP – Ricerca applicata	CUR=Quota aziende che investe annualmente in macchinari — commercio	EX=Incremento TFP imprese locali da ricerca applicata laboratori
+ΔProd	FP-IST-007	FP	0.02	1	CBA-Mkt	Imprese – Produttività mobile	CUR=Quota ITS su laureati annui	EX=TFP da connettività mobile professionale per imprese
+ΔProd	FP-IST-026	FP	0.07	2	CBA-Mkt	Imprese – Competenze ; Imprese – On-the-job TFP	CUR=Elasticità TFP a quota laureati (Moretti spillover)	EX=TFP da lavoratori formati on-the-job su processi aziendali
+ΔProd_elettr	MF-ENE-009	MF	1500	1	CBA-Mkt	Produttività – Agricoltura elettrificata	CUR=Risparmio annuo da sistemi di building management (BMS)	EX=Incremento produttività agricola da elettrificazione (pompe, refrigerazione)
+ΔProd_ICT	FP-IST-031	FP	0.06	1	CBA-Mkt	ICT – TFP	CUR=Elasticità agglomerazione R&S su TFP locale	EX=+6% TFP da ICT in processi produttivi
+ΔProd_tech	FP-IST-067	FP	0.1	1	CBA-Mkt	Agricoltura – TFP tecnologie	CUR=ΔProd	EX=TFP da trasferimento tecnologie agricole innovative a imprese locali
+ΔProd_TT	FP-LAV-017	FP	0.04	1	CBA-Mkt	Trasferimento – TT imprese	CUR=Elasticità TFP da trasferimento tecnologico (TT)	EX=VA da trasferimento tecnologico a imprese locali
+ΔQ	FP-IST-067	FP	0.1	3	CBA-Mkt/I-O	Economico – Attrattività investimenti ; Economico – Investimenti	CUR=ΔProd	EX=B18b — Incremento FDI da migliore qualità burocratica percepita
+ΔResa	MF-IST-104	MF	800	1	CBA-Mkt	Agricoltura – Resa	CUR=ΔResa	EX=B97a — Incremento resa colturale da disponibilità idrica in aree rurali
+ΔResa	MF-IST-120	MF	950	1	CBA-Mkt	Agricoltura – Resa	CUR=ΔResa	EX=Incremento resa colturale da accumulo idrico stagionale
+ΔResa	MF-IST-124	MF	700	1	CBA-Mkt	Agricoltura – Resa colturale	CUR=ΔResa	EX=Incremento resa da accesso garantito a risorsa idrica per irrigazione
+ΔResa	MF-IST-129	MF	500	1	CBA-Mkt	Agricoltura – Efficienza irrigazione	CUR=ΔResa	EX=Risparmio idrico e incremento resa da rete irrigua interaziendale vs individuale
+ΔResa	MF-AGR-003	MF	250	1	CBA-Mkt	Resa – Infrastrutture generiche	CUR=ΔResa	EX=Incremento resa da infrastrutture agricole di supporto
+ΔResa	MF-AGR-008	MF	1800	1	CBA-Mkt	Resa – Colture permanenti	CUR=ΔResa	EX=Incremento resa colture permanenti da impianti moderni
+ΔResa	MF-AGR-010	MF	400	1	CBA-Mkt	Resa – Drenaggi	CUR=ΔResa	EX=Incremento resa da regimazione idraulica e drenaggi
+ΔResa	FP-AGR-029	FP	1000	1	CBA-Mkt	Idrico – Risparmio irrigazione	CUR=ΔResa	EX=Risparmio idrico + resa da irrigazione a goccia vs scorrimento
+ΔRicavi	MF-AGR-006	MF	1200	1	CBA-Mkt	Mercato – Filiera corta	CUR=ΔRicavi	EX=Incremento ricavi da accesso a mercati e reti distribuzione
+ΔSalario	MF-IST-157	MF	1500	3	CBA-Mkt	Occupazione – Matching ; Skills – Matching	CUR=ΔSalario	EX=Riduzione mismatch occupazionale da orientamento efficace
+ΔSalario	MF-IST-158	MF	2000	1	CBA-Mkt	Matching – Skills-Industry	CUR=ΔSalario	EX=Riduzione mismatch competenze da ITS (allineamento industria)
+ΔSalario	MF-LAV-018	MF	1200	1	CBA-Mkt	Governance – Informazione MdL	CUR=ΔSalario	EX=Risparmio mismatch da migliore informazione su domanda/offerta lavoro
+ΔT_ritardo	FP-EDI-034	FP	4	1	CBA-Mkt	Efficienza – Ritardi voli	CUR=Superficie media data center per rack	EX=B74a — Risparmio costi da riduzione ritardi voli (pista efficiente)
+ΔTasso_recidiva	FP-IST-020	FP	0.12	1	CBA-Mkt	Sicurezza – Recidiva	CUR=Riduzione probabilità abbandono da strutture scolastiche adeguate	EX=B48a — Riduzione recidiva da migliori condizioni detentive
+ΔVOC	FP-IST-007	FP	0.02	2	CBA-Mkt	Logistica – TIR ; Logistica – VOC merci	CUR=Quota ITS su laureati annui	EX=Risparmio VOC merci da strade industriali adeguate
+ΔVOC_auto	FP-IST-010	FP	0.015	1	CBA-Mkt	Efficienza – VOC	CUR=Elasticità reddito-dimensione classe (Hoxby)	EX=B51c — Risparmio Vehicle Operating Costs da miglioramento pavimentazione
+ΔVOC_infr	FP-IST-044	FP	0.01	1	CBA-Mkt	Efficienza – VOC	CUR=QALY da accesso biblioteca per studente	EX=B52b — Risparmio VOC da riqualificazione infrastrutture stradali complementari
+ε	FP-IST-027	FP	0.04	2	CBA-Mkt	Spillover – Conoscenza ; Spillover – TFP sistema	CUR=Percentuale ricercatori su laureati	EX=TFP da spillover da nuove imprese FDI al sistema locale
+ε	FP-IST-021	FP	0.03	2	CBA-Mkt	TFP – Connettività ; ICT – Connettività produttiva	CUR=Riduzione probabilità NEET da scuola materna	EX=Incremento TFP imprese da connettività migliorata
+ε	FP-IST-010	FP	0.015	1	CBA-Mkt	Innovazione – Apertura internazionale	CUR=Elasticità reddito-dimensione classe (Hoxby)	EX=TFP da diffusione conoscenza internazionale su sistema locale
+ε	FP-IST-007	FP	0.02	1	CBA-Mkt	Imprese – Produttività supply	CUR=Quota ITS su laureati annui	EX=TFP imprese da disponibilità tecnici specializzati locali
+ε	FP-LAV-002	FP	0.05	1	CBA-Mkt	Spillover – TFP locale	CUR=Quota aziende che investe annualmente in macchinari — commercio	EX=TFP da spillover di conoscenza universitaria sul sistema produttivo
+ε_broad	FP-IST-027	FP	0.04	1	CBA-Mkt	Produttività – TFP digitale	CUR=Percentuale ricercatori su laureati	EX=+4% TFP da connettività broadband su sistema imprese
+ε_occ	FP-IST-044	FP	0.01	1	CBA-Mkt	Occupazione F – Reinserimento	CUR=QALY da accesso biblioteca per studente	EX=Incremento occupazione femminile da servizi infanzia
+ε_occ_mat	FP-IST-008	FP	0.008	1	CBA-Mkt	Occupazione – Genere	CUR=Standard Erasmus su laureati per 1.000 abitanti	EX=B3b — Incremento occupazione femminile da scuola materna 3–6 anni
+ε_occ_nido	FP-IST-022	FP	0.012	1	CBA-Mkt	Occupazione – Genere	CUR=Elasticità occupazione femminile da nido 0-3 anni	EX=B4b — Incremento occupazione femminile da nido 0–3 anni
+ε_social	FP-IST-007	FP	0.02	1	CBA-Mkt	Equità – Riduzione disuguaglianza	CUR=Quota ITS su laureati annui	EX=TFP da ricerca sulle relazioni sociali: riduzione costi da disuguaglianza
+ε_spillover	FP-LAV-002	FP	0.05	1	CBA-Mkt	Spillover – TFP locale	CUR=Quota aziende che investe annualmente in macchinari — commercio	EX=TFP da spillover di conoscenza al sistema produttivo locale
+_falda	FP-IST-018	FP	2.5	1	CVM/WTP	Ambiente – Qualità acque risorse	CUR=ROI scuola materna 3-6 anni (Heckman)	EX=Riduzione percolazione fertilizzanti in falda da irrigazione controllata
+_fonte	FP-MOB-006	FP	45	1	CVM/WTP	Salute – Qualità alla fonte	CUR=Benchmark accessibilità aeroportuale — soglia intervento	EX=B99b — WTP per qualità garantita dell\'acqua captata alla fonte
+_mare	FP-IST-001	FP	25	1	CVM/WTP	Ambiente – Qualità marina	CUR=Alunni per sezione scuola materna	EX=B62c — WTP per qualità acque marine e ambiente costiero preservato
+_rurale	FP-MOB-002	FP	18	1	CVM/WTP	Identità culturale – Patrimonio immateriale	CUR=Standard mq aerostazione per passeggero picco	EX=B25d — Valore identità e tradizioni locali: WTP conservazione patrimonio immateriale rurale
+_TPL	FP-IST-001	FP	25	1	CVM/WTP	Equità – Accessibilità	CUR=Alunni per sezione scuola materna	EX=B57c — WTP accessibilità TPL per utenti senza auto (equità mobilità)
+bacino	FP-IST-064	FP	1.5	6	CVM/WTP	Ambiente – Qualità ecologica ; Ambiente – Qualità WFD	CUR=bacino	EX=B77b — Miglioramento qualità ecologica WFD da regimazione naturale
+C_reato	MF-SIC-001	MF	6500	4	CVM/WTP/CBA-Mkt	Sicurezza – Criminalità ; Reati – Riduzione criminalità	CUR=Costo sociale medio per reato contro il patrimonio	EX=B9c — Riduzione criminalità e vandalismo notturno
+C_reato_medio	MF-SIC-001	MF	6500	1	CVM/WTP	Sicurezza – Criminalità	CUR=Costo sociale medio per reato contro il patrimonio	EX=B_SIC-06 — Riduzione criminalità da maggiore presidio territoriale sicurezza pubblica
+CS	FP-IST-001	FP	25	2	CVM/WTP/TCM	Culturale – CS ; Birdwatching – TCM	CUR=Alunni per sezione scuola materna	EX=B14a — Consumer surplus spettatori da accesso a spettacolo dal vivo
+EC	FP-LAV-019	FP	8	2	CVM/WTP	Ambiente – Input chimici ; Fitofarmaci – Riduzione	CUR=Addetti per hectare area produttiva nuova	EX=Riduzione fitofarmaci da precision farming
+EC	FP-IST-018	FP	2.5	1	CVM/WTP	Nitrati – Qualità falda	CUR=ROI scuola materna 3-6 anni (Heckman)	EX=Riduzione nitrati in falda da irrigazione precisa
+Impatto_cantiere	MF-LAV-003	MF	5000	1	CVM/WTP	Ambiente – Riduzione scavi	CUR=Risparmio sussidi pubblici per reinserito lavorativo	EX=Risparmio impatto ambientale da minor cantierizzazione urbana
+locale	FP-TUR-041	FP	1	1	CVM/WTP	Non-uso – Identità nazionale	CUR=locale	EX=B23b — WTP conservazione monumento: valori esistenza e lascito
+nazionale	FP-TUR-042	FP	2.5	1	CVM/WTP	Non-uso – Identità nazionale	CUR=nazionale	EX=B23b — WTP conservazione monumento: valori esistenza e lascito
+p_lista	FP-EDI-017	FP	0.03	1	CVM/WTP	Sociale – WTP alloggio dignitoso	CUR=Quota annua edifici PA soggetti a riqualificazione EPBD	EX=WTP famiglie vulnerabili per accesso ad alloggio adeguato
+p_malattia	FP-IST-007	FP	0.02	1	CVM/WTP	Salute – Malattie idriche	CUR=Quota ITS su laureati annui	EX=B92a — WTP per qualità fognaria + risparmio costi malattie idriche
+p_rid	FP-IST-020	FP	0.12	2	CVM/WTP/VoT	Sicurezza – Criminalità ; Efficienza – Congestione	CUR=Riduzione probabilità abbandono da strutture scolastiche adeguate	EX=B37a — Riduzione criminalità da presenza polizia: risparmio costi reati
+p_riduzione_presidio	FP-SIC-003	FP	0.1	1	CVM/WTP	Sicurezza – Criminalità	CUR=Quota annua stock edilizio soggetto ad adeguamento sismico	EX=B_SIC-06 — Riduzione criminalità da maggiore presidio territoriale sicurezza pubblica
+regionale	FP-TUR-004	FP	1.5	1	CVM/WTP	Non-uso – Identità nazionale	CUR=Standard mq teatro per posto a sedere	EX=B23b — WTP conservazione monumento: valori esistenza e lascito
+Risparmio_welfare	MF-MOB-018	MF	2500	1	CVM/WTP	Sociale – Famiglie detenuti	CUR=Risparmio	EX=B_GIU-09 — Riduzione povertà familiare da condizioni detentive che mantengono legami familiari
+V_suolo	MF-AMB-010	MF	1800	1	CVM/WTP	Suolo – VES risparmio discarica	CUR=Valore ecosistemico suolo vergine non consumato	EX=VES da riutilizzo C&D vs discarica: risparmio suolo vergine
+VES	MF-AMB-012	MF	400	1	CVM/WTP	Ecosistema – VES aree protette	CUR=Valore ecosistemico area naturale protetta	EX=B84c — Servizi ecosistemici da protezione ambientale strutturata
+VES	MF-AMB-027	MF	2500	1	CVM/WTP	Ecosistema – VES zone umide	CUR=Danno medio per ettaro agricolo in anno di siccità grave	EX=VES da zone umide: regolazione idrica+biodiversità+sequestro C
+VES	MF-MOB-012	MF	350	1	CVM/WTP	Biodiversità – Connettività ecosistemica	CUR=Costo esterno rumore stradale per esposto	EX=VES da connettività ecologica: mobilità specie + funzioni ecosistema
+VES_agro_RS	MF-AMB-023	MF	200	1	CVM/WTP	Ecosistema – VES agro-ambientale	CUR=Costo interruzione servizio idrico — utenza industriale	EX=VES da pratiche agro-ambientali innovative da progetti specifici
+VES_as	MF-AMB-013	MF	300	1	CVM/WTP	Ecosistema – VES agro-silvo	CUR=Valore ecosistemico ambienti seminaturali	EX=VES composito da ambienti agro-silvo-pastorali mantenuti
+VES_falda	FP-IST-025	FP	0.35	3	CVM/WTP	Ambiente – Sostenibilità prelievo ; Ambiente – Falde acquifere	CUR=Tasso di emigrazione laureati dal comune	EX=B99c — Riduzione sovra-sfruttamento falde acquifere da captazione ottimizzata
+VES_idrico	FP-IST-025	FP	0.35	1	CVM/WTP	Ambiente – Falda e qualità acqua	CUR=Tasso di emigrazione laureati dal comune	EX=B97c — Riduzione sovra-sfruttamento falde da rete collettiva efficiente
+VES_parco	MF-AMB-012	MF	400	1	CVM/WTP	Ecosistema – VES parco	CUR=Valore ecosistemico area naturale protetta	EX=B87a — VES composito parchi e riserve (biodiversità + CO2 + regolazione idrica)
+VES_seminaturale	MF-AMB-013	MF	300	1	CVM/WTP	Ecosistema – VES seminaturale	CUR=Valore ecosistemico ambienti seminaturali	EX=B88b — VES da siti seminaturali (prati, pascoli, zone umide, arbusteti)
+WTP	MF-AMB-008	MF	45	3	CVM/WTP	Benessere – Vita urbana ; Non-uso – Identità nazionale	CUR=WTP per biodiversità e aree protette	EX=B10c — WTP residenti per qualità spazio pubblico
+WTP	MF-IST-003	MF	35	4	CVM/WTP	Culturale – Non uso (CVM) ; Sociale – WTP servizi	CUR=WTP per accesso a impianti sportivi	EX=B20b — WTP esistenza, opzione e lascito (valori di non-uso)
+WTP	MF-SAL-008	MF	15	7	CVM/WTP	Identità – WTP non-uso ; Sociale – Coesione	CUR=WTP per sicurezza pubblica percepita	EX=B22c — WTP locale per conservazione beni culturali minori
+WTP	MF-SAL-009	MF	80	4	CVM/WTP	Sicurezza – WTP ; Ambiente – Qualità acqua	CUR=WTP per connettività broadband	EX=B37b — WTP riduzione insicurezza percepita da presidio territoriale
+WTP	MF-AMB-009	MF	50	1	CVM/WTP	Paesaggio – WTP non uso	CUR=WTP per qualità del paesaggio rurale	EX=B25c — WTP residenti per conservazione paesaggio rurale (CVM)
+WTP	MF-AMB-007	MF	90	4	CVM/WTP	Ambiente – Qualità ecologica WFD ; Ambiente – Qualità WFD	CUR=WTP per qualità dell\'acqua — WFD	EX=B96a — WTP per buono stato ecologico corpi idrici ricettori + VES ecologico
+WTP	MF-MOB-004	MF	6	1	CVM/WTP	WTP – Informazione culturale	CUR=Valore del Tempo — anziani e utenti fragili	EX=WTP turisti per informazione autentica sul territorio
+WTP	MF-AMB-023	MF	200	1	CVM/WTP	Sociale – Partecipazione civica	CUR=Costo interruzione servizio idrico — utenza industriale	EX=WTP per formazione che incrementa partecipazione e coesione sociale
+WTP	MF-IST-002	MF	150	3	CVM/WTP	Partecipazione – WTP cultura ; Accesso – WTP acqua potabile	CUR=WTP per formazione culturale degli adulti	EX=WTP per accesso a opportunità formative culturali
+WTP	MF-IST-001	MF	28	1	CVM/WTP	Sociale – WTP coesione	CUR=WTP per servizi culturali — esistenza e opzione	EX=WTP per centri culturali/sociali come presidio di coesione territoriale
+WTP_accesso	MF-IST-002	MF	150	2	CVM/WTP	Salute – Accesso garantito ; Salute – Qualità acqua	CUR=WTP per formazione culturale degli adulti	EX=B94b — WTP per accesso garantito ad acqua potabile di qualità
+WTP_buono_stato	MF-AMB-007	MF	90	4	CVM/WTP	Ambiente – Qualità ecologica ; Ambiente – Qualità ecologica WFD	CUR=WTP per qualità dell\'acqua — WFD	EX=B77b — Miglioramento qualità ecologica WFD da regimazione naturale
+WTP_fognatura	MF-AMB-024	MF	75	2	CVM/WTP	Salute – Malattie idriche ; Salute – Collettamento reflui	CUR=Prezzo medio materie prime seconde da raccolta differenziata	EX=B92a — WTP per qualità fognaria + risparmio costi malattie idriche
+WTP_non_uso	MF-AMB-008	MF	45	1	CVM/WTP	Biodiversità – WTP non uso	CUR=WTP per biodiversità e aree protette	EX=B84b — WTP per conservazione biodiversità (opzione + esistenza + lascito)
+Δfito	FP-AGR-002	FP	2.5	1	CVM/WTP	Ambiente – Input chimici	CUR=Densità UBA per ettaro di allevamento	EX=Riduzione fitofarmaci da precision farming
+ΔP	FP-AGR-008	FP	0.15	1	CVM/WTP	Mercato – Premium BA	CUR=Quota zone umide su superficie idrica	EX=WTP consumatori per standard benessere specifici
+ΔPrezzo	FP-AGR-023	FP	0.12	1	CVM/WTP	WTP – Benessere animale	CUR=ΔPrezzo	EX=WTP consumatori per prodotti da allevamento certificato BA
+ΔQALY_cognitivo	FP-IST-024	FP	0.08	1	CVM/WTP	Sociale – Equità	CUR=Quota QALY cognitivo per bambino svantaggiato da nido	EX=B4d — Riduzione disuguaglianze sociali: recupero gap cognitivo bambini svantaggiati
+C_infez	MF-MOB-012	MF	350	1	DRG/SSN	Efficienza SSN	CUR=Costo esterno rumore stradale per esposto	EX=B1c — Risparmio costi sanitari da minore esposizione a malattie infettive in classe
+C_ipertensione	MF-AMB-010	MF	1800	1	DRG/SSN	SSN – Ipertensione da rumore	CUR=Valore ecosistemico suolo vergine non consumato	EX=B91c — Risparmio costi sanitari SSN da riduzione ipertensione correlata al rumore
+DRG	MF-SAL-010	MF	3200	3	DRG/SSN	SSN – Risparmio ricoveri inappropriati ; SSN – Risparmio ricoveri ospedalieri	CUR=Costo medio DRG — ricovero ospedaliero medio	EX=Risparmio da riduzione ricoveri inappropriati con poliambulatori adeguati
+DRG_medio	MF-SAL-010	MF	3200	3	DRG/SSN	SSN – Ricoveri evitabili ; Sanitario – SSN	CUR=Costo medio DRG — ricovero ospedaliero medio	EX=B50c — Risparmio SSN da riduzione ricoveri evitabili (cure primarie potenziate)
+gg_degenza	FP-SAL-004	FP	20	1	DRG/SSN	Sanitario – Risparmio ospedaliero	CUR=Benchmark tempo raggiungibilità servizi sanitari	EX=B41a — Liberazione posti acuti: risparmio da gestione post-acuzie in RSA
+p	FP-IST-031	FP	0.06	1	DRG/SSN	Salute – Prevenzione primaria	CUR=Elasticità agglomerazione R&S su TFP locale	EX=B43a — Risparmio costi malattie prevenibili da accesso a servizi igienico-preventivi
+p	FP-URB-007	FP	0.05	2	DRG/SSN/CBA-Mkt	Sanitario – SSN ; Produttività – Continuità produttiva	CUR=Dimensione media lotto area produttiva per impresa	EX=B_AIS-05 — Risparmio SSN da intervento sociale precoce (riduzione ospedalizzazioni evitabili)
+p	FP-EDI-017	FP	0.03	2	DRG/SSN	SSN – Ipertensione da rumore ; SSN – Risparmio costi clinici	CUR=Quota annua edifici PA soggetti a riqualificazione EPBD	EX=B91c — Risparmio costi sanitari SSN da riduzione ipertensione correlata al rumore
+p_infez	FP-SAL-013	FP	0.018	2	DRG/SSN	Efficienza SSN ; Salute – Morbilità classi	CUR=Riduzione mortalità per 10 minuti di accesso rapido (Avdic)	EX=B1c — Risparmio costi sanitari da minore esposizione a malattie infettive in classe
+p_ipertensione_rumore	FP-AMB-024	FP	0.03	1	DRG/SSN	SSN – Ipertensione da rumore	CUR=Frequenza eventi allagamento per ha verde non realizzato	EX=B91c — Risparmio costi sanitari SSN da riduzione ipertensione correlata al rumore
+p_malattia_rid	FP-IST-027	FP	0.04	1	DRG/SSN	Salute – Prevenzione	CUR=Percentuale ricercatori su laureati	EX=Risparmio SSN da servizi preventivi alla collettività
+p_osped_rid_0_3	FP-IST-031	FP	0.06	1	DRG/SSN	Salute materno-infantile	CUR=Elasticità agglomerazione R&S su TFP locale	EX=B4c — Riduzione ospedalizzazioni infantili 0–3 anni da continuità assistenziale
+p_ospedaliz_ridotta	FP-IST-027	FP	0.04	1	DRG/SSN	Salute pubblica	CUR=Percentuale ricercatori su laureati	EX=B3c — Riduzione malattie infantili e ospedalizzazioni da servizi di prossimità
+p_ricoveri_ridotti	FP-SIC-012	FP	0.15	1	DRG/SSN	SSN – Risparmio ricoveri ospedalieri	CUR=Riduzione criminalità da videosorveglianza CCTV (Welsh & Farrington)	EX=Risparmio ricoveri ospedalieri inappropriati da RSA adeguate
+p_ricovero_evitato	FP-SAL-035	FP	0.03	1	DRG/SSN	SSN – Risparmio ricoveri	CUR=Quota esposti a ipertensione da rumore >55 dBA	EX=B44c — Risparmio SSN da gestione ambulatoriale vs ricovero (day hospital sostituito)
+p_ricovero_evitato	FP-IST-040	FP	0.05	1	DRG/SSN	Sanitario – SSN	CUR=QALY da reinserimento lavorativo vs disoccupazione	EX=B_AIS-05 — Risparmio SSN da intervento sociale precoce (riduzione ospedalizzazioni evitabili)
+p_ricovero_rid	FP-IST-040	FP	0.05	1	DRG/SSN	Salute – SSN pediatrico	CUR=QALY da reinserimento lavorativo vs disoccupazione	EX=Risparmio SSN da continuità cura precoce 0-6 anni
+p_rid	FP-IST-027	FP	0.04	1	DRG/SSN	Salute – Prevenzione	CUR=Percentuale ricercatori su laureati	EX=Risparmio SSN da servizi preventivi alla collettività
+p_rid_malattia	FP-IST-021	FP	0.03	1	DRG/SSN	SSN – Risparmio malattie sedentarietà	CUR=Riduzione probabilità NEET da scuola materna	EX=Risparmio costi SSN da riduzione malattie legate a sedentarietà
+p_riduz_igiene	FP-SAL-002	FP	0.25	1	DRG/SSN	Ambiente – Igiene pubblica	CUR=Quota posti RSA su posti letto ospedalieri	EX=B43d — Risparmio costi infettivi da servizi igienico-ambientali (disinfestazione, zoonosi)
+p_riduzione_ricoveri	FP-IST-003	FP	0.15	1	DRG/SSN	Sanitario – SSN	CUR=Quota studenti universitari fuori sede	EX=B31d — Risparmio SSN da riduzione ospedalizzazioni improprie per utenti residenza comunitaria
+p_risparmio	FP-IST-021	FP	0.03	1	DRG/SSN	SSN – Risparmio costi clinici	CUR=Riduzione probabilità NEET da scuola materna	EX=Risparmio SSN da trattamenti più efficaci derivanti da R&S sanitaria
+quota_evitabili	FP-SAL-015	FP	0.12	1	DRG/SSN	SSN – Ricoveri evitabili	CUR=Quota ricoveri evitabili con buona prevenzione	EX=B50c — Risparmio SSN da riduzione ricoveri evitabili (cure primarie potenziate)
+Risp_vet	FP-MOB-006	FP	45	1	DRG/SSN	AMR – Risparmio antibiotici	CUR=Benchmark accessibilità aeroportuale — soglia intervento	EX=Risparmio costi veterinari da riduzione uso antibiotici
+risparmio	MF-IST-127	MF	3500	1	DRG/SSN	Welfare – Risparmio servizi	CUR=Risparmio	EX=Risparmio costi sanitari/sociali da integrazione lavorativa
+_ab	FP-URB-003	FP	50	1	EAD/EAL	Rischio – EAD alluvioni	CUR=Densità abitativa in aree a rischio naturale	EX=B29a — Expected Annual Damage alluvionale su edifici residenziali
+C_crisi	MF-ENE-004	MF	5	1	EAD/EAL	Adattamento – Resilienza climatica	CUR=Value of Lost Load — costo interruzione fornitura elettrica	EX=B94c — Riduzione vulnerabilità a siccità da infrastrutture idriche aggiuntive
+D_evento	MF-SAL-003	MF	25000	1	EAD/EAL	Idrico – Gestione pluviale	CUR=Costo sociale ferito lieve da incidente stradale	EX=B85d — Riduzione allagamenti urbani da NBS (infiltrazione e ritenzione)
+D_ha	MF-AMB-026	MF	85000	1	EAD/EAL	Rischio – EAD alluvioni	CUR=Danno medio per ettaro alluvionato	EX=B76a — Riduzione EAD alluvionale da opere di difesa idraulica generica
+D_incendio_ha	MF-LAV-003	MF	5000	1	EAD/EAL	Rischio – Prevenzione incendi	CUR=Risparmio sussidi pubblici per reinserito lavorativo	EX=B82d — Risparmio da incendi boschivi prevenuti con gestione forestale
+EAL	FP-AMB-028	FP	0.2	1	EAD/EAL	Sicurezza – Rischio sismico	CUR=EAL sismico edifici scolastici pre-1971 (zona II)	EX=B2b — Riduzione EAL sismico edifici scolastici in zona sismica
+EAL	FP-AMB-029	FP	0.12	1	EAD/EAL	Sismica – EAL	CUR=EAL sismico fabbricati rurali	EX=Riduzione EAL sismico su fabbricati rurali in zone a rischio
+EAL	FP-IST-003	FP	0.15	1	EAD/EAL	Sismica – EAL scuole	CUR=Quota studenti universitari fuori sede	EX=Riduzione EAL sismico su edifici scolastici
+EAL_base	FP-IST-003	FP	0.15	1	EAD/EAL	Rischio sismico – EAL edifici	CUR=Quota studenti universitari fuori sede	EX=B83a — Riduzione EAL sismico su edifici residenziali (adeguamento strutturale)
+EAL_mq_sismico	FP-IST-003	FP	0.15	1	EAD/EAL	Rischio – EAL sismico	CUR=Quota studenti universitari fuori sede	EX=B29c — Expected Annual Loss sismico su edifici residenziali
+eventi_rid	FP-AMB-024	FP	0.03	1	EAD/EAL	Idrico – Gestione pluviale	CUR=Frequenza eventi allagamento per ha verde non realizzato	EX=B85d — Riduzione allagamenti urbani da NBS (infiltrazione e ritenzione)
+p_rid	FP-IST-004	FP	0.3	4	EAD/EAL/VSL	Rischio – Early Warning alluvioni/frane ; Rischio – Calamità colture	CUR=Quota studenti fuori sede che utilizza residenza	EX=B89a — Riduzione danni da calamità naturali con sistemi EW
+p_rid	FP-IST-015	FP	0.45	1	EAD/EAL	Sismica – EAL	CUR=Premium salariale PhD vs laurea magistrale	EX=Riduzione EAL sismico su fabbricati rurali in zone a rischio
+p_rid	FP-IST-009	FP	0.4	5	EAD/EAL/QALY	Rischio – EAD idrologico ; EAD – Danni colture	CUR=Quota bambini 3-6 anni su utenti servizi infanzia	EX=Riduzione danni idrologici da sistemazioni idraulico-agrarie
+p_rid	FP-IST-042	FP	0.25	1	EAD/EAL	EAD – Danni calamità naturali ridotti	CUR=Quota adulti italiani partecipanti a formazione culturale	EX=Riduzione EAD calamità da risposta tempestiva VVF/ProCiv
+p_rid	FP-IST-036	FP	0.7	1	EAD/EAL	Siccità – Resilienza avanzata	CUR=Tasso occupazione post-apprendistato	EX=Riduzione vulnerabilità siccità da pratiche agro-climatiche innovative
+p_riduz	FP-IST-009	FP	0.4	2	EAD/EAL/CBA-Mkt	Agricoltura – Danni evitati ; Continuità economica – Costi indiretti	CUR=Quota bambini 3-6 anni su utenti servizi infanzia	EX=B76c — Riduzione danni agricoli attesi da alluvioni
+p_riduz	FP-IST-015	FP	0.45	1	EAD/EAL	Rischio – EAD centri abitati	CUR=Premium salariale PhD vs laurea magistrale	EX=B79a — EAD alluvionale su centri abitati: danno patrimoniale residenziale
+p_riduz	FP-IST-025	FP	0.35	1	EAD/EAL	Rischio – EAL frane su abitati	CUR=Tasso di emigrazione laureati dal comune	EX=B79c — Riduzione EAL frane su centri abitati (danni materiali + vite)
+p_riduz_EW	FP-AMB-002	FP	0.3	1	EAD/EAL	Rischio – Early Warning alluvioni/frane	CUR=Quota FORSU su rifiuti indifferenziati	EX=B89a — Riduzione danni da calamità naturali con sistemi EW
+p_riduz_gestione	FP-IST-004	FP	0.3	1	EAD/EAL	Rischio – Prevenzione incendi	CUR=Quota studenti fuori sede che utilizza residenza	EX=B82d — Risparmio da incendi boschivi prevenuti con gestione forestale
+p_riduz_manutenzione	FP-IST-042	FP	0.25	1	EAD/EAL	Rischio – Difesa idraulica	CUR=Quota adulti italiani partecipanti a formazione culturale	EX=B65b — Riduzione EAD alluvioni da manutenzione argini e regimazione fluviale
+p_riduz_opera	FP-IST-009	FP	0.4	2	EAD/EAL/VSL	Rischio – EAD alluvioni ; Rischio – VSL vite umane	CUR=Quota bambini 3-6 anni su utenti servizi infanzia	EX=B76a — Riduzione EAD alluvionale da opere di difesa idraulica generica
+p_riduz_rete	FP-IST-015	FP	0.45	1	EAD/EAL	Rischio – Flash flood urbano	CUR=Premium salariale PhD vs laurea magistrale	EX=B95a — Riduzione danni da allagamenti urbani con rete pluviale adeguata
+p_riduz_rete	FP-IST-009	FP	0.4	1	EAD/EAL	Adattamento – Resilienza siccità	CUR=Quota bambini 3-6 anni su utenti servizi infanzia	EX=Riduzione rischio siccità agricola da rete interaziendale con riserve condivise
+p_riduzione	FP-SIC-012	FP	0.15	1	EAD/EAL	Rischio – Emergenze	CUR=Riduzione criminalità da videosorveglianza CCTV (Welsh & Farrington)	EX=B_SIC-08 — Riduzione danni da emergenze e catastrofi con infrastrutture sicurezza adeguate
+P2	FP-IST-007	FP	0.02	10	EAD/EAL/VSL	Rischio – EAD alluvioni ; Rischio – VSL	CUR=Quota ITS su laureati annui	EX=B29a — Expected Annual Damage alluvionale su edifici residenziali
+C_NEET	MF-AMB-013	MF	300	6	HC	Sociale – Riduzione NEET ; Abbandono – Riduzione NEET	CUR=Valore ecosistemico ambienti seminaturali	EX=B3d — Riduzione NEET futura da socializzazione precoce adeguata
+C_NEET	MF-LAV-002	MF	300000	1	HC	HC – Riduzione NEET	CUR=Costo sociale lifetime di un NEET	EX=Riduzione NEET da orientamento scolastico efficace
+C_NEET_lifetime	MF-LAV-002	MF	300000	1	HC	Sociale – Riduzione NEET	CUR=Costo sociale lifetime di un NEET	EX=B3d — Riduzione NEET futura da socializzazione precoce adeguata
+deadweight	FP-LAV-006	FP	0.35	1	HC	Occupazione – Addizionale netta	CUR=Deadweight su incentivi all\'occupazione	EX=Posti di lavoro netti da incentivi decontribuzione
+p	FP-MOB-014	FP	0.005	2	HC/DRG/SSN	Istruzione – Valore educativo ; Sicurezza alimentare – Qualità	CUR=Densità km rete distribuzione elettrica per abitante	EX=Benefici educativi da fruizione musei e patrimonio culturale
+p_disoccup_rid	FP-IST-003	FP	0.15	1	HC	Occupazione – Employability	CUR=Quota studenti universitari fuori sede	EX=Riduzione disoccupazione giovanile da competenze internazionali
+p_mant	FP-IST-042	FP	0.25	1	HC	Occupazione – Riqualificazione	CUR=Quota adulti italiani partecipanti a formazione culturale	EX=Mantenimento occupazione da formazione che evita obsolescenza skills
+p_NEET_rid	FP-IST-021	FP	0.03	2	HC	Abbandono – Riduzione NEET ; NEET – Riduzione	CUR=Riduzione probabilità NEET da scuola materna	EX=Riduzione futura NEET da qualità formazione obbligo
+p_NEET_ridotto	FP-IST-021	FP	0.03	1	HC	Sociale – Riduzione NEET	CUR=Riduzione probabilità NEET da scuola materna	EX=B3d — Riduzione NEET futura da socializzazione precoce adeguata
+p_occ	FP-IST-036	FP	0.7	3	HC	HC – Diploma professionale ; HC – Apprendistato premium	CUR=Tasso occupazione post-apprendistato	EX=Reddito lifetime da diploma professionale vs abbandono
+p_occ_post	FP-IST-036	FP	0.7	1	HC	HC – Premium apprendistato	CUR=Tasso occupazione post-apprendistato	EX=Reddito lifetime aggiuntivo da apprendistato vs disoccupazione
+p_occupazione_post	FP-IST-009	FP	0.4	1	HC	Occupazione – Reinserimento	CUR=Quota bambini 3-6 anni su utenti servizi infanzia	EX=B_GIU-08 — Incremento occupazione post-detenzione da programmi lavoro in carcere
+p_rid	FP-IST-040	FP	0.05	1	HC	HC – Riduzione NEET	CUR=QALY da reinserimento lavorativo vs disoccupazione	EX=Riduzione NEET da orientamento scolastico efficace
+p_rid_form	FP-LAV-006	FP	0.35	1	HC	Rischio – Prevenzione obsolescenza	CUR=Deadweight su incentivi all\'occupazione	EX=Riduzione rischio licenziamento per obsolescenza skills
+p_riduz_struttura	FP-IST-020	FP	0.12	1	HC	Capitale umano	CUR=Riduzione probabilità abbandono da strutture scolastiche adeguate	EX=B2a — Riduzione abbandono scolastico da miglioramento strutture
+p_rischio	FP-LAV-002	FP	0.05	1	HC	Rischio – Prevenzione obsolescenza	CUR=Quota aziende che investe annualmente in macchinari — commercio	EX=Riduzione rischio licenziamento per obsolescenza skills
+r	FP-EDI-017	FP	0.03	1	HC	Capitale umano	CUR=Quota annua edifici PA soggetti a riqualificazione EPBD	EX=B1a — Reddito lifetime da riduzione dimensione classe
+reddito	FP-IST-151	FP	14	1	HC	Inserimento – Reddito fasce deboli	CUR=reddito	EX=Reddito netto da inserimento fasce vulnerabili + risparmio sussidio
+reddito_loss_abbandono	FP-IST-009	FP	0.4	1	HC	Capitale umano	CUR=Quota bambini 3-6 anni su utenti servizi infanzia	EX=B2a — Riduzione abbandono scolastico da miglioramento strutture
+ROI_nido	FP-IST-017	FP	7	1	HC	Capitale umano – sviluppo	CUR=ROI scuola dell\'infanzia 0-3 anni (Heckman)	EX=B4a — ROI Perry Preschool 0–3 anni: reddito lifetime + salute + criminalità ridotta
+ROI_scuola_inf	FP-IST-018	FP	2.5	1	HC	Capitale umano	CUR=ROI scuola materna 3-6 anni (Heckman)	EX=B3a — Sviluppo cognitivo 3–6 anni: reddito lifetime futuro (Perry Effect)
+sussidio	FP-IST-150	FP	9	2	HC	Occupazione – Reinserimento ; Inserimento – Reddito fasce deboli	CUR=sussidio	EX=Reddito da reinserimento in nuovi settori post-riconversione
+T_PV15	FP-IST-013	FP	11.9	3	HC	HC – Employability ; HC – Skills upgrade	CUR=Fattore di attualizzazione T_PV15	EX=Reddito lifetime da work-experience e strumenti formativi innovativi
+T_PV20	FP-IST-012	FP	14.9	5	HC	HC – Premium apprendistato ; HC – Premium apprendistato prof.	CUR=Fattore di attualizzazione T_PV20	EX=Reddito lifetime aggiuntivo da apprendistato vs disoccupazione
+T_PV30	FP-IST-011	FP	19.6	12	HC	Capitale umano ; Capitale umano – reddito	CUR=Fattore di attualizzazione T_PV30	EX=B1a — Reddito lifetime da riduzione dimensione classe
+α	FP-IST-010	FP	0.015	2	HC	Capitale umano ; HC – Reddito lifetime	CUR=Elasticità reddito-dimensione classe (Hoxby)	EX=B1a — Reddito lifetime da riduzione dimensione classe
+α	FP-IST-022	FP	0.012	2	HC	HC – Reddito lifetime	CUR=Elasticità occupazione femminile da nido 0-3 anni	EX=Incremento reddito lifetime da formazione obbligo adeguata
+ΔProd	FP-IST-160	FP	0.004	2	HC	Produttività – Aggiornamento skills ; Produttività – Cultura e skills	CUR=ΔProd	EX=Incremento produttività da aggiornamento culturale continuo
+ΔReddito	MF-LAV-021	MF	2500	1	HC	HC – Premium aggiornamento	CUR=ΔReddito	EX=Reddito aggiuntivo da certificazioni tecniche e aggiornamento professionale
+C_salute_rumore	MF-MOB-012	MF	350	2	Hedonic	Ambiente – Rumore ; Ambiente – Rumore aeronautico	CUR=Costo esterno rumore stradale per esposto	EX=B52c — Riduzione esposizione al rumore da barriere antirumore
+quota	FP-EDI-034	FP	4	1	Hedonic	Immobiliare – Hedonic	CUR=Superficie media data center per rack	EX=B11e — Premio valore immobiliare da prossimità a verde
+quota	FP-TUR-025	FP	0.04	3	Hedonic	Immobiliare – Hedonic ; Immobiliare – Rivalutazione post-bonifica	CUR=Incremento presenze da riqualificazione arredo urbano	EX=B20d — Premium valore immobiliare da bene culturale restaurato
+quota	FP-EDI-035	FP	0.3	1	Hedonic	Immobiliare – Hedonic	CUR=Quota caserme su area militare totale	EX=B55d — Premio valore immobiliare da riqualificazione viabilità urbana
+quota	FP-EDI-036	FP	0.1	2	Hedonic	Immobiliare – TOD ; Immobiliare – Hedonic costiero	CUR=Quota organi istituzionali su totale dipendenti PA	EX=B60d — Capitalizzazione valore immobiliare entro 500m da nuova stazione metro/tram
+quota	FP-EDI-004	FP	0.05	2	Hedonic	Immobiliare – TOD stazione ; Immobiliare – Hedonic	CUR=Quota stock abitativo in degrado annuo	EX=B71b — Premium valore immobiliare entro 500m da stazione riqualificata
+quota_impatto	FP-IST-004	FP	0.3	1	Hedonic	Immobiliare – Hedonic	CUR=Quota studenti fuori sede che utilizza residenza	EX=B55d — Premio valore immobiliare da riqualificazione viabilità urbana
+ΔdB	FP-AMB-003	FP	5	1	Hedonic	Immobiliare – NDSI	CUR=Quota rifiuti speciali da brownfield per ettaro	EX=B91b — Premium valore immobiliare da riduzione esposizione al rumore
+ΔV	MF-AMB-023	MF	200	1	Hedonic	Immobiliare – Riconversione	CUR=Costo interruzione servizio idrico — utenza industriale	EX=B46a — Valorizzazione immobiliare da riconversione potenziale di aree militari dismesse
+ΔV	FP-IST-022	FP	0.012	1	Hedonic	Immobiliare – Hedonic	CUR=Elasticità occupazione femminile da nido 0-3 anni	EX=Premium valore immobiliare da fognatura funzionante
+ΔV	FP-IST-026	FP	0.07	1	Hedonic	Immobiliare – Zona recuperata	CUR=Elasticità TFP a quota laureati (Moretti spillover)	EX=Premium valore immobiliare da trattamento RS in zona e riassetto
+ΔV	FP-IST-010	FP	0.015	1	Hedonic	Immobiliare – Hedonic	CUR=Elasticità reddito-dimensione classe (Hoxby)	EX=Premium valore immobiliare entro area CC
+ΔV	FP-IST-020	FP	0.12	1	Hedonic	Immobiliare – Hedonic patrimonio	CUR=Riduzione probabilità abbandono da strutture scolastiche adeguate	EX=Premium valore immobiliare da quartiere storico restaurato
+ΔV	FP-IST-031	FP	0.06	1	Hedonic	Immobiliare – TOD stazione minore	CUR=Elasticità agglomerazione R&S su TFP locale	EX=Premium immobiliare entro 500m da stazione minore riqualificata
+ΔV_bonifica	FP-IST-067	FP	0.1	2	Hedonic	Immobiliare – Rivalutazione post-bonifica ; Immobiliare – Rivalutazione	CUR=ΔProd	EX=B81b — Incremento valore immobiliare nella zona da bonifica
+ΔV_disamenity	FP-IST-024	FP	0.08	1	Hedonic	Immobiliare – Hedonic discarica	CUR=Quota QALY cognitivo per bambino svantaggiato da nido	EX=Riduzione disamenity immobiliare da smaltimento non più in discarica aperta
+ΔV_fognatura	FP-IST-022	FP	0.012	1	Hedonic	Economico – Valore immobiliare	CUR=Elasticità occupazione femminile da nido 0-3 anni	EX=B92d — Premium valore immobiliare da fognatura funzionante
+ΔV_hed	FP-IST-010	FP	0.015	1	Hedonic	Immobiliare – Hedonic	CUR=Elasticità reddito-dimensione classe (Hoxby)	EX=B55d — Premio valore immobiliare da riqualificazione viabilità urbana
+ΔV_spiaggia	FP-IST-024	FP	0.08	1	Hedonic	Immobiliare – Hedonic costiero	CUR=Quota QALY cognitivo per bambino svantaggiato da nido	EX=B80d — Premium valore immobiliare da spiagge preservate
+ΔV_TOD	FP-IST-020	FP	0.12	1	Hedonic	Immobiliare – TOD	CUR=Riduzione probabilità abbandono da strutture scolastiche adeguate	EX=B60d — Capitalizzazione valore immobiliare entro 500m da nuova stazione metro/tram
+ΔV_TOD	FP-IST-067	FP	0.1	1	Hedonic	Immobiliare – TOD stazione	CUR=ΔProd	EX=B71b — Premium valore immobiliare entro 500m da stazione riqualificata
+ΔV_tratt_RS	FP-IST-031	FP	0.06	1	Hedonic	Immobiliare – Post trattamento	CUR=Elasticità agglomerazione R&S su TFP locale	EX=Incremento valore immobiliare nella zona da trattamento RS adeguato
+agglom	FP-IST-024	FP	0.08	1	I-O	Agglomerazione – TFP+risparmio	CUR=Quota QALY cognitivo per bambino svantaggiato da nido	EX=TFP da agglomerazione + risparmio insediamento in area organizzata
+biglietto	FP-TUR-051	FP	30	1	I-O	Economico – Indotto spettacolo	CUR=biglietto	EX=Spesa indotta da spettatori: ristorazione, trasporti, hotel
+collaterale	FP-MOB-002	FP	18	1	I-O	Economico – Indotto spettacolo	CUR=Standard mq aerostazione per passeggero picco	EX=Spesa indotta da spettatori: ristorazione, trasporti, hotel
+deadweight	FP-LAV-039	FP	0.3	4	I-O	Imprenditorialità – Nuove imprese	CUR=deadweight	EX=VA da imprese autonome create con incentivi
+molt	FP-TUR-021	FP	1.35	5	I-O	Economico – VA ; Occupazione – Addetti CC	CUR=Moltiplicatore I-O turismo leisure/sport IT	EX=VA addizionale e occupazione da nuove strutture commerciali
+molt	FP-TUR-020	FP	1.38	3	I-O	Economico – Spesa ; Turismo – Destagionalizzazione	CUR=Moltiplicatore I-O turismo culturale IT	EX=Spesa turistica + moltiplicatore economico locale
+molt	FP-TUR-024	FP	1.45	2	I-O	Filiera – VA pesca ; Pesca – VA sostenibilità	CUR=Moltiplicatore I-O pesca e filiera ittica IT	EX=VA filiera pesca artigianale e acquacoltura
+molt	FP-TUR-022	FP	1.4	4	I-O	Occupazione – Nuovi insediamenti ; Spesa turistica – Balneazione	CUR=Moltiplicatore I-O turismo business/MICE IT	EX=VA e posti di lavoro da nuovo insediamento su area riconvertita
+molt	FP-IST-162	FP	1.32	1	I-O	Turismo – Indotto culturale	CUR=molt	EX=Spesa turismo culturale + indotto da centro culturale attivo
+molt	FP-MOB-001	FP	1.3	1	I-O	Economico – Spesa studenti	CUR=Fattore di picco orario aeroportuale (PHF)	EX=Spesa studenti fuori sede + indotto locale
+molt_effetti	FP-TUR-022	FP	1.4	1	I-O	Economico – Indotto spettacolo	CUR=Moltiplicatore I-O turismo business/MICE IT	EX=Spesa indotta da spettatori: ristorazione, trasporti, hotel
+moltiplicatore	FP-TUR-020	FP	1.38	7	I-O	Turismo – Attrattività ; Economico – Indotto	CUR=Moltiplicatore I-O turismo culturale IT	EX=B10b — Incremento presenze turistiche da attrattività spazi pubblici riqualificati
+moltiplicatore	FP-TUR-021	FP	1.35	6	I-O	Economico – Turismo sportivo ; Economico – Indotto	CUR=Moltiplicatore I-O turismo leisure/sport IT	EX=B12e — Indotto economico da eventi sportivi e turismo
+moltiplicatore	FP-TUR-022	FP	1.4	7	I-O/HC	Economico – Indotto ; Occupazione – Indotto locale	CUR=Moltiplicatore I-O turismo business/MICE IT	EX=B15b — Moltiplicatore economico locale da fiera/congresso
+moltiplicatore	FP-TUR-044	FP	1.32	4	I-O	Economico – Spesa agrituristica ; Turismo – Attrattività borghi	CUR=moltiplicatore	EX=B25b — Spesa diretta turisti in agriturismo e strutture rurali + moltiplicatore
+moltiplicatore	FP-TUR-024	FP	1.45	1	I-O	Economico – VA filiera pesca	CUR=Moltiplicatore I-O pesca e filiera ittica IT	EX=B63a — VA del settore pesca artigianale e trasformazione ittica locale
+moltiplicatore	FP-IST-116	FP	1.55	2	I-O	Economico – Indotto portuale ; Economico – Indotto aeroportuale	CUR=moltiplicatore	EX=B64c — VA generato dalla filiera portuale: logistica, servizi, industria
+moltiplicatore	FP-IST-064	FP	1.5	1	I-O	Economico – Sviluppo post-bonifica	CUR=bacino	EX=B81d — VA e occupazione da nuovo insediamento su area bonificata
+occ	FP-IST-037	FP	0.55	1	I-O	Turismo nautico – Spesa diretta	CUR=Tasso occupazione post-work experience	EX=B62a — Spesa diretta diportisti: ormeggi, servizi, hospitality locale
+p_aumento_access	FP-IST-040	FP	0.05	1	I-O	Turismo – Attrattività internazionale	CUR=QALY da reinserimento lavorativo vs disoccupazione	EX=B73c — Incremento presenze turistiche internazionali da accessibilità aeroportuale
+p_internaz	FP-IST-004	FP	0.3	1	I-O	Turismo – Attrattività internazionale	CUR=Quota studenti fuori sede che utilizza residenza	EX=B73c — Incremento presenze turistiche internazionali da accessibilità aeroportuale
+p_recupero_balneab	FP-IST-040	FP	0.05	1	I-O	Turismo – Balneabilità	CUR=QALY da reinserimento lavorativo vs disoccupazione	EX=B96d — Recupero balneabilità acque e turismo costiero/lacustre
+risp_ins	FP-IST-001	FP	25	1	I-O	Agglomerazione – TFP+risparmio	CUR=Alunni per sezione scuola materna	EX=TFP da agglomerazione + risparmio insediamento in area organizzata
+spesa	MF-IST-013	MF	85	6	I-O	Turismo – Attrattività ; Turismo – Attrattività borghi	CUR=spesa	EX=B10b — Incremento presenze turistiche da attrattività spazi pubblici riqualificati
+spesa	MF-IST-017	MF	40	1	I-O	Economico – Indotto	CUR=spesa	EX=B13b — Indotto economico locale da spesa visitatori strutture ricreative
+spesa	MF-IST-019	MF	55	4	I-O	Economico – Indotto ; Turismo – Spesa locale	CUR=spesa	EX=B14d — Indotto economico hospitality da spettacolo dal vivo
+spesa	MF-TUR-019	MF	48	1	I-O	Economico – Spesa turistica	CUR=spesa	EX=B20c — Spesa turistica locale indotta dal bene culturale
+spesa	MF-TUR-022	MF	42	1	I-O	Economico – Turismo	CUR=spesa	EX=B23c — Indotto economico da turismo monumentale
+spesa	MF-TUR-024	MF	95	1	I-O	Economico – Spesa agrituristica	CUR=spesa	EX=B25b — Spesa diretta turisti in agriturismo e strutture rurali + moltiplicatore
+spesa	MF-TUR-026	MF	50	1	I-O	Economico – Turismo culturale	CUR=spesa	EX=B26c — Indotto economico da turismo generato da mostre di beni mobili
+spesa	MF-IST-027	MF	70	1	I-O	Turismo religioso – Spesa	CUR=spesa	EX=B33b — Spesa turismo religioso + indotto hospitality locale
+spesa	MF-IST-033	MF	8000	1	I-O	Occupazione – Indotto locale	CUR=spesa	EX=B45c — Indotto economico locale da personale militare residente
+spesa	MF-MOB-020	MF	135	1	I-O	Turismo montano – Spesa	CUR=spesa	EX=B67a — Spesa turisti trasportati su impianti a fune
+spesa	MF-IST-078	MF	140	1	I-O	Turismo – Attrattività internazionale	CUR=spesa	EX=B73c — Incremento presenze turistiche internazionali da accessibilità aeroportuale
+spesa	MF-AMB-050	MF	83	1	I-O	Turismo naturalistico – Spesa	CUR=spesa	EX=B84d — Spesa turismo natura + indotto locale
+spesa	MF-AMB-007	MF	90	3	I-O	Turismo – Balneabilità ; Spesa turistica – Balneazione	CUR=WTP per qualità dell\'acqua — WFD	EX=B96d — Recupero balneabilità acque e turismo costiero/lacustre
+spesa	MF-AMB-024	MF	75	1	I-O	Turismo – Destagionalizzazione	CUR=Prezzo medio materie prime seconde da raccolta differenziata	EX=+6% presenze in bassa stagione da offerta alternativa
+spesa	MF-IST-146	MF	60	1	I-O	Turismo esperienziale – Spesa	CUR=spesa	EX=Spesa turismo esperienziale (laboratori, workshop artigiani)
+spesa	MF-IST-166	MF	700	1	I-O	Economico – Spesa studenti	CUR=spesa	EX=Spesa studenti fuori sede + indotto locale
+Spesa	MF-IST-003	MF	35	1	I-O	Economico – Turismo sportivo	CUR=WTP per accesso a impianti sportivi	EX=B12e — Indotto economico da eventi sportivi e turismo
+Spesa_media_business	MF-MOB-012	MF	350	1	I-O	Economico – Spesa diretta	CUR=Costo esterno rumore stradale per esposto	EX=B15a — Spesa diretta visitatori fieristici/congressuali
+spesa_media_mare	MF-AMB-007	MF	90	1	I-O	Turismo costiero – Spesa	CUR=WTP per qualità dell\'acqua — WFD	EX=B80b — Spesa turistica diretta e indotto da destinazioni balneari
+spesa_parco	MF-AMB-024	MF	75	1	I-O	Economico – Indotto parco	CUR=Prezzo medio materie prime seconde da raccolta differenziata	EX=B87d — Spesa turistica e indotto economico da visita a parchi e riserve
+tasso_emigrazione	FP-IST-025	FP	0.35	1	I-O	Sviluppo locale – Attrazione	CUR=Tasso di emigrazione laureati dal comune	EX=B7d — Attrazione talenti e imprese: gettito fiscale aggiuntivo da laureati residenti
+VA	MF-AMB-007	MF	90	3	I-O	Economico – VA filiera pesca ; Filiera – VA pesca	CUR=WTP per qualità dell\'acqua — WFD	EX=B63a — VA del settore pesca artigianale e trasformazione ittica locale
+VA	FP-MOB-002	FP	18	1	I-O	Economico – Indotto portuale	CUR=Standard mq aerostazione per passeggero picco	EX=B64c — VA generato dalla filiera portuale: logistica, servizi, industria
+VA	FP-TUR-017	FP	48	1	I-O	Economico – Indotto aeroportuale	CUR=Spesa media per visita a patrimonio culturale	EX=B73b — VA generato dalla filiera aeroportuale: handling, retail, cargo
+VA	MF-AMB-023	MF	200	2	I-O	Economico – Sviluppo post-bonifica	CUR=Costo interruzione servizio idrico — utenza industriale	EX=B81d — VA e occupazione da nuovo insediamento su area bonificata
+VA	FP-ENE-009	FP	55	1	I-O	Economico – VA	CUR=Risparmio energetico riqualificazione scolastica E→B	EX=VA addizionale e occupazione da nuove strutture commerciali
+VA_servizio	MF-LAV-003	MF	5000	1	I-O	Smart city – Rete dati	CUR=Risparmio sussidi pubblici per reinserito lavorativo	EX=VA da servizi smart city abilitati da rete dati infrastrutturale
+ΔProd	FP-IST-067	FP	0.1	1	I-O	Produttività – TFP industria	CUR=ΔProd	EX=+10% TFP da ammodernamento impianti industriali
+ε	FP-LAV-016	FP	0.06	1	I-O	Spillover – Agglomerazione R&S	CUR=Elasticità TFP da R&S interna alle imprese	EX=TFP da cluster R&S: effetto agglomerazione su imprese locali
+ε	FP-IST-044	FP	0.01	1	I-O	Imprese – Clima investimento	CUR=QALY da accesso biblioteca per studente	EX=Incremento FDI e investimenti da migliore rule of law
+_abit	FP-IST-021	FP	0.03	1	QALY	Salute – Qualità abitativa	CUR=Riduzione probabilità NEET da scuola materna	EX=B27b — Riduzione patologie legate a qualità abitativa scadente
+CRF_morb	FP-AMB-020	FP	0.8	1	QALY	Salute – Morbilità (QALY)	CUR=Riduzione UHI da verde urbano	EX=B90b — QALY da riduzione patologie croniche respiratorie e cardiovascolari da PM
+EC	MF-AMB-003	MF	55000	2	QALY	Qualità aria – Rimozione PM ; Salute – Qualità aria riscaldamento	CUR=Costo esterno per tonnellata di PM2.5 emesso	EX=B85e — Rimozione PM2.5 e NO2 da vegetazione urbana NBS
+EC_PM	FP-ENE-009	FP	55	1	QALY	Salute – Qualità aria	CUR=Risparmio energetico riqualificazione scolastica E→B	EX=B51e — Riduzione costi sanitari da PM2.5 e NOx traffico stradale
+EC_PM_auto	FP-IST-040	FP	0.05	1	QALY	Salute – Qualità aria	CUR=QALY da reinserimento lavorativo vs disoccupazione	EX=B60c — Riduzione costi sanitari da PM2.5 e NO2 per modal shift auto→metro
+EF_PM	FP-IST-029	FP	0.002	1	QALY	BAT – PM+NOx ridotti	CUR=Probabilità spin-off per ricercatore	EX=Riduzione emissioni PM+NOx industriali con BAT
+HEAT_walk	FP-IST-009	FP	0.4	1	QALY	Salute – Attività fisica	CUR=Quota bambini 3-6 anni su utenti servizi infanzia	EX=B55c — Benefici salute da pedonalizzazione e riduzione traffico (HEAT walking)
+HEAT_walking	FP-IST-009	FP	0.4	2	QALY	Salute – Attività fisica	CUR=Quota bambini 3-6 anni su utenti servizi infanzia	EX=B10d — Benefici salute da spazi pubblici pedonali (QALY da camminata)
+km_cammino	FP-IST-005	FP	3	1	QALY	Salute – Attività fisica	CUR=Standard ICOM superficie museo per visitatore	EX=B10d — Benefici salute da spazi pubblici pedonali (QALY da camminata)
+km_walk	FP-IST-005	FP	3	1	QALY	Salute – Attività fisica	CUR=Standard ICOM superficie museo per visitatore	EX=B55c — Benefici salute da pedonalizzazione e riduzione traffico (HEAT walking)
+km_walk_anno	FP-IST-018	FP	2.5	1	QALY	Salute – Attività fisica	CUR=ROI scuola materna 3-6 anni (Heckman)	EX=B30d — Benefici salute da maggiore camminata/ciclabilità nei complessi residenziali
+p_rischio	FP-SAL-014	FP	0.0002	1	QALY	Sicurezza – Prodotti testati	CUR=QALY per minuto di riduzione accesso ospedaliero	EX=Riduzione rischi per consumatori da prodotti validati
+QALY	FP-TUR-011	FP	0.0001	1	QALY	Salute – attività fisica	CUR=Numero borghi rurali per presenze turistiche rurali	EX=B13c — Benefici salute da ricreazione attiva (HEAT)
+VCQALY	MF-SAL-006	MF	60000	18	QALY/CVM/WTP	Salute – stress cognitivo ; Sociale – Equità	CUR=Valore di un QALY — standard IT	EX=B1b — Riduzione stress da sovraffollamento scolastico (QALY)
+VOLY	MF-SAL-007	MF	40000	1	QALY	Salute – Morbilità (QALY)	CUR=Valore di un anno di vita — VOLY	EX=B90b — QALY da riduzione patologie croniche respiratorie e cardiovascolari da PM
+ΔConc	FP-ENE-023	FP	2	1	QALY	Salute – Emissioni locali	CUR=Produzione biometano da fanghi depurazione	EX=Riduzione impatti sanitari locali da upgrade tecnologico (PM, NOx ridotti)
+ΔGini	FP-IST-040	FP	0.05	1	QALY	Salute – QALY disuguaglianza	CUR=QALY da reinserimento lavorativo vs disoccupazione	EX=QALY da riduzione patologie correlate a disuguaglianza sociale
+ΔQALY	FP-IST-020	FP	0.12	1	QALY	Salute – QALY morbilità	CUR=Riduzione probabilità abbandono da strutture scolastiche adeguate	EX=B12b — Riduzione morbilità cardiovascolare, diabete, obesità (QALY)
+ΔQALY	FP-SAL-001	FP	0.05	5	QALY	Psicosociale – QALY occupazione ; QALY – Benessere occupazione	CUR=Quota utenti sociali che necessita residenza	EX=QALY da riduzione depressione da reinserimento lavorativo
+ΔQALY	FP-IST-027	FP	0.04	8	QALY	QALY – Inclusione ; QALY – Benessere attività	CUR=Percentuale ricercatori su laureati	EX=QALY da miglioramento salute mentale e inclusione sociale
+ΔQALY	FP-IST-022	FP	0.012	2	QALY	Salute – Benessere psicologico ; Salute – Active ageing	CUR=Elasticità occupazione femminile da nido 0-3 anni	EX=QALY da formazione che riduce isolamento e declino cognitivo in anziani
+ΔQALY	FP-IST-044	FP	0.01	1	QALY	Salute – Benessere psicologico	CUR=QALY da accesso biblioteca per studente	EX=QALY da partecipazione culturale e riduzione isolamento
+ΔQALY	FP-IST-008	FP	0.008	3	QALY	Salute – Movimento e verde ; Salute – QALY accesso cure	CUR=Standard Erasmus su laureati per 1.000 abitanti	EX=QALY da accesso a corridoi verdi per attività fisica e benessere
+ΔQALY_ciclismo	FP-IST-021	FP	0.03	1	QALY	Salute – Morbilità (QALY)	CUR=Riduzione probabilità NEET da scuola materna	EX=B54b — QALY guadagnati da riduzione morbilità cardiovascolare e metabolica
+ΔQALY_outdoor	FP-AMB-006	FP	0.02	1	QALY	Salute – Outdoor	CUR=Quota eventi calamitosi che danneggiano abitazioni	EX=B86c — QALY da attività fisica outdoor (escursionismo, trail, birdwatching)
+ΔQALY_per_minuto	FP-SAL-014	FP	0.0002	2	QALY	Salute – QALY ; Salute – QALY accesso	CUR=QALY per minuto di riduzione accesso ospedaliero	EX=B50b — QALY guadagnati da riduzione tempi di accesso (diagnosi precoce)
+ΔQALY_RSA_vs_niente	FP-SAL-001	FP	0.05	1	QALY	Salute – QALY	CUR=Quota utenti sociali che necessita residenza	EX=B41b — QALY guadagnati da cure RSA vs domiciliare senza supporto
+ΔQALY_servizi	FP-IST-027	FP	0.04	1	QALY	Salute – QALY	CUR=Percentuale ricercatori su laureati	EX=B5b — Miglioramento qualità vita utenti da servizi di prossimità (QALY)
+ΔQALY_struttura	FP-IST-024	FP	0.08	1	QALY	Salute – Detenuti	CUR=Quota QALY cognitivo per bambino svantaggiato da nido	EX=B48b — Miglioramento salute detenuti da strutture adeguate (QALY)
+ΔQALY_trattamento	FP-IST-029	FP	0.002	1	QALY	Salute – Riduzione impatti locali	CUR=Probabilità spin-off per ricercatore	EX=Riduzione impatti sanitari locali da trattamento adeguato vs discarica
+ΔQALY_verde	FP-IST-008	FP	0.008	2	QALY	Salute – Mentale ; Salute – Mentale e fisica	CUR=Standard Erasmus su laureati per 1.000 abitanti	EX=B11c — Benefici salute mentale da verde urbano (riduzione stress/depressione)
+biogas	FP-AGR-014	FP	15	1	SCC/CO2	Clima – Biogas+CH4	CUR=Riduzione carico azoto da irrigazione controllata	EX=CO2 evitata + valore biogas da strutture BA con digestione
+DA	FP-IST-020	FP	0.12	1	SCC/CO2	Clima – GHG biowaste	CUR=Riduzione probabilità abbandono da strutture scolastiche adeguate	EX=Riduzione GHG da trattamento biologico FORSU vs discarica
+EC_PM	FP-IST-016	FP	0.18	2	SCC/CO2	Ambiente – CO2 logistica ; CO2 – Ottimizzazione flussi	CUR=Premium salariale ITS vs diploma superiore	EX=Riduzione CO2 e PM da ottimizzazione flussi
+EF	FP-ENE-011	FP	0.233	3	SCC/CO2	Ambiente – Energia ; Energia – Risparmio	CUR=EF medio rete elettrica IT — fattore emissione	EX=B1e — Risparmio energetico e CO2 da efficientamento edilizio scolastico
+EF	FP-ENE-012	FP	0.18	6	SCC/CO2	Ambiente – CO2 e PM ; Ambiente – CO2 modal shift	CUR=EF automobili media flotta IT	EX=B30c — Riduzione emissioni da minor uso veicolo privato (modal shift pedonale/ciclabile)
+EF	FP-ENE-003	FP	0.35	1	SCC/CO2	Clima – GHG smaltimento	CUR=Efficienza elettrica impianto CHP	EX=Riduzione GHG da smaltimento adeguato vs discarica non controllata
+EF	FP-IST-009	FP	0.4	2	SCC/CO2	Clima – CO2 innovazione FER ; Clima – CO2 innovazione energetica	CUR=Quota bambini 3-6 anni su utenti servizi infanzia	EX=CO2 evitata da tecnologie FER innovative sviluppate localmente
+EF_auto	FP-IST-016	FP	0.18	10	SCC/CO2	Ambiente – CO2 e PM ; Ambiente – CO2 modal shift	CUR=Premium salariale ITS vs diploma superiore	EX=B30c — Riduzione emissioni da minor uso veicolo privato (modal shift pedonale/ciclabile)
+EF_biol	FP-AMB-029	FP	0.12	1	SCC/CO2	Clima – GHG biowaste	CUR=EAL sismico fabbricati rurali	EX=Riduzione GHG da trattamento biologico FORSU vs discarica
+EF_bus	FP-ENE-013	FP	0.089	1	SCC/CO2	Ambiente – CO2 modal shift	CUR=EF autobus/bus standard per passeggero-km	EX=B57b — Riduzione emissioni da incremento utenti TPL
+EF_disc	FP-AGR-018	FP	0.52	1	SCC/CO2	Clima – GHG trattamento	CUR=Riduzione GHG da C&D vs discarica	EX=Riduzione GHG da trattamento biologico/termico vs discarica
+EF_discarica	FP-AGR-018	FP	0.52	2	SCC/CO2	Clima – GHG evitato ; Clima – GHG biowaste	CUR=Riduzione GHG da C&D vs discarica	EX=Riduzione emissioni GHG da deviazione RU da discarica
+EF_displaced	FP-IST-009	FP	0.4	5	SCC/CO2	Energia – CO2 dissalazione FER ; Energia – Idroelettrica	CUR=Quota bambini 3-6 anni su utenti servizi infanzia	EX=Riduzione CO2 da dissalatori alimentati da fonti rinnovabili
+EF_el	FP-ENE-011	FP	0.233	12	SCC/CO2	Ambiente – Energia ; Ambiente – CO2	CUR=EF medio rete elettrica IT — fattore emissione	EX=B2c — Risparmio energetico edifici scolastici riqualificati
+EF_funivia	FP-MOB-054	FP	0.01	1	SCC/CO2	Ambiente – CO2 vs auto	CUR=Riduzione CO2 da flusso costante autostradale vs stop-and-go	EX=B67c — Riduzione CO2 da sostituzione auto/pullman con funivie elettriche
+EF_medio_ponderato	FP-AGR-019	FP	1.1	1	SCC/CO2	Clima – CO2 ciclo materiali	CUR=EF risparmio MPS vs materie vergini (media ponderata)	EX=Riduzione emissioni CO2 da uso MPS vs materie vergini (avoid burden)
+EF_pompaggio	FP-IST-025	FP	0.35	1	SCC/CO2	Energia – Risparmio pompaggio CO2	CUR=Tasso di emigrazione laureati dal comune	EX=B93b — Risparmio energetico e CO2 da minor volume da pompare
+EF_rete	FP-ENE-011	FP	0.233	1	SCC/CO2	Clima – CO2 vs generatore diesel	CUR=EF medio rete elettrica IT — fattore emissione	EX=Riduzione CO2 da sostituzione generatori diesel con rete elettrica
+EF_risparmio	FP-IST-025	FP	0.35	1	SCC/CO2	Clima – GHG smaltimento	CUR=Tasso di emigrazione laureati dal comune	EX=Riduzione GHG da smaltimento adeguato vs discarica non controllata
+EF_TIR	FP-ENE-015	FP	0.062	4	SCC/CO2	Ambiente – Emissioni merci ; Ambiente – CO2 merci intermodali	CUR=EF TIR per tonnellata-km	EX=B64b — Riduzione emissioni CO2 e PM da modal shift strada→mare
+EF_TMB	FP-IST-020	FP	0.12	1	SCC/CO2	Clima – GHG trattamento	CUR=Riduzione probabilità abbandono da strutture scolastiche adeguate	EX=Riduzione GHG da trattamento biologico/termico vs discarica
+EF_TPL_mix	FP-IST-024	FP	0.08	1	SCC/CO2	Modal shift – CO2	CUR=Quota QALY cognitivo per bambino svantaggiato da nido	EX=B59b — Riduzione emissioni da incremento domanda TPL grazie a integrazione
+gg	MF-AMB-013	MF	300	1	SCC/CO2	Ambiente – CO2 e PM	CUR=Valore ecosistemico ambienti seminaturali	EX=B30c — Riduzione emissioni da minor uso veicolo privato (modal shift pedonale/ciclabile)
+km_auto_evitati	FP-AGR-015	FP	3000	1	SCC/CO2	Ambiente – CO2 e PM	CUR=Consumo idrico medio irrigazione per ettaro	EX=B66b — Riduzione emissioni da veicoli condivisi e micromobilità elettrica
+km_cruising	FP-IST-032	FP	20	1	SCC/CO2	Ambiente – Emissioni cruising	CUR=Alunni standard per classe — benchmark dimensione	EX=B58b — Riduzione emissioni da minor cruising auto in cerca di parcheggio
+km_medi	FP-IST-017	FP	7	2	SCC/CO2	Ambiente – CO2 modal shift	CUR=ROI scuola dell\'infanzia 0-3 anni (Heckman)	EX=B57b — Riduzione emissioni da incremento utenti TPL
+kWh_anno	FP-AGR-015	FP	3000	1	SCC/CO2	Clima – CO2 vs generatore diesel	CUR=Consumo idrico medio irrigazione per ettaro	EX=Riduzione CO2 da sostituzione generatori diesel con rete elettrica
+kWh_risparmio	FP-ENE-006	FP	8000	1	SCC/CO2	Energia – Green data center	CUR=Ore operative annue impianto biogas	EX=Risparmio energetico da data center efficiente (PUE <1.3)
+LCOE	MF-ENE-003	MF	55	1	SCC/CO2	Energia – Agrovoltaico	CUR=Costo livellato energia rinnovabile — LCOE FER	EX=Produzione FER da agrovoltaico su SAU
+LCOE_idro	FP-MOB-006	FP	45	2	SCC/CO2/CBA-Mkt	Energia – Idroelettrica ; Energia – Idroelettrico rinnovabile	CUR=Benchmark accessibilità aeroportuale — soglia intervento	EX=Produzione energia rinnovabile da impianti idroelettrici a dighe
+P_el	FP-MOB-026	FP	0.22	13	SCC/CO2/CBA-Mkt	Ambiente – Energia ; Energia – Risparmio	CUR=Quota feriti gravi su totale feriti stradali	EX=B1e — Risparmio energetico e CO2 da efficientamento edilizio scolastico
+p_rid_emiss_ITS	FP-MOB-027	FP	0.08	1	SCC/CO2	Ambiente – Eco-routing	CUR=Quota incidenti su autostrade	EX=B69c — Riduzione emissioni da eco-routing e semafori green-wave ITS
+risparmio	MF-IST-035	MF	8	2	SCC/CO2/CBA-Mkt	Energia – Risparmio infrastrutture ; Smart services – IoT risparmio	CUR=risparmio	EX=B46c — Risparmio energetico e manutenzione da razionalizzazione infrastrutture militari
+Risparmio	MF-IST-072	MF	800	1	SCC/CO2	Energia – Efficienza cavidotti	CUR=Risparmio	EX=Risparmio energetico da infrastruttura condivisa vs singola
+risparmio_kWh_grado	MF-MOB-008	MF	0.035	1	SCC/CO2	Clima – UHI	CUR=Riduzione costi operativi veicolo — TIR	EX=B11b — Riduzione isola di calore urbano: risparmio climatizzazione
+SEQ	FP-AMB-018	FP	2.5	2	SCC/CO2	Clima – Sequestro CO2 ; Clima – NBS corridoi	CUR=Sequestro CO2 da alberi urbani adulti	EX=B11a — Sequestro carbonio da verde urbano
+SEQ	FP-AMB-025	FP	3	3	SCC/CO2	Clima – Sequestro CO2 ; Clima – Carbon sink	CUR=Sequestro CO2 da foresta gestita	EX=B82a — Sequestro carbonio da foreste gestite
+SEQ	FP-AMB-026	FP	0.8	1	SCC/CO2	Clima – Carbon sink agro-silvo	CUR=Sequestro CO2 da ambienti seminaturali	EX=CO2 sequestrata da ambienti agro-silvo-ambientali conservati
+SEQ_CO2	FP-IST-005	FP	3	3	SCC/CO2	Clima – Sequestro CO2 ; Clima – Carbon sink	CUR=Standard ICOM superficie museo per visitatore	EX=B82a — Sequestro carbonio da foreste gestite
+SEQ_CO2	FP-AMB-018	FP	2.5	1	SCC/CO2	Clima – Sequestro CO2	CUR=Sequestro CO2 da alberi urbani adulti	EX=B85a — Sequestro carbonio da verde urbano e infrastrutture verdi
+SEQ_CO2_ha	FP-IST-018	FP	2.5	1	SCC/CO2	Clima – Sequestro CO2	CUR=ROI scuola materna 3-6 anni (Heckman)	EX=B11a — Sequestro carbonio da verde urbano
+SWRO	FP-ENE-019	FP	3.5	1	SCC/CO2	Energia – CO2 dissalazione FER	CUR=Consumo energetico specifico dissalatori SWRO	EX=Riduzione CO2 da dissalatori alimentati da fonti rinnovabili
+ΔEF	FP-ENE-001	FP	0.5	1	SCC/CO2	Clima – CO2 vs carbone	CUR=Produzione GWh FER per ettaro di superficie verde	EX=Riduzione CO2 da gas vs carbone/olio in centrale e uso industriale
+ΔEF	FP-ENE-003	FP	0.35	1	SCC/CO2	Clima – CO2 upgrade CCGT	CUR=Efficienza elettrica impianto CHP	EX=Riduzione CO2 da upgrade a ciclo combinato (carbone/olio → CCGT gas)
+ΔEF	FP-AGR-010	FP	0.05	1	SCC/CO2	Clima – Riduzione CH4	CUR=Quota SAU soggetta a compensazioni agro-climatiche	EX=Riduzione emissioni metano da gestione reflui zootecnici
+ΔEF	FP-IST-031	FP	0.06	1	SCC/CO2	Clima – CO2 riciclo inerti	CUR=Elasticità agglomerazione R&S su TFP locale	EX=CO2 evitata da riciclo aggregati C&D vs produzione da cava
+ΔEF_biomet	FP-IST-036	FP	0.7	1	SCC/CO2	Clima – CO2 biometano vs fossile	CUR=Tasso occupazione post-apprendistato	EX=CO2 evitata da biometano rispetto al gas naturale fossile
+ΔEF_CHP	FP-ENE-025	FP	0.008	2	SCC/CO2	Clima – CO2 teleriscaldamento ; Clima – CO2 cogenerazione	CUR=EF risparmio da flusso costante vs stop-and-go urbano	EX=Riduzione CO2 da cogenerazione vs caldaie individuali a gas
+ΔEF_CO2_fluidif	FP-IST-008	FP	0.008	1	SCC/CO2	Ambiente – CO2	CUR=Standard Erasmus su laureati per 1.000 abitanti	EX=B51f — Riduzione emissioni CO2 da fluidificazione traffico e minor consumo
+ΔEF_CO2_flusso	FP-IST-044	FP	0.01	1	SCC/CO2	Ambiente – Emissioni	CUR=QALY da accesso biblioteca per studente	EX=B56d — Riduzione emissioni CO2 da flusso costante autostradale
+ΔEF_pompaggio	FP-IST-024	FP	0.08	1	SCC/CO2	Energia – Pompaggio ottimizzato	CUR=Quota QALY cognitivo per bambino svantaggiato da nido	EX=B98b — Risparmio energetico da impianti di sollevamento efficienti (pompe IE4)
+ΔEF_pompe	FP-IST-031	FP	0.06	1	SCC/CO2	Energia – CO2 pompaggio	CUR=Elasticità agglomerazione R&S su TFP locale	EX=Risparmio energetico da ottimizzazione sollevamento acque reflue
+ΔEmiss	FP-AGR-019	FP	1.1	1	SCC/CO2	Clima – CO2 agro-climatica	CUR=EF risparmio MPS vs materie vergini (media ponderata)	EX=CO2 sequestrata e GHG ridotti da progetti agro-climatici applicati
+ΔkWh	FP-EDI-010	FP	60	1	SCC/CO2	Energia – Risparmio bollette PA	CUR=Superficie per aula scolastica	EX=Risparmio energetico da riqualificazione edifici pubblici (EPBD)
+ΔkWh_mq	FP-ENE-009	FP	55	3	SCC/CO2	Ambiente – Energia ; Energia – Risparmio edilizio	CUR=Risparmio energetico riqualificazione scolastica E→B	EX=B1e — Risparmio energetico e CO2 da efficientamento edilizio scolastico
+ΔNOx_LTO	FP-IST-002	FP	1.2	1	SCC/CO2	Ambiente – Emissioni LTO	CUR=Quota classi speciali su classi standard	EX=B74b — Riduzione emissioni CO2 e NOx da ciclo LTO efficiente
+ΔSeq	FP-AGR-032	FP	0.8	1	SCC/CO2	Clima – Sequestro C+N2O	CUR=ΔSeq	EX=CO2eq sequestrata e N2O ridotto da pratiche agro-climatiche
+ΔSeq_RS	FP-IST-067	FP	0.1	1	SCC/CO2	Clima – Sequestro C agro-forestale	CUR=ΔProd	EX=CO2 sequestrata da nuove pratiche agro-forestali da R&S applicata
+ΔTariff_peak	FP-IST-027	FP	0.04	1	SCC/CO2	Energia – Ottimizzazione pompaggio	CUR=Percentuale ricercatori su laureati	EX=Risparmio energetico da sollevamento ottimizzato nelle ore off-peak
+C_autobotti	MF-ENE-004	MF	5	3	Sostituz.	Adattamento – Resilienza siccità ; Idrico – Sicurezza approvvigionamento	CUR=Value of Lost Load — costo interruzione fornitura elettrica	EX=B98c — Sicurezza idrica in periodi siccitosi (opzione): risparmio vs approvv. alternativo
+C_notte_alt	MF-IST-003	MF	35	1	Sostituz.	Sociale – Attività comunitaria	CUR=WTP per accesso a impianti sportivi	EX=B36d — Valore servizi comunitari offerti da convento (mense, accoglienza)
+C_pasto_alt	MF-MOB-004	MF	6	1	Sostituz.	Sociale – Attività comunitaria	CUR=Valore del Tempo — anziani e utenti fragili	EX=B36d — Valore servizi comunitari offerti da convento (mense, accoglienza)
+C_rete	MF-AMB-018	MF	1.1	2	Sostituz.	Idrico – Sicurezza approvvigionamento ; Risparmio – Autobotti evitate	CUR=Prezzo ombra acqua potabile da acquedotto	EX=B94a — Risparmio costi alternativi in periodi di scarsità idrica strutturale
+C_RSA	MF-SAL-011	MF	2600	4	Sostituz.	Sanitario / Deistituzionalizzazione ; Sanitario – Risparmio RSA	CUR=Costo mensile posto in RSA	EX=B5a — Risparmio differenziale RSA vs servizi domiciliari/comunitari
+gg_soggiorno	FP-IST-018	FP	2.5	1	Sostituz.	Turismo – Ricettività	CUR=ROI scuola materna 3-6 anni (Heckman)	EX=B36a — Risparmio costi per turisti che usufruiscono di ricettività religiosa low-cost
+risparmio	MF-IST-030	MF	40	1	Sostituz.	Turismo – Ricettività	CUR=risparmio	EX=B36a — Risparmio costi per turisti che usufruiscono di ricettività religiosa low-cost
+risparmio	MF-IST-148	MF	8000	1	Sostituz.	Locazione – Risparmio	CUR=risparmio	EX=Risparmio costi sede per organizzazioni IS
+Risparmio	MF-ENE-009	MF	1500	1	Sostituz.	Welfare – Servizi famiglie numerose	CUR=Risparmio annuo da sistemi di building management (BMS)	EX=Risparmio costi welfare da servizi dedicati a famiglie con alto indice dipendenza
+tasso	FP-IST-080	FP	11.1	1	Sostituz.	Economico – Risparmio	CUR=tasso	EX=B8b — Risparmio famiglie da servizio pubblico vs privato
+ΔCanone_mensile	MF-MOB-012	MF	350	1	Sostituz.	Sociale – Risparmio canone	CUR=Costo esterno rumore stradale per esposto	EX=B27a — Risparmio costo abitativo per famiglie a basso reddito (ERP)
+CS	FP-MOB-002	FP	18	3	TCM	Culturale – CS ; Ricreazione – Balneabilità	CUR=Standard mq aerostazione per passeggero picco	EX=B24a — Consumer surplus da visita siti archaeologici (TCM)
+CS	FP-EDI-016	FP	35	1	TCM	Turismo – CS parco	CUR=Standard superficie per addetto — sede PA istituzionale	EX=B87b — Consumer surplus visitatori parchi e riserve (TCM)
+CS_eco_RS	MF-IST-001	MF	28	1	TCM	Turismo – Ecoturismo marino	CUR=WTP per servizi culturali — esistenza e opzione	EX=CS da ecoturismo marino e fruizione costa potenziate da R&S
+CS_escursione	MF-AMB-021	MF	15	1	TCM	Turismo – Escursionismo	CUR=Costo interruzione servizio idrico — utenza residenziale	EX=B88c — CS da escursionismo e turismo naturalistico in siti rurali
+CS_parco	MF-AMB-006	MF	35	1	TCM	Turismo – CS parco	CUR=WTP per verde urbano accessibile	EX=B87b — Consumer surplus visitatori parchi e riserve (TCM)
+CS_teatro	MF-TUR-004	MF	22	1	TCM	Cultura – CS spettacolo dal vivo	CUR=Consumer surplus — spettacolo teatrale	EX=Consumer surplus da fruizione teatri e spazi performativi
+museo	FP-TUR-040	FP	0.8	1	TCM	Culturale – CS	CUR=museo	EX=B23a — Consumer surplus da visita monumenti
+p_attrBC	FP-TUR-028	FP	0.2	1	TCM	Turismo – CS	CUR=Quota presenze attratte da beni culturali diffusi	EX=B22b — Consumer surplus turisti da attrattiva culturale diffusa
+ΔV_hed_acqua	FP-IST-021	FP	0.03	1	TCM	Turismo – Waterfront	CUR=Riduzione probabilità NEET da scuola materna	EX=B61b — Valorizzazione turistica e ricreativa fronti acqua e rive
+benchmark	FP-MOB-006	FP	45	1	VoT	Accessibilità – VoT	CUR=Benchmark accessibilità aeroportuale — soglia intervento	EX=B73a — Risparmio tempo passeggeri da migliore accessibilità aeroporto
+C_km	MF-MOB-010	MF	0.25	7	VoT/CBA-Mkt	Accessibilità – Equità ; Accessibilità – Costo trasporto	CUR=Costo operativo per km — auto privata	EX=B5d — Risparmio trasporto utenti da servizi di prossimità (vs spostamenti verso strutture lontane)
+EC_cong	FP-MOB-027	FP	0.08	1	VoT	Mobilità – Traffico smart	CUR=Quota incidenti su autostrade	EX=Risparmio congestione da sistemi controllo traffico intelligenti
+EC_cong_medio	FP-MOB-027	FP	0.08	1	VoT	Efficienza – Congestione	CUR=Quota incidenti su autostrade	EX=B69b — Riduzione congestione da traffic management intelligente (VoT)
+frequenza	MF-IST-047	MF	280	1	VoT	Tempo – VoT TPL	CUR=frequenza	EX=B57a — Risparmio tempo utenti TPL da infrastrutture urbane efficienti
+frequenza	MF-IST-054	MF	250	2	VoT	Tempo – VoT passeggeri	CUR=frequenza	EX=B60a — Risparmio tempo passeggeri da linea metro/tram vs bus su corridoio congestionato
+indice	FP-IST-079	FP	0.5	1	VoT	Accessibilità	CUR=indice	EX=B2d — Riduzione tempi accesso da capillarità rete scolastica
+km	FP-MOB-042	FP	3.5	1	VoT	Accessibilità – Residenti	CUR=km medi percorso auto in area urbana	EX=B55b — Risparmio VOC e tempo residenti da strade comunali adeguate
+N_pratiche	FP-IST-005	FP	3	2	VoT	Accessibilità – Servizi remoti ; Cittadini – Servizi digitali	CUR=Standard ICOM superficie museo per visitatore	EX=Risparmio tempo cittadini da servizi pubblici digitali (es. SPID, fascicolo sanitario)
+N_spost	FP-TUR-019	FP	220	1	VoT	Mobilità – Accessibilità area	CUR=Spesa media diportista/nautica per giorno	EX=Risparmio tempo/km addetti da accessibilità area industriale
+N_spost	FP-ENE-022	FP	250	1	VoT	Accessibilità – VoT disabili	CUR=Energia prodotta da biogas TMB per tonnellata	EX=Risparmio tempo e autonomia da abbattimento barriere architettoniche
+p_rid_cong	FP-IST-031	FP	0.06	1	VoT	Mobilità – Traffico smart	CUR=Elasticità agglomerazione R&S su TFP locale	EX=Risparmio congestione da sistemi controllo traffico intelligenti
+p_rid_cong_ITS	FP-MOB-012	FP	0.12	1	VoT	Efficienza – Congestione	CUR=Quota rotazione magazzino su capacità TIR	EX=B69b — Riduzione congestione da traffic management intelligente (VoT)
+p_ritardati	FP-IST-016	FP	0.18	1	VoT	Affidabilità – VoT ritardi	CUR=Premium salariale ITS vs diploma superiore	EX=B70a — Risparmio da riduzione ritardi ferroviari (reliability VoT)
+risparmio	MF-IST-106	MF	1200	1	VoT	Sviluppo rurale – Accesso servizi	CUR=risparmio	EX=B97d — Risparmio tempo e costi per abitazioni rurali allacciate all\'acquedotto
+T_ricerca	FP-MOB-039	FP	11	2	VoT/SCC/CO2	Tempo – Ricerca parcheggio ; Ambiente – Emissioni cruising	CUR=Tempo medio ricerca parcheggio in area urbana italiana	EX=B58a — Risparmio tempo da riduzione cruising (ricerca parcheggio)
+VoT	MF-IST-003	MF	35	3	VoT	Imprese – Riduzione oneri burocratici ; Efficienza – VoT giudiziario	CUR=WTP per accesso a impianti sportivi	EX=Risparmio oneri per imprese da PA più competente
+VoT_impresa	MF-IST-003	MF	35	3	VoT	Efficienza PA – Imprese ; Governance – Semplificazione	CUR=WTP per accesso a impianti sportivi	EX=B16c — Risparmio oneri burocratici per imprese locali
+ΔKm	FP-EDI-034	FP	4	1	VoT	Accessibilità – Risparmio	CUR=Superficie media data center per rack	EX=Risparmio tempo/km famiglie da concentrazione offerta
+ΔOre	FP-IST-002	FP	1.2	2	VoT/CBA-Mkt	Digitalizzazione – VoT ; Digitalizzazione – Risparmio ore	CUR=Quota classi speciali su classi standard	EX=Risparmio ore lavoro da digitalizzazione processi
+ΔT	FP-IST-005	FP	3	1	VoT	Accessibilità – Residenti	CUR=Standard ICOM superficie museo per visitatore	EX=B55b — Risparmio VOC e tempo residenti da strade comunali adeguate
+ΔT	FP-EDI-034	FP	4	1	VoT	Tempo – Affidabilità TPL	CUR=Superficie media data center per rack	EX=B59a — Risparmio tempo da maggiore affidabilità e integrazione TPL (MaaS)
+ΔT	FP-IST-001	FP	25	3	VoT	Accessibilità – Servizi remoti ; Cittadini – VoT pratiche	CUR=Alunni per sezione scuola materna	EX=Risparmio tempo cittadini da servizi pubblici digitali (es. SPID, fascicolo sanitario)
+ΔT	FP-IST-032	FP	20	3	VoT	Cittadini – Servizi migliori ; Accessibilità – VoT disabili	CUR=Alunni standard per classe — benchmark dimensione	EX=Risparmio tempo cittadini da PA più efficiente
+ΔT	FP-IST-064	FP	1.5	2	VoT	Imprese – Riduzione oneri burocratici ; Imprese – Risparmio burocratico	CUR=bacino	EX=Risparmio oneri per imprese da PA più competente
+ΔT_accesso	FP-IST-032	FP	20	1	VoT	Accessibilità – Tempo	CUR=Alunni standard per classe — benchmark dimensione	EX=B6a — Risparmio tempo accesso a servizi essenziali
+ΔT_accesso	FP-MOB-002	FP	18	1	VoT	Accessibilità – Tempo	CUR=Standard mq aerostazione per passeggero picco	EX=B_AIS-01 — Risparmio tempo accesso a servizi sociali di prossimità aggiuntivi
+ΔT_accesso	FP-MOB-006	FP	45	1	VoT	Tempo – VoT accesso quota	CUR=Benchmark accessibilità aeroportuale — soglia intervento	EX=B67b — Risparmio tempo accesso quote montane vs percorso a piedi/auto
+ΔT_interscambio	FP-IST-017	FP	7	1	VoT	Tempo – Interscambio	CUR=ROI scuola dell\'infanzia 0-3 anni (Heckman)	EX=B71a — Risparmio tempo passeggeri da riduzione tempi di interscambio
+ΔTempo	FP-IST-064	FP	1.5	1	VoT	Efficienza PA – Imprese	CUR=bacino	EX=B16c — Risparmio oneri burocratici per imprese locali
+ΔTempo_istruttoria	FP-IST-005	FP	3	1	VoT	Efficienza – Tempi decisionali	CUR=Standard ICOM superficie museo per visitatore	EX=B_PA-10 — Risparmio tempi istruttori e decisionali da sedi istituzionali efficienti
+ΔTempo_pratica	FP-IST-032	FP	20	1	VoT	Efficienza PA – Cittadini	CUR=Alunni standard per classe — benchmark dimensione	EX=B16b — Risparmio tempo cittadini da pratiche burocratiche più rapide
+ΔVOC_urb	FP-IST-022	FP	0.012	1	VoT	Accessibilità – Residenti	CUR=Elasticità occupazione femminile da nido 0-3 anni	EX=B55b — Risparmio VOC e tempo residenti da strade comunali adeguate
+_accesso	FP-SAL-013	FP	0.018	1	VSL	Salute – Mortalità evitabile	CUR=Riduzione mortalità per 10 minuti di accesso rapido (Avdic)	EX=B50a — Riduzione mortalità da accesso rapido: VSL per decessi evitabili
+_evitabile	FP-ICT-002	FP	0.0003	1	VSL	Salute – prevenzione	CUR=Densità km cavidotti per abitante	EX=B6d — Riduzione mortalità evitabile da accesso precoce a cure di base
+_prevenibile	FP-SAL-014	FP	0.0002	1	VSL	Salute – Prevenzione	CUR=QALY per minuto di riduzione accesso ospedaliero	EX=B_AIS-04 — Riduzione mortalità evitabile da accesso precoce a rete di supporto sociale
+C_grave	MF-SAL-002	MF	500000	1	VSL	Sicurezza – Feriti	CUR=Costo sociale ferito grave da incidente stradale	EX=B51b — Riduzione costi feriti stradali (gravi e lievi)
+C_lieve	MF-SAL-003	MF	25000	1	VSL	Sicurezza – Feriti	CUR=Costo sociale ferito lieve da incidente stradale	EX=B51b — Riduzione costi feriti stradali (gravi e lievi)
+C_lieve	MF-SAL-005	MF	220000	1	VSL	Sicurezza – Black spot	CUR=Costo sociale incidente stradale grave (con feriti gravi)	EX=B52a — Riduzione incidenti su punti neri da interventi puntuali (guard rail, segnaletica)
+C_medio	MF-ENE-001	MF	0.22	1	VSL	Sicurezza – Feriti	CUR=Prezzo elettricità — tariffa media PA/imprese	EX=B51b — Riduzione costi feriti stradali (gravi e lievi)
+C_medio_incidente	MF-SAL-005	MF	220000	1	VSL	Sicurezza – ITS	CUR=Costo sociale incidente stradale grave (con feriti gravi)	EX=B59c — Riduzione incidenti da semafori intelligenti e segnaletica dinamica
+CRF	FP-SAL-040	FP	0.012	3	VSL/QALY	Salute – Mortalità PM2.5 (VSL) ; Salute – Emissioni locali	CUR=Concentrazione-Risposta mortalità PM2.5 (CRF WHO)	EX=B90a — Riduzione mortalità prematura da esposizione cronica a PM2.5
+EC_inc_auto	FP-IST-021	FP	0.03	1	VSL	Sicurezza – Modal shift	CUR=Riduzione probabilità NEET da scuola materna	EX=B72c — Riduzione incidentalità da sostituzione auto con treno
+EC_inc_treno	FP-IST-029	FP	0.002	1	VSL	Sicurezza – Modal shift	CUR=Probabilità spin-off per ricercatore	EX=B72c — Riduzione incidentalità da sostituzione auto con treno
+gravi	FP-MOB-026	FP	0.22	2	VSL	Sicurezza – Feriti	CUR=Quota feriti gravi su totale feriti stradali	EX=B9b — Riduzione costi feriti stradali notturni
+HEAT_mortality_rate	FP-MOB-034	FP	4.5e-07	1	VSL	Salute – Mortalità cardiovascolare	CUR=HEAT mortality rate ciclismo (WHO)	EX=B54a — Riduzione mortalità cardiovascolare da ciclismo attivo (WHO HEAT)
+k	MF-SAL-004	MF	129500	1	VSL	Sicurezza – Feriti	CUR=Costo sociale ferito medio da incidente stradale	EX=B51b — Riduzione costi feriti stradali (gravi e lievi)
+km_anno	FP-MOB-033	FP	1100	1	VSL	Salute – Mortalità cardiovascolare	CUR=Km percorsi annui da ciclista attivo	EX=B54a — Riduzione mortalità cardiovascolare da ciclismo attivo (WHO HEAT)
+p	FP-AMB-001	FP	3	1	VSL	Salute – prevenzione	CUR=Rapporto rifiuti C&D su rifiuti urbani	EX=B6d — Riduzione mortalità evitabile da accesso precoce a cure di base
+p	FP-EDI-025	FP	2	1	VSL	Salute – Prevenzione	CUR=Superficie stalla per UBA — suini	EX=B_AIS-04 — Riduzione mortalità evitabile da accesso precoce a rete di supporto sociale
+p	FP-IST-024	FP	0.08	2	VSL/DRG/SSN	Sicurezza – Incidenti stradali ; SSN – Risparmio ricoveri inappropriati	CUR=Quota QALY cognitivo per bambino svantaggiato da nido	EX=B_SIC-07 — Riduzione incidentalità stradale da presidio stradale rafforzato
+p	FP-SIC-005	FP	0.003	1	VSL	Sicurezza stradale	CUR=Quota popolazione in servizio militare	EX=B54c — Riduzione incidenti ciclisti da separazione fisica traffico
+p	FP-URB-008	FP	0.002	1	VSL	Salute – VSL da R&S sanitaria	CUR=Densità km strade comunali per abitante	EX=Vite salvate da ricerca biomedica applicata localmente
+p_decesso_evitato	FP-SAL-014	FP	0.0002	1	VSL	Salute – VSL vaccinazioni	CUR=QALY per minuto di riduzione accesso ospedaliero	EX=B43b — Vite salvate da campagne vaccinali e screening oncologico
+p_mort	FP-MOB-015	FP	0.05	1	VSL	Sicurezza – ITS attivi	CUR=Densità km rete gas per abitante non metanizzato	EX=B69a — Riduzione incidenti e mortalità da ITS: semafori adattativi, ADAS, C-ITS
+p_mort_diff	FP-SIC-005	FP	0.003	1	VSL	VSL – Accesso emergenze	CUR=Quota popolazione in servizio militare	EX=Vite salvate da accesso rapido a cure d\'emergenza
+p_mortale	FP-IST-016	FP	0.18	1	VSL	Sicurezza – Incidenti autostradali	CUR=Premium salariale ITS vs diploma superiore	EX=B56c — Riduzione incidenti mortali e gravi da standard autostradale
+p_mortality_rid	FP-IST-029	FP	0.002	1	VSL	Salute – VSL da R&S sanitaria	CUR=Probabilità spin-off per ricercatore	EX=Vite salvate da ricerca biomedica applicata localmente
+p_rid	FP-IST-016	FP	0.18	1	VSL	Sicurezza – ITS attivi	CUR=Premium salariale ITS vs diploma superiore	EX=B69a — Riduzione incidenti e mortalità da ITS: semafori adattativi, ADAS, C-ITS
+p_rid_ITS	FP-IST-016	FP	0.18	1	VSL	Sicurezza – ITS	CUR=Premium salariale ITS vs diploma superiore	EX=B59c — Riduzione incidenti da semafori intelligenti e segnaletica dinamica
+p_riduz	FP-IST-042	FP	0.25	1	VSL	Sicurezza – Incidenti autostradali	CUR=Quota adulti italiani partecipanti a formazione culturale	EX=B56c — Riduzione incidenti mortali e gravi da standard autostradale
+p_riduz_blackspot	FP-IST-004	FP	0.3	1	VSL	Sicurezza – Black spot	CUR=Quota studenti fuori sede che utilizza residenza	EX=B52a — Riduzione incidenti su punti neri da interventi puntuali (guard rail, segnaletica)
+p_riduz_ITS	FP-MOB-028	FP	0.18	1	VSL	Sicurezza – ITS attivi	CUR=Quota incidenti mortali su autostrade	EX=B69a — Riduzione incidenti e mortalità da ITS: semafori adattativi, ADAS, C-ITS
+p_riduz_zona30	FP-IST-009	FP	0.4	1	VSL	Sicurezza – Incidenti urbani	CUR=Quota bambini 3-6 anni su utenti servizi infanzia	EX=B55a — Riduzione incidenti stradali urbani: VSL + feriti
+p_urbano	FP-IST-037	FP	0.55	1	VSL	Sicurezza – Incidenti urbani	CUR=Tasso occupazione post-work experience	EX=B55a — Riduzione incidenti stradali urbani: VSL + feriti
+p_vit	FP-MOB-015	FP	0.05	1	VSL	Sanitario – Evacuazione medica	CUR=Densità km rete gas per abitante non metanizzato	EX=Risparmio VSL da evacuazione medica d\'emergenza via aerea
+p_vittime	FP-SAL-014	FP	0.0002	3	VSL	Rischio – VSL ; Rischio – VSL vite umane	CUR=QALY per minuto di riduzione accesso ospedaliero	EX=B38b — Vite salvate da early warning e intervento tempestivo
+q_notte	FP-IST-004	FP	0.3	2	VSL	Sicurezza – VSL ; Sicurezza – Feriti	CUR=Quota studenti fuori sede che utilizza residenza	EX=B9a — Vite salvate da riduzione mortalità stradale notturna
+usura	FP-MOB-067	FP	0.004	1	VSL	Sicurezza – Riduzione TIR su strade	CUR=usura	EX=B68c — Riduzione incidenti e usura strade da minor traffico pesante
+ΔConc	FP-IST-146	FP	1	1	VSL	Salute – PM locale	CUR=ΔConc	EX=Riduzione mortalità da PM industriale con BAT
+Δmort	FP-SAL-027	FP	0.008	1	VSL	Salute – Accesso precoce	CUR=QALY da verde urbano (salute mentale)	EX=B42a — Riduzione mortalità da diagnosi precoce in presidi territoriali
+ΔMortality_sport	FP-SAL-025	FP	0.0008	1	VSL	Salute – Mortalità	CUR=Riduzione mortalità cardiovascolare da sport (WHO HEAT)	EX=B12a — Riduzione mortalità cardiovascolare da attività fisica regolare (WHO HEAT)
+Δsic	FP-IST-143	FP	0.2	2	VSL	Sicurezza – Infortuni ; Salute – Sicurezza lavoro	CUR=Δsic	EX=Riduzione infortuni da strutture industriali sicure
+Δsic	FP-IST-042	FP	0.25	1	VSL	Sicurezza – Infortuni	CUR=Quota adulti italiani partecipanti a formazione culturale	EX=Riduzione infortuni da formazione sulla sicurezza sul lavoro
+Δsic_macch	FP-IST-042	FP	0.25	1	VSL	Sicurezza – Nuovi macchinari	CUR=Quota adulti italiani partecipanti a formazione culturale	EX=Riduzione infortuni da macchinari CE nuovi
+Δsicurezza	FP-IST-009	FP	0.4	1	VSL	Sicurezza stradale	CUR=Quota bambini 3-6 anni su utenti servizi infanzia	EX=B54c — Riduzione incidenti ciclisti da separazione fisica traffico
