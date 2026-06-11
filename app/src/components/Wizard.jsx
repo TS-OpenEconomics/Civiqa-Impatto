@@ -398,9 +398,23 @@ function buildProfiloFromCosti(categoriaLabel, tipoLabel) {
   if (!costo) return null;
   const unit = physicalUnitFromUdm(costo.udm);
   const fmtIt = (n) => new Intl.NumberFormat("it-IT").format(n);
+  const record = records[0];
   return {
     titolo: `${categoriaLabel} — costo parametrico`,
     udm: costo.udm,
+    // Dati parametrici di riferimento dal catalogo DOCFAP (costo base, metodologia, fonti),
+    // mostrati nello step CAPEX.
+    costoRef: {
+      val_min: costo.val_min,
+      val_med: costo.val_med,
+      val_max: costo.val_max,
+      udm: costo.udm,
+      unit,
+      costo_base_raw: record.costo_base_raw,
+      note_metodologiche: record.note_metodologiche,
+      fonte_principale: record.fonte_principale,
+      fonti_secondarie: record.fonti_secondarie,
+    },
     campi: [
       { id: "quantita", label: "Quantità", unit, placeholder: "es. 1.000" },
       {
@@ -1211,7 +1225,6 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
   const [annoRevealLevel, setAnnoRevealLevel] = useState(() =>
     (initialProject?.configurazione?.anno_attualizzazione != null && initialProject?.configurazione?.tasso_attualizzazione != null) ? 2 : 0
   );
-  const [capexConfirmed, setCapexConfirmed] = useState(false);
   const [opexRevealLevel, setOpexRevealLevel] = useState(0);
   const [beneficiRevealLevel, setBeneficiRevealLevel] = useState(0);
   const [kpiDetailOpen, setKpiDetailOpen] = useState({});
@@ -1748,7 +1761,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
       case "anno":
         return annoRevealLevel >= 2 && !!draft.anno_attualizzazione && !!draft.tasso_attualizzazione.trim();
       case "capex":
-        return capexConfirmed;
+        return draft.capex.trim().length > 0 && (!draft.capex_distribuzione_attiva || Math.abs(capexDistributionTotal - 100) < 0.001);
       case "opex":
         return opexRevealLevel >= 2;
       case "benefici":
@@ -2143,7 +2156,7 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                     </button>
                   </ClassAccordion>
 
-                  {/* ── Section 2: Tasso di sconto sociale (locked al 3%, sbloccabile) ── */}
+                  {/* ── Section 2: Tasso di sconto sociale — box visibile (bloccato) finché non si conferma l'anno ── */}
                   {annoRevealLevel >= 1 ? (
                     <TassoScontoSection
                       value={draft.tasso_attualizzazione || TASSO_DEFAULT}
@@ -2155,7 +2168,9 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                       confirmed={annoRevealLevel >= 2}
                       onEdit={() => setAnnoRevealLevel(1)}
                     />
-                  ) : null}
+                  ) : (
+                    <LockedAccordion number="2" title="Tasso di sconto sociale" />
+                  )}
                 </div>
               </>
             ) : null}
@@ -2163,48 +2178,32 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
             {step.id === "capex" ? (
               <>
                 <QuestionHeader title="Qual è il CAPEX?" description="Inserisci l'importo complessivo degli investimenti previsti, spese in conto capitale, per la realizzazione del progetto." />
-                <div className="max-w-5xl space-y-3">
-                  <ClassAccordion
-                    number="1"
-                    title="CAPEX complessivo"
-                    selectedLabel={capexConfirmed ? `${fmt(draft.capex)} EUR` : null}
-                    isCompleted={capexConfirmed}
-                    onEdit={() => setCapexConfirmed(false)}
-                  >
-                    <label className="mb-2 block text-[14px] font-semibold text-ink-900">CAPEX complessivo (EUR)</label>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-                      <input
-                        value={fmt(draft.capex)}
-                        onChange={(event) => update("capex", digitsOnly(event.target.value))}
-                        placeholder="es. 10.000.000"
-                        className="h-11 flex-1 border border-ink-200 bg-white px-3 text-[14px] text-ink-900 placeholder:text-ink-300 focus:border-brand-violet focus:outline-none"
-                      />
-                      {profiloTemplate && profiloCapexStima > 0 ? (
-                        <div className="flex items-start gap-2 rounded border border-brand-violet/25 bg-brand-violet-soft px-4 py-3 sm:max-w-[340px]">
-                          <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-violet" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                            <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" d="M12 8v4m0 4h.01" />
-                          </svg>
-                          <div>
-                            <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-violet">Calcolo dal profilo progetto</p>
-                            <p className="mt-1 font-mono text-[12px] leading-[1.7] text-ink-800">
-                              {buildProfiloFormula(profiloTemplate, draft.profilo_dati)}
-                            </p>
-                            <p className="mt-1.5 text-[11px] text-ink-500">Puoi modificare il valore liberamente.</p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-start gap-2 rounded border border-[#e8e8ed] bg-[#f7f7fa] px-4 py-2.5 sm:max-w-[280px]">
-                          <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-violet" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                            <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" d="M12 8v4m0 4h.01" />
-                          </svg>
-                          <p className="text-[11px] leading-[1.5] text-ink-600">
-                            Il valore suggerito è basato sulla <strong>categoria di intervento</strong> selezionata e sulla dimensione tipica degli interventi di questo tipo. Puoi modificarlo liberamente.
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                {(() => {
+                  const costoRef = profiloTemplate?.costoRef ?? null;
+                  const qtyVal = profiloNum(draft.profilo_dati?.quantita);
+                  const cpVal = costoRef ? profiloNum(draft.profilo_dati?.cp, costoRef.val_med) : 0;
+                  const capexFromCp = Math.round(cpVal * qtyVal);
+                  const setCp = (raw) => {
+                    const cleaned = String(raw).replace(/[^\d.,]/g, "");
+                    updateProfiloDati("cp", cleaned);
+                    if (qtyVal > 0) {
+                      const cpNum = profiloNum(cleaned, costoRef?.val_med ?? 0);
+                      update("capex", String(Math.round(cpNum * qtyVal)));
+                    }
+                  };
+                  // CAPEX modificato a mano → ricalcola il costo parametrico (CP = CAPEX / quantità)
+                  const setCapex = (raw) => {
+                    const cleaned = digitsOnly(raw);
+                    update("capex", cleaned);
+                    if (costoRef && qtyVal > 0) {
+                      const capexNum = profiloNum(cleaned);
+                      updateProfiloDati("cp", String(Math.round(capexNum / qtyVal)));
+                    }
+                  };
 
-                    <div className="mt-6 border-t border-[#ececf1] pt-5">
+                  // ── Distribuzione annuale del CAPEX (condivisa tra le due varianti) ──
+                  const distribuzione = (
+                    <div className="border border-ink-100 bg-white p-6">
                       <label className="flex items-center gap-3 text-[14px] font-semibold text-ink-900">
                         <input
                           type="checkbox"
@@ -2260,27 +2259,137 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                         </div>
                       ) : null}
                     </div>
+                  );
 
-                    {(() => {
-                      const ready = draft.capex.trim().length > 0 && (!draft.capex_distribuzione_attiva || Math.abs(capexDistributionTotal - 100) < 0.001);
-                      return (
-                        <button
-                          type="button"
-                          disabled={!ready}
-                          onClick={() => setCapexConfirmed(true)}
-                          className={`mt-6 flex items-center gap-2 px-5 py-2.5 text-[13px] font-semibold transition-colors ${
-                            ready
-                              ? "bg-brand-violet text-white hover:bg-brand-violet-dark"
-                              : "cursor-not-allowed bg-ink-100 text-ink-300"
-                          }`}
-                        >
-                          Conferma CAPEX
-                          <span className="text-[16px] leading-none">→</span>
-                        </button>
-                      );
-                    })()}
-                  </ClassAccordion>
-                </div>
+                  return (
+                    <div className={costoRef
+                      ? "grid max-w-5xl gap-6 xl:grid-cols-[minmax(0,1fr)_320px]"
+                      : "max-w-5xl space-y-5"}>
+                      <div className="space-y-5">
+                        {costoRef ? (
+                          <div className="border border-ink-100 bg-white p-6">
+                            {/* ── Costo parametrico (CP) ── */}
+                            <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-500">Costo parametrico (CP)</p>
+                            <div className="mt-3 flex items-center gap-3">
+                              <input
+                                value={draft.profilo_dati?.cp ?? String(costoRef.val_med)}
+                                onChange={(e) => setCp(e.target.value)}
+                                className="h-11 w-[160px] border border-ink-200 bg-white px-3 text-[18px] font-bold text-ink-900 focus:border-brand-violet focus:outline-none"
+                              />
+                              <span className="text-[14px] font-semibold text-ink-500">{costoRef.udm}</span>
+                            </div>
+                            <input
+                              type="range"
+                              min={costoRef.val_min}
+                              max={costoRef.val_max}
+                              step={Math.max(1, Math.round((costoRef.val_max - costoRef.val_min) / 200))}
+                              value={Math.min(Math.max(cpVal, costoRef.val_min), costoRef.val_max)}
+                              onChange={(e) => setCp(e.target.value)}
+                              className="mt-4 w-full accent-[#5b19d6]"
+                            />
+                            <div className="mt-1 flex justify-between text-[11px] font-medium text-ink-400">
+                              <span>min {fmt(String(costoRef.val_min))}</span>
+                              <span>medio {fmt(String(costoRef.val_med))}</span>
+                              <span>max {fmt(String(costoRef.val_max))}</span>
+                            </div>
+
+                            {/* ── CAPEX stimato (modificabile) ── */}
+                            <div className="mt-6 border-t border-[#ececf1] pt-6">
+                              <label className="mb-2 block text-[13px] font-semibold text-ink-900">CAPEX stimato (EUR)</label>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  value={fmt(draft.capex)}
+                                  onChange={(event) => setCapex(event.target.value)}
+                                  placeholder="es. 2.300.000"
+                                  className="h-12 w-[240px] border border-ink-200 bg-white px-3 text-[18px] font-bold text-ink-900 placeholder:text-ink-300 focus:border-brand-violet focus:outline-none"
+                                />
+                                <span className="text-[15px] font-semibold text-ink-500">€</span>
+                              </div>
+                              <p className="mt-2 text-[11px] text-ink-500">Collegato al costo parametrico: se lo modifichi, il CP si aggiorna di conseguenza (CAPEX ÷ quantità).</p>
+                            </div>
+                          </div>
+                        ) : (
+                          /* Fallback: nessun costo parametrico nel catalogo per questa categoria */
+                          <div className="border border-ink-100 bg-white p-6">
+                            <label className="mb-2 block text-[14px] font-semibold text-ink-900">CAPEX complessivo (EUR)</label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                value={fmt(draft.capex)}
+                                onChange={(event) => update("capex", digitsOnly(event.target.value))}
+                                placeholder="es. 10.000.000"
+                                className="h-12 w-[280px] border border-ink-200 bg-white px-3 text-[18px] font-bold text-ink-900 placeholder:text-ink-300 focus:border-brand-violet focus:outline-none"
+                              />
+                              <span className="text-[15px] font-semibold text-ink-500">€</span>
+                            </div>
+                            {profiloTemplate && profiloCapexStima > 0 ? (
+                              <div className="mt-4 flex max-w-[440px] items-start gap-2 rounded border border-brand-violet/25 bg-brand-violet-soft px-4 py-3">
+                                <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-violet" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                                  <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" d="M12 8v4m0 4h.01" />
+                                </svg>
+                                <div>
+                                  <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-violet">Calcolo dal profilo progetto</p>
+                                  <p className="mt-1 font-mono text-[12px] leading-[1.7] text-ink-800">
+                                    {buildProfiloFormula(profiloTemplate, draft.profilo_dati)}
+                                  </p>
+                                  <p className="mt-1.5 text-[11px] text-ink-500">Puoi modificare il valore liberamente.</p>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="mt-3 max-w-[440px] text-[12px] leading-[1.5] text-ink-500">
+                                Il valore suggerito è basato sulla <strong>categoria di intervento</strong> selezionata e sulla dimensione tipica degli interventi di questo tipo. Puoi modificarlo liberamente.
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {distribuzione}
+                      </div>
+
+                      {/* ── Colonna destra: risultati + riferimenti parametrici dal DOCFAP ── */}
+                      {costoRef ? (
+                        <div className="space-y-5">
+                          <aside className="border border-[#e8e8ed] bg-[#f7f7fa] p-5">
+                            {costoRef.costo_base_raw ? (
+                              <div>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-500">Costo base di riferimento</p>
+                                <p className="mt-1 text-[13px] font-semibold text-ink-900">{costoRef.costo_base_raw}</p>
+                              </div>
+                            ) : null}
+                            {costoRef.note_metodologiche ? (
+                              <div className="mt-4 border-t border-[#e2e2e8] pt-4">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-500">Nota metodologica</p>
+                                <p className="mt-1 text-[12px] leading-[1.5] text-ink-700">{costoRef.note_metodologiche}</p>
+                              </div>
+                            ) : null}
+                            {costoRef.fonte_principale ? (
+                              <div className="mt-4 border-t border-[#e2e2e8] pt-4">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-500">Fonte primaria</p>
+                                <p className="mt-1 text-[12px] leading-[1.5] text-ink-700">{costoRef.fonte_principale}</p>
+                              </div>
+                            ) : null}
+                            {costoRef.fonti_secondarie ? (
+                              <div className="mt-4 border-t border-[#e2e2e8] pt-4">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-500">Fonti secondarie</p>
+                                <p className="mt-1 text-[12px] leading-[1.5] text-ink-700">{costoRef.fonti_secondarie}</p>
+                              </div>
+                            ) : null}
+                          </aside>
+
+                          {/* ── Calcolo del CAPEX (risultato) ── */}
+                          <div className="border border-brand-violet/25 border-l-[3px] border-l-brand-violet bg-brand-violet-soft px-5 py-4">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-brand-violet">Calcolo del CAPEX</p>
+                            <p className="mt-2 font-mono text-[12px] leading-[1.6] text-ink-700">
+                              {fmt(String(Math.round(cpVal)))} {costoRef.udm} × {fmt(String(qtyVal))} {costoRef.unit} =
+                            </p>
+                            <p className="mt-1 text-[26px] font-bold leading-none text-ink-900">
+                              {capexFromCp > 0 ? `${fmt(String(capexFromCp))} €` : "—"}
+                            </p>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })()}
               </>
             ) : null}
 
@@ -2478,7 +2587,9 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                           <span className="text-[16px] leading-none">→</span>
                         </button>
                       </ClassAccordion>
-                    ) : null}
+                    ) : (
+                      <LockedAccordion number="2" title="OPEX annuale" />
+                    )}
                   </div>
 
                   {/* Sidebar — shows vita utile or opex benchmarks (never both) */}

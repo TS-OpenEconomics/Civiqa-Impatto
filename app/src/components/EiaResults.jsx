@@ -338,10 +338,11 @@ export function EiaResults({ project, analysis, onBack }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 divide-y divide-ink-100 border-t border-ink-100 bg-white text-sm md:grid-cols-3 md:divide-x md:divide-y-0">
+          <div className="grid grid-cols-1 divide-y divide-ink-100 border-t border-ink-100 bg-white text-sm md:grid-cols-4 md:divide-x md:divide-y-0">
             <MetaField label="Categoria di intervento" value={project?.configurazione?.categoria_intervento ?? meta.categoria_intervento ?? "—"} />
             <MetaField label="Provincia di riferimento" value={project?.configurazione?.nuts_label ?? project?.configurazione?.localizzazione ?? meta.localizzazione ?? "—"} />
             <MetaField label="Anno di attualizzazione" value={project?.configurazione?.anno_attualizzazione ? String(project.configurazione.anno_attualizzazione) : (meta.anno_attualizzazione ? String(meta.anno_attualizzazione) : "—")} />
+            <MetaField label="SAM di riferimento" value="Italia Multiprovinciale 2025" />
           </div>
         </div>
       </div>
@@ -496,9 +497,9 @@ function TabSintesi() {
         <InfoButton slug="sintesi.hero" />
       </div>
 
-      {/* Cosa ha generato */}
+      {/* Benefici Macroeconomici generati */}
       <section className="space-y-4">
-        <SintesiSectionHead title="Cosa ha generato" subtitle="I principali impatti attivati sull'economia italiana" info="sintesi.kpis" />
+        <SintesiSectionHead title="Benefici Macroeconomici generati" subtitle="I principali impatti attivati sull'economia italiana" info="sintesi.kpis" />
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <SintesiKPI icon="pil"        label="PIL"                    value={fmtM(natGdp)}         caption="valore aggiunto generato in Italia" info="kpi.pil" />
           <SintesiKPI icon="produzione" label="Valore della Produzione" value={fmtM(natProd)}        caption="di volume d'affari in Italia" info="kpi.produzione" />

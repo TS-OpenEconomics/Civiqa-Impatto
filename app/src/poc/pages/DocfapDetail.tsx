@@ -1,123 +1,113 @@
-﻿import { useSyncExternalStore, useState, useRef, useId, useEffect } from 'react'
-import type { CSSProperties, KeyboardEvent, ReactNode } from 'react'
+import { useSyncExternalStore, useState, useEffect } from 'react'
+import type { ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { wizardStore } from '../store/wizardStore'
 import { loadDocfapDemo } from '../data/docfapDemo'
-import { FABBISOGNI } from '../data/taxonomy/fabbisogni'
-import { TEMI_RELAZIONI } from '../data/taxonomy/temi-relazioni'
+import { NEEDS } from '../data/poc_docfap/fabbisogni_v2'
 import { formatEuro } from '../utils/format'
-import { TabRiepilogo } from '../components/docfap/TabRiepilogo'
+import type { AlternativaId, ScoreComposito } from '../types/docfap'
+import { TabImpatto } from '../components/docfap/TabImpatto'
 import { TabCBA } from '../components/docfap/TabCBA'
 import { TabMCA } from '../components/docfap/TabMCA'
-import { TabImpatto } from '../components/docfap/TabImpatto'
 import { TabSensitivita } from '../components/docfap/TabSensitivita'
+import { MC_MOCK_DATA } from '../engine/riskMonteCarlo'
+import { ConfrontoOverlay } from '../components/docfap/ConfrontoOverlay'
+import { ResultBox } from '../components/docfap/ResultBox'
+import type { ResultBoxMetric, ResultBoxOption } from '../components/docfap/ResultBox'
 import {
-  formatScore,
-  getAlternativeDisplayLabel,
+  getDefinedScores,
   getRecommendedAlternativeId,
+  getAlternativeDisplayLabel,
   hasRenderableDocfapScores,
   safeNumber,
 } from '../components/docfap/tableHelpers'
 
-type TabId = 'riepilogo' | 'cba' | 'mca' | 'risk' | 'impatto'
+// ── Mappatura demo opzione → progetto /valutazioni (EIA+ECBA completi) ──────────
+// Non lega numeri reali: serve solo a far funzionare la logica di navigazione (POC).
+// Fino a 5 alternative: A1→PROJ-001, A2→PROJ-002, A3→PROJ-003, poi cicla.
+const OPTION_PROJECTS = ['PROJ-001', 'PROJ-002', 'PROJ-003'] as const
+function projectForOption(optionId: AlternativaId): string {
+  const idx = Math.max(0, (parseInt(optionId.slice(1), 10) || 1) - 1)
+  return OPTION_PROJECTS[idx % OPTION_PROJECTS.length]
+}
 
-const TABS: { id: TabId; label: string }[] = [
-  { id: 'riepilogo', label: 'Riepilogo' },
-  { id: 'cba', label: 'Analisi Costi Benefici' },
-  { id: 'mca', label: 'Analisi MCA' },
-  { id: 'risk', label: 'Analisi del Rischio' },
-  { id: 'impatto', label: "Analisi d'impatto" },
-]
+type DimensionKey = 'impatto' | 'cba' | 'mca' | 'rischio'
 
-const SCOPED_CSS = `
-  .dd-tab {
-    border: none;
-    border-bottom: 3px solid transparent;
-    background: transparent;
-    color: var(--color-text-primary-light);
-    padding: var(--spacing-inset-xs) var(--spacing-inset-s);
-    cursor: pointer;
-    font-family: var(--font-family-1, 'Atkinson Hyperlegible Next', sans-serif);
-    font-size: var(--type-body-s-size, 16px);
-    font-weight: 600;
-    white-space: nowrap;
-    transition: color 0.15s ease, border-color 0.15s ease;
-    margin-bottom: -1px;
-  }
-  .dd-tab:hover {
-    color: var(--color-text-secondary);
-  }
-  .dd-tab[aria-selected="true"] {
-    border-bottom-color: var(--color-background-primary);
-    color: var(--color-text-secondary);
-    font-weight: 700;
-  }
-  .dd-tab:focus-visible,
-  .dd-action-link:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 1px rgba(110, 26, 255, 0.55);
-  }
-`
+function assetUrl(path: string): string {
+  const base = (import.meta as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? '/'
+  return `${base}${path.replace(/^\/+/, '')}`
+}
+const LOGO_EIA = assetUrl('icons/analysis-eia.png')
+const LOGO_ECBA = assetUrl('icons/analysis-ecba.png')
 
+// Etichette dei macro-temi (TC01–TC12) usati da NEEDS (fabbisogni_v2).
+const THEME_LABELS: Record<string, string> = {
+  TC01: 'Cultura e turismo',
+  TC02: 'Economia e lavoro',
+  TC03: 'Istruzione e formazione',
+  TC04: 'Welfare e inclusione',
+  TC05: 'Salute e sanità',
+  TC06: 'Ambiente e territorio',
+  TC07: 'Mobilità e trasporti',
+  TC08: 'Patrimonio pubblico',
+  TC09: 'Energia e clima',
+  TC11: 'Ricerca e innovazione',
+}
+
+// ── Formatters ──────────────────────────────────────────────────────────────────
+function nf(value: number, decimals = 1): string {
+  return safeNumber(value).toLocaleString('it-IT', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+}
+const fmtScore = (v: number) => `${nf(v, 1)} / 100`
+const fmtEuroM = (vEuro: number) => `${nf(safeNumber(vEuro) / 1_000_000, 1)} M€` // valore in €
+const fmtM = (vMln: number) => `${nf(vMln, 1)} M€` // valore già in milioni
+const fmtPct = (v: number) => `${nf(v, 1)}%`
+const fmtInt = (v: number) => safeNumber(v).toLocaleString('it-IT')
+
+function giudizioMca(score: number): string {
+  const s = safeNumber(score)
+  if (s >= 75) return 'Elevato'
+  if (s >= 50) return 'Adeguato'
+  return 'Limitato'
+}
+
+// ── Icone box (MCA/Rischio non hanno un logo PNG dedicato) ──────────────────────
+function IconMca() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 6h10" /><path d="M4 12h7" /><path d="M4 18h12" /><path d="M16 6l2 2 4-4" />
+    </svg>
+  )
+}
+function IconRischio() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z" /><path d="M12 8v4" /><path d="M12 16h.01" />
+    </svg>
+  )
+}
 function IconDoc() {
   return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-      <path d="M14 3v5h5" />
-      <path d="M9 13h6M9 17h6" />
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5" /><path d="M9 13h6M9 17h6" />
+    </svg>
+  )
+}
+function IconDownload() {
+  return (
+    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
     </svg>
   )
 }
 
-function statusBadgeColors(stato: string): CSSProperties {
-  if (stato === 'Completato') {
-    return { background: 'var(--color-background-success-lighter)', color: 'var(--color-text-success)' }
-  }
-  return { background: 'var(--color-background-secondary-lightest)', color: 'var(--color-text-primary-light)' }
-}
-
-function formatCurrency(value?: number | null): string {
-  if (value === undefined || value === null) return 'Non disponibile'
-  return `EUR ${formatEuro(value)}`
-}
-
-function formatMonths(value?: number | null): string {
-  if (value === undefined || value === null || value <= 0) return 'Non disponibile'
-  return `${Math.round(value)} mesi`
-}
-
-function getRobustezzaLabel(level?: number | null): string {
-  if (level === 0) return 'Livello 0'
-  if (level === 1) return 'Livello 1'
-  if (level === 2) return 'Livello 2'
-  if (level === 3) return 'Livello 2+'
-  return 'Non disponibile'
-}
-
-function renderMultilineValue(lines: string[]): ReactNode {
-  const filtered = lines.filter((line) => line.trim().length > 0)
-  if (filtered.length === 0) return 'Non disponibile'
-  return (
-    <div style={valueStackStyle}>
-      {filtered.map((line) => (
-        <span key={line}>{line}</span>
-      ))}
-    </div>
-  )
-}
-
+// ── Pagina ───────────────────────────────────────────────────────────────────────
 export function DocfapDetail() {
-  const state = useSyncExternalStore(
-    wizardStore.subscribe,
-    wizardStore.getState,
-    wizardStore.getState,
-  )
+  const navigate = useNavigate()
+  const state = useSyncExternalStore(wizardStore.subscribe, wizardStore.getState, wizardStore.getState)
+  const [compareDimension, setCompareDimension] = useState<DimensionKey | null>(null)
 
-  const [activeTab, setActiveTab] = useState<TabId>('riepilogo')
-  const tabsRef = useRef<HTMLDivElement>(null)
-  const baseId = useId()
-
-  // Se lo store è vuoto o contiene vecchi risultati non compatibili con i tab
-  // attuali, carica il dataset DOCFAP di esempio così la pagina resta navigabile.
+  // Se lo store è vuoto o incompatibile, carica il dataset DOCFAP di esempio.
   useEffect(() => {
     if (!hasRenderableDocfapScores(state.scoreFinale)) {
       wizardStore.actions.reset()
@@ -125,424 +115,336 @@ export function DocfapDetail() {
     }
   }, [state.scoreFinale])
 
-  const fab = FABBISOGNI.find((item) => item.id === state.fabId)
-  const tema = TEMI_RELAZIONI.find((item) => item.id === state.temaId)
-  const stato = state.scoreFinale && state.scoreFinale.length > 0 ? 'Completato' : 'In bozza'
-
-  const scores = state.scoreFinale ?? []
+  const scores = getDefinedScores(state.scoreFinale, state.alternativeDefinite)
   const recommendedId = getRecommendedAlternativeId(scores)
-  const recommended = recommendedId ? scores.find((item) => item.alternativaId === recommendedId) ?? null : null
-  const kpiItems = recommended
-    ? [
-        {
-          label: 'Alternativa raccomandata',
-          value: getAlternativeDisplayLabel(recommended.alternativaId, state.alternative[recommended.alternativaId]),
-        },
-        { label: 'Punteggio finale', value: `${formatScore(recommended.scoreFinale)} / 100` },
-        { label: 'VANE', value: `${(safeNumber(recommended.van) / 1_000_000).toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} M€` },
-        { label: 'Occupati attivati (ETP)', value: safeNumber(recommended.occupati).toLocaleString('it-IT') },
-      ]
-    : []
+  const recommended = recommendedId ? scores.find((s) => s.alternativaId === recommendedId) ?? null : null
+
+  const need = NEEDS.find((item) => item.code === state.fabId)
+  const temaCode = need?.tema_code ?? state.temaId ?? ''
+  const temaLabel = THEME_LABELS[temaCode] ?? (temaCode || '—')
+  const fabLabel = need?.label ?? '—'
+  const completato = scores.length > 0
   const nomeIntervento = state.intervento.denominazione || 'Intervento senza nome'
-  const dataCreazione = '14/04/2026'
-  const ultimaModifica = '14/04/2026'
   const descrizioneProgetto = state.problema.descrizione || 'Descrizione del progetto non disponibile.'
-  const otherAlternativeIds = state.alternativeDefinite.filter((id) => id !== 'A1' && id !== 'A2')
 
-  const a1 = state.alternative.A1
-  const a2 = state.alternative.A2
-  const otherAlternatives = otherAlternativeIds
-    .map((id) => ({ id, alt: state.alternative[id] }))
-    .filter((entry): entry is { id: typeof otherAlternativeIds[number]; alt: NonNullable<typeof state.alternative[typeof entry.id]> } => Boolean(entry.alt))
-
-  const metaText = `Creato il ${dataCreazione} da ${state.localizzazione.comune || 'Ente non specificato'} (${state.rup.nome || 'RUP non specificato'}) - Ultima modifica il ${ultimaModifica}`
-
-  const a1Lines = a1
-    ? [
-        getAlternativeDisplayLabel('A1', a1),
-        `CAPEX: ${formatCurrency(a1.capex)}`,
-        `OPEX: ${formatCurrency(a1.opex)}`,
-        `Durata: ${formatMonths(a1.durataStimata)}`,
-        `Livello: ${getRobustezzaLabel(a1.robustezza)}`,
-      ]
-    : []
-
-  const a2Lines = a2
-    ? [
-        getAlternativeDisplayLabel('A2', a2),
-        `CAPEX: ${formatCurrency(a2.capex)}`,
-        `OPEX: ${formatCurrency(a2.opex)}`,
-        `Durata: ${formatMonths(a2.durataStimata)}`,
-        `Livello: ${getRobustezzaLabel(a2.robustezza)}`,
-      ]
-    : []
-
-  const otherAlternativeItems = otherAlternatives.map(({ id, alt }) => ({
-    id,
-    label: id,
-    value: [
-      getAlternativeDisplayLabel(id, alt),
-      `CAPEX: ${formatCurrency(alt.capex)}`,
-      `OPEX: ${formatCurrency(alt.opex)}`,
-      `Durata: ${formatMonths(alt.durataStimata)}`,
-      `Livello: ${getRobustezzaLabel(alt.robustezza)}`,
-    ],
-  }))
-
-  const scenarioZeroLines = [
-    state.scenarioZeroNarrative || 'Non disponibile',
-  ]
-
-  function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, currentIndex: number) {
-    const count = TABS.length
-    let next = currentIndex
-
-    if (event.key === 'ArrowRight') {
-      event.preventDefault()
-      next = (currentIndex + 1) % count
-    } else if (event.key === 'ArrowLeft') {
-      event.preventDefault()
-      next = (currentIndex - 1 + count) % count
-    } else if (event.key === 'Home') {
-      event.preventDefault()
-      next = 0
-    } else if (event.key === 'End') {
-      event.preventDefault()
-      next = count - 1
-    } else {
-      return
-    }
-
-    setActiveTab(TABS[next].id)
-    const buttons = tabsRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
-    buttons?.[next]?.focus()
+  function labelOf(id: AlternativaId): string {
+    return getAlternativeDisplayLabel(id, state.alternative[id])
   }
 
-  return (
-    <div style={pageStyle}>
-      <style>{SCOPED_CSS}</style>
+  function optionFor(score: ScoreComposito): ResultBoxOption {
+    return { id: score.alternativaId, label: labelOf(score.alternativaId), isRecommended: score.alternativaId === recommendedId }
+  }
 
-      <section style={heroStyle} aria-labelledby="dd-detail-title">
-        <div style={heroTopRowStyle}>
-          <div style={heroTitleWrapStyle}>
-            <div style={titleRowStyle}>
-              <span style={titleIconStyle} aria-hidden="true"><IconDoc /></span>
-              <h1 id="dd-detail-title" style={heroTitleStyle}>{nomeIntervento}</h1>
-              <span style={{ ...statusBadgeStyle, ...statusBadgeColors(stato) }}>{stato}</span>
+  // Navigazione "analisi completa" per dimensione e opzione.
+  function openSingle(dimension: DimensionKey, optionId: AlternativaId) {
+    const proj = projectForOption(optionId)
+    if (dimension === 'impatto') navigate(`/valutazioni/${proj}/eia/results`)
+    else if (dimension === 'cba' || dimension === 'rischio') navigate(`/valutazioni/${proj}/ecba/results`)
+    else if (dimension === 'mca') navigate(`/impatti/docfap/mca/${optionId}`)
+  }
+
+  // ── Sintesi alternativa raccomandata (mostrata nella testata) ──
+  const recommendedLabel = recommended ? labelOf(recommended.alternativaId) : '—'
+  const finalScoreLabel = recommended ? fmtScore(recommended.scoreFinale) : '—'
+
+  // ── Opzioni (fino a 5) ──
+  // Ordine naturale A1 → A2 → … (la demo restituisce la raccomandata in testa).
+  const orderedScores = [...scores].sort((a, b) => a.alternativaId.localeCompare(b.alternativaId))
+  const canRenderBoxes = orderedScores.length >= 2
+  const boxOptions = orderedScores.map(optionFor)
+
+  const vals = (fn: (s: ScoreComposito) => string): string[] => orderedScores.map(fn)
+  const barVals = (fn: (s: ScoreComposito) => number): number[] => orderedScores.map((s) => safeNumber(fn(s)))
+
+  function metricsFor(dimension: DimensionKey): ResultBoxMetric[] {
+    if (dimension === 'impatto') {
+      return [
+        { label: 'Punteggio impatto', values: vals((s) => fmtScore(s.impattoScore)), emphasize: true, barValues: barVals((s) => s.impattoScore) },
+        { label: 'PIL attivato', values: vals((s) => fmtM(s.pil)) },
+        { label: 'Occupati (ETP)', values: vals((s) => fmtInt(s.occupati)) },
+        { label: 'Valore produzione', values: vals((s) => fmtM(s.produzione)) },
+      ]
+    }
+    if (dimension === 'cba') {
+      return [
+        { label: 'Punteggio CBA', values: vals((s) => fmtScore(s.cbaScore)), emphasize: true, barValues: barVals((s) => s.cbaScore) },
+        { label: 'VANE', values: vals((s) => fmtEuroM(s.van)) },
+        { label: 'TIRE', values: vals((s) => fmtPct(s.tir)) },
+        { label: 'Rapporto B/C', values: vals((s) => nf(s.bcr, 2)) },
+      ]
+    }
+    if (dimension === 'mca') {
+      return [
+        { label: 'Punteggio MCA', values: vals((s) => fmtScore(s.mcaScore)), emphasize: true, barValues: barVals((s) => s.mcaScore) },
+        { label: 'Giudizio sintetico', values: vals((s) => giudizioMca(s.mcaScore)) },
+      ]
+    }
+    // rischio
+    const summaryOf = (s: ScoreComposito) => MC_MOCK_DATA[s.alternativaId]?.summary
+    return [
+      { label: 'Punteggio robustezza', values: vals((s) => fmtScore(s.sensitivityScore)), emphasize: true, barValues: barVals((s) => s.sensitivityScore) },
+      { label: 'P(opzione migliore)', values: vals((s) => { const m = summaryOf(s); return m ? fmtPct(m.probBest * 100) : '—' }) },
+      { label: 'P(VAN < 0)', values: vals((s) => { const m = summaryOf(s); return m ? fmtPct(m.probNegative * 100) : '—' }) },
+    ]
+  }
+
+  const BOXES: Array<{
+    key: DimensionKey
+    title: string
+    tag: string
+    tagClassName: string
+    description: string
+    icon?: ReactNode
+    iconSrc?: string
+    footnote?: string
+  }> = [
+    {
+      key: 'impatto',
+      title: "Analisi d'impatto economico",
+      tag: 'EIA',
+      tagClassName: 'bg-badge-eia text-ink-900',
+      description: 'Effetti del progetto su PIL, occupazione e produzione del territorio.',
+      iconSrc: LOGO_EIA,
+    },
+    {
+      key: 'cba',
+      title: 'Analisi Costi-Benefici',
+      tag: 'ECBA',
+      tagClassName: 'bg-badge-ecba text-ink-900',
+      description: 'Convenienza economica del progetto: VANE, TIRE, rapporto benefici/costi.',
+      iconSrc: LOGO_ECBA,
+    },
+    {
+      key: 'mca',
+      title: 'Analisi Multicriteria',
+      tag: 'MCA',
+      tagClassName: 'bg-brand-violet/15 text-brand-violet',
+      description: 'Valutazione qualitativa secondo i criteri del cluster di intervento.',
+      icon: <IconMca />,
+      footnote: "L'analisi multicriteria è disponibile solo all'interno del DOCFAP.",
+    },
+    {
+      key: 'rischio',
+      title: 'Analisi del Rischio',
+      tag: 'RISK',
+      tagClassName: 'bg-amber-100 text-amber-700',
+      description: 'Robustezza dei risultati a variazioni di costi, benefici e tasso di sconto.',
+      icon: <IconRischio />,
+      footnote: "Il rischio è analizzato all'interno dell'ACB completa.",
+    },
+  ]
+
+  const COMPARE_META: Record<DimensionKey, { title: string; subtitle: string; node: ReactNode }> = {
+    impatto: { title: "Analisi d'impatto economico", subtitle: 'Confronto degli effetti economici tra le opzioni.', node: <TabImpatto /> },
+    cba: { title: 'Analisi Costi-Benefici', subtitle: 'Confronto della convenienza economica tra le opzioni.', node: <TabCBA /> },
+    mca: { title: 'Analisi Multicriteria', subtitle: 'Confronto dei criteri qualitativi tra le opzioni.', node: <TabMCA /> },
+    rischio: { title: 'Analisi del Rischio', subtitle: 'Confronto della robustezza dei risultati tra le opzioni.', node: <TabSensitivita /> },
+  }
+  const optionsLabel = orderedScores.map((s) => labelOf(s.alternativaId)).join('  ·  ')
+
+  return (
+    <div className="min-h-full bg-bg-page px-4 py-8 md:px-8">
+      {/* Breadcrumb */}
+      <nav className="mb-3 flex items-center gap-1.5 text-xs text-ink-500">
+        <button type="button" onClick={() => navigate('/impatti/docfap')} className="transition-colors hover:text-brand-violet">
+          DOCFAP
+        </button>
+        <span>›</span>
+        <span className="font-semibold text-ink-700">Sintesi della valutazione</span>
+      </nav>
+      <p className="mb-5 text-[11px] text-ink-400">
+        Creato il <span className="font-medium">14/04/2026</span> da{' '}
+        <span className="font-medium">{state.localizzazione.comune || 'Ente non specificato'}</span>
+        {state.rup.nome ? ` (RUP ${state.rup.nome})` : ''} — Ultima modifica il{' '}
+        <span className="font-medium">14/04/2026</span>
+      </p>
+
+      {/* Testata — card identità + azioni + meta-griglia (stile /valutazioni) */}
+      <div className="border border-ink-100 bg-white">
+        <div className="flex flex-wrap items-start justify-between gap-4 px-6 py-5 md:px-8">
+          <div className="flex items-start gap-4">
+            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded bg-brand-violet/10 text-brand-violet">
+              <IconDoc />
+            </span>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-[18px] font-bold leading-tight text-ink-900">{nomeIntervento}</h1>
+                <span className="inline-flex items-center bg-brand-violet/15 px-2.5 py-1 font-mono text-[10px] font-semibold tracking-wide text-brand-violet">
+                  DOCFAP
+                </span>
+                <span className={`inline-flex items-center px-2.5 py-1 text-[11px] font-semibold ${completato ? 'border border-green-200 bg-green-50 text-green-700' : 'bg-ink-100 text-ink-500'}`}>
+                  {completato ? 'Completato' : 'In bozza'}
+                </span>
+              </div>
+              <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-ink-500">{descrizioneProgetto}</p>
             </div>
-            <p style={heroMetaStyle}>{metaText}</p>
           </div>
-          <div style={heroActionsStyle}>
-            <a href="#" style={actionLinkStyle} className="dd-action-link">Scarica Report PDF</a>
-            <a href="#" style={actionLinkStyle} className="dd-action-link">Scarica Excel</a>
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <button
+              type="button"
+              className="flex h-9 items-center gap-2 border border-ink-200 bg-white px-4 font-semibold text-ink-700 transition-colors hover:border-brand-violet hover:text-brand-violet"
+            >
+              Scarica report <IconDownload />
+            </button>
+            <button
+              type="button"
+              className="flex h-9 items-center gap-2 bg-accent-lime px-4 font-semibold text-ink-900 transition-opacity hover:opacity-90"
+            >
+              Scarica Excel <IconDownload />
+            </button>
           </div>
         </div>
 
-        <p style={descriptionTextStyle}>{descrizioneProgetto}</p>
-      </section>
+        <div className="grid grid-cols-1 divide-y divide-ink-100 border-t border-ink-100 bg-white text-sm md:grid-cols-4 md:divide-x md:divide-y-0">
+          <MetaField label="Tema del fabbisogno" value={temaLabel} />
+          <MetaField label="Fabbisogno specifico" value={fabLabel} />
+          <MetaField label="Alternativa raccomandata" value={recommendedLabel} highlight />
+          <MetaField label="Punteggio finale" value={finalScoreLabel} highlight />
+        </div>
+      </div>
 
-      {kpiItems.length > 0 && (
-        <section style={kpiSectionStyle} aria-label="Quadro di sintesi">
-          {kpiItems.map((item) => (
-            <div key={item.label} style={kpiTileStyle}>
-              <span style={kpiLabelStyle}>{item.label}</span>
-              <span style={kpiValueStyle}>{item.value}</span>
-            </div>
-          ))}
-        </section>
+      {/* Opzioni a confronto (fino a 5) — presentazione chiara delle alternative */}
+      {orderedScores.length > 0 && (
+        <div className="mt-6">
+          <div className="mb-3 flex items-baseline gap-2">
+            <h2 className="text-[14px] font-bold text-ink-900">Opzioni a confronto</h2>
+            <span className="text-[12px] text-ink-400">
+              {orderedScores.length} {orderedScores.length === 1 ? 'alternativa' : 'alternative'}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+            {orderedScores.map((s) => {
+              const alt = state.alternative[s.alternativaId]
+              const rec = s.alternativaId === recommendedId
+              return (
+                <div
+                  key={s.alternativaId}
+                  className={`flex flex-col rounded-lg border bg-white p-4 shadow-sm ${rec ? 'border-brand-violet ring-1 ring-brand-violet/30' : 'border-ink-100'}`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={`inline-flex h-6 items-center px-2 font-mono text-[11px] font-bold ${rec ? 'bg-brand-violet text-white' : 'bg-ink-100 text-ink-600'}`}>
+                      {s.alternativaId}
+                    </span>
+                    {rec && (
+                      <span className="inline-flex items-center bg-green-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+                        Raccomandata
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-2 text-[13px] font-semibold leading-snug text-ink-900">{labelOf(s.alternativaId)}</p>
+                  <dl className="mt-3 space-y-1 text-[12px]">
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-ink-400">CAPEX</dt>
+                      <dd className="font-mono text-ink-700">{alt?.capex != null ? `€ ${formatEuro(alt.capex)}` : '—'}</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-ink-400">OPEX</dt>
+                      <dd className="font-mono text-ink-700">{alt?.opex != null ? `€ ${formatEuro(alt.opex)}` : '—'}</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-ink-400">Durata</dt>
+                      <dd className="font-mono text-ink-700">{alt?.durataStimata ? `${alt.durataStimata} mesi` : '—'}</dd>
+                    </div>
+                  </dl>
+                  <div className="mt-3 border-t border-ink-100 pt-3">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-400">Punteggio finale</span>
+                      <span className={`font-mono text-[16px] font-bold ${rec ? 'text-brand-violet' : 'text-ink-800'}`}>{nf(s.scoreFinale, 1)}</span>
+                    </div>
+                    <span className="mt-1.5 block h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
+                      <span
+                        className={`block h-full rounded-full ${rec ? 'bg-brand-violet' : 'bg-ink-300'}`}
+                        style={{ width: `${Math.max(0, Math.min(100, safeNumber(s.scoreFinale)))}%` }}
+                      />
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
       )}
 
-      <section style={configCardStyle} aria-labelledby="dd-config-heading">
-        <div style={configHeaderStyle}>
-          <h2 id="dd-config-heading" style={configHeaderTitleStyle}>Dati della configurazione</h2>
+      {/* Dati della configurazione (dettaglio) */}
+      <div className="mt-6 overflow-hidden border border-ink-100 bg-white">
+        <div className="border-b border-ink-100 bg-white px-6 py-3">
+          <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Dati della configurazione</p>
         </div>
-        <div style={configGridStyle}>
-          <ConfigItem label="Tema del fabbisogno" value={tema?.label ?? 'Non disponibile'} />
-          <ConfigItem label="Fabbisogno specifico" value={fab?.label ?? 'Non disponibile'} />
-          <ConfigItem label="Nominativo RUP" value={state.rup.nome || 'Non disponibile'} />
-          <ConfigItem label="Fonte finanziamento" value={state.intervento.fonteFinanziamento || 'Non disponibile'} />
-          <ConfigItem label="Urgenza" value={state.urgenza || 'Non disponibile'} />
-          <ConfigItem label="A1" value={renderMultilineValue(a1Lines)} />
-          <ConfigItem label="A2" value={renderMultilineValue(a2Lines)} />
-          {otherAlternativeItems.map((item) => (
-            <ConfigItem key={item.id} label={item.label} value={renderMultilineValue(item.value)} />
-          ))}
-          <ConfigItem label="Scenario zero" value={renderMultilineValue(scenarioZeroLines)} />
+        <div className="grid grid-cols-1 gap-x-6 gap-y-4 bg-white px-6 py-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ConfigItem label="Nominativo RUP" value={state.rup.nome || '—'} />
+          <ConfigItem label="Fonte finanziamento" value={state.intervento.fonteFinanziamento || '—'} />
+          <ConfigItem label="Urgenza" value={state.urgenza || '—'} />
+          <ConfigItem label="Scenario zero" value={state.scenarioZeroNarrative || '—'} />
         </div>
-      </section>
+      </div>
 
-      <section style={analysisSectionStyle} aria-label="Analisi del DOCFAP">
-        <div style={tablistScrollStyle}>
-          <div
-            ref={tabsRef}
-            role="tablist"
-            aria-label="Sezioni analisi DOCFAP"
-            style={tablistStyle}
-          >
-            {TABS.map((tab, index) => (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                id={`${baseId}-tab-${tab.id}`}
-                className="dd-tab"
-                aria-selected={activeTab === tab.id}
-                aria-controls={`${baseId}-panel-${tab.id}`}
-                tabIndex={activeTab === tab.id ? 0 : -1}
-                onClick={() => setActiveTab(tab.id)}
-                onKeyDown={(event) => handleTabKeyDown(event, index)}
-              >
-                {tab.label}
-              </button>
+      {/* Box analisi */}
+      <div className="mt-10">
+        <div className="mb-5">
+          <h2 className="text-[20px] font-bold text-ink-900">Le analisi del DOCFAP</h2>
+          <p className="mt-0.5 text-[12px] text-ink-500">
+            Per ogni analisi: apri il dettaglio completo di una singola opzione, oppure confronta tutte le opzioni a schermo intero.
+          </p>
+        </div>
+
+        {canRenderBoxes ? (
+          <div className="space-y-5">
+            {BOXES.map((box) => (
+              <ResultBox
+                key={box.key}
+                iconSrc={box.iconSrc}
+                icon={box.icon}
+                title={box.title}
+                tag={box.tag}
+                tagClassName={box.tagClassName}
+                description={box.description}
+                options={boxOptions}
+                metrics={metricsFor(box.key)}
+                singleActionLabel="Analisi completa"
+                onOpenSingle={(optionId) => openSingle(box.key, optionId)}
+                onCompare={() => setCompareDimension(box.key)}
+                footnote={box.footnote}
+              />
             ))}
           </div>
-        </div>
+        ) : (
+          <div className="rounded border border-dashed border-ink-200 px-5 py-10 text-center text-[13px] text-ink-500">
+            Servono almeno due opzioni definite per visualizzare le analisi a confronto.
+          </div>
+        )}
+      </div>
 
-        <div style={analysisContentStyle}>
-          {TABS.map((tab) => (
-            <div
-              key={tab.id}
-              role="tabpanel"
-              id={`${baseId}-panel-${tab.id}`}
-              aria-labelledby={`${baseId}-tab-${tab.id}`}
-              hidden={activeTab !== tab.id}
-              tabIndex={0}
-              style={tabpanelStyle}
-            >
-              {/* Renderizza il contenuto solo quando il tab è attivo: i grafici
-                  recharts richiedono un contenitore visibile per dimensionarsi. */}
-              {activeTab === tab.id && tab.id === 'riepilogo' ? <TabRiepilogo /> : null}
-              {activeTab === tab.id && tab.id === 'cba' ? <TabCBA /> : null}
-              {activeTab === tab.id && tab.id === 'mca' ? <TabMCA /> : null}
-              {activeTab === tab.id && tab.id === 'risk' ? <TabSensitivita /> : null}
-              {activeTab === tab.id && tab.id === 'impatto' ? <TabImpatto /> : null}
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Overlay di confronto */}
+      {compareDimension && (
+        <ConfrontoOverlay
+          title={COMPARE_META[compareDimension].title}
+          subtitle={COMPARE_META[compareDimension].subtitle}
+          optionsLabel={optionsLabel}
+          onClose={() => setCompareDimension(null)}
+        >
+          {COMPARE_META[compareDimension].node}
+        </ConfrontoOverlay>
+      )}
+    </div>
+  )
+}
+
+function MetaField({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className="px-6 py-4">
+      <p className="text-[11px] font-medium text-ink-400">{label}</p>
+      <p className={`mt-1 text-[13px] font-semibold ${highlight ? 'text-brand-violet' : 'text-ink-900'}`} title={value}>
+        {value}
+      </p>
     </div>
   )
 }
 
 function ConfigItem({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div style={configItemStyle}>
-      <dt style={configLabelStyle}>{label}</dt>
-      <dd style={configValueStyle}>{value}</dd>
+    <div>
+      <p className="text-[11px] font-medium text-ink-400">{label}</p>
+      <div className="mt-0.5 text-[13px] font-semibold text-ink-900">{value}</div>
     </div>
   )
-}
-
-const pageStyle: CSSProperties = {
-  display: 'grid',
-  gap: 'var(--spacing-stack-m)',
-  padding: 'var(--spacing-inset-m)',
-  background: 'var(--color-background-secondary-light)',
-  minHeight: '100%',
-  fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-}
-
-const heroStyle: CSSProperties = {
-  display: 'grid',
-  gap: 'var(--spacing-stack-m)',
-  background: 'var(--color-background-secondary-light)',
-  padding: 0,
-}
-
-const heroTopRowStyle: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'flex-start',
-  gap: 'var(--spacing-inline-m)',
-  flexWrap: 'wrap',
-}
-
-const heroTitleWrapStyle: CSSProperties = {
-  display: 'grid',
-  gap: 'var(--spacing-stack-xs)',
-  maxWidth: '880px',
-}
-
-const titleRowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '12px',
-  flexWrap: 'wrap',
-}
-
-const titleIconStyle: CSSProperties = {
-  display: 'inline-flex',
-  color: 'var(--color-icon-primary)',
-}
-
-const heroTitleStyle: CSSProperties = {
-  margin: 0,
-  fontSize: 'var(--type-heading-m-size, 22px)',
-  fontWeight: 700,
-  lineHeight: 1.2,
-  color: 'var(--color-text-primary)',
-}
-
-const statusBadgeStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  borderRadius: 'var(--radius-rounded)',
-  padding: '2px var(--spacing-inset-xs)',
-  fontSize: 'var(--type-body-xs-size, 14px)',
-  fontWeight: 700,
-  width: 'fit-content',
-}
-
-const heroMetaStyle: CSSProperties = {
-  margin: 0,
-  fontSize: 'var(--type-body-s-size, 16px)',
-  color: 'var(--color-text-primary-light)',
-}
-
-const heroActionsStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 'var(--spacing-inline-s)',
-  flexWrap: 'wrap',
-}
-
-const actionLinkStyle: CSSProperties = {
-  color: 'var(--color-text-secondary)',
-  fontWeight: 700,
-  textDecoration: 'underline',
-}
-
-const descriptionTextStyle: CSSProperties = {
-  margin: 0,
-  fontSize: 'var(--type-body-s-size, 16px)',
-  lineHeight: 'var(--type-body-s-line-height, 1.5)',
-  color: 'var(--color-text-primary)',
-  maxWidth: '100ch',
-}
-
-const kpiSectionStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-  gap: 'var(--spacing-inline-s)',
-}
-
-const kpiTileStyle: CSSProperties = {
-  display: 'grid',
-  gap: 'var(--spacing-stack-xs)',
-  alignContent: 'start',
-  background: 'var(--color-background-inverse)',
-  border: '1px solid var(--color-border-secondary-light)',
-  borderRadius: 'var(--radius-smooth)',
-  padding: 'var(--spacing-inset-s)',
-}
-
-const kpiLabelStyle: CSSProperties = {
-  fontSize: 'var(--type-body-xs-size, 14px)',
-  fontWeight: 700,
-  textTransform: 'uppercase',
-  letterSpacing: '0.04em',
-  color: 'var(--color-text-primary-light)',
-}
-
-const kpiValueStyle: CSSProperties = {
-  fontSize: 'var(--type-heading-s-size, 24px)',
-  fontWeight: 700,
-  color: 'var(--color-text-primary)',
-  lineHeight: 1.2,
-}
-
-const configCardStyle: CSSProperties = {
-  background: 'var(--color-background-inverse)',
-  border: '1px solid var(--color-border-secondary-light)',
-  borderRadius: 'var(--radius-smooth)',
-  overflow: 'hidden',
-}
-
-const configHeaderStyle: CSSProperties = {
-  background: 'var(--color-background-inverse)',
-  borderBottom: '1px solid var(--color-border-secondary-light)',
-  padding: 'var(--spacing-inset-s) var(--spacing-inset-m)',
-}
-
-const configHeaderTitleStyle: CSSProperties = {
-  margin: 0,
-  color: 'var(--color-text-primary)',
-  fontSize: 'var(--type-heading-s-size, 18px)',
-  fontWeight: 700,
-}
-
-const configGridStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-  gap: 'var(--spacing-inline-l)',
-  padding: 'var(--spacing-inset-m)',
-}
-
-const configItemStyle: CSSProperties = {
-  display: 'grid',
-  gap: 'var(--spacing-stack-xs)',
-  alignContent: 'start',
-  minHeight: '120px',
-}
-
-const configLabelStyle: CSSProperties = {
-  margin: 0,
-  color: 'var(--color-text-primary)',
-  fontWeight: 700,
-  fontSize: 'var(--type-body-s-size, 16px)',
-}
-
-const configValueStyle: CSSProperties = {
-  margin: 0,
-  color: 'var(--color-text-primary)',
-  fontSize: 'var(--type-body-s-size, 16px)',
-  lineHeight: 'var(--type-body-s-line-height, 1.5)',
-}
-
-const valueStackStyle: CSSProperties = {
-  display: 'grid',
-  gap: 'var(--spacing-stack-xxs)',
-}
-
-const cardStyle: CSSProperties = {
-  background: 'var(--color-background-inverse)',
-  border: '1px solid var(--color-border-secondary-light)',
-  borderRadius: 'var(--radius-smooth)',
-  padding: 'var(--spacing-inset-m)',
-}
-
-const analysisSectionStyle: CSSProperties = {
-  ...cardStyle,
-  padding: 0,
-  overflow: 'hidden',
-  display: 'grid',
-  gap: 0,
-  width: '100%',
-}
-
-const tablistScrollStyle: CSSProperties = {
-  borderBottom: '1px solid var(--color-border-secondary-light)',
-  padding: '0 var(--spacing-inset-m)',
-  overflowX: 'auto',
-}
-
-const analysisContentStyle: CSSProperties = {
-  width: '100%',
-  padding: 'var(--spacing-inset-m)',
-}
-
-const tablistStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-start',
-  gap: 'var(--spacing-inline-s)',
-  borderBottom: 'none',
-  marginBottom: 0,
-  paddingBottom: 0,
-  overflowX: 'visible',
-}
-
-const tabpanelStyle: CSSProperties = {
-  outline: 'none',
-  paddingTop: 'var(--spacing-stack-s)',
 }

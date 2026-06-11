@@ -18,9 +18,10 @@ import type { AlternativaData, AlternativaId } from '../types/docfap'
 const MCA_PATTERN: Record<string, Array<'A' | 'M' | 'B' | 'N'>> = {
   A1: ['A', 'M', 'A', 'M', 'A', 'M'],
   A2: ['M', 'A', 'M', 'B', 'M', 'A'],
+  A3: ['B', 'M', 'B', 'N', 'M', 'B'],
 }
 
-const DEMO_ALTERNATIVES: Record<'A1' | 'A2', AlternativaData> = {
+const DEMO_ALTERNATIVES: Record<'A1' | 'A2' | 'A3', AlternativaData> = {
   A1: {
     categoria: '', tipologia: '', nome: 'Nuova costruzione asilo nido',
     quantita: 1500, capex: 2_640_000, opex: 420_000, durataStimata: 24,
@@ -30,6 +31,11 @@ const DEMO_ALTERNATIVES: Record<'A1' | 'A2', AlternativaData> = {
     categoria: '', tipologia: '', nome: 'Ristrutturazione asilo nido esistente',
     quantita: 1100, capex: 1_440_000, opex: 310_000, durataStimata: 18,
     robustezza: 1, clusterId: 'C03', unitaMisura: 'posti',
+  } as AlternativaData,
+  A3: {
+    categoria: '', tipologia: '', nome: 'Voucher alle famiglie per servizi 0-3',
+    quantita: 180, capex: 0, opex: 600_000, durataStimata: 6,
+    robustezza: 1, clusterId: 'C03', unitaMisura: 'beneficiari',
   } as AlternativaData,
 }
 
@@ -72,7 +78,7 @@ async function loadDocfapDemoInternal(overrides?: DocfapDemoOverrides): Promise<
   await loadPocData()
   if (hasData()) return
 
-  const altIds: AlternativaId[] = ['A1', 'A2']
+  const altIds: AlternativaId[] = ['A1', 'A2', 'A3']
   const a = wizardStore.actions
 
   a.setRup({
@@ -101,7 +107,7 @@ async function loadDocfapDemoInternal(overrides?: DocfapDemoOverrides): Promise<
   )
 
   a.setAlternativeDefinite(altIds)
-  altIds.forEach((id) => a.addAlternativa(id, DEMO_ALTERNATIVES[id as 'A1' | 'A2']))
+  altIds.forEach((id) => a.addAlternativa(id, DEMO_ALTERNATIVES[id as 'A1' | 'A2' | 'A3']))
   a.setAlternativeAggiuntaCompletata(true)
 
   // Rischi + MCA per ogni alternativa definita

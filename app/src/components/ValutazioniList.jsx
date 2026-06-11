@@ -101,14 +101,29 @@ const LIST_PRESETS = [
 
 
 
-function AnalysisBadges({ active = [], className = "", sizeClass = "px-3 py-1 text-[13px] font-bold" }) {
+function AnalysisBadges({ active = [], className = "", sizeClass = "px-3 py-1 text-[13px] font-bold", onOpenAnalysis }) {
   const activeSet = new Set(active);
 
   return (
     <div className={`flex flex-wrap gap-2 ${className}`}>
-      {ANALYSIS_ORDER.map((analysis) => (
-        <Badge key={analysis} type={analysis} dimmed={!activeSet.has(analysis)} className={sizeClass} />
-      ))}
+      {ANALYSIS_ORDER.map((analysis) => {
+        const isActive = activeSet.has(analysis);
+        if (isActive && onOpenAnalysis) {
+          return (
+            <button
+              key={analysis}
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onOpenAnalysis(analysis); }}
+              aria-label={`Vai all'analisi ${analysis}`}
+              title={`Vai all'analisi ${analysis}`}
+              className="transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-violet"
+            >
+              <Badge type={analysis} className={sizeClass} />
+            </button>
+          );
+        }
+        return <Badge key={analysis} type={analysis} dimmed={!isActive} className={sizeClass} />;
+      })}
     </div>
   );
 }
@@ -227,7 +242,7 @@ function ProjectAction({ action, onDelete, onDuplicate, onOpen, projectName }) {
   );
 }
 
-function ProjectListCard({ project, onOpen, onDelete, onDuplicate }) {
+function ProjectListCard({ project, onOpen, onDelete, onDuplicate, onOpenAnalysis }) {
   return (
     <article className="overflow-hidden border border-[#e4e4e4] bg-white">
       <div className="grid border-b border-[#e6e6e6] lg:min-h-[96px] lg:grid-cols-[minmax(0,1fr)_370px_82px]">
@@ -246,7 +261,10 @@ function ProjectListCard({ project, onOpen, onDelete, onDuplicate }) {
         <div className="flex items-center justify-between gap-4 px-5 py-5 lg:border-l lg:border-[#e6e6e6]">
           <div className="flex items-center gap-3">
             <span className="text-[14px] font-semibold text-ink-900">Analisi</span>
-            <AnalysisBadges active={project.analyses || []} />
+            <AnalysisBadges
+              active={project.analyses || []}
+              onOpenAnalysis={(analysis) => onOpenAnalysis?.(project.id, analysis)}
+            />
           </div>
           <ProjectAction
             action={project.action}
@@ -260,10 +278,11 @@ function ProjectListCard({ project, onOpen, onDelete, onDuplicate }) {
         <button
           type="button"
           onClick={onOpen}
-          className="flex h-[72px] items-center justify-center border-t border-[#e6e6e6] text-brand-violet transition-colors hover:bg-[#faf7ff] lg:h-auto lg:border-l lg:border-t-0"
-          aria-label={`Apri ${project.nome}`}
+          className="flex h-[72px] flex-col items-center justify-center gap-0.5 border-t border-[#e6e6e6] px-2 text-brand-violet transition-colors hover:bg-[#faf7ff] lg:h-auto lg:border-l lg:border-t-0"
+          aria-label={`Esplora il progetto ${project.nome}`}
         >
-          <span className="text-[36px] leading-none">&rarr;</span>
+          <span className="text-[11px] font-semibold uppercase leading-tight tracking-wide">Esplora</span>
+          <span className="text-[26px] leading-none">&rarr;</span>
         </button>
       </div>
 
@@ -327,7 +346,7 @@ function buildDisplayProject(workspace, index) {
 
 const STATUS_OPTIONS = ["Bozza", "In preparazione", "In approvazione", "Approvato"];
 
-export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
+export function ValutazioniList({ onOpenProject, onNewEvaluation, onOpenAnalysis }) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [showDraftsOnly, setShowDraftsOnly] = useState(false);
@@ -461,7 +480,7 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
           </button>
         </div>
 
-        <h2 className="mt-9 text-[18px] font-bold text-ink-900">In evidenza</h2>
+        <h2 className="mt-9 text-[18px] font-bold text-ink-900">Progetti in evidenza</h2>
 
         {isLoading ? (
           <div className="mt-5 flex gap-4">
@@ -509,6 +528,7 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
       </section>
 
       <section className="px-6 pb-10 xl:px-8">
+        <h2 className="mb-5 text-[18px] font-bold text-ink-900">Esplora i progetti</h2>
         <div className="border border-[#e6e6e6] bg-white px-5 py-5">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-4 text-[16px] text-ink-900">
             <span>Visualizza solo:</span>
@@ -651,6 +671,7 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation }) {
                 key={project.id}
                 project={project}
                 onOpen={() => onOpenProject(project.id)}
+                onOpenAnalysis={onOpenAnalysis}
                 onDuplicate={() => handleDuplicate(project.id, project.nome)}
                 onDelete={() => setConfirmDel(project)}
               />
