@@ -12,6 +12,8 @@ import {
   getDefinedScores,
   detailEmptyStyle,
   detailRecommendedBadgeStyle,
+  RISK_METRIC_LABELS,
+  RISK_METRIC_HINTS,
 } from './tableHelpers'
 import { MC_MOCK_DATA } from '../../engine/riskMonteCarlo'
 import { RiskElasticityChart } from './charts/RiskElasticityChart'
@@ -21,6 +23,13 @@ import { RiskHeatmap } from './charts/RiskHeatmap'
 
 // k€ → stringa in M€ (italiano)
 const toM = (k: number) => (k / 1000).toLocaleString('it-IT', { maximumFractionDigits: 1 })
+
+// Pallino informativo "ⓘ" con tooltip nativo (spiega l'indicatore al funzionario).
+function InfoDot({ hint }: { hint: string }) {
+  return (
+    <span style={infoDotStyle} title={hint} role="img" aria-label={hint}>ⓘ</span>
+  )
+}
 
 function probBestColor(p: number): string {
   if (p >= 0.6) return '#1b5e20'
@@ -51,8 +60,8 @@ export function TabSensitivita() {
         <h3 style={summaryTitleStyle}>Sintesi Monte Carlo — indicatori chiave</h3>
         <p style={summarySubtitleStyle}>
           1.000 simulazioni con parametri stocastici (CAPEX e OPEX log-normali, Benefici normali).
-          <strong style={{ color: '#5B21F7' }}> P(Migliore)</strong> = percentuale di simulazioni in cui
-          l'alternativa ha ottenuto il punteggio composito più alto — misura la robustezza del ranking.
+          La <strong style={{ color: '#5B21F7' }}>Probabilità scelta ottimale</strong> è la percentuale di
+          simulazioni in cui l'alternativa ha ottenuto il punteggio composito più alto — misura la robustezza del ranking.
         </p>
         <div style={summaryGridStyle}>
           {scores.map(s => {
@@ -65,12 +74,11 @@ export function TabSensitivita() {
                 {/* Alt header */}
                 <div style={summaryAltHeaderStyle}>
                   <span style={summaryAltLabelStyle}>{label}</span>
-                  {isRec && <span style={detailRecommendedBadgeStyle}>Raccomandata</span>}
                 </div>
 
-                {/* P(Migliore) — headline metric */}
+                {/* Probabilità scelta ottimale — headline metric */}
                 <div style={probBestWrapStyle}>
-                  <span style={probBestLabelStyle}>P(Migliore)</span>
+                  <span style={probBestLabelStyle}>{RISK_METRIC_LABELS.probBest}<InfoDot hint={RISK_METRIC_HINTS.probBest} /></span>
                   <span style={{ ...probBestValueStyle, color: probBestColor(mc.summary.probBest) }}>
                     {(mc.summary.probBest * 100).toFixed(0)}%
                   </span>
@@ -90,24 +98,22 @@ export function TabSensitivita() {
                 <table style={summaryTableStyle}>
                   <tbody>
                     <tr>
-                      <td style={tdLabelStyle}>Media NPV</td>
-                      <td style={tdValueStyle}>{toM(mc.summary.mean)} M€</td>
+                      <td style={tdLabelStyle}>{RISK_METRIC_LABELS.median}<InfoDot hint={RISK_METRIC_HINTS.median} /></td>
+                      <td style={tdValueStyle}>{toM(mc.summary.p50)} M€</td>
                     </tr>
                     <tr>
-                      <td style={tdLabelStyle}>Dev. std</td>
-                      <td style={tdValueStyle}>± {toM(mc.summary.std)} M€</td>
+                      <td style={tdLabelStyle}>{RISK_METRIC_LABELS.ci90}<InfoDot hint={RISK_METRIC_HINTS.ci90} /></td>
+                      <td style={tdValueStyle}>{toM(mc.summary.p5)} – {toM(mc.summary.p95)} M€</td>
                     </tr>
                     <tr>
-                      <td style={tdLabelStyle}>P5 / P50 / P95</td>
-                      <td style={tdValueStyle}>
-                        {toM(mc.summary.p5)} / {toM(mc.summary.p50)} / {toM(mc.summary.p95)} M€
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style={tdLabelStyle}>P(NPV &lt; 0)</td>
+                      <td style={tdLabelStyle}>{RISK_METRIC_LABELS.loss}<InfoDot hint={RISK_METRIC_HINTS.loss} /></td>
                       <td style={{ ...tdValueStyle, color: probNegColor(mc.summary.probNegative), fontWeight: 700 }}>
                         {(mc.summary.probNegative * 100).toFixed(1)}%
                       </td>
+                    </tr>
+                    <tr>
+                      <td style={{ ...tdLabelStyle, fontWeight: 700, color: 'var(--color-text-primary)' }}>{RISK_METRIC_LABELS.score}</td>
+                      <td style={{ ...tdValueStyle, fontWeight: 700 }}>{s.sensitivityScore.toFixed(1)}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -206,4 +212,8 @@ const tdLabelStyle: CSSProperties = {
 const tdValueStyle: CSSProperties = {
   fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)',
   padding: '2px 0', textAlign: 'right', verticalAlign: 'middle',
+}
+const infoDotStyle: CSSProperties = {
+  display: 'inline-block', marginLeft: 5, fontSize: 11, lineHeight: 1,
+  color: 'var(--color-text-primary-light)', cursor: 'help', verticalAlign: 'baseline',
 }

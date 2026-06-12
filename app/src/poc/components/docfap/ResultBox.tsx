@@ -16,6 +16,8 @@ export interface ResultBoxMetric {
   emphasize?: boolean
   /** Valori 0–100 per opzione: se presenti, la cella mostra una barra sopra al valore. */
   barValues?: number[]
+  /** Spiegazione dell'indicatore, mostrata come tooltip (icona ⓘ accanto all'etichetta). */
+  hint?: string
 }
 
 interface ResultBoxProps {
@@ -133,6 +135,16 @@ export function ResultBox({
               <tr key={metric.label} className="border-t border-ink-100">
                 <td className={`py-2.5 pr-4 text-[12px] ${metric.emphasize ? 'font-bold text-ink-900' : 'text-ink-600'}`}>
                   {metric.label}
+                  {metric.hint && (
+                    <span
+                      className="ml-1 cursor-help align-baseline text-[10px] text-ink-400"
+                      title={metric.hint}
+                      role="img"
+                      aria-label={metric.hint}
+                    >
+                      ⓘ
+                    </span>
+                  )}
                 </td>
                 {options.map((opt, i) => {
                   const bar = metric.barValues?.[i]

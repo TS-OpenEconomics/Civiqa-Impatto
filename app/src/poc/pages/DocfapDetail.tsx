@@ -20,6 +20,8 @@ import {
   getAlternativeDisplayLabel,
   hasRenderableDocfapScores,
   safeNumber,
+  RISK_METRIC_LABELS,
+  RISK_METRIC_HINTS,
 } from '../components/docfap/tableHelpers'
 
 // ── Mappatura demo opzione → progetto /valutazioni (EIA+ECBA completi) ──────────
@@ -190,12 +192,14 @@ export function DocfapDetail() {
         { label: 'Giudizio sintetico', values: vals((s) => giudizioMca(s.mcaScore)) },
       ]
     }
-    // rischio
+    // rischio (i valori MC sono in k€ → /1000 per i M€)
     const summaryOf = (s: ScoreComposito) => MC_MOCK_DATA[s.alternativaId]?.summary
     return [
-      { label: 'Punteggio robustezza', values: vals((s) => fmtScore(s.sensitivityScore)), emphasize: true, barValues: barVals((s) => s.sensitivityScore) },
-      { label: 'P(opzione migliore)', values: vals((s) => { const m = summaryOf(s); return m ? fmtPct(m.probBest * 100) : '—' }) },
-      { label: 'P(VAN < 0)', values: vals((s) => { const m = summaryOf(s); return m ? fmtPct(m.probNegative * 100) : '—' }) },
+      { label: RISK_METRIC_LABELS.score, values: vals((s) => fmtScore(s.sensitivityScore)), emphasize: true, barValues: barVals((s) => s.sensitivityScore) },
+      { label: RISK_METRIC_LABELS.probBest, hint: RISK_METRIC_HINTS.probBest, values: vals((s) => { const m = summaryOf(s); return m ? fmtPct(m.probBest * 100) : '—' }) },
+      { label: RISK_METRIC_LABELS.median, hint: RISK_METRIC_HINTS.median, values: vals((s) => { const m = summaryOf(s); return m ? fmtM(m.p50 / 1000) : '—' }) },
+      { label: RISK_METRIC_LABELS.ci90, hint: RISK_METRIC_HINTS.ci90, values: vals((s) => { const m = summaryOf(s); return m ? `${nf(m.p5 / 1000, 1)} – ${nf(m.p95 / 1000, 1)} M€` : '—' }) },
+      { label: RISK_METRIC_LABELS.loss, hint: RISK_METRIC_HINTS.loss, values: vals((s) => { const m = summaryOf(s); return m ? fmtPct(m.probNegative * 100) : '—' }) },
     ]
   }
 
@@ -330,7 +334,7 @@ export function DocfapDetail() {
               return (
                 <div
                   key={s.alternativaId}
-                  className={`flex flex-col rounded-lg border bg-white p-4 shadow-sm ${rec ? 'border-brand-violet ring-1 ring-brand-violet/30' : 'border-ink-100'}`}
+                  className={`flex flex-col border bg-white p-4 shadow-sm ${rec ? 'border-brand-violet ring-1 ring-brand-violet/30' : 'border-ink-100'}`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className={`inline-flex h-6 items-center px-2 font-mono text-[11px] font-bold ${rec ? 'bg-brand-violet text-white' : 'bg-ink-100 text-ink-600'}`}>
@@ -362,9 +366,9 @@ export function DocfapDetail() {
                       <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-400">Punteggio finale</span>
                       <span className={`font-mono text-[16px] font-bold ${rec ? 'text-brand-violet' : 'text-ink-800'}`}>{nf(s.scoreFinale, 1)}</span>
                     </div>
-                    <span className="mt-1.5 block h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
+                    <span className="mt-1.5 block h-1.5 w-full overflow-hidden bg-ink-100">
                       <span
-                        className={`block h-full rounded-full ${rec ? 'bg-brand-violet' : 'bg-ink-300'}`}
+                        className={`block h-full ${rec ? 'bg-brand-violet' : 'bg-ink-300'}`}
                         style={{ width: `${Math.max(0, Math.min(100, safeNumber(s.scoreFinale)))}%` }}
                       />
                     </span>

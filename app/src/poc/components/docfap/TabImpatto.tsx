@@ -74,7 +74,6 @@ export function TabImpatto() {
                       <span style={isRec ? detailRecommendedAltBadgeStyle : detailAltBadgeStyle}>{s.alternativaId}</span>
                       <span style={headerLabelStyle}>{getAlternativeDisplayLabel(s.alternativaId, state.alternative[s.alternativaId])}</span>
                     </div>
-                    {isRec && <span style={recommendedBadgeStyle}>Raccomandata</span>}
                   </div>
                 </th>
               )
