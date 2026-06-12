@@ -95,12 +95,12 @@ export function hasRenderableDocfapScores(scores: ScoreComposito[] | null | unde
 }
 
 export function getAlternativeColumnWidth(totalAlternatives: number): string {
-  return `calc((100% - 240px) / ${Math.max(totalAlternatives, 1)})`
+  return `calc((100% - 180px) / ${Math.max(totalAlternatives, 1)})`
 }
 
 export const labelColumnStyle: CSSProperties = {
-  width: '240px',
-  minWidth: '240px',
+  width: '180px',
+  minWidth: '180px',
 }
 
 export function alternativeColumnStyle(totalAlternatives: number): CSSProperties {
@@ -111,72 +111,115 @@ export function alternativeColumnStyle(totalAlternatives: number): CSSProperties
 }
 
 export const detailHeaderCellBaseStyle: CSSProperties = {
-  padding: '16px 18px',
+  padding: '10px 12px',
   textAlign: 'left',
-  verticalAlign: 'top',
-  background: 'var(--color-background-secondary-lightest)',
+  verticalAlign: 'middle',
+  background: 'var(--color-background-inverse)',
   color: 'var(--color-text-primary)',
   borderBottom: '1px solid var(--color-border-secondary-light)',
   wordBreak: 'break-word',
+  fontSize: '12px',
+  lineHeight: 1.25,
 }
 
 export const detailRecommendedHeaderStyle: CSSProperties = {
   // rgba translucido così l'evidenziazione funziona su tema chiaro e scuro
-  background: 'rgba(91,33,247,0.16)',
-  boxShadow: 'inset 0 0 0 2px #7c4dff',
+  background: 'rgba(91,33,247,0.08)',
+  boxShadow: 'inset 3px 0 0 #7c4dff',
   color: 'var(--color-text-primary)',
 }
 
 export const detailHeaderLabelWrapStyle: CSSProperties = {
   display: 'grid',
-  gap: '10px',
+  gap: '6px',
 }
 
 export const detailHeaderLabelStyle: CSSProperties = {
   fontWeight: 700,
+  fontSize: '12px',
+  lineHeight: 1.25,
+}
+
+export const detailAltHeaderContentStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  minWidth: 0,
+}
+
+export const detailAltBadgeStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 24,
+  height: 24,
+  flex: '0 0 24px',
+  background: 'var(--color-background-secondary-lightest)',
+  color: 'var(--color-text-primary-light)',
+  fontFamily: 'var(--font-family-0, monospace)',
+  fontSize: 10,
+  fontWeight: 800,
+  lineHeight: 1,
+}
+
+export const detailRecommendedAltBadgeStyle: CSSProperties = {
+  ...detailAltBadgeStyle,
+  background: '#5b21f7',
+  color: '#fff',
 }
 
 export const detailRecommendedBadgeStyle: CSSProperties = {
   display: 'inline-block',
   width: 'fit-content',
-  padding: '4px 10px',
-  borderRadius: '999px',
+  padding: '2px 6px',
+  borderRadius: 0,
   background: '#108a43',
   color: '#fff',
-  fontSize: '12px',
+  fontSize: '9px',
   fontWeight: 700,
+  lineHeight: 1.2,
+  textTransform: 'uppercase',
 }
 
 export const detailRowHeaderStyle: CSSProperties = {
-  padding: '16px 18px',
+  padding: '8px 12px',
   textAlign: 'left',
   borderBottom: '1px solid var(--color-border-secondary-light)',
   color: 'var(--color-text-primary)',
   fontWeight: 600,
+  fontSize: '12px',
+  lineHeight: 1.25,
 }
 
 export const detailBodyCellStyle: CSSProperties = {
-  padding: '16px 18px',
+  padding: '8px 12px',
   textAlign: 'right',
   borderBottom: '1px solid var(--color-border-secondary-light)',
   fontFamily: 'var(--font-family-0, monospace)',
-  fontSize: 'var(--type-body-l-size, 20px)',
+  fontSize: '13px',
   lineHeight: '1.2',
 }
 
 export const detailRecommendedColumnStyle: CSSProperties = {
-  background: 'rgba(91,33,247,0.08)',
+  background: 'rgba(91,33,247,0.05)',
+}
+
+export const detailBestCellStyle: CSSProperties = {
+  background: 'rgba(16,138,67,0.10)',
+  boxShadow: 'inset 3px 0 0 #108a43',
+  color: 'var(--color-text-primary)',
+  fontWeight: 800,
 }
 
 export const detailFinalRowHeaderStyle: CSSProperties = {
   ...detailRowHeaderStyle,
-  background: 'rgba(91,33,247,0.16)',
+  background: 'rgba(91,33,247,0.08)',
   fontWeight: 700,
 }
 
 export const detailFinalCellStyle: CSSProperties = {
   ...detailBodyCellStyle,
-  background: 'rgba(91,33,247,0.16)',
+  background: 'rgba(91,33,247,0.08)',
   fontWeight: 700,
 }
 
@@ -196,7 +239,10 @@ export function getDefinedScores(
 ): ScoreComposito[] {
   if (!scoreFinale || scoreFinale.length === 0) return []
   const defined = new Set(alternativeDefinite)
-  return scoreFinale.filter((s) => defined.has(s.alternativaId))
+  // Ordine naturale A1 → A2 → A3 …: la raccomandata NON va in testa nei confronti.
+  return scoreFinale
+    .filter((s) => defined.has(s.alternativaId))
+    .sort((a, b) => a.alternativaId.localeCompare(b.alternativaId))
 }
 
 /** Stile cella punteggio finale per la colonna raccomandata — sfondo più intenso + box-shadow (skin app). */
@@ -204,8 +250,8 @@ export function getDetailFinalRecommendedCellStyle(isRecommended: boolean): CSSP
   if (!isRecommended) return detailFinalCellStyle
   return {
     ...detailFinalCellStyle,
-    background: 'rgba(91,33,247,0.24)',
-    boxShadow: 'inset 0 0 0 2px #7c4dff',
+    background: 'rgba(91,33,247,0.12)',
+    boxShadow: 'inset 3px 0 0 #7c4dff',
   }
 }
 
@@ -213,5 +259,5 @@ export function getDetailFinalRecommendedCellStyle(isRecommended: boolean): CSSP
 export const detailTableWrapStyle: CSSProperties = {
   overflowX: 'auto',
   border: '1px solid var(--color-border-secondary-light)',
-  borderRadius: 'var(--radius-smooth)',
+  borderRadius: 4,
 }

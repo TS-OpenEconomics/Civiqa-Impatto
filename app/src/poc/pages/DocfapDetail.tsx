@@ -132,7 +132,18 @@ export function DocfapDetail() {
   }
 
   function optionFor(score: ScoreComposito): ResultBoxOption {
-    return { id: score.alternativaId, label: labelOf(score.alternativaId), isRecommended: score.alternativaId === recommendedId }
+    const alt = state.alternative[score.alternativaId]
+    const details: ResultBoxOption['details'] = []
+    if (alt?.capex != null) details.push({ label: 'CAPEX', value: `€ ${formatEuro(alt.capex)}` })
+    if (alt?.opex != null) details.push({ label: 'OPEX', value: `€ ${formatEuro(alt.opex)}` })
+    if (alt?.durataStimata) details.push({ label: 'Durata', value: `${alt.durataStimata} mesi` })
+
+    return {
+      id: score.alternativaId,
+      label: labelOf(score.alternativaId),
+      isRecommended: score.alternativaId === recommendedId,
+      details,
+    }
   }
 
   // Navigazione "analisi completa" per dimensione e opzione.
@@ -299,7 +310,7 @@ export function DocfapDetail() {
           <MetaField label="Tema del fabbisogno" value={temaLabel} />
           <MetaField label="Fabbisogno specifico" value={fabLabel} />
           <MetaField label="Alternativa raccomandata" value={recommendedLabel} highlight />
-          <MetaField label="Punteggio finale" value={finalScoreLabel} highlight />
+          <MetaField label="Punteggio finale" value={finalScoreLabel} highlight emphasis="score" />
         </div>
       </div>
 
@@ -434,7 +445,30 @@ export function DocfapDetail() {
   )
 }
 
-function MetaField({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
+function MetaField({
+  label,
+  value,
+  highlight = false,
+  emphasis,
+}: {
+  label: string
+  value: string
+  highlight?: boolean
+  emphasis?: 'score'
+}) {
+  if (emphasis === 'score') {
+    const [score, scale] = value.split(' / ')
+    return (
+      <div className="px-6 py-4">
+        <p className="text-[11px] font-bold uppercase tracking-wide text-brand-violet">{label}</p>
+        <p className="mt-1 flex items-baseline gap-1.5 font-mono text-brand-violet" title={value}>
+          <span className="text-[24px] font-extrabold leading-none">{score}</span>
+          {scale && <span className="text-[12px] font-bold text-brand-violet/70">/ {scale}</span>}
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="px-6 py-4">
       <p className="text-[11px] font-medium text-ink-400">{label}</p>

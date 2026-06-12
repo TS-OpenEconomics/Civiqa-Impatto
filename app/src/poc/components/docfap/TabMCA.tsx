@@ -6,19 +6,25 @@ import { wizardStore } from '../../store/wizardStore'
 import {
   getAlternativeDisplayLabel,
   getRecommendedAlternativeId,
+  getDefinedScores,
   labelColumnStyle,
   alternativeColumnStyle,
   detailHeaderCellBaseStyle,
   detailRecommendedHeaderStyle,
   detailHeaderLabelWrapStyle,
   detailHeaderLabelStyle,
+  detailAltHeaderContentStyle,
+  detailAltBadgeStyle,
+  detailRecommendedAltBadgeStyle,
   detailRecommendedBadgeStyle,
   detailRowHeaderStyle,
   detailBodyCellStyle,
   detailRecommendedColumnStyle,
+  detailBestCellStyle,
   detailFinalRowHeaderStyle,
   detailFinalCellStyle,
   detailEmptyStyle,
+  detailTableWrapStyle,
   formatScore,
   safeNumber,
 } from './tableHelpers'
@@ -30,10 +36,11 @@ const SCALE_LABELS: Record<string, string> = {
   B: 'Basso',
   N: 'Nullo',
 }
+const SCALE_RANK: Record<string, number> = { A: 4, M: 3, B: 2, N: 1 }
 
 export function TabMCA() {
   const state = useSyncExternalStore(wizardStore.subscribe, wizardStore.getState, wizardStore.getState)
-  const scores = state.scoreFinale ?? []
+  const scores = getDefinedScores(state.scoreFinale, state.alternativeDefinite)
   const recommendedId = getRecommendedAlternativeId(scores)
 
   const [questions, setQuestions] = useState<McaQuestion[]>([])
@@ -68,7 +75,7 @@ export function TabMCA() {
         <BarsChart groups={groups} formatValue={(v) => v.toFixed(1)} />
       </ChartCard>
 
-      <div style={wrapStyle}>
+      <div style={detailTableWrapStyle}>
         <table style={tableStyle}>
           <colgroup>
             <col style={labelColumnStyle} />
@@ -82,7 +89,10 @@ export function TabMCA() {
                 return (
                   <th key={score.alternativaId} style={{ ...headerCellStyle, ...(isRecommended ? recommendedHeaderStyle : null) }}>
                     <div style={headerLabelWrapStyle}>
-                      <span style={headerLabelStyle}>{getAlternativeDisplayLabel(score.alternativaId, state.alternative[score.alternativaId])}</span>
+                      <div style={detailAltHeaderContentStyle}>
+                        <span style={isRecommended ? detailRecommendedAltBadgeStyle : detailAltBadgeStyle}>{score.alternativaId}</span>
+                        <span style={headerLabelStyle}>{getAlternativeDisplayLabel(score.alternativaId, state.alternative[score.alternativaId])}</span>
+                      </div>
                       {isRecommended ? <span style={recommendedBadgeStyle}>Raccomandata</span> : null}
                     </div>
                   </th>
@@ -91,27 +101,31 @@ export function TabMCA() {
             </tr>
           </thead>
           <tbody>
-            {questions.map((question) => (
+            {questions.map((question) => {
+              const best = Math.max(...scores.map((score) => SCALE_RANK[state.mcaScores[score.alternativaId]?.[question.qCode] ?? ''] ?? 0))
+              return (
               <tr key={question.qCode}>
                 <th scope="row" style={rowHeaderStyle}>{question.text}</th>
                 {scores.map((score) => {
                   const isRecommended = score.alternativaId === recommendedId
                   const livello = state.mcaScores[score.alternativaId]?.[question.qCode]
                   const text = livello ? (SCALE_LABELS[livello] ?? livello) : '—'
+                  const isBest = best > 0 && (SCALE_RANK[livello ?? ''] ?? 0) === best
                   return (
-                    <td key={`${question.qCode}-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null) }}>
+                    <td key={`${question.qCode}-${score.alternativaId}`} style={{ ...bodyCellStyle, ...(isRecommended ? recommendedColumnStyle : null), ...(isBest ? detailBestCellStyle : null) }}>
                       {text}
                     </td>
                   )
                 })}
               </tr>
-            ))}
+              )
+            })}
             <tr>
               <th scope="row" style={finalRowHeaderStyle}>SCORE MCA</th>
               {scores.map((score) => {
                 const isRecommended = score.alternativaId === recommendedId
                 return (
-                  <td key={`mca-${score.alternativaId}`} style={{ ...finalCellStyle, ...(isRecommended ? recommendedHeaderStyle : null) }}>
+                  <td key={`mca-${score.alternativaId}`} style={{ ...finalCellStyle, ...(isRecommended ? recommendedHeaderStyle : null), ...(score.mcaScore === Math.max(...scores.map(s => s.mcaScore)) ? detailBestCellStyle : null) }}>
                     {formatScore(score.mcaScore)}
                   </td>
                 )
@@ -124,7 +138,6 @@ export function TabMCA() {
   )
 }
 
-const wrapStyle: CSSProperties = { overflowX: 'auto' }
 const tableStyle: CSSProperties = { width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }
 const headerCellStyle: CSSProperties = detailHeaderCellBaseStyle
 const recommendedHeaderStyle: CSSProperties = detailRecommendedHeaderStyle

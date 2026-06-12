@@ -12,10 +12,14 @@ import {
   detailRecommendedHeaderStyle,
   detailHeaderLabelWrapStyle,
   detailHeaderLabelStyle,
+  detailAltHeaderContentStyle,
+  detailAltBadgeStyle,
+  detailRecommendedAltBadgeStyle,
   detailRecommendedBadgeStyle,
   detailRowHeaderStyle,
   detailBodyCellStyle,
   detailRecommendedColumnStyle,
+  detailBestCellStyle,
   detailFinalRowHeaderStyle,
   detailEmptyStyle,
   detailTableWrapStyle,
@@ -38,10 +42,10 @@ export function TabCBA() {
 
   if (scores.length === 0) return <p style={emptyStyle}>Nessun dettaglio CBA disponibile.</p>
 
-  const rows: { key: string; label: string; get: (s: typeof scores[0]) => string }[] = [
-    { key: 'vane', label: 'VANE', get: s => fmtEuro(s.van) },
-    { key: 'tire', label: 'TIRE', get: s => fmtPct(s.tir) },
-    { key: 'bcr',  label: 'BCR (benefici / costi)', get: s => s.bcr.toFixed(2) },
+  const rows: { key: string; label: string; value: (s: typeof scores[0]) => number; get: (s: typeof scores[0]) => string }[] = [
+    { key: 'vane', label: 'VANE', value: s => s.van, get: s => fmtEuro(s.van) },
+    { key: 'tire', label: 'TIRE', value: s => s.tir, get: s => fmtPct(s.tir) },
+    { key: 'bcr',  label: 'BCR (benefici / costi)', value: s => s.bcr, get: s => s.bcr.toFixed(2) },
   ]
 
   return (
@@ -63,7 +67,10 @@ export function TabCBA() {
                 return (
                   <th key={s.alternativaId} style={{ ...headerCellStyle, ...(isRec ? recommendedHeaderStyle : null) }}>
                     <div style={headerLabelWrapStyle}>
-                      <span style={headerLabelStyle}>{getAlternativeDisplayLabel(s.alternativaId, state.alternative[s.alternativaId])}</span>
+                      <div style={detailAltHeaderContentStyle}>
+                        <span style={isRec ? detailRecommendedAltBadgeStyle : detailAltBadgeStyle}>{s.alternativaId}</span>
+                        <span style={headerLabelStyle}>{getAlternativeDisplayLabel(s.alternativaId, state.alternative[s.alternativaId])}</span>
+                      </div>
                       {isRec && <span style={recommendedBadgeStyle}>Raccomandata</span>}
                     </div>
                   </th>
@@ -72,23 +79,27 @@ export function TabCBA() {
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ key, label, get }, rowIdx) => (
-              <tr key={key} style={rowIdx % 2 === 1 ? rowAlternateStyle : undefined}>
-                <th scope="row" style={rowHeaderStyle}>{label}</th>
-                {scores.map(s => {
-                  const isRec = s.alternativaId === recommendedId
-                  return (
-                    <td key={`${key}-${s.alternativaId}`} style={{ ...bodyCellStyle, ...(isRec ? recommendedColumnStyle : null) }}>
-                      {get(s)}
-                    </td>
-                  )
-                })}
-              </tr>
-            ))}
+            {rows.map(({ key, label, value, get }, rowIdx) => {
+              const best = Math.max(...scores.map(value))
+              return (
+                <tr key={key} style={rowIdx % 2 === 1 ? rowAlternateStyle : undefined}>
+                  <th scope="row" style={rowHeaderStyle}>{label}</th>
+                  {scores.map(s => {
+                    const isRec = s.alternativaId === recommendedId
+                    const isBest = value(s) === best
+                    return (
+                      <td key={`${key}-${s.alternativaId}`} style={{ ...bodyCellStyle, ...(isRec ? recommendedColumnStyle : null), ...(isBest ? detailBestCellStyle : null) }}>
+                        {get(s)}
+                      </td>
+                    )
+                  })}
+                </tr>
+              )
+            })}
             <tr>
               <th scope="row" style={finalRowHeaderStyle}>Punteggio CBA</th>
               {scores.map(s => (
-                <td key={`cba-${s.alternativaId}`} style={getDetailFinalRecommendedCellStyle(s.alternativaId === recommendedId)}>
+                <td key={`cba-${s.alternativaId}`} style={{ ...getDetailFinalRecommendedCellStyle(s.alternativaId === recommendedId), ...(s.cbaScore === Math.max(...scores.map(x => x.cbaScore)) ? detailBestCellStyle : null) }}>
                   {s.cbaScore.toFixed(1)}
                 </td>
               ))}
