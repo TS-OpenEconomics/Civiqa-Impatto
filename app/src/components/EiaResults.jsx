@@ -1,6 +1,7 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import staticResults from "../mocks/eiaResults.json";
+import { getEiaDataset } from "../mocks/eiaDatasets";
 import { Badge } from "./ui/Badge";
 import { ImpactIcon } from "./ui/ImpactIcon";
 import { ItalyMap } from "./ui/ItalyMap";
@@ -28,7 +29,7 @@ function fmtM(n) {
 }
 
 function fmtOccupati(n) {
-  return `${fmtIT(n, n < 10 ? 1 : 0)} occupati`;
+  return `${fmtIT(n, n < 10 ? 1 : 0)} ETP`;
 }
 
 function fmtMoneyPc(n) {
@@ -36,7 +37,7 @@ function fmtMoneyPc(n) {
 }
 
 function fmtOccupatiPc(n) {
-  return `${fmtIT(n, 2)} occupati/10k ab.`;
+  return `${fmtIT(n, 2)} ETP/10k ab.`;
 }
 
 function cleanText(value) {
@@ -59,51 +60,69 @@ function cleanText(value) {
     .replaceAll("â†“", "?");
 }
 
-const d = staticResults;
-const rawSyn = d.synthesis ?? {};
-const inp = d.input ?? {};
-const comps = d.components ?? {};
-const rawGeo = d.geography ?? {};
-const sectItems = d.sectors?.items ?? [];
+// ── Dataset attivo (selezionato per progetto dal registro EIA_DATASETS) ───────
+// Storicamente questa vista leggeva un solo mock a livello di modulo. Ora il
+// dataset è scelto per progetto: `applyEiaDataset` riassegna i binding di modulo
+// (live bindings) e tutti i componenti/funzioni sotto li leggono aggiornati.
+// `EiaResults` chiama `applyEiaDataset(getEiaDataset(project))` prima del render.
+let d, rawSyn, inp, comps, rawGeo, sectItems;
+let byPerimeter, perCapita, threeSeg, synthKpis;
+let regionName, originProvince, originNuts2, nVoci, geo;
+let _activeDataset = null;
 
-const byPerimeter = rawSyn.by_perimeter ?? {};
-const perCapita = rawSyn.per_capita ?? {};
-const threeSeg = rawSyn.three_segments ?? {};
-const synthKpis = rawSyn.synthetic_kpis ?? rawSyn.kpis ?? {};
+function applyEiaDataset(dataset) {
+  const ds = dataset ?? staticResults;
+  if (ds === _activeDataset) return;
+  _activeDataset = ds;
 
-const regionName = inp.origin_region?.name ?? "Italia";
-const originProvince = inp.origin_provinces?.[0]?.name ?? regionName;
-const originNuts2 = inp.origin_region?.nuts2_code ?? null;
-const nVoci = inp.spend_breakdown?.length ?? 0;
+  d = ds;
+  rawSyn = d.synthesis ?? {};
+  inp = d.input ?? {};
+  comps = d.components ?? {};
+  rawGeo = d.geography ?? {};
+  sectItems = d.sectors?.items ?? [];
 
-const geo = {
-  ...rawGeo,
-  regions: (rawGeo.regions ?? []).map((r) => ({
-    ...r,
-    nome: r.nome ?? r.name,
-    production: r.production ?? r.values?.production?.absolute ?? 0,
-    gdp: r.gdp ?? r.values?.gdp?.absolute ?? 0,
-    employment: r.employment ?? r.values?.employment?.absolute ?? 0,
-    income: r.income ?? r.values?.income?.absolute ?? 0,
-    production_pc: r.production_pc ?? r.values?.production?.per_capita ?? 0,
-    gdp_pc: r.gdp_pc ?? r.values?.gdp?.per_capita ?? 0,
-    employment_pc: r.employment_pc ?? r.values?.employment?.per_capita_per_10k ?? 0,
-    income_pc: r.income_pc ?? r.values?.income?.per_capita ?? 0,
-  })),
-  provinces: (rawGeo.provinces ?? []).map((p) => ({
-    ...p,
-    nome: p.nome ?? p.name,
-    regione: p.regione ?? p.region_name,
-    production: p.production ?? p.values?.production?.absolute ?? 0,
-    gdp: p.gdp ?? p.values?.gdp?.absolute ?? 0,
-    employment: p.employment ?? p.values?.employment?.absolute ?? 0,
-    income: p.income ?? p.values?.income?.absolute ?? 0,
-    production_pc: p.production_pc ?? p.values?.production?.per_capita ?? 0,
-    gdp_pc: p.gdp_pc ?? p.values?.gdp?.per_capita ?? 0,
-    employment_pc: p.employment_pc ?? p.values?.employment?.per_capita_per_10k ?? 0,
-    income_pc: p.income_pc ?? p.values?.income?.per_capita ?? 0,
-  })),
-};
+  byPerimeter = rawSyn.by_perimeter ?? {};
+  perCapita = rawSyn.per_capita ?? {};
+  threeSeg = rawSyn.three_segments ?? {};
+  synthKpis = rawSyn.synthetic_kpis ?? rawSyn.kpis ?? {};
+
+  regionName = inp.origin_region?.name ?? "Italia";
+  originProvince = inp.origin_provinces?.[0]?.name ?? regionName;
+  originNuts2 = inp.origin_region?.nuts2_code ?? null;
+  nVoci = inp.spend_breakdown?.length ?? 0;
+
+  geo = {
+    ...rawGeo,
+    regions: (rawGeo.regions ?? []).map((r) => ({
+      ...r,
+      nome: r.nome ?? r.name,
+      production: r.production ?? r.values?.production?.absolute ?? 0,
+      gdp: r.gdp ?? r.values?.gdp?.absolute ?? 0,
+      employment: r.employment ?? r.values?.employment?.absolute ?? 0,
+      income: r.income ?? r.values?.income?.absolute ?? 0,
+      production_pc: r.production_pc ?? r.values?.production?.per_capita ?? 0,
+      gdp_pc: r.gdp_pc ?? r.values?.gdp?.per_capita ?? 0,
+      employment_pc: r.employment_pc ?? r.values?.employment?.per_capita_per_10k ?? 0,
+      income_pc: r.income_pc ?? r.values?.income?.per_capita ?? 0,
+    })),
+    provinces: (rawGeo.provinces ?? []).map((p) => ({
+      ...p,
+      nome: p.nome ?? p.name,
+      regione: p.regione ?? p.region_name,
+      production: p.production ?? p.values?.production?.absolute ?? 0,
+      gdp: p.gdp ?? p.values?.gdp?.absolute ?? 0,
+      employment: p.employment ?? p.values?.employment?.absolute ?? 0,
+      income: p.income ?? p.values?.income?.absolute ?? 0,
+      production_pc: p.production_pc ?? p.values?.production?.per_capita ?? 0,
+      gdp_pc: p.gdp_pc ?? p.values?.gdp?.per_capita ?? 0,
+      employment_pc: p.employment_pc ?? p.values?.employment?.per_capita_per_10k ?? 0,
+      income_pc: p.income_pc ?? p.values?.income?.per_capita ?? 0,
+    })),
+  };
+}
+
+applyEiaDataset(staticResults);
 
 const TABS = [
   { id: "sintesi", label: "Sintesi" },
@@ -232,6 +251,10 @@ function buildSegmentComponentValues(data, segment) {
 }
 
 export function EiaResults({ project, analysis, onBack }) {
+  // Seleziona il dataset del progetto prima di renderizzare i figli: questi
+  // leggono i binding di modulo (geo, inp, byPerimeter, …) aggiornati qui.
+  applyEiaDataset(getEiaDataset(project));
+
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get("tab");
   const initialTab = TABS.some((t) => t.id === requestedTab) ? requestedTab : "sintesi";
@@ -240,7 +263,7 @@ export function EiaResults({ project, analysis, onBack }) {
   const [guidaOpen, setGuidaOpen] = useState(false);
   const { showToast } = useToast();
 
-  const meta = staticResults.metadata ?? {};
+  const meta = d.metadata ?? {};
 
   useEffect(() => {
     const nextTab = TABS.some((t) => t.id === requestedTab) ? requestedTab : "sintesi";
@@ -504,7 +527,7 @@ function TabSintesi() {
           <SintesiKPI icon="pil"        label="PIL"                    value={fmtM(natGdp)}         caption="valore aggiunto generato in Italia" info="kpi.pil" />
           <SintesiKPI icon="produzione" label="Valore della Produzione" value={fmtM(natProd)}        caption="di volume d'affari in Italia" info="kpi.produzione" />
           <SintesiKPI icon="occupazione" label="Occupazione"            value={fmtIT(natEmp, 0)} valueUnit="occupati" caption="posti di lavoro attivati" info="kpi.occupazione" />
-          <SintesiKPI icon="gettito"    label="Gettito fiscale"         value={fmtM(natFiscal)}      caption="che rientra nelle casse dello Stato" info="kpi.gettito" />
+          <SintesiKPI icon="gettito"    label="Gettito fiscale"         value={fmtM(natFiscal)}      caption="che entra nelle casse dello Stato" info="kpi.gettito" />
         </div>
       </section>
 
@@ -692,7 +715,7 @@ function SintesiFiscalReturn({ fiscalPct, natFiscal, spend }) {
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-[14px] font-bold text-ink-900">
-            Quota della spesa che rientra nelle casse dello Stato come imposte e contributi
+            Quota della spesa che entra nelle casse dello Stato come imposte e contributi
           </p>
           <p className="mt-1.5 text-[13px] leading-relaxed text-ink-600">
             Su <strong className="text-ink-900">{fmtM(spend)}</strong> investiti, lo Stato incassa <strong className="text-ink-900">{fmtM(natFiscal)}</strong> di gettito fiscale lungo la filiera — pari a circa <strong className="text-ink-900">{fmtIT(euroPerM, 0)} €</strong> per ogni milione speso.
@@ -1106,7 +1129,7 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
   const multInfo = (() => {
     if (dim === "production") return { value: `${fmtIT(synthKpis.production_multiplier ?? 0, 2)}×`, sub: "valore produzione / spesa" };
     if (dim === "gdp") return { value: `${fmtIT(synthKpis.gdp_multiplier ?? 0, 2)}×`, sub: "PIL / spesa" };
-    if (dim === "employment") return { value: `${fmtIT(synthKpis.employment_intensity_per_meur ?? 0, 1)} occupati`, sub: "per M€ speso" };
+    if (dim === "employment") return { value: `${fmtIT(synthKpis.employment_intensity_per_meur ?? 0, 1)} ETP`, sub: "per M€ speso" };
     const m = (byPerimeter.region?.income ?? 0) / spendTotal;
     return { value: `${fmtIT(m, 2)}×`, sub: "redditi / spesa" };
   })();
@@ -1116,8 +1139,9 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
   const rankSorted = [...currentList].sort((a, b) => getGeoValue(b, dim, mode) - getGeoValue(a, dim, mode));
   const rankTotal = rankSorted.reduce((sum, r) => sum + getGeoValue(r, dim, mode), 0);
   const rankLeader = rankSorted[0];
-  const rankTop5 = rankSorted.slice(1, 6);
-  const rankOthers = rankSorted.slice(6);
+  // Mostriamo fino a 9 voci in classifica (leader + 8): c'è spazio nella card.
+  const rankTop5 = rankSorted.slice(1, 9);
+  const rankOthers = rankSorted.slice(9);
   const rankOthersSum = rankOthers.reduce((sum, r) => sum + getGeoValue(r, dim, mode), 0);
   const rankTitleSuffix = mode === "pc" ? "pro capite" : "per valore";
   const rankTitle = selectedRegion ? `Top province — ${selectedRegion}` : isProvinceView ? `Top province ${rankTitleSuffix}` : `Top regioni ${rankTitleSuffix}`;
@@ -2427,7 +2451,7 @@ const CHART_INFO = {
   },
   "sintesi.fiscal": {
     title: "Cosa significa il ritorno fiscale",
-    body: "Stima la quota della spesa iniziale che rientra allo Stato come imposte e contributi attivati lungo l'intera filiera (IVA, IRPEF, IRES, contributi sociali). Misura il livello di 'autofinanziamento' che il progetto produce sulle entrate pubbliche.",
+    body: "Stima la quota della spesa iniziale che entra nelle casse dello Stato come imposte e contributi attivati lungo l'intera filiera (IVA, IRPEF, IRES, contributi sociali). Misura il livello di 'autofinanziamento' che il progetto produce sulle entrate pubbliche.",
     extra: "Il dato è riportato solo a livello nazionale: le entrate erariali confluiscono al bilancio dello Stato e non sono correttamente regionalizzabili.",
   },
   "sintesi.percapita": {

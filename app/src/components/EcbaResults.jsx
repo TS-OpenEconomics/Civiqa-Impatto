@@ -1,5 +1,6 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { ECBA_DATA } from "./ecbaData";
+import { getEcbaDataset } from "../mocks/ecbaDatasets";
 import { HoldingHandsCba } from "./HoldingHandsCba";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -9,10 +10,23 @@ import { HoldingHandsCba } from "./HoldingHandsCba";
 // dell'originale (`*`, `body`) non sfuggano al resto dell'app.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Dati (mock) — fonte unica condivisa con il percorso guidato. Tutti i valori in M€.
-const DATA = ECBA_DATA;
-const SIMULATION_COUNT = DATA.simulationCount ?? 1000;
-const SIMULATION_COUNT_LABEL = new Intl.NumberFormat("it-IT").format(SIMULATION_COUNT);
+// Dataset attivo, selezionato per progetto dal registro ECBA_DATASETS. Storicamente
+// era un solo mock; ora `applyEcbaDataset` riassegna i binding di modulo (live
+// bindings) letti sia da `buildMarkup` sia dalle funzioni di disegno dei grafici.
+// `EcbaResults` chiama `applyEcbaDataset(getEcbaDataset(project))` prima del render.
+let DATA = ECBA_DATA;
+let SIMULATION_COUNT = DATA.simulationCount ?? 1000;
+let SIMULATION_COUNT_LABEL = new Intl.NumberFormat("it-IT").format(SIMULATION_COUNT);
+let _activeEcba = null;
+
+function applyEcbaDataset(dataset) {
+  const ds = dataset ?? ECBA_DATA;
+  if (ds === _activeEcba) return;
+  _activeEcba = ds;
+  DATA = ds;
+  SIMULATION_COUNT = ds.simulationCount ?? 1000;
+  SIMULATION_COUNT_LABEL = new Intl.NumberFormat("it-IT").format(SIMULATION_COUNT);
+}
 
 const CSS = `
 .ecba-root{
@@ -202,11 +216,21 @@ const CSS = `
 // Stessa icona usata nella dashboard del progetto (ProjectDetail → analysis-ecba.png)
 const ECBA_ICON = `${import.meta.env.BASE_URL || "/"}icons/analysis-ecba.png`;
 
-const MARKUP = `
+function buildMarkup(DATA, project) {
+  const k = DATA.kpi ?? {};
+  const w = DATA.waterfall ?? {};
+  const rs = DATA.riskSummary ?? {};
+  const n1 = (v) => Number(v ?? 0).toFixed(1).replace(".", ",");
+  const n2 = (v) => Number(v ?? 0).toFixed(2).replace(".", ",");
+  const sg = (v) => (Number(v ?? 0) >= 0 ? "+" : "");
+  const p0 = (v) => Math.round(Number(v ?? 0) * 100);
+  const esc = (s) => String(s ?? "").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+  const creatoDa = esc(project?.creato_da ?? "Comune di Palermo, Mario Rossi");
+  return `
 <div class="wrap">
 
   <div class="crumb"><span class="crumb-back" style="cursor:pointer">Dettaglio del progetto</span> <span class="crumb-sep">›</span> <b>Analisi Economica Costi-Benefici</b></div>
-  <div class="meta-line">Creato il 12/05/2025 da Comune di Palermo, Mario Rossi — Ultima modifica 03/06/2026</div>
+  <div class="meta-line">Creato da ${creatoDa}</div>
 
   <!-- HEADER -->
   <div class="head-card">
@@ -217,7 +241,7 @@ const MARKUP = `
         </div>
         <div>
           <div class="head-title">Analisi Economica Costi-Benefici</div>
-          <div class="head-sub">Del progetto <b>Nuovo asilo nido comunale</b></div>
+          <div class="head-sub">Del progetto <b>${esc(k.progetto)}</b></div>
         </div>
       </div>
       <div class="head-actions">
@@ -227,9 +251,9 @@ const MARKUP = `
       </div>
     </div>
     <div class="head-cols">
-      <div class="hcol"><div class="lab">Categoria di intervento</div><div class="val">Scuole e asili</div></div>
-      <div class="hcol"><div class="lab">Orizzonte temporale</div><div class="val">30 anni</div></div>
-      <div class="hcol"><div class="lab">Tasso di sconto sociale</div><div class="val">3,0%</div></div>
+      <div class="hcol"><div class="lab">Categoria di intervento</div><div class="val">${esc(k.categoria)}</div></div>
+      <div class="hcol"><div class="lab">Orizzonte temporale</div><div class="val">${k.orizzonte} anni</div></div>
+      <div class="hcol"><div class="lab">Tasso di sconto sociale</div><div class="val">${n1(k.tasso)}%</div></div>
     </div>
   </div>
 
@@ -253,7 +277,7 @@ const MARKUP = `
   <div class="panel show" id="p-sintesi">
     <div class="view-lab">Vista</div>
     <div class="view-h">Sintesi della convenienza</div>
-    <div class="view-intro">Investimento di partenza <b>41,1 M€</b> nella provincia di Palermo, valutato su <b>30 anni</b> e attualizzato al <b>3%</b>. Gli indicatori misurano la convenienza <b>economico-sociale</b> dell'opera, non la sua redditività finanziaria.</div>
+    <div class="view-intro">Investimento di partenza <b>${n1(k.investimento)} M€</b> nella ${esc(k.luogo)}, valutato su <b>${k.orizzonte} anni</b> e attualizzato al <b>${n1(k.tasso)}%</b>. Gli indicatori misurano la convenienza <b>economico-sociale</b> dell'opera, non la sua redditività finanziaria.</div>
 
     <div class="sec-head">I risultati dell'analisi <span class="info-i" data-tip="I tre indicatori standard dell'analisi economica costi-benefici, calcolati su flussi attualizzati al tasso sociale del 3%.">i</span></div>
     <div class="sec-sub">Gli indicatori sintetici di efficienza economico-sociale</div>
@@ -262,20 +286,20 @@ const MARKUP = `
       <div class="kpi">
         <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9.3a3.5 3.5 0 1 0 0 5.4M8 11h5M8 13h4"/></svg></span><span class="kpi-label" style="text-transform:none;letter-spacing:0">Valore Attuale Netto Economico</span></div>
           <span class="info-i" data-tip="Valore Attuale Netto Economico — somma, anno per anno, della differenza tra benefici e costi economici, riportata a valore di oggi. È l'indicatore primario: l'opera conviene se è maggiore di zero.">i</span></div>
-        <div class="kpi-num">+12,4<span class="kpi-unit"> M€</span></div>
+        <div class="kpi-num">${sg(k.vane)}${n1(k.vane)}<span class="kpi-unit"> M€</span></div>
         <div class="kpi-desc">Beneficio netto per la collettività · <span class="ok">&gt; 0, conveniente</span></div>
       </div>
       <div class="kpi">
         <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="7.5" cy="7.5" r="2"/><circle cx="16.5" cy="16.5" r="2"/></svg></span><span class="kpi-label">TIR economico</span></div>
           <span class="info-i" data-tip="Tasso Interno di Rendimento Economico — il rendimento sociale dell'opera, cioè il tasso a cui benefici e costi attualizzati si pareggiano. Conviene se supera il tasso di sconto sociale (3%).">i</span></div>
-        <div class="kpi-num">5,8<span class="kpi-unit"> %</span></div>
-        <div class="kpi-desc">Rendimento sociale dell'opera · <span class="ok">&gt; 3%, conveniente</span></div>
+        <div class="kpi-num">${n1(k.tire)}<span class="kpi-unit"> %</span></div>
+        <div class="kpi-desc">Rendimento sociale dell'opera · <span class="ok">&gt; ${n1(k.tasso)}%, conveniente</span></div>
       </div>
       <div class="kpi">
         <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 21h14M6 7h12"/><path d="M6 7 3.5 12h5L6 7zM18 7l-2.5 5h5L18 7z"/></svg></span><span class="kpi-label">Rapporto B/C</span></div>
           <span class="info-i" data-tip="Rapporto Benefici/Costi — quanti euro di beneficio economico genera ogni euro di costo. Utile per confrontare alternative progettuali. Conviene se B/C > 1.">i</span></div>
-        <div class="kpi-num">1,30</div>
-        <div class="kpi-desc">1,30 € di beneficio per ogni euro speso · <span class="ok">&gt; 1, conveniente</span></div>
+        <div class="kpi-num">${n2(k.bcr)}</div>
+        <div class="kpi-desc">${n2(k.bcr)} € di beneficio per ogni euro speso · <span class="ok">&gt; 1, conveniente</span></div>
       </div>
     </div>
 
@@ -289,12 +313,12 @@ const MARKUP = `
     <div class="sec-sub">Dai benefici totali ai costi e alle esternalità negative, fino al beneficio netto</div>
     <div class="card">
       <div class="card-h">Impatto Sociale — da Investimento a Valore Sociale</div>
-      <div class="card-sub">Valori attuali in M€ · orizzonte 30 anni · tasso 3%.</div>
+      <div class="card-sub">Valori attuali in M€ · orizzonte ${k.orizzonte} anni · tasso ${n1(k.tasso)}%.</div>
       <div class="chart-box"><svg id="svg-wf" class="chart" viewBox="0 0 760 340"></svg></div>
       <div class="read"><h5>Come si legge</h5>
         <p>La prima barra <span style="color:var(--lime-700);font-weight:800">lime</span> è il totale dei <b>benefici economici</b> attualizzati. La barra <span style="font-weight:800;color:#7a7a72">grigia</span> sono i <b>costi economici</b> (CAPEX e OPEX): è "sospesa", parte dall'alto dei benefici e scende. La barra <span style="color:var(--red-600);font-weight:800">rossa</span> sono le <b>esternalità negative</b> monetizzate, che scendono ancora.</p>
         <p>Ciò che resta sotto è la barra <span style="color:var(--blu-700);font-weight:800">viola</span>, il <b>Valore Attuale Netto Economico</b>. Sopra lo zero significa guadagno netto di benessere per la collettività.</p></div>
-      <div class="takeaway"><b>53,1 M€</b> di benefici contro <b>36,2 M€</b> di costi e <b>4,5 M€</b> di esternalità negative: saldo a favore della collettività <b>+12,4 M€</b>.</div>
+      <div class="takeaway"><b>${n1(w.benefici)} M€</b> di benefici contro <b>${n1(w.costi)} M€</b> di costi${w.esternalitaNeg > 0 ? ` e <b>${n1(w.esternalitaNeg)} M€</b> di esternalità negative` : ""}: saldo a favore della collettività <b>${sg(w.vane)}${n1(w.vane)} M€</b>.</div>
     </div>
   </div>
 
@@ -302,7 +326,7 @@ const MARKUP = `
   <div class="panel" id="p-ecba">
     <div class="view-lab">Vista</div>
     <div class="view-h">Flussi economici nel tempo</div>
-    <div class="view-intro">L'andamento di <b>tutti i benefici e i costi</b> lungo i 30 anni: il <b>CAPEX</b> concentrato nei primi anni di costruzione, l'<b>OPEX</b> di gestione distribuito nel tempo, i benefici che maturano dall'entrata in esercizio. Tutti i valori sono cumulati e attualizzati al 3%.</div>
+    <div class="view-intro">L'andamento di <b>tutti i benefici e i costi</b> lungo i ${k.orizzonte} anni: il <b>CAPEX</b> concentrato nei primi anni di costruzione, l'<b>OPEX</b> di gestione distribuito nel tempo, i benefici che maturano dall'entrata in esercizio. Tutti i valori sono cumulati e attualizzati al ${n1(k.tasso)}%.</div>
 
     <div class="card">
       <div class="card-h">Flussi monetizzati — vita utile del progetto <span class="info-i" data-tip="Andamento annuo delle voci monetizzate e Valore Attuale Netto Economico cumulato. Usa i chip per mostrare o nascondere le singole dimensioni.">i</span></div>
@@ -312,18 +336,18 @@ const MARKUP = `
       <div class="read"><h5>Come si legge</h5>
         <p>L'asse orizzontale è il <b>tempo</b> (anni dall'avvio). La linea <span style="color:var(--green-700);font-weight:800">dei benefici annui</span> parte da zero e cresce man mano che il servizio produce effetti; la linea <span style="color:var(--red-600);font-weight:800">del flusso di cassa netto annuo</span> è negativa negli anni di investimento (CAPEX) e diventa positiva in esercizio.</p>
         <p>La linea <span class="key">viola</span> è il <b>Valore Attuale Netto Economico cumulato</b>: negativo all'inizio, risale fino a chiudere positivo. Il punto in cui supera lo zero è il <b>payback sociale</b>. Con i <b>chip in alto</b> puoi mostrare o nascondere le singole componenti di beneficio.</p></div>
-      <div class="takeaway">Il Valore Attuale Netto Economico cumulato supera lo zero (payback sociale) intorno all'<b>anno 14</b> e chiude a <b>+12,4 M€</b>.</div>
+      <div class="takeaway">Il Valore Attuale Netto Economico cumulato supera lo zero (payback sociale) intorno all'<b>anno ${k.paybackAnno}</b> e chiude a <b>${sg(k.vane)}${n1(k.vane)} M€</b>.</div>
     </div>
 
     <div class="card">
       <div class="card-h">Composizione dei benefici <span class="info-i" data-tip="Quota di ciascuna esternalità sul totale dei benefici economici attualizzati.">i</span></div>
-      <div class="card-sub">Da cosa sono fatti i 53,1 M€ di benefici (valori attuali).</div>
+      <div class="card-sub">Da cosa sono fatti i ${n1(w.benefici)} M€ di benefici (valori attuali).</div>
       <div class="chart-box" style="display:flex;gap:48px;align-items:center;justify-content:center;flex-wrap:wrap">
         <svg id="svg-dn" class="chart" viewBox="0 0 300 300" style="max-width:320px;flex:0 0 320px;margin:0"></svg>
         <div class="legend" id="dn-legend" style="flex:0 1 380px;max-width:380px;flex-direction:column;align-items:stretch;gap:12px;margin-top:0"></div>
       </div>
       <div class="read"><h5>Come si legge</h5>
-        <p>Ogni spicchio è una <b>fonte di beneficio</b> e la sua ampiezza è la quota sul totale. La voce maggiore è la <b>partecipazione al lavoro</b> resa possibile dal servizio; seguono capitale umano e costi di cura evitati.</p>
+        <p>Ogni spicchio è una <b>fonte di beneficio</b> e la sua ampiezza è la quota sul totale. La voce maggiore è <b>${esc(DATA.donut?.[0]?.label ?? "")}</b> (${DATA.donut?.[0]?.pct ?? 0}%); le altre categorie completano il quadro (dettaglio nella legenda).</p>
         <p>Sono effetti <b>lordi</b>, stimati a parità di altre condizioni: non si sommano automaticamente ad altri indicatori del progetto.</p></div>
     </div>
   </div>
@@ -340,14 +364,14 @@ const MARKUP = `
       <div class="kpi">
         <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18c3 0 4.5-11 9-11s6 11 9 11"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span><span class="kpi-label">Probabilità Valore Attuale Netto Economico &gt; 0</span></div>
           <span class="info-i" data-tip="Quota di simulazioni Montecarlo (su ${SIMULATION_COUNT_LABEL}) in cui il Valore Attuale Netto Economico resta positivo. Sintetizza la rischiosità complessiva del progetto.">i</span></div>
-        <div class="kpi-num">92<span class="kpi-unit"> %</span></div>
+        <div class="kpi-num">${p0(rs.probPositive)}<span class="kpi-unit"> %</span></div>
         <div class="kpi-desc">Su ${SIMULATION_COUNT_LABEL} scenari simulati · <span class="ok">rischio contenuto</span></div>
       </div>
       <div class="kpi">
         <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><line x1="12" y1="4" x2="12" y2="20"/></svg></span><span class="kpi-label">Valore Attuale Netto Economico mediano</span></div>
           <span class="info-i" data-tip="Valore centrale della distribuzione del Valore Attuale Netto Economico risultante dalla simulazione. L'intervallo P5–P95 indica dove cade il 90% degli esiti.">i</span></div>
-        <div class="kpi-num">+12,4<span class="kpi-unit"> M€</span></div>
-        <div class="kpi-desc">Intervallo P5–P95: <b>−3,2 / +27,0 M€</b> · media ± dev.std <b>12,1 ± 8,5 M€</b></div>
+        <div class="kpi-num">${sg(rs.median)}${n1(rs.median)}<span class="kpi-unit"> M€</span></div>
+        <div class="kpi-desc">Intervallo P5–P95: <b>${sg(rs.p5)}${n1(rs.p5)} / ${sg(rs.p95)}${n1(rs.p95)} M€</b> · media ± dev.std <b>${n1(rs.mean)} ± ${n1(rs.std)} M€</b></div>
       </div>
       <div class="kpi">
         <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18V8M10 18V5M16 18v-7M22 18H2"/></svg></span><span class="kpi-label">Variabile critica</span></div>
@@ -382,12 +406,12 @@ const MARKUP = `
       <div class="card-sub">${SIMULATION_COUNT_LABEL} simulazioni · frequenza degli esiti del Valore Attuale Netto Economico (M€).</div>
       <div class="chart-box"><svg id="svg-mc" class="chart" viewBox="0 0 760 340"></svg></div>
       <div class="legend">
-        <div class="lg"><span class="sw" style="background:var(--red-600)"></span><span>Scenari con Valore Attuale Netto Economico &lt; 0 (8%)</span></div>
-        <div class="lg"><span class="sw" style="background:var(--green-700)"></span><span>Scenari con Valore Attuale Netto Economico &gt; 0 (92%)</span></div>
+        <div class="lg"><span class="sw" style="background:var(--red-600)"></span><span>Scenari con Valore Attuale Netto Economico &lt; 0 (${100 - p0(rs.probPositive)}%)</span></div>
+        <div class="lg"><span class="sw" style="background:var(--green-700)"></span><span>Scenari con Valore Attuale Netto Economico &gt; 0 (${p0(rs.probPositive)}%)</span></div>
       </div>
       <div class="read"><h5>Come si legge</h5>
         <p>Ogni barra conta <b>quante simulazioni</b> hanno prodotto un Valore Attuale Netto Economico in quell'intervallo. Le barre <span style="color:var(--red-600);font-weight:800">rosse</span> a sinistra dello zero sono gli scenari sfavorevoli (opera non conveniente), quelle <span style="color:var(--green-700);font-weight:800">verdi</span> a destra gli scenari favorevoli.</p>
-        <p>Il <b>92%</b> della distribuzione cade a destra dello zero: anche tenendo conto dell'incertezza, l'opera resta conveniente nella larga maggioranza degli scenari.</p></div>
+        <p>Il <b>${p0(rs.probPositive)}%</b> della distribuzione cade a destra dello zero: anche tenendo conto dell'incertezza, l'opera resta conveniente nella larga maggioranza degli scenari.</p></div>
     </div>
 
     <div class="card">
@@ -517,14 +541,18 @@ const MARKUP = `
 
 </div>
 `;
+}
 
-const MARKUP_HTML = { __html: MARKUP };
-
-const EcbaStaticMarkup = memo(function EcbaStaticMarkup() {
-  return <div dangerouslySetInnerHTML={MARKUP_HTML} />;
+const EcbaStaticMarkup = memo(function EcbaStaticMarkup({ html }) {
+  return <div dangerouslySetInnerHTML={html} />;
 });
 
 export function EcbaResults({ project, onBack }) {
+  // Seleziona il dataset del progetto prima del render: il markup e le funzioni
+  // di disegno dei grafici leggono i binding di modulo aggiornati qui.
+  applyEcbaDataset(getEcbaDataset(project));
+  const markupHtml = useMemo(() => ({ __html: buildMarkup(DATA, project) }), [project]);
+
   const rootRef = useRef(null);
   const onBackRef = useRef(onBack);
   const projectRef = useRef(project);
@@ -1257,12 +1285,14 @@ export function EcbaResults({ project, onBack }) {
       chartTip.remove();
       document.body.style.overflow = "";
     };
-  }, []);
+    // project?.id nelle deps: se si naviga tra ECBA di progetti diversi senza
+    // smontare il componente, i grafici vengono ridisegnati sul nuovo dataset.
+  }, [project?.id]);
 
   return (
     <div className="ecba-root" ref={rootRef}>
       <style>{CSS}</style>
-      <EcbaStaticMarkup />
+      <EcbaStaticMarkup html={markupHtml} />
       <HoldingHandsCba
         open={guideOpen}
         project={project}

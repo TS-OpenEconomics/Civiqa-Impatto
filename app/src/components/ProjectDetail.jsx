@@ -124,7 +124,7 @@ function EiaKpiCards({ eia, settoreSpesa }) {
     { label: "Spese effettuate",        icon: "spese",       value: fmtM(r.shock_totale),       sub: "valore attuale" },
     { label: "Valore della produzione", icon: "produzione",  value: fmtM(r.produzione?.totale), sub: "valore attuale" },
     { label: "PIL",                     icon: "pil",         value: fmtM(r.gva?.totale),        sub: "valore attuale" },
-    { label: "Occupazione",             icon: "occupazione", value: r.fte?.totale ? `${fmtIT(r.fte.totale, 0)} occupati` : "—", sub: "equivalenti tempo pieno (ETP)" },
+    { label: "Occupazione",             icon: "occupazione", value: r.fte?.totale ? `${fmtIT(r.fte.totale, 0)} occ.` : "—", sub: "equivalenti tempo pieno (ETP)" },
     { label: "Redditi",                 icon: "redditi",     value: fmtM(r.redditi?.totale),    sub: "valore attuale" },
     { label: "Gettito fiscale",         icon: "gettito",     value: fmtM(r.gettito?.totale),    sub: "valore attuale" },
   ];
@@ -156,13 +156,13 @@ function EiaKpiCards({ eia, settoreSpesa }) {
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
         {kpis.map((k) => (
-          <div key={k.label} className="rounded border border-ink-100 bg-white p-4 shadow-sm">
-            <div className="mb-3 flex items-start gap-2">
+          <div key={k.label} className="flex h-full flex-col rounded border border-ink-100 bg-white p-4 shadow-sm">
+            <div className="mb-3 flex min-h-[2.25rem] items-start gap-2">
               <ImpactIcon type={k.icon} label={k.label} className="h-6 w-6" wrapperClassName="flex h-6 w-6 shrink-0 items-center justify-center text-brand-violet" />
               <p className="min-w-0 text-[11px] font-bold uppercase leading-tight tracking-wide text-ink-700">{k.label}</p>
             </div>
             <p className="text-[22px] font-bold leading-tight text-ink-900">{k.value}</p>
-            <p className="mt-1 text-[11px] text-ink-400">{k.sub}</p>
+            <p className="mt-auto pt-1 text-[11px] text-ink-400">{k.sub}</p>
           </div>
         ))}
       </div>

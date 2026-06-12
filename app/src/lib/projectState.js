@@ -10,9 +10,9 @@ const DEFAULT_ECBA_INPUTS = {
   benefitsMode: "Da impatti EIA e benefici idrici stimati",
 };
 
-// v4: aggiunto il progetto reale MUBA (scenario 976) con risultati EIA/ECBA
-// importati dagli export. Il bump invalida lo stato v3 in cache (senza MUBA).
-export const PROJECT_STORAGE_KEY = "civiqa.projects.v4";
+// v5: MUBA ora include il gettito fiscale (€8.456.460) e i dataset di dettaglio
+// EIA/ECBA reali. Il bump invalida lo stato v4 in cache (MUBA senza gettito).
+export const PROJECT_STORAGE_KEY = "civiqa.projects.v5";
 export const UI_STORAGE_KEY = "civiqa.ui.v1";
 
 function clone(value) {
@@ -232,10 +232,11 @@ export function buildSeedProjects() {
   };
 
   return [
+    // MUBA in cima: progetto reale (scenario 976) con dati EIA/ECBA importati.
+    buildMubaWorkspace(),
     withCompletedAnalyses(createWorkspace(clone(initialProject))),
     proj002,
     proj003,
-    buildMubaWorkspace(),
   ];
 }
 

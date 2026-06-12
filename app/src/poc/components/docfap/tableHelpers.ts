@@ -239,7 +239,10 @@ export function getDefinedScores(
 ): ScoreComposito[] {
   if (!scoreFinale || scoreFinale.length === 0) return []
   const defined = new Set(alternativeDefinite)
-  return scoreFinale.filter((s) => defined.has(s.alternativaId))
+  // Ordine naturale A1 → A2 → A3 …: la raccomandata NON va in testa nei confronti.
+  return scoreFinale
+    .filter((s) => defined.has(s.alternativaId))
+    .sort((a, b) => a.alternativaId.localeCompare(b.alternativaId))
 }
 
 /** Stile cella punteggio finale per la colonna raccomandata — sfondo più intenso + box-shadow (skin app). */

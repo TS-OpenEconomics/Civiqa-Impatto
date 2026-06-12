@@ -7,6 +7,7 @@ import { DEFAULT_DIMENSION_WEIGHTS, calcScoreComposito, runFullAnalysis } from '
 import { MC_MOCK_DATA } from '../../../engine/riskMonteCarlo'
 import { useWizard } from '../../../hooks/useWizard'
 import type { AlternativaId, ScoreComposito } from '../../../types/docfap'
+import { formatEuro } from '../../../utils/format'
 import { Badge } from '../../ui/Badge'
 import { Button } from '../../ui/Button'
 
@@ -183,11 +184,16 @@ export function Step7_ScoreFinale() {
     })
   }, [ranking, weights])
 
+  // Colonne sempre in ordine naturale A1 → A2 → A3 … (niente "migliore in testa").
   const localRanking = useMemo(
-    () => [...localScores].sort((a, b) => b.scoreFinale - a.scoreFinale),
+    () => [...localScores].sort((a, b) => a.alternativaId.localeCompare(b.alternativaId)),
     [localScores],
   )
-  const localRecommendedId = useMemo(() => localRanking[0]?.alternativaId ?? null, [localRanking])
+  // La raccomandata è quella col punteggio finale più alto, ovunque si trovi nell'ordine.
+  const localRecommendedId = useMemo(() => {
+    if (localScores.length === 0) return null
+    return localScores.reduce((best, s) => (s.scoreFinale > best.scoreFinale ? s : best)).alternativaId
+  }, [localScores])
 
   function handleWeightChange(key: keyof typeof weights, value: string) {
     const parsed = parseInt(value, 10)
@@ -232,6 +238,34 @@ export function Step7_ScoreFinale() {
     return 0
   }
 
+  function innerMetricValue(key: string, item: ScoreComposito): number {
+    if (key === 'van') return item.van
+    if (key === 'tir') return item.tir
+    if (key === 'bcr') return item.bcr
+    if (key === 'cbascore') return item.cbaScore
+    if (key === 'mcascore') return item.mcaScore
+    if (key === 'riskscore') return item.sensitivityScore
+    if (key === 'pil') return item.pil
+    if (key === 'occ') return item.occupati
+    if (key === 'prod') return item.produzione
+    if (key === 'red') return item.redditi
+    if (key === 'impscore') return item.impattoScore
+    return Number.NEGATIVE_INFINITY
+  }
+
+  function bestInner(key: string): number {
+    return Math.max(...localRanking.map((item) => innerMetricValue(key, item)))
+  }
+
+  function mcaRank(rawAnswer: string): number {
+    const code = rawAnswer.toUpperCase()
+    if (code === 'A') return 4
+    if (code === 'M') return 3
+    if (code === 'B') return 2
+    if (code === 'N') return 1
+    return 0
+  }
+
   // ── Inner header row (shared across accordion tables) ───────────────────
 
   function AltHeaderRow() {
@@ -263,14 +297,74 @@ export function Step7_ScoreFinale() {
   return (
     <div style={rootStyle}>
 
+      {/* ── Opzioni a confronto (sintesi proposta migliore) ── */}
+      <section aria-label="Opzioni a confronto">
+        <div className="mb-3 flex items-baseline gap-2">
+          <h3 className="text-[14px] font-bold text-ink-900">Opzioni a confronto</h3>
+          <span className="text-[12px] text-ink-400">
+            {localRanking.length} {localRanking.length === 1 ? 'alternativa' : 'alternative'}
+          </span>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+          {localRanking.map((s) => {
+            const alt = state.alternative[s.alternativaId]
+            const rec = s.alternativaId === localRecommendedId
+            return (
+              <div
+                key={s.alternativaId}
+                className={`flex flex-col rounded-lg border bg-white p-4 shadow-sm ${rec ? 'border-brand-violet ring-1 ring-brand-violet/30' : 'border-ink-100'}`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`inline-flex h-6 items-center px-2 font-mono text-[11px] font-bold ${rec ? 'bg-brand-violet text-white' : 'bg-ink-100 text-ink-600'}`}>
+                    {s.alternativaId}
+                  </span>
+                  {rec && (
+                    <span className="inline-flex items-center bg-green-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+                      Raccomandata
+                    </span>
+                  )}
+                </div>
+                <p className="mt-2 text-[13px] font-semibold leading-snug text-ink-900">{getAltLabel(s.alternativaId)}</p>
+                <dl className="mt-3 space-y-1 text-[12px]">
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-ink-400">CAPEX</dt>
+                    <dd className="font-mono text-ink-700">{alt?.capex != null ? `€ ${formatEuro(alt.capex)}` : '—'}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-ink-400">OPEX</dt>
+                    <dd className="font-mono text-ink-700">{alt?.opex != null ? `€ ${formatEuro(alt.opex)}` : '—'}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-ink-400">Durata</dt>
+                    <dd className="font-mono text-ink-700">{alt?.durataStimata ? `${alt.durataStimata} mesi` : '—'}</dd>
+                  </div>
+                </dl>
+                <div className="mt-3 border-t border-ink-100 pt-3">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-400">Punteggio finale</span>
+                    <span className={`font-mono text-[16px] font-bold ${rec ? 'text-brand-violet' : 'text-ink-800'}`}>{fmt1(s.scoreFinale)}</span>
+                  </div>
+                  <span className="mt-1.5 block h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
+                    <span
+                      className={`block h-full rounded-full ${rec ? 'bg-brand-violet' : 'bg-ink-300'}`}
+                      style={{ width: `${Math.max(0, Math.min(100, s.scoreFinale))}%` }}
+                    />
+                  </span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
       {/* ── Ranking finale ── */}
       <section aria-label="Ranking finale" style={sectionStyle}>
         <h3 style={sectionTitleStyle}>Ranking finale alternative</h3>
         <div style={tableWrapStyle}>
-          <table style={{ ...tableStyle, minWidth: `${80 + 240 + altColCount * 140}px` }}>
+          <table style={{ ...tableStyle, minWidth: `${72 + 180 + altColCount * 140}px` }}>
             <colgroup>
-              <col style={{ width: '240px', minWidth: '240px' }} />
-              <col style={{ width: '80px', minWidth: '80px' }} />
+              <col style={{ width: '180px', minWidth: '180px' }} />
+              <col style={{ width: '72px', minWidth: '72px' }} />
               {localRanking.map((item) => (
                 <col key={item.alternativaId} style={{ minWidth: '140px' }} />
               ))}
@@ -379,7 +473,7 @@ export function Step7_ScoreFinale() {
                 {localRanking.map((item) => (
                   <td
                     key={`finale-${item.alternativaId}`}
-                    style={getRankTotalCellStyle(item, localRecommendedId)}
+                    style={getRankTotalCellStyle(item, localRecommendedId, item.scoreFinale === Math.max(...localRanking.map((score) => score.scoreFinale)))}
                   >
                     <strong style={monoStyle}>{fmt1(item.scoreFinale)}</strong>
                   </td>
@@ -413,7 +507,7 @@ export function Step7_ScoreFinale() {
             <div style={innerTableWrapStyle}>
               <table style={innerTableStyle}>
                 <colgroup>
-                  <col style={{ width: '200px' }} />
+                  <col style={{ width: '180px' }} />
                   {localRanking.map((item) => (
                     <col key={item.alternativaId} />
                   ))}
@@ -427,7 +521,7 @@ export function Step7_ScoreFinale() {
                     {localRanking.map((item) => (
                       <td
                         key={`van-${item.alternativaId}`}
-                        style={getInnerBodyCellStyle(item, localRecommendedId)}
+                        style={getInnerBodyCellStyle(item, localRecommendedId, innerMetricValue('van', item) === bestInner('van'))}
                       >
                         <span style={monoStyle}>{fmtEur(item.van)}</span>
                       </td>
@@ -438,7 +532,7 @@ export function Step7_ScoreFinale() {
                     {localRanking.map((item) => (
                       <td
                         key={`tir-${item.alternativaId}`}
-                        style={getInnerBodyCellStyle(item, localRecommendedId)}
+                        style={getInnerBodyCellStyle(item, localRecommendedId, innerMetricValue('tir', item) === bestInner('tir'))}
                       >
                         <span style={monoStyle}>{fmtPct(item.tir * 100)}</span>
                       </td>
@@ -449,7 +543,7 @@ export function Step7_ScoreFinale() {
                     {localRanking.map((item) => (
                       <td
                         key={`bcr-${item.alternativaId}`}
-                        style={getInnerBodyCellStyle(item, localRecommendedId)}
+                        style={getInnerBodyCellStyle(item, localRecommendedId, innerMetricValue('bcr', item) === bestInner('bcr'))}
                       >
                         <span style={monoStyle}>{fmt2(item.bcr)}</span>
                       </td>
@@ -462,7 +556,7 @@ export function Step7_ScoreFinale() {
                     {localRanking.map((item) => (
                       <td
                         key={`cbascore-${item.alternativaId}`}
-                        style={getInnerTotalCellStyle(item, localRecommendedId)}
+                        style={getInnerTotalCellStyle(item, localRecommendedId, innerMetricValue('cbascore', item) === bestInner('cbascore'))}
                       >
                         <span style={monoStyle}>{fmt1(item.cbaScore)}</span>
                       </td>
@@ -496,7 +590,7 @@ export function Step7_ScoreFinale() {
               <div style={innerTableWrapStyle}>
                 <table style={innerTableStyle}>
                   <colgroup>
-                    <col style={{ width: '200px' }} />
+                    <col style={{ width: '180px' }} />
                     {localRanking.map((item) => (
                       <col key={item.alternativaId} />
                     ))}
@@ -522,7 +616,7 @@ export function Step7_ScoreFinale() {
                           return (
                             <td
                               key={`${question.qCode}-${item.alternativaId}`}
-                              style={getInnerBodyCellStyle(item, localRecommendedId)}
+                              style={getInnerBodyCellStyle(item, localRecommendedId, mcaRank(rawAnswer) > 0 && mcaRank(rawAnswer) === Math.max(...localRanking.map((candidate) => mcaRank(state.mcaScores[candidate.alternativaId]?.[question.qCode] ?? ''))))}
                             >
                               <span style={monoStyle}>{label}</span>
                             </td>
@@ -537,7 +631,7 @@ export function Step7_ScoreFinale() {
                       {localRanking.map((item) => (
                         <td
                           key={`mcascore-${item.alternativaId}`}
-                          style={getInnerTotalCellStyle(item, localRecommendedId)}
+                          style={getInnerTotalCellStyle(item, localRecommendedId, innerMetricValue('mcascore', item) === bestInner('mcascore'))}
                         >
                           <span style={monoStyle}>{fmt1(item.mcaScore)}</span>
                         </td>
@@ -569,7 +663,7 @@ export function Step7_ScoreFinale() {
             <div style={innerTableWrapStyle}>
               <table style={innerTableStyle}>
                 <colgroup>
-                  <col style={{ width: '220px' }} />
+                  <col style={{ width: '180px' }} />
                   {localRanking.map((item) => (
                     <col key={item.alternativaId} />
                   ))}
@@ -590,7 +684,7 @@ export function Step7_ScoreFinale() {
                         : '#c62828'
                       return (
                         <td key={`probBest-${item.alternativaId}`}
-                          style={getInnerBodyCellStyle(item, localRecommendedId)}>
+                          style={getInnerBodyCellStyle(item, localRecommendedId, pct !== null && pct === Math.max(...localRanking.map((candidate) => (MC_MOCK_DATA[candidate.alternativaId]?.summary.probBest ?? 0) * 100)))}>
                           <span style={{ ...monoStyle, color, fontWeight: 700 }}>
                             {pct !== null ? `${pct.toFixed(0)}%` : '—'}
                           </span>
@@ -606,7 +700,7 @@ export function Step7_ScoreFinale() {
                       const mc = MC_MOCK_DATA[item.alternativaId]
                       return (
                         <td key={`p50-${item.alternativaId}`}
-                          style={getInnerBodyCellStyle(item, localRecommendedId)}>
+                          style={getInnerBodyCellStyle(item, localRecommendedId, !!mc && mc.summary.p50 === Math.max(...localRanking.map((candidate) => MC_MOCK_DATA[candidate.alternativaId]?.summary.p50 ?? Number.NEGATIVE_INFINITY)))}>
                           <span style={monoStyle}>
                             {mc ? `${fmtMfromK(mc.summary.p50)} M€` : '—'}
                           </span>
@@ -645,7 +739,7 @@ export function Step7_ScoreFinale() {
                         : '#2e7d32'
                       return (
                         <td key={`probNeg-${item.alternativaId}`}
-                          style={getInnerBodyCellStyle(item, localRecommendedId)}>
+                          style={getInnerBodyCellStyle(item, localRecommendedId, prob !== null && prob === Math.min(...localRanking.map((candidate) => MC_MOCK_DATA[candidate.alternativaId]?.summary.probNegative ?? Number.POSITIVE_INFINITY)))}>
                           <span style={{ ...monoStyle, color, fontWeight: prob !== null && prob > 0.05 ? 700 : undefined }}>
                             {prob !== null ? `${(prob * 100).toFixed(1)}%` : '—'}
                           </span>
@@ -679,7 +773,7 @@ export function Step7_ScoreFinale() {
                     {localRanking.map((item) => (
                       <td
                         key={`riskscore-${item.alternativaId}`}
-                        style={getInnerTotalCellStyle(item, localRecommendedId)}
+                        style={getInnerTotalCellStyle(item, localRecommendedId, innerMetricValue('riskscore', item) === bestInner('riskscore'))}
                       >
                         <span style={monoStyle}>{fmt1(item.sensitivityScore)}</span>
                       </td>
@@ -706,7 +800,7 @@ export function Step7_ScoreFinale() {
             <div style={innerTableWrapStyle}>
               <table style={innerTableStyle}>
                 <colgroup>
-                  <col style={{ width: '200px' }} />
+                  <col style={{ width: '180px' }} />
                   {localRanking.map((item) => (
                     <col key={item.alternativaId} />
                   ))}
@@ -720,7 +814,7 @@ export function Step7_ScoreFinale() {
                     {localRanking.map((item) => (
                       <td
                         key={`pil-${item.alternativaId}`}
-                        style={getInnerBodyCellStyle(item, localRecommendedId)}
+                        style={getInnerBodyCellStyle(item, localRecommendedId, innerMetricValue('pil', item) === bestInner('pil'))}
                       >
                         <span style={monoStyle}>{fmt1(item.pil)}</span>
                       </td>
@@ -731,7 +825,7 @@ export function Step7_ScoreFinale() {
                     {localRanking.map((item) => (
                       <td
                         key={`occ-${item.alternativaId}`}
-                        style={getInnerBodyCellStyle(item, localRecommendedId)}
+                        style={getInnerBodyCellStyle(item, localRecommendedId, innerMetricValue('occ', item) === bestInner('occ'))}
                       >
                         <span style={monoStyle}>{item.occupati.toLocaleString('it-IT')}</span>
                       </td>
@@ -742,7 +836,7 @@ export function Step7_ScoreFinale() {
                     {localRanking.map((item) => (
                       <td
                         key={`prod-${item.alternativaId}`}
-                        style={getInnerBodyCellStyle(item, localRecommendedId)}
+                        style={getInnerBodyCellStyle(item, localRecommendedId, innerMetricValue('prod', item) === bestInner('prod'))}
                       >
                         <span style={monoStyle}>{fmt1(item.produzione)}</span>
                       </td>
@@ -753,7 +847,7 @@ export function Step7_ScoreFinale() {
                     {localRanking.map((item) => (
                       <td
                         key={`red-${item.alternativaId}`}
-                        style={getInnerBodyCellStyle(item, localRecommendedId)}
+                        style={getInnerBodyCellStyle(item, localRecommendedId, innerMetricValue('red', item) === bestInner('red'))}
                       >
                         <span style={monoStyle}>{fmt1(item.redditi)}</span>
                       </td>
@@ -766,7 +860,7 @@ export function Step7_ScoreFinale() {
                     {localRanking.map((item) => (
                       <td
                         key={`impscore-${item.alternativaId}`}
-                        style={getInnerTotalCellStyle(item, localRecommendedId)}
+                        style={getInnerTotalCellStyle(item, localRecommendedId, innerMetricValue('impscore', item) === bestInner('impscore'))}
                       >
                         <span style={monoStyle}>{fmt1(item.impattoScore)}</span>
                       </td>
@@ -823,39 +917,45 @@ const tableStyle: CSSProperties = {
 
 const rankHeaderLabelCellStyle: CSSProperties = {
   textAlign: 'left',
-  padding: 'var(--spacing-inset-s)',
+  padding: '10px 12px',
   borderBottom: '1px solid #d0d0d0',
-  background: '#f0f0f0',
+  background: 'var(--color-background-inverse)',
   color: 'var(--color-text-primary)',
-  verticalAlign: 'bottom',
+  verticalAlign: 'middle',
   fontWeight: 700,
+  fontSize: '12px',
+  lineHeight: 1.25,
 }
 
 const rankHeaderWeightCellStyle: CSSProperties = {
   textAlign: 'center',
-  padding: 'var(--spacing-inset-s)',
+  padding: '10px 12px',
   borderBottom: '1px solid #d0d0d0',
   borderLeft: '1px solid #d0d0d0',
-  background: '#f0f0f0',
+  background: 'var(--color-background-inverse)',
   color: 'var(--color-text-primary)',
-  verticalAlign: 'bottom',
+  verticalAlign: 'middle',
   fontWeight: 700,
+  fontSize: '12px',
+  lineHeight: 1.25,
 }
 
 const rankHeaderAltCellStyle: CSSProperties = {
-  textAlign: 'right',
-  padding: 'var(--spacing-inset-s)',
+  textAlign: 'left',
+  padding: '10px 12px',
   borderBottom: '1px solid #d0d0d0',
   borderLeft: '1px solid #d0d0d0',
-  background: '#f0f0f0',
+  background: 'var(--color-background-inverse)',
   color: 'var(--color-text-primary)',
-  verticalAlign: 'top',
+  verticalAlign: 'middle',
   wordBreak: 'break-word',
+  fontSize: '12px',
+  lineHeight: 1.25,
 }
 
 const recommendedHeaderStyle: CSSProperties = {
-  background: '#e8e8e8',
-  boxShadow: 'inset 0 0 0 2px #888',
+  background: 'rgba(91,33,247,0.08)',
+  boxShadow: 'inset 3px 0 0 #7c4dff',
   color: 'var(--color-text-primary)',
 }
 
@@ -898,10 +998,12 @@ const wizardAltBadgeRecommendedStyle: CSSProperties = {
 
 const rankRowHeaderStyle: CSSProperties = {
   textAlign: 'left',
-  padding: 'var(--spacing-inset-s)',
+  padding: '8px 12px',
   borderBottom: '1px solid #d0d0d0',
   color: 'var(--color-text-primary)',
-  fontWeight: 400,
+  fontWeight: 600,
+  fontSize: '12px',
+  lineHeight: 1.25,
 }
 
 const rankRowAlternateStyle: CSSProperties = {
@@ -909,7 +1011,7 @@ const rankRowAlternateStyle: CSSProperties = {
 }
 
 const rankWeightCellStyle: CSSProperties = {
-  padding: '4px var(--spacing-inset-s)',
+  padding: '8px 12px',
   borderBottom: '1px solid #d0d0d0',
   borderLeft: '1px solid #d0d0d0',
   textAlign: 'center',
@@ -930,46 +1032,48 @@ const weightInputStyle: CSSProperties = {
 
 const rankTotalHeaderStyle: CSSProperties = {
   textAlign: 'left',
-  padding: 'var(--spacing-inset-s)',
+  padding: '8px 12px',
   borderBottom: '1px solid #d0d0d0',
-  background: '#e8e8e8',
+  background: 'rgba(91,33,247,0.08)',
   color: 'var(--color-text-primary)',
   fontWeight: 700,
+  fontSize: '12px',
+  lineHeight: 1.25,
 }
 
 const rankTotalWeightCellStyle: CSSProperties = {
-  padding: 'var(--spacing-inset-s)',
+  padding: '8px 12px',
   borderBottom: '1px solid #d0d0d0',
   borderLeft: '1px solid #d0d0d0',
-  background: '#e8e8e8',
+  background: 'rgba(91,33,247,0.08)',
 }
 
-const recommendedColumnTint = '#f2f2f2'
+const recommendedColumnTint = 'rgba(91,33,247,0.05)'
 
-function getRankBodyCellStyle(item: ScoreComposito, localRecommendedId: AlternativaId | null, isBest = false): CSSProperties {
+function getRankBodyCellStyle(item: ScoreComposito, localRecommendedId: AlternativaId | null, _isBest = false): CSSProperties {
+  const isRecommended = item.alternativaId === localRecommendedId
   return {
-    padding: 'var(--spacing-inset-s)',
+    padding: '8px 12px',
     borderBottom: '1px solid #d0d0d0',
     borderLeft: '1px solid #d0d0d0',
     color: 'var(--color-text-primary)',
-    background: isBest ? 'rgba(16,138,67,0.10)' : item.alternativaId === localRecommendedId ? recommendedColumnTint : 'var(--color-background-inverse)',
+    background: isRecommended ? recommendedColumnTint : 'var(--color-background-inverse)',
     fontFamily: 'var(--font-family-0, "Atkinson Hyperlegible Mono", monospace)',
     textAlign: 'right',
-    fontWeight: isBest ? 800 : undefined,
-    ...(isBest ? { boxShadow: 'inset 3px 0 0 #108a43' } : {}),
   }
 }
 
-function getRankTotalCellStyle(item: ScoreComposito, localRecommendedId: AlternativaId | null): CSSProperties {
+function getRankTotalCellStyle(item: ScoreComposito, localRecommendedId: AlternativaId | null, _isBest = false): CSSProperties {
+  const isRecommended = item.alternativaId === localRecommendedId
   return {
-    padding: 'var(--spacing-inset-s)',
+    padding: '8px 12px',
     borderBottom: '1px solid #d0d0d0',
     borderLeft: '1px solid #d0d0d0',
-    background: item.alternativaId === localRecommendedId ? '#e0e0e0' : '#e8e8e8',
+    background: isRecommended ? 'rgba(91,33,247,0.12)' : 'rgba(91,33,247,0.08)',
     color: 'var(--color-text-primary)',
     textAlign: 'right',
     fontWeight: 700,
-    ...(item.alternativaId === localRecommendedId ? { boxShadow: 'inset 0 0 0 2px #888' } : {}),
+    ...(isRecommended ? { boxShadow: 'inset 3px 0 0 #7c4dff' } : {}),
   }
 }
 
@@ -990,94 +1094,112 @@ const hintTextStyle: CSSProperties = { display: 'block', marginTop: 'var(--spaci
 
 // ── Inner detail table styles ─────────────────────────────────────────────
 
-const innerTableWrapStyle: CSSProperties = { overflowX: 'auto' }
+const innerTableWrapStyle: CSSProperties = {
+  overflowX: 'auto',
+  border: '1px solid var(--color-border-secondary-light)',
+  borderRadius: 4,
+}
 const innerTableStyle: CSSProperties = {
   width: '100%',
   tableLayout: 'fixed',
   borderCollapse: 'collapse',
+  background: 'var(--color-background-inverse)',
   fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-  fontSize: 'var(--type-body-xs-size, 14px)',
+  fontSize: '12px',
 }
 
 const innerLabelHeaderCellStyle: CSSProperties = {
-  width: '200px',
-  minWidth: '200px',
-  padding: 'var(--spacing-inset-s)',
+  width: '180px',
+  minWidth: '180px',
+  padding: '10px 12px',
   textAlign: 'left',
-  verticalAlign: 'top',
+  verticalAlign: 'middle',
   borderBottom: '1px solid #d0d0d0',
-  background: '#f0f0f0',
+  background: 'var(--color-background-inverse)',
   color: 'var(--color-text-primary)',
   fontWeight: 700,
+  fontSize: '12px',
+  lineHeight: 1.25,
 }
 
 const innerAltHeaderCellStyle: CSSProperties = {
-  padding: 'var(--spacing-inset-s)',
-  textAlign: 'right',
-  verticalAlign: 'top',
+  padding: '10px 12px',
+  textAlign: 'left',
+  verticalAlign: 'middle',
   borderBottom: '1px solid #d0d0d0',
   borderLeft: '1px solid #d0d0d0',
-  background: '#f0f0f0',
+  background: 'var(--color-background-inverse)',
   color: 'var(--color-text-primary)',
   wordBreak: 'break-word',
   fontWeight: 700,
+  fontSize: '12px',
+  lineHeight: 1.25,
 }
 
 const innerAltHeaderRecommendedStyle: CSSProperties = {
-  background: '#e8e8e8',
-  boxShadow: 'inset 0 0 0 2px #888',
+  background: 'rgba(91,33,247,0.08)',
+  boxShadow: 'inset 3px 0 0 #7c4dff',
 }
 
 const innerRowHeaderStyle: CSSProperties = {
   textAlign: 'left',
-  padding: 'var(--spacing-inset-xs) var(--spacing-inset-s)',
+  padding: '8px 12px',
   borderBottom: '1px solid #d0d0d0',
   color: 'var(--color-text-primary)',
-  fontWeight: 400,
+  fontWeight: 600,
+  fontSize: '12px',
+  lineHeight: 1.25,
 }
 
-const innerRowAlternateStyle: CSSProperties = { background: '#fafafa' }
+const innerRowAlternateStyle: CSSProperties = { background: 'rgba(127,127,140,0.06)' }
 
 const innerBodyCellBaseStyle: CSSProperties = {
-  padding: 'var(--spacing-inset-xs) var(--spacing-inset-s)',
+  padding: '8px 12px',
   borderBottom: '1px solid #d0d0d0',
   borderLeft: '1px solid #d0d0d0',
   color: 'var(--color-text-primary)',
   textAlign: 'right',
+  fontSize: '13px',
+  lineHeight: 1.2,
+  fontFamily: 'var(--font-family-0, "Atkinson Hyperlegible Mono", monospace)',
 }
 
 const innerTotalRowHeaderStyle: CSSProperties = {
   textAlign: 'left',
-  padding: 'var(--spacing-inset-xs) var(--spacing-inset-s)',
+  padding: '8px 12px',
   borderBottom: '1px solid #d0d0d0',
-  background: '#f0f0f0',
+  background: 'rgba(91,33,247,0.08)',
   color: 'var(--color-text-primary)',
   fontWeight: 700,
+  fontSize: '12px',
+  lineHeight: 1.25,
 }
 
 const innerTotalCellBaseStyle: CSSProperties = {
-  padding: 'var(--spacing-inset-xs) var(--spacing-inset-s)',
+  padding: '8px 12px',
   borderBottom: '1px solid #d0d0d0',
   borderLeft: '1px solid #d0d0d0',
-  background: '#f0f0f0',
+  background: 'rgba(91,33,247,0.08)',
   color: 'var(--color-text-primary)',
   fontWeight: 700,
   textAlign: 'right',
   fontFamily: 'var(--font-family-0, "Atkinson Hyperlegible Mono", monospace)',
+  fontSize: '13px',
 }
 
-function getInnerBodyCellStyle(item: ScoreComposito, localRecommendedId: AlternativaId | null): CSSProperties {
+function getInnerBodyCellStyle(item: ScoreComposito, localRecommendedId: AlternativaId | null, _isBest = false): CSSProperties {
   return {
     ...innerBodyCellBaseStyle,
-    background: item.alternativaId === localRecommendedId ? recommendedColumnTint : 'var(--color-background-inverse)',
+    background: item.alternativaId === localRecommendedId ? 'rgba(91,33,247,0.05)' : 'var(--color-background-inverse)',
   }
 }
 
-function getInnerTotalCellStyle(item: ScoreComposito, localRecommendedId: AlternativaId | null): CSSProperties {
+function getInnerTotalCellStyle(item: ScoreComposito, localRecommendedId: AlternativaId | null, _isBest = false): CSSProperties {
+  const isRecommended = item.alternativaId === localRecommendedId
   return {
     ...innerTotalCellBaseStyle,
-    background: item.alternativaId === localRecommendedId ? '#e8e8e8' : '#f0f0f0',
-    ...(item.alternativaId === localRecommendedId ? { boxShadow: 'inset 0 0 0 2px #888' } : {}),
+    background: isRecommended ? 'rgba(91,33,247,0.12)' : 'rgba(91,33,247,0.08)',
+    ...(isRecommended ? { boxShadow: 'inset 3px 0 0 #7c4dff' } : {}),
   }
 }
 

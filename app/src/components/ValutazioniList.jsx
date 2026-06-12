@@ -342,8 +342,11 @@ function InfoBlock({ label, value }) {
   );
 }
 
-function buildDisplayProject(workspace, index) {
-  const preset = LIST_PRESETS[index] || {};
+// Progetti reali (con export dedicato) che NON devono ricevere i preset demo
+// posizionali: mostrano i propri campi così come sono.
+const REAL_PROJECT_IDS = new Set(["PROJ-MUBA-976"]);
+
+function buildDisplayProject(workspace, preset = {}) {
 
   let availableAnalyses;
   if (preset.analyses) {
@@ -416,7 +419,15 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation, onOpenAnalysis
     return () => window.removeEventListener("click", close);
   }, [provinceOpen, filterOpen]);
 
-  const displayProjects = useMemo(() => projects.map((workspace, index) => buildDisplayProject(workspace, index)), [projects]);
+  const displayProjects = useMemo(() => {
+    // I preset demo sono posizionali: li assegniamo solo ai progetti non-reali,
+    // così MUBA (in cima) conserva i propri campi senza essere sovrascritto.
+    let presetCursor = 0;
+    return projects.map((workspace) => {
+      const preset = REAL_PROJECT_IDS.has(workspace.id) ? {} : (LIST_PRESETS[presetCursor++] || {});
+      return buildDisplayProject(workspace, preset);
+    });
+  }, [projects]);
 
   const filteredProjects = useMemo(() => {
     const term = uiState.debouncedSearchTerm;
