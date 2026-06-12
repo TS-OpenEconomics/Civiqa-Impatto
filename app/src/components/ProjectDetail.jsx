@@ -33,7 +33,8 @@ function statusLabel(stato) {
   const map = {
     "In preparazione": { label: "In preparazione", cls: "bg-amber-50 text-amber-700 border border-amber-200" },
     "In approvazione": { label: "In approvazione", cls: "bg-blue-50 text-blue-700 border border-blue-200" },
-    Approvato: { label: "Approvato", cls: "bg-green-50 text-green-700 border border-green-200" },
+    Approvato: { label: "Eseguito", cls: "bg-green-50 text-green-700 border border-green-200" },
+    Eseguito: { label: "Eseguito", cls: "bg-green-50 text-green-700 border border-green-200" },
   };
   return map[stato] || { label: stato || "—", cls: "bg-ink-100 text-ink-500" };
 }
@@ -60,6 +61,17 @@ function IconTrash({ className = "w-4 h-4" }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+    </svg>
+  );
+}
+
+// Icona testata della Valutazione — la stessa "freccia" (trend in salita) usata
+// accanto alla voce Valutazione nella navigazione (SideNav.IconValutazione).
+function IconValutazione({ className = "h-8 w-8" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 17l5-5 3 3 8-8" />
+      <path d="M17 7h3v3" />
     </svg>
   );
 }
@@ -792,36 +804,44 @@ export function ProjectDetail({
         Creato il <span className="font-medium">12/05/2025</span> da OpenEconomics S.r.l — Ultima modifica il <span className="font-medium">15/05/2025</span>
       </p>
 
-      {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="flex-1">
-          <h1 className="text-[22px] font-bold leading-snug text-ink-900">
-            {p.nome || "Progetto senza nome"}
-          </h1>
-          {p.cup && (
-            <p className="mt-1 font-mono text-[13px] text-ink-500">{p.cup}</p>
-          )}
-          {p.descrizione && (
-            <p className="mt-3 max-w-3xl text-[14px] leading-relaxed text-ink-700">{p.descrizione}</p>
-          )}
-          <div className="mt-4 flex items-center gap-2">
-            <span className="text-[13px] text-ink-500">Stato del progetto:</span>
-            <span className={`px-3 py-1 text-[12px] font-semibold ${stato.cls}`}>{stato.label}</span>
+      {/* Header card — testata in stile Dettaglio DOCFAP: card bordata + meta-strip */}
+      <div className="border border-ink-100 bg-white">
+        <div className="flex flex-col gap-4 px-6 py-5 md:flex-row md:items-start md:justify-between md:px-8">
+          <div className="flex flex-1 items-start gap-4">
+            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded bg-brand-violet/10 text-brand-violet">
+              <IconValutazione className="h-8 w-8" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-[22px] font-bold leading-snug text-ink-900">
+                  {p.nome || "Progetto senza nome"}
+                </h1>
+                <span className="inline-flex items-center bg-brand-violet/15 px-2.5 py-1 font-mono text-[10px] font-semibold tracking-wide text-brand-violet">
+                  VALUTAZIONE
+                </span>
+                <span className={`inline-flex items-center px-2.5 py-1 text-[12px] font-semibold ${stato.cls}`}>{stato.label}</span>
+              </div>
+              {p.cup && (
+                <p className="mt-1.5 font-mono text-[13px] text-ink-500">{p.cup}</p>
+              )}
+              {p.descrizione && (
+                <p className="mt-3 max-w-3xl text-[14px] leading-relaxed text-ink-700">{p.descrizione}</p>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Options */}
-        <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
-          <button
-            type="button"
-            onClick={() => setShowOptions((o) => !o)}
-            className="flex items-center gap-2 rounded border border-ink-100 px-4 py-2 text-[13px] font-medium text-ink-700 transition-colors hover:bg-ink-100/50"
-          >
-            Opzioni
-            <IconChevronDown className="h-3.5 w-3.5 text-ink-300" />
-          </button>
-          {showOptions && (
-            <div className="absolute right-0 top-full z-10 mt-1 w-48 overflow-hidden rounded border border-ink-100 bg-white shadow-lg">
+          {/* Options */}
+          <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setShowOptions((o) => !o)}
+              className="flex items-center gap-2 border border-ink-100 px-4 py-2 text-[13px] font-medium text-ink-700 transition-colors hover:bg-ink-100/50"
+            >
+              Opzioni
+              <IconChevronDown className="h-3.5 w-3.5 text-ink-300" />
+            </button>
+            {showOptions && (
+              <div className="absolute right-0 top-full z-10 mt-1 w-48 overflow-hidden rounded border border-ink-100 bg-white shadow-lg">
               <button
                 type="button"
                 onClick={() => { setShowOptions(false); onEdit?.(); }}
@@ -848,12 +868,30 @@ export function ProjectDetail({
               </button>
             </div>
           )}
+          </div>
+        </div>
+
+        {/* Meta-strip — sintesi in stile Dettaglio DOCFAP */}
+        <div className="grid grid-cols-1 divide-y divide-ink-100 border-t border-ink-100 bg-white text-sm sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
+          {[
+            ["Settore", cfg.settore, false],
+            ["Categoria di intervento", cfg.categoria_intervento, false],
+            ["CAPEX", fmtCurrency(cfg.capex), true],
+            ["OPEX annuo", fmtCurrency(cfg.opex), true],
+          ].map(([label, value, highlight]) => (
+            <div key={label} className="px-6 py-4">
+              <p className="text-[11px] font-medium text-ink-400">{label}</p>
+              <p className={`mt-0.5 text-[13px] font-semibold ${highlight ? "text-brand-violet" : "text-ink-900"}`}>
+                {value || "—"}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Config block */}
-      <div className="mt-8 overflow-hidden rounded border border-ink-100 bg-white">
-        <div className="flex items-center justify-between border-b border-ink-100 bg-white px-5 py-3">
+      <div className="mt-8 overflow-hidden border border-ink-100 bg-white">
+        <div className="flex items-center justify-between border-b border-ink-100 bg-white px-6 py-3">
           <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-500">Dati della configurazione</p>
           <button
             type="button"
@@ -883,7 +921,7 @@ export function ProjectDetail({
           ].map((col, ci) => (
             <div key={ci} className="divide-y divide-ink-100">
               {col.map(([label, value]) => (
-                <div key={label} className="px-5 py-3">
+                <div key={label} className="px-6 py-4">
                   <p className="text-[11px] font-medium text-ink-400">{label}</p>
                   <p className="mt-0.5 text-[13px] font-semibold text-ink-900">{value || "—"}</p>
                 </div>
@@ -892,7 +930,7 @@ export function ProjectDetail({
           ))}
         </div>
         {showConfigAll && (
-          <div className="grid grid-cols-1 gap-x-6 gap-y-3 border-t border-ink-100 bg-white px-5 py-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-4 border-t border-ink-100 bg-white px-6 py-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
               ["NACE", cfg.nace_code],
               ["Tasso attualizzazione", cfg.tasso_attualizzazione != null ? `${cfg.tasso_attualizzazione}%` : null],

@@ -98,7 +98,7 @@ export function TabCBA() {
             <tr>
               <th scope="row" style={finalRowHeaderStyle}>Punteggio CBA</th>
               {scores.map(s => (
-                <td key={`cba-${s.alternativaId}`} style={{ ...getDetailFinalRecommendedCellStyle(s.alternativaId === recommendedId), ...(s.cbaScore === Math.max(...scores.map(x => x.cbaScore)) ? detailBestCellStyle : null) }}>
+                <td key={`cba-${s.alternativaId}`} style={getDetailFinalRecommendedCellStyle(s.alternativaId === recommendedId)}>
                   {s.cbaScore.toFixed(1)}
                 </td>
               ))}

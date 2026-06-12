@@ -7,7 +7,7 @@ import type { ScoreComposito } from '../../types/docfap'
 // il DOCFAP (summary card, box di confronto, dettaglio). Ogni etichetta ha una
 // spiegazione (hint) mostrata come tooltip al funzionario.
 export const RISK_METRIC_LABELS = {
-  probBest: 'Probabilità scelta ottimale',
+  probBest: 'Probabilita scelta ottimale',
   median: 'Beneficio netto mediano',
   ci90: 'Intervallo di confidenza 90%',
   loss: 'Rischio di perdita',
@@ -16,9 +16,9 @@ export const RISK_METRIC_LABELS = {
 
 export const RISK_METRIC_HINTS = {
   probBest: 'Su 1.000 simulazioni con parametri variabili, questa alternativa risulta la migliore nel X% dei casi',
-  median: 'Il valore centrale dei benefici netti attesi: nel 50% degli scenari il risultato è superiore, nel 50% inferiore',
+  median: 'Il valore centrale dei benefici netti attesi: nel 50% degli scenari il risultato e superiore, nel 50% inferiore',
   ci90: 'Nel 90% degli scenari simulati, il beneficio netto cade tra questi due valori',
-  loss: 'La probabilità che i costi superino i benefici — più è bassa, più l\'investimento è robusto',
+  loss: 'La probabilita che i costi superino i benefici: piu e bassa, piu l\'investimento e robusto',
 } as const
 
 const TIPOLOGIA_LABELS: Record<string, string> = {
@@ -55,7 +55,7 @@ export function getAlternativeDisplayLabel(
     const catLabel = catRecord ? toTitleCase(catRecord.label) : rawCat ? toTitleCase(rawCat) : ''
     const tipLabel = TIPOLOGIA_LABELS[rawTip] ?? (rawTip ? toTitleCase(rawTip) : '')
 
-    if (catLabel && tipLabel) return `${catLabel} — ${tipLabel}`
+    if (catLabel && tipLabel) return `${catLabel} - ${tipLabel}`
     if (catLabel) return catLabel
     if (tipLabel) return tipLabel
   }
@@ -231,7 +231,6 @@ export const detailBestCellStyle: CSSProperties = {}
 
 export const detailFinalRowHeaderStyle: CSSProperties = {
   ...detailRowHeaderStyle,
-  background: 'rgba(91,33,247,0.08)',
   fontWeight: 700,
 }
 
@@ -263,11 +262,14 @@ export function getDefinedScores(
     .sort((a, b) => a.alternativaId.localeCompare(b.alternativaId))
 }
 
-/** Stile cella punteggio finale per la colonna raccomandata — sfondo più intenso + box-shadow (skin app). */
+/** Stile cella punteggio finale: evidenzia (sfondo + accento) SOLO la colonna
+ *  raccomandata. Le altre celle restano neutre — così l'ultima riga non risulta
+ *  evidenziata per intero, ma marca solo l'alternativa scelta. */
 export function getDetailFinalRecommendedCellStyle(isRecommended: boolean): CSSProperties {
-  if (!isRecommended) return detailFinalCellStyle
+  const base: CSSProperties = { ...detailBodyCellStyle, fontWeight: 700 }
+  if (!isRecommended) return base
   return {
-    ...detailFinalCellStyle,
+    ...base,
     background: 'rgba(91,33,247,0.12)',
     boxShadow: 'inset 3px 0 0 #7c4dff',
   }

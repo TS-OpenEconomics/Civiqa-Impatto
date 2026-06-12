@@ -7,6 +7,7 @@ import {
   getAlternativeDisplayLabel,
   getRecommendedAlternativeId,
   getDefinedScores,
+  getDetailFinalRecommendedCellStyle,
   labelColumnStyle,
   alternativeColumnStyle,
   detailHeaderCellBaseStyle,
@@ -22,7 +23,6 @@ import {
   detailRecommendedColumnStyle,
   detailBestCellStyle,
   detailFinalRowHeaderStyle,
-  detailFinalCellStyle,
   detailEmptyStyle,
   detailTableWrapStyle,
   formatScore,
@@ -118,14 +118,11 @@ export function TabMCA() {
             })}
             <tr>
               <th scope="row" style={finalRowHeaderStyle}>SCORE MCA</th>
-              {scores.map((score) => {
-                const isRecommended = score.alternativaId === recommendedId
-                return (
-                  <td key={`mca-${score.alternativaId}`} style={{ ...finalCellStyle, ...(isRecommended ? recommendedHeaderStyle : null), ...(score.mcaScore === Math.max(...scores.map(s => s.mcaScore)) ? detailBestCellStyle : null) }}>
-                    {formatScore(score.mcaScore)}
-                  </td>
-                )
-              })}
+              {scores.map((score) => (
+                <td key={`mca-${score.alternativaId}`} style={getDetailFinalRecommendedCellStyle(score.alternativaId === recommendedId)}>
+                  {formatScore(score.mcaScore)}
+                </td>
+              ))}
             </tr>
           </tbody>
         </table>
@@ -144,5 +141,4 @@ const rowHeaderStyle: CSSProperties = detailRowHeaderStyle
 const bodyCellStyle: CSSProperties = { ...detailBodyCellStyle, textAlign: 'center', fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)' }
 const recommendedColumnStyle: CSSProperties = detailRecommendedColumnStyle
 const finalRowHeaderStyle: CSSProperties = detailFinalRowHeaderStyle
-const finalCellStyle: CSSProperties = detailFinalCellStyle
 const emptyStyle: CSSProperties = detailEmptyStyle

@@ -171,7 +171,7 @@ export function Step7_DecisioneRUP() {
 
   return (
     <div style={rootStyle}>
-      <ProgressiveBlocks blocks={blocks} />
+      <ProgressiveBlocks blocks={blocks} sequential />
     </div>
   )
 }
