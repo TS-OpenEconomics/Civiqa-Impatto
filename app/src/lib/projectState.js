@@ -1,4 +1,5 @@
 import initialProject from "../mocks/project.json";
+import { MUBA_PROJECT, MUBA_EIA_RESULTS, MUBA_ECBA_RESULTS } from "../mocks/mubaProject";
 import { computeEia } from "./eiaEngine";
 import { computeEcba } from "./ecbaEngine";
 
@@ -9,9 +10,9 @@ const DEFAULT_ECBA_INPUTS = {
   benefitsMode: "Da impatti EIA e benefici idrici stimati",
 };
 
-// v3: i progetti seed ora nascono con EIA ed ECBA già completate e con risultati
-// precalcolati. Il bump invalida lo stato v2 in cache (analisi "da avviare").
-export const PROJECT_STORAGE_KEY = "civiqa.projects.v3";
+// v4: aggiunto il progetto reale MUBA (scenario 976) con risultati EIA/ECBA
+// importati dagli export. Il bump invalida lo stato v3 in cache (senza MUBA).
+export const PROJECT_STORAGE_KEY = "civiqa.projects.v4";
 export const UI_STORAGE_KEY = "civiqa.ui.v1";
 
 function clone(value) {
@@ -63,6 +64,32 @@ function withCompletedAnalyses(workspace) {
     },
     analyses: {
       ...workspace.analyses,
+      eia: { status: "completed", updatedAt },
+      ecba: { status: "completed", updatedAt },
+    },
+  };
+}
+
+// Workspace per il progetto reale MUBA: EIA ed ECBA già completate, ma con i
+// risultati REALI importati dagli export (non i numeri seed fissi). Stessa forma
+// di withCompletedAnalyses così i consumer (ProjectDetail, ValutazioniList) non
+// distinguono questo progetto dagli altri.
+function buildMubaWorkspace() {
+  const project = clone(MUBA_PROJECT);
+  const updatedAt = project.ultima_modifica;
+  const base = createWorkspace(project);
+  return {
+    ...base,
+    eiaInputs: clone(MUBA_EIA_RESULTS.scenario),
+    eiaResults: clone(MUBA_EIA_RESULTS),
+    ecbaResults: clone(MUBA_ECBA_RESULTS),
+    results: {
+      ...base.results,
+      eia: clone(MUBA_EIA_RESULTS),
+      ecba: clone(MUBA_ECBA_RESULTS),
+    },
+    analyses: {
+      ...base.analyses,
       eia: { status: "completed", updatedAt },
       ecba: { status: "completed", updatedAt },
     },
@@ -208,6 +235,7 @@ export function buildSeedProjects() {
     withCompletedAnalyses(createWorkspace(clone(initialProject))),
     proj002,
     proj003,
+    buildMubaWorkspace(),
   ];
 }
 

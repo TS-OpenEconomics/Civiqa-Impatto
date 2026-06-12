@@ -140,6 +140,34 @@ export const detailHeaderLabelStyle: CSSProperties = {
   lineHeight: 1.25,
 }
 
+export const detailAltHeaderContentStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  minWidth: 0,
+}
+
+export const detailAltBadgeStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 24,
+  height: 24,
+  flex: '0 0 24px',
+  background: 'var(--color-background-secondary-lightest)',
+  color: 'var(--color-text-primary-light)',
+  fontFamily: 'var(--font-family-0, monospace)',
+  fontSize: 10,
+  fontWeight: 800,
+  lineHeight: 1,
+}
+
+export const detailRecommendedAltBadgeStyle: CSSProperties = {
+  ...detailAltBadgeStyle,
+  background: '#5b21f7',
+  color: '#fff',
+}
+
 export const detailRecommendedBadgeStyle: CSSProperties = {
   display: 'inline-block',
   width: 'fit-content',
@@ -174,6 +202,13 @@ export const detailBodyCellStyle: CSSProperties = {
 
 export const detailRecommendedColumnStyle: CSSProperties = {
   background: 'rgba(91,33,247,0.05)',
+}
+
+export const detailBestCellStyle: CSSProperties = {
+  background: 'rgba(16,138,67,0.10)',
+  boxShadow: 'inset 3px 0 0 #108a43',
+  color: 'var(--color-text-primary)',
+  fontWeight: 800,
 }
 
 export const detailFinalRowHeaderStyle: CSSProperties = {

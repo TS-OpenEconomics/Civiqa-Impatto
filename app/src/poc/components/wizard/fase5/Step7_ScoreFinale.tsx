@@ -215,6 +215,23 @@ export function Step7_ScoreFinale() {
   const toggleCard = (key: CardKey) => setOpenCards((prev) => ({ ...prev, [key]: !prev[key] }))
   const altColCount = localRanking.length
 
+  function AltHeaderContent(item: ScoreComposito, isRecommended: boolean) {
+    return (
+      <div style={wizardAltHeaderWrapStyle}>
+        <span style={isRecommended ? wizardAltBadgeRecommendedStyle : wizardAltBadgeStyle}>{item.alternativaId}</span>
+        <span style={altHeaderLabelStyle}>{getAltLabel(item.alternativaId)}</span>
+      </div>
+    )
+  }
+
+  function rankMetricValue(key: string, item: ScoreComposito): number {
+    if (key === 'cba') return item.cbaScore
+    if (key === 'mca') return item.mcaScore
+    if (key === 'sensitivita') return item.sensitivityScore
+    if (key === 'impatto') return item.impattoScore
+    return 0
+  }
+
   // ── Inner header row (shared across accordion tables) ───────────────────
 
   function AltHeaderRow() {
@@ -232,7 +249,7 @@ export function Step7_ScoreFinale() {
                 ...(isRecommended ? innerAltHeaderRecommendedStyle : null),
               }}
             >
-              <span style={altHeaderLabelStyle}>{getAltLabel(item.alternativaId)}</span>
+              {AltHeaderContent(item, isRecommended)}
               {isRecommended && <Badge label="Raccomandata" variant="success" size="s" />}
             </th>
           )
@@ -273,7 +290,7 @@ export function Step7_ScoreFinale() {
                         ...(isRecommended ? recommendedHeaderStyle : null),
                       }}
                     >
-                      <span style={altHeaderLabelStyle}>{getAltLabel(item.alternativaId)}</span>
+                      {AltHeaderContent(item, isRecommended)}
                       {isRecommended && <Badge label="Raccomandata" variant="success" size="s" />}
                     </th>
                   )
@@ -306,31 +323,37 @@ export function Step7_ScoreFinale() {
                   weightKey: 'wIMP' as keyof typeof weights,
                   get: (i: ScoreComposito) => fmt1(i.impattoScore),
                 },
-              ].map(({ key, label, weightKey, get }, rowIdx) => (
-                <tr key={key} style={rowIdx % 2 === 1 ? rankRowAlternateStyle : undefined}>
-                  <th scope="row" style={rankRowHeaderStyle}>{label}</th>
-                  <td style={rankWeightCellStyle}>
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={weights[weightKey]}
-                      onChange={(e) => handleWeightChange(weightKey, e.target.value)}
-                      aria-label={`Peso ${label}`}
-                      style={weightInputStyle}
-                    />
-                  </td>
-                  {localRanking.map((item) => (
-                    <td
-                      key={`${key}-${item.alternativaId}`}
-                      style={getRankBodyCellStyle(item, localRecommendedId)}
-                    >
-                      <span style={monoStyle}>{get(item)}</span>
+              ].map(({ key, label, weightKey, get }, rowIdx) => {
+                const best = Math.max(...localRanking.map((item) => rankMetricValue(key, item)))
+                return (
+                  <tr key={key} style={rowIdx % 2 === 1 ? rankRowAlternateStyle : undefined}>
+                    <th scope="row" style={rankRowHeaderStyle}>{label}</th>
+                    <td style={rankWeightCellStyle}>
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={weights[weightKey]}
+                        onChange={(e) => handleWeightChange(weightKey, e.target.value)}
+                        aria-label={`Peso ${label}`}
+                        style={weightInputStyle}
+                      />
                     </td>
-                  ))}
-                </tr>
-              ))}
+                    {localRanking.map((item) => {
+                      const isBest = rankMetricValue(key, item) === best
+                      return (
+                        <td
+                          key={`${key}-${item.alternativaId}`}
+                          style={getRankBodyCellStyle(item, localRecommendedId, isBest)}
+                        >
+                          <span style={monoStyle}>{get(item)}</span>
+                        </td>
+                      )
+                    })}
+                  </tr>
+                )
+              })}
 
               {/* Weight total indicator */}
               <tr>
@@ -838,10 +861,39 @@ const recommendedHeaderStyle: CSSProperties = {
 
 const altHeaderLabelStyle: CSSProperties = {
   display: 'block',
-  fontSize: 'var(--type-body-xs-size, 14px)',
+  fontSize: '12px',
   fontWeight: 700,
   wordBreak: 'break-word',
-  marginBottom: 'var(--spacing-stack-xxs, 4px)',
+  marginBottom: 0,
+  lineHeight: 1.25,
+}
+
+const wizardAltHeaderWrapStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  minWidth: 0,
+}
+
+const wizardAltBadgeStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 24,
+  height: 24,
+  flex: '0 0 24px',
+  background: 'var(--color-background-secondary-lightest)',
+  color: 'var(--color-text-primary-light)',
+  fontFamily: 'var(--font-family-0, monospace)',
+  fontSize: 10,
+  fontWeight: 800,
+  lineHeight: 1,
+}
+
+const wizardAltBadgeRecommendedStyle: CSSProperties = {
+  ...wizardAltBadgeStyle,
+  background: '#5b21f7',
+  color: '#fff',
 }
 
 const rankRowHeaderStyle: CSSProperties = {
@@ -894,15 +946,17 @@ const rankTotalWeightCellStyle: CSSProperties = {
 
 const recommendedColumnTint = '#f2f2f2'
 
-function getRankBodyCellStyle(item: ScoreComposito, localRecommendedId: AlternativaId | null): CSSProperties {
+function getRankBodyCellStyle(item: ScoreComposito, localRecommendedId: AlternativaId | null, isBest = false): CSSProperties {
   return {
     padding: 'var(--spacing-inset-s)',
     borderBottom: '1px solid #d0d0d0',
     borderLeft: '1px solid #d0d0d0',
     color: 'var(--color-text-primary)',
-    background: item.alternativaId === localRecommendedId ? recommendedColumnTint : 'var(--color-background-inverse)',
+    background: isBest ? 'rgba(16,138,67,0.10)' : item.alternativaId === localRecommendedId ? recommendedColumnTint : 'var(--color-background-inverse)',
     fontFamily: 'var(--font-family-0, "Atkinson Hyperlegible Mono", monospace)',
     textAlign: 'right',
+    fontWeight: isBest ? 800 : undefined,
+    ...(isBest ? { boxShadow: 'inset 3px 0 0 #108a43' } : {}),
   }
 }
 

@@ -12,10 +12,14 @@ import {
   detailRecommendedHeaderStyle,
   detailHeaderLabelWrapStyle,
   detailHeaderLabelStyle,
+  detailAltHeaderContentStyle,
+  detailAltBadgeStyle,
+  detailRecommendedAltBadgeStyle,
   detailRecommendedBadgeStyle,
   detailRowHeaderStyle,
   detailBodyCellStyle,
   detailRecommendedColumnStyle,
+  detailBestCellStyle,
   detailFinalRowHeaderStyle,
   detailEmptyStyle,
   detailTableWrapStyle,
@@ -42,6 +46,14 @@ export function TabImpatto() {
     { key: 'redditi',  label: 'Redditi (M€)',         get: s => fmtM(s.redditi) },
   ]
 
+  const rowValue = (key: string, s: typeof scores[0]): number => {
+    if (key === 'pil') return s.pil
+    if (key === 'occupati') return s.occupati
+    if (key === 'prod') return s.produzione
+    if (key === 'redditi') return s.redditi
+    return 0
+  }
+
   return (
     <div style={wrapStyle}>
       <div style={detailTableWrapStyle}>
@@ -58,7 +70,10 @@ export function TabImpatto() {
               return (
                 <th key={s.alternativaId} style={{ ...headerCellStyle, ...(isRec ? recommendedHeaderStyle : null) }}>
                   <div style={headerLabelWrapStyle}>
-                    <span style={headerLabelStyle}>{getAlternativeDisplayLabel(s.alternativaId, state.alternative[s.alternativaId])}</span>
+                    <div style={detailAltHeaderContentStyle}>
+                      <span style={isRec ? detailRecommendedAltBadgeStyle : detailAltBadgeStyle}>{s.alternativaId}</span>
+                      <span style={headerLabelStyle}>{getAlternativeDisplayLabel(s.alternativaId, state.alternative[s.alternativaId])}</span>
+                    </div>
                     {isRec && <span style={recommendedBadgeStyle}>Raccomandata</span>}
                   </div>
                 </th>
@@ -67,23 +82,27 @@ export function TabImpatto() {
           </tr>
         </thead>
         <tbody>
-          {rows.map(({ key, label, get }, rowIdx) => (
-            <tr key={key} style={rowIdx % 2 === 1 ? rowAlternateStyle : undefined}>
-              <th scope="row" style={rowHeaderStyle}>{label}</th>
-              {scores.map(s => {
-                const isRec = s.alternativaId === recommendedId
-                return (
-                  <td key={`${key}-${s.alternativaId}`} style={{ ...bodyCellStyle, ...(isRec ? recommendedColumnStyle : null) }}>
-                    {get(s)}
-                  </td>
-                )
-              })}
-            </tr>
-          ))}
+          {rows.map(({ key, label, get }, rowIdx) => {
+            const best = Math.max(...scores.map(s => rowValue(key, s)))
+            return (
+              <tr key={key} style={rowIdx % 2 === 1 ? rowAlternateStyle : undefined}>
+                <th scope="row" style={rowHeaderStyle}>{label}</th>
+                {scores.map(s => {
+                  const isRec = s.alternativaId === recommendedId
+                  const isBest = rowValue(key, s) === best
+                  return (
+                    <td key={`${key}-${s.alternativaId}`} style={{ ...bodyCellStyle, ...(isRec ? recommendedColumnStyle : null), ...(isBest ? detailBestCellStyle : null) }}>
+                      {get(s)}
+                    </td>
+                  )
+                })}
+              </tr>
+            )
+          })}
           <tr>
             <th scope="row" style={finalRowHeaderStyle}>Punteggio d'Impatto</th>
             {scores.map(s => (
-              <td key={`imp-${s.alternativaId}`} style={getDetailFinalRecommendedCellStyle(s.alternativaId === recommendedId)}>
+              <td key={`imp-${s.alternativaId}`} style={{ ...getDetailFinalRecommendedCellStyle(s.alternativaId === recommendedId), ...(s.impattoScore === Math.max(...scores.map(x => x.impattoScore)) ? detailBestCellStyle : null) }}>
                 {s.impattoScore.toFixed(1)}
               </td>
             ))}
