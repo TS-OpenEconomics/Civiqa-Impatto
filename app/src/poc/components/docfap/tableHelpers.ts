@@ -3,6 +3,24 @@ import { INTERVENTION_CATEGORIES } from '../../data/poc_docfap/intervention_cate
 import type { AlternativaData, AlternativaId } from '../../types/docfap'
 import type { ScoreComposito } from '../../types/docfap'
 
+// Etichette ufficiali degli indicatori dell'Analisi del Rischio, allineate in tutto
+// il DOCFAP (summary card, box di confronto, dettaglio). Ogni etichetta ha una
+// spiegazione (hint) mostrata come tooltip al funzionario.
+export const RISK_METRIC_LABELS = {
+  probBest: 'Probabilita scelta ottimale',
+  median: 'Beneficio netto mediano',
+  ci90: 'Intervallo di confidenza 90%',
+  loss: 'Rischio di perdita',
+  score: 'Punteggio Analisi del Rischio',
+} as const
+
+export const RISK_METRIC_HINTS = {
+  probBest: 'Su 1.000 simulazioni con parametri variabili, questa alternativa risulta la migliore nel X% dei casi',
+  median: 'Il valore centrale dei benefici netti attesi: nel 50% degli scenari il risultato e superiore, nel 50% inferiore',
+  ci90: 'Nel 90% degli scenari simulati, il beneficio netto cade tra questi due valori',
+  loss: 'La probabilita che i costi superino i benefici: piu e bassa, piu l\'investimento e robusto',
+} as const
+
 const TIPOLOGIA_LABELS: Record<string, string> = {
   nuova_realizzazione: 'Nuova realizzazione',
   ristrutturazione: 'Ristrutturazione',
@@ -37,7 +55,7 @@ export function getAlternativeDisplayLabel(
     const catLabel = catRecord ? toTitleCase(catRecord.label) : rawCat ? toTitleCase(rawCat) : ''
     const tipLabel = TIPOLOGIA_LABELS[rawTip] ?? (rawTip ? toTitleCase(rawTip) : '')
 
-    if (catLabel && tipLabel) return `${catLabel} — ${tipLabel}`
+    if (catLabel && tipLabel) return `${catLabel} - ${tipLabel}`
     if (catLabel) return catLabel
     if (tipLabel) return tipLabel
   }
@@ -154,7 +172,9 @@ export const detailAltBadgeStyle: CSSProperties = {
   width: 24,
   height: 24,
   flex: '0 0 24px',
-  background: 'var(--color-background-secondary-lightest)',
+  // Grigio esplicito: il token --color-background-secondary-lightest non è definito,
+  // quindi la box dell'alternativa non-raccomandata risultava senza sfondo.
+  background: '#e5e5e8',
   color: 'var(--color-text-primary-light)',
   fontFamily: 'var(--font-family-0, monospace)',
   fontSize: 10,
@@ -204,16 +224,13 @@ export const detailRecommendedColumnStyle: CSSProperties = {
   background: 'rgba(91,33,247,0.05)',
 }
 
-export const detailBestCellStyle: CSSProperties = {
-  background: 'rgba(16,138,67,0.10)',
-  boxShadow: 'inset 3px 0 0 #108a43',
-  color: 'var(--color-text-primary)',
-  fontWeight: 800,
-}
+// Evidenziazione "valore migliore per riga" disattivata: nelle tabelle di riepilogo
+// non vogliamo evidenziare lo score della singola alternativa (es. A1). Lasciata
+// vuota così i call-site che la applicano restano validi senza effetto visivo.
+export const detailBestCellStyle: CSSProperties = {}
 
 export const detailFinalRowHeaderStyle: CSSProperties = {
   ...detailRowHeaderStyle,
-  background: 'rgba(91,33,247,0.08)',
   fontWeight: 700,
 }
 
@@ -245,11 +262,14 @@ export function getDefinedScores(
     .sort((a, b) => a.alternativaId.localeCompare(b.alternativaId))
 }
 
-/** Stile cella punteggio finale per la colonna raccomandata — sfondo più intenso + box-shadow (skin app). */
+/** Stile cella punteggio finale: evidenzia (sfondo + accento) SOLO la colonna
+ *  raccomandata. Le altre celle restano neutre — così l'ultima riga non risulta
+ *  evidenziata per intero, ma marca solo l'alternativa scelta. */
 export function getDetailFinalRecommendedCellStyle(isRecommended: boolean): CSSProperties {
-  if (!isRecommended) return detailFinalCellStyle
+  const base: CSSProperties = { ...detailBodyCellStyle, fontWeight: 700 }
+  if (!isRecommended) return base
   return {
-    ...detailFinalCellStyle,
+    ...base,
     background: 'rgba(91,33,247,0.12)',
     boxShadow: 'inset 3px 0 0 #7c4dff',
   }

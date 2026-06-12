@@ -10,10 +10,10 @@ import { TabImpatto } from '../components/docfap/TabImpatto'
 import { TabCBA } from '../components/docfap/TabCBA'
 import { TabMCA } from '../components/docfap/TabMCA'
 import { TabSensitivita } from '../components/docfap/TabSensitivita'
-import { MC_MOCK_DATA } from '../engine/riskMonteCarlo'
 import { ConfrontoOverlay } from '../components/docfap/ConfrontoOverlay'
 import { ResultBox } from '../components/docfap/ResultBox'
-import type { ResultBoxMetric, ResultBoxOption } from '../components/docfap/ResultBox'
+import { buildDimensionMetrics, buildResultBoxOptions } from '../components/docfap/resultBoxData'
+import type { DimensionKey } from '../components/docfap/resultBoxData'
 import {
   getDefinedScores,
   getRecommendedAlternativeId,
@@ -31,7 +31,6 @@ function projectForOption(optionId: AlternativaId): string {
   return OPTION_PROJECTS[idx % OPTION_PROJECTS.length]
 }
 
-type DimensionKey = 'impatto' | 'cba' | 'mca' | 'rischio'
 
 function assetUrl(path: string): string {
   const base = (import.meta as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? '/'
@@ -59,17 +58,6 @@ function nf(value: number, decimals = 1): string {
   return safeNumber(value).toLocaleString('it-IT', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
 }
 const fmtScore = (v: number) => `${nf(v, 1)} / 100`
-const fmtEuroM = (vEuro: number) => `${nf(safeNumber(vEuro) / 1_000_000, 1)} M€` // valore in €
-const fmtM = (vMln: number) => `${nf(vMln, 1)} M€` // valore già in milioni
-const fmtPct = (v: number) => `${nf(v, 1)}%`
-const fmtInt = (v: number) => safeNumber(v).toLocaleString('it-IT')
-
-function giudizioMca(score: number): string {
-  const s = safeNumber(score)
-  if (s >= 75) return 'Elevato'
-  if (s >= 50) return 'Adeguato'
-  return 'Limitato'
-}
 
 // ── Icone box (MCA/Rischio non hanno un logo PNG dedicato) ──────────────────────
 function IconMca() {
@@ -131,21 +119,6 @@ export function DocfapDetail() {
     return getAlternativeDisplayLabel(id, state.alternative[id])
   }
 
-  function optionFor(score: ScoreComposito): ResultBoxOption {
-    const alt = state.alternative[score.alternativaId]
-    const details: ResultBoxOption['details'] = []
-    if (alt?.capex != null) details.push({ label: 'CAPEX', value: `€ ${formatEuro(alt.capex)}` })
-    if (alt?.opex != null) details.push({ label: 'OPEX', value: `€ ${formatEuro(alt.opex)}` })
-    if (alt?.durataStimata) details.push({ label: 'Durata', value: `${alt.durataStimata} mesi` })
-
-    return {
-      id: score.alternativaId,
-      label: labelOf(score.alternativaId),
-      isRecommended: score.alternativaId === recommendedId,
-      details,
-    }
-  }
-
   // Navigazione "analisi completa" per dimensione e opzione.
   function openSingle(dimension: DimensionKey, optionId: AlternativaId) {
     const proj = projectForOption(optionId)
@@ -162,42 +135,7 @@ export function DocfapDetail() {
   // Ordine naturale A1 → A2 → … (la demo restituisce la raccomandata in testa).
   const orderedScores = [...scores].sort((a, b) => a.alternativaId.localeCompare(b.alternativaId))
   const canRenderBoxes = orderedScores.length >= 2
-  const boxOptions = orderedScores.map(optionFor)
-
-  const vals = (fn: (s: ScoreComposito) => string): string[] => orderedScores.map(fn)
-  const barVals = (fn: (s: ScoreComposito) => number): number[] => orderedScores.map((s) => safeNumber(fn(s)))
-
-  function metricsFor(dimension: DimensionKey): ResultBoxMetric[] {
-    if (dimension === 'impatto') {
-      return [
-        { label: 'Punteggio impatto', values: vals((s) => fmtScore(s.impattoScore)), emphasize: true, barValues: barVals((s) => s.impattoScore) },
-        { label: 'PIL attivato', values: vals((s) => fmtM(s.pil)) },
-        { label: 'Occupati (ETP)', values: vals((s) => fmtInt(s.occupati)) },
-        { label: 'Valore produzione', values: vals((s) => fmtM(s.produzione)) },
-      ]
-    }
-    if (dimension === 'cba') {
-      return [
-        { label: 'Punteggio CBA', values: vals((s) => fmtScore(s.cbaScore)), emphasize: true, barValues: barVals((s) => s.cbaScore) },
-        { label: 'VANE', values: vals((s) => fmtEuroM(s.van)) },
-        { label: 'TIRE', values: vals((s) => fmtPct(s.tir)) },
-        { label: 'Rapporto B/C', values: vals((s) => nf(s.bcr, 2)) },
-      ]
-    }
-    if (dimension === 'mca') {
-      return [
-        { label: 'Punteggio MCA', values: vals((s) => fmtScore(s.mcaScore)), emphasize: true, barValues: barVals((s) => s.mcaScore) },
-        { label: 'Giudizio sintetico', values: vals((s) => giudizioMca(s.mcaScore)) },
-      ]
-    }
-    // rischio
-    const summaryOf = (s: ScoreComposito) => MC_MOCK_DATA[s.alternativaId]?.summary
-    return [
-      { label: 'Punteggio robustezza', values: vals((s) => fmtScore(s.sensitivityScore)), emphasize: true, barValues: barVals((s) => s.sensitivityScore) },
-      { label: 'P(opzione migliore)', values: vals((s) => { const m = summaryOf(s); return m ? fmtPct(m.probBest * 100) : '—' }) },
-      { label: 'P(VAN < 0)', values: vals((s) => { const m = summaryOf(s); return m ? fmtPct(m.probNegative * 100) : '—' }) },
-    ]
-  }
+  const boxOptions = buildResultBoxOptions(orderedScores, recommendedId, state.alternative)
 
   const BOXES: Array<{
     key: DimensionKey
@@ -330,7 +268,7 @@ export function DocfapDetail() {
               return (
                 <div
                   key={s.alternativaId}
-                  className={`flex flex-col rounded-lg border bg-white p-4 shadow-sm ${rec ? 'border-brand-violet ring-1 ring-brand-violet/30' : 'border-ink-100'}`}
+                  className={`flex flex-col border bg-white p-4 shadow-sm ${rec ? 'border-brand-violet ring-1 ring-brand-violet/30' : 'border-ink-100'}`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className={`inline-flex h-6 items-center px-2 font-mono text-[11px] font-bold ${rec ? 'bg-brand-violet text-white' : 'bg-ink-100 text-ink-600'}`}>
@@ -362,9 +300,9 @@ export function DocfapDetail() {
                       <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-400">Punteggio finale</span>
                       <span className={`font-mono text-[16px] font-bold ${rec ? 'text-brand-violet' : 'text-ink-800'}`}>{nf(s.scoreFinale, 1)}</span>
                     </div>
-                    <span className="mt-1.5 block h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
+                    <span className="mt-1.5 block h-1.5 w-full overflow-hidden bg-ink-100">
                       <span
-                        className={`block h-full rounded-full ${rec ? 'bg-brand-violet' : 'bg-ink-300'}`}
+                        className={`block h-full ${rec ? 'bg-brand-violet' : 'bg-ink-300'}`}
                         style={{ width: `${Math.max(0, Math.min(100, safeNumber(s.scoreFinale)))}%` }}
                       />
                     </span>
@@ -415,7 +353,7 @@ export function DocfapDetail() {
                 tagClassName={box.tagClassName}
                 description={box.description}
                 options={boxOptions}
-                metrics={metricsFor(box.key)}
+                metrics={buildDimensionMetrics(box.key, orderedScores)}
                 singleActionLabel="Analisi completa"
                 onOpenSingle={(optionId) => openSingle(box.key, optionId)}
                 onCompare={() => setCompareDimension(box.key)}

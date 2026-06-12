@@ -18,6 +18,14 @@ export interface ProgressiveBlockDef {
 
 interface ProgressiveBlocksProps {
   blocks: ProgressiveBlockDef[]
+  /**
+   * Avanzamento strettamente sequenziale: il blocco successivo resta bloccato
+   * finché quello corrente non viene confermato, ANCHE se i suoi dati sono già
+   * validi (es. valori precompilati). Disattiva la scorciatoia "tutti completi →
+   * tutti recap", che altrimenti rivelerebbe l'intera pagina appena l'ultimo
+   * campo mancante diventa valido.
+   */
+  sequential?: boolean
 }
 
 /**
@@ -30,7 +38,7 @@ interface ProgressiveBlocksProps {
  *   condizionali e avvisi restano visibili e il blocco non si chiude da solo);
  * - i blocchi successivi alla frontiera sono visibili ma sbiaditi con lucchetto.
  */
-export function ProgressiveBlocks({ blocks }: ProgressiveBlocksProps) {
+export function ProgressiveBlocks({ blocks, sequential = false }: ProgressiveBlocksProps) {
   // `step` = indice del blocco frontiera (attivo). I blocchi < step sono
   // confermati (recap), quelli > step sono bloccati. Inizializzato al primo
   // blocco incompleto (o a "tutti confermati" se già tutti completi: autofill).
@@ -42,7 +50,7 @@ export function ProgressiveBlocks({ blocks }: ProgressiveBlocksProps) {
 
   // Se tutti i blocchi sono già completi (es. dopo Autoriempi che imposta i dati
   // dall'esterno), mostrali tutti come recap invece di lasciarli "bloccati".
-  const allComplete = blocks.length > 0 && blocks.every((b) => b.complete)
+  const allComplete = !sequential && blocks.length > 0 && blocks.every((b) => b.complete)
 
   return (
     <div className="grid gap-3">

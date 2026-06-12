@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import {
   getCostiByCategory,
   calcolaCostoTipologia,
@@ -8,10 +8,14 @@ import type { TipologiaIntervento } from '../../../data/poc_docfap/costi_per_tip
 import { INTERVENTION_CATEGORIES } from '../../../data/poc_docfap/intervention_categories_layer3'
 import { useWizard } from '../../../hooks/useWizard'
 import type { AlternativaId } from '../../../types/docfap'
+import { ProgressiveBlocks } from '../../ui/ProgressiveBlocks'
+import type { ProgressiveBlockDef } from '../../ui/ProgressiveBlocks'
 
 interface Props {
   alternativaId: 'A1' | 'A2' | 'A3'
 }
+
+const DEFAULT_VITA_UTILE = 20
 
 const LAYER3_TO_COSTI: Record<string, TipologiaIntervento> = {
   nuova_realizzazione: 'NUOVA_REALIZZAZIONE',
@@ -89,6 +93,25 @@ export function InputParamsStep({ alternativaId }: Props) {
     return categoryData.construction_durations.find(d => d.tipologia_code === tipologia)?.duration_months ?? null
   }, [categoryData, tipologia])
 
+  // Vita utile consigliata (media di settore per la tipologia) — mostrata nel box laterale.
+  const recommendedVitaUtile = useMemo(() => {
+    if (!categoryData || !tipologia) return null
+    return categoryData.useful_life?.find(u => u.tipologia_code === tipologia)?.years ?? null
+  }, [categoryData, tipologia])
+
+  // Riferimenti di vita utile (min / media settore / max) ricavati dall'intera
+  // categoria: la media coincide col valore consigliato per la tipologia.
+  const vitaUtileRef = useMemo(() => {
+    const arr = categoryData?.useful_life
+    if (!arr || arr.length === 0) return null
+    const years = arr.map((u) => u.years)
+    return {
+      min: Math.min(...years),
+      max: Math.max(...years),
+      media: recommendedVitaUtile ?? Math.round(years.reduce((a, b) => a + b, 0) / years.length),
+    }
+  }, [categoryData, recommendedVitaUtile])
+
   // ── State ────────────────────────────────────────────────────────────────
 
   const [qty, setQty] = useState(() => (alt?.quantita && alt.quantita > 0 ? String(alt.quantita) : ''))
@@ -98,6 +121,9 @@ export function InputParamsStep({ alternativaId }: Props) {
   const [opexPctStr, setOpexPctStr] = useState('')
   const [opexValStr, setOpexValStr] = useState('')
   const [durationStr, setDurationStr] = useState('')
+  const [vitaUtileStr, setVitaUtileStr] = useState(() =>
+    alt?.vitaUtileProgram && alt.vitaUtileProgram > 0 ? String(alt.vitaUtileProgram) : '',
+  )
 
   // Refs for use inside effects without adding to deps
   const capexIsCustomRef = useRef(false)
@@ -116,6 +142,14 @@ export function InputParamsStep({ alternativaId }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storedQty, alternativaId])
 
+  // Sincronizza la vita utile dallo store (es. Autoriempi).
+  const storedVitaUtile = alt?.vitaUtileProgram ?? 0
+  useEffect(() => {
+    if (storedVitaUtile > 0) {
+      setVitaUtileStr((prev) => (prev === String(storedVitaUtile) ? prev : String(storedVitaUtile)))
+    }
+  }, [storedVitaUtile])
+
   // Reset everything when category changes
   useEffect(() => {
     if (firstCategoriaRun.current) {
@@ -130,6 +164,7 @@ export function InputParamsStep({ alternativaId }: Props) {
     setOpexPctStr('')
     setOpexValStr('')
     setDurationStr('')
+    setVitaUtileStr('')
   }, [categoria])
 
   // Seed CP from parametric data when tipologia changes
@@ -157,6 +192,11 @@ export function InputParamsStep({ alternativaId }: Props) {
     const v = parseFloat(cpStr)
     return isNaN(v) || v <= 0 ? (costoData?.val_med ?? 0) : v
   }, [cpStr, costoData])
+
+  const vitaUtile = useMemo(() => {
+    const v = parseInt(vitaUtileStr, 10)
+    return isNaN(v) || v <= 0 ? 0 : v
+  }, [vitaUtileStr])
 
   const computed = useMemo(() => {
     if (!costoData || totalQty <= 0 || cpValue <= 0) return null
@@ -238,6 +278,20 @@ export function InputParamsStep({ alternativaId }: Props) {
     handleOpexPctChange(String(Math.max(0, Math.min(100, next))))
   }
 
+  // Stepper della vita utile (anni).
+  function stepVitaUtile(delta: number) {
+    const base = vitaUtile || recommendedVitaUtile || DEFAULT_VITA_UTILE
+    const next = Math.max(1, Math.min(100, base + delta))
+    setVitaUtileStr(String(next))
+  }
+
+  // Stepper della durata cantiere (mesi) — stessa interazione della vita utile.
+  function stepDuration(delta: number) {
+    const base = parseInt(durationStr, 10) || durationMonths || 12
+    const next = Math.max(1, Math.min(600, base + delta))
+    setDurationStr(String(next))
+  }
+
   // ── Auto-save to wizard store ─────────────────────────────────────────────
 
   useEffect(() => {
@@ -252,9 +306,10 @@ export function InputParamsStep({ alternativaId }: Props) {
       capex,
       opex: isNaN(opex) ? 0 : opex,
       durataStimata: isNaN(duration) ? undefined : duration,
+      vitaUtileProgram: vitaUtile > 0 ? vitaUtile : undefined,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [capexStr, opexValStr, durationStr, totalQty, alternativaId, addAlternativa])
+  }, [capexStr, opexValStr, durationStr, vitaUtileStr, totalQty, alternativaId, addAlternativa])
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -270,15 +325,156 @@ export function InputParamsStep({ alternativaId }: Props) {
   const sliderStep = costoData
     ? Math.max(1, Math.round((costoData.val_max - costoData.val_min) / 200))
     : 1
-  const showResults = capexStr !== ''
+  const capexNum = parseFloat(capexStr)
+  const hasCapex = !isNaN(capexNum) && capexNum > 0
+  const opexNum = parseFloat(opexValStr)
+  const hasOpex = !isNaN(opexNum) && opexNum > 0
+  const categoryLabel = categoryData?.label ?? ''
 
-  return (
-    <div style={rootStyle}>
-      {/* ── CP selector ── */}
+  // Periodo operativo OPEX: parte l'anno dopo la fine del cantiere (anno corrente +
+  // durata cantiere in anni) e dura quanto la vita utile.
+  const currentYear = new Date().getFullYear()
+  const constructionYears = durationStr ? Math.ceil((parseInt(durationStr, 10) || 0) / 12) : 0
+  const opexStartYear = currentYear + constructionYears
+  const opexEndYear = vitaUtile > 0 ? opexStartYear + vitaUtile - 1 : null
+
+  // ── Block 1: Vita utile del progetto ─────────────────────────────────────
+  const durationNum = parseInt(durationStr, 10)
+  const hasDuration = !isNaN(durationNum) && durationNum > 0
+
+  const durationBlock: ReactNode = (
+    <div style={blockBodyStyle}>
+      <p style={questionStyle}>Indica la durata prevista del cantiere.</p>
+      <div>
+        <p style={fieldHeadingStyle}>Durata cantiere</p>
+        <Stepper
+          value={durationStr}
+          onInput={setDurationStr}
+          onStep={stepDuration}
+          step={1}
+          suffix="mesi"
+          ariaLabel="durata cantiere"
+          placeholder={durationMonths != null ? `es. ${durationMonths}` : ''}
+        />
+      </div>
+    </div>
+  )
+
+  const vitaUtileBlock: ReactNode = (
+    <div style={blockBodyStyle}>
+      <p style={questionStyle}>
+        Per quanti anni il progetto sarà operativo dopo la fine dei lavori. L'OPEX annuo è sostenuto
+        lungo tutta la vita utile del progetto.
+      </p>
+
+      {/* Vita utile: stepper + box di riferimento (stile wizard Valutazione) */}
+      <div className="grid items-start gap-6 md:grid-cols-[minmax(0,1fr)_280px]">
+        <div>
+          <p className="mb-2 text-[13px] font-semibold text-ink-900">Anni di vita utile</p>
+          <Stepper
+            value={vitaUtileStr}
+            onInput={setVitaUtileStr}
+            onStep={stepVitaUtile}
+            step={5}
+            suffix="anni"
+            ariaLabel="vita utile"
+            placeholder={`es. ${recommendedVitaUtile ?? DEFAULT_VITA_UTILE}`}
+          />
+          {opexEndYear && (
+            <div className="mt-4 flex items-center gap-3 border border-ink-100 bg-[#f7f7fa] px-4 py-3">
+              <div className="h-3 w-3 shrink-0 rounded-full bg-brand-violet" />
+              <p className="text-[13px] text-ink-700">
+                OPEX attivo dal <strong>{opexStartYear}</strong> al <strong>{opexEndYear}</strong>
+              </p>
+            </div>
+          )}
+          {vitaUtileRef && (
+            <button
+              type="button"
+              onClick={() => setVitaUtileStr(String(vitaUtileRef.media))}
+              className="mt-4 w-fit text-[12px] font-semibold text-brand-violet hover:underline"
+            >
+              Usa media di settore
+            </button>
+          )}
+        </div>
+
+        {vitaUtileRef && (
+          <aside className="h-fit border border-[#e8e8ed] bg-white p-5">
+            <p className="text-[14px] font-semibold text-ink-900">Vita utile tipica</p>
+            <p className="mt-1 text-[12px] leading-[1.5] text-ink-600">
+              Riferimenti per <strong>{categoryLabel || 'questa tipologia'}</strong>.
+            </p>
+            <div className="mt-5 space-y-3 border-t border-[#ececf1] pt-4">
+              {[
+                { label: 'Minima', val: vitaUtileRef.min },
+                { label: 'Media di settore', val: vitaUtileRef.media },
+                { label: 'Massima', val: vitaUtileRef.max },
+              ].map(({ label, val }) => (
+                <div key={label} className="flex items-center justify-between">
+                  <span className="text-[13px] text-ink-600">{label}</span>
+                  <span className="text-[15px] font-bold text-ink-900">{val} anni</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4">
+              <div className="relative h-[6px] w-full overflow-hidden bg-[#e7e7ea]">
+                <div
+                  className="absolute h-full bg-brand-violet/30"
+                  style={{
+                    left: `${(vitaUtileRef.min / vitaUtileRef.max) * 100}%`,
+                    width: `${((vitaUtileRef.max - vitaUtileRef.min) / vitaUtileRef.max) * 100}%`,
+                  }}
+                />
+              </div>
+              <div className="mt-1 flex justify-between text-[10px] text-ink-400">
+                <span>{vitaUtileRef.min} anni</span>
+                <span>{vitaUtileRef.max} anni</span>
+              </div>
+            </div>
+            {vitaUtile > 0 && (
+              <div className="mt-5 border-t border-[#ececf1] pt-4 text-center">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-400">Valore impostato</p>
+                <p className="mt-1 text-[26px] font-bold text-brand-violet">{vitaUtile}</p>
+                <p className="text-[12px] text-ink-500">anni</p>
+              </div>
+            )}
+          </aside>
+        )}
+      </div>
+
+    </div>
+  )
+
+  // ── Block 2: CAPEX (costo parametrico) ────────────────────────────────────
+  const capexBlock: ReactNode = (
+    <div style={blockBodyStyle}>
+      {/* Quantità fisica */}
+      <div>
+        <p style={fieldHeadingStyle}>
+          Quantità fisica dell'intervento
+          {physUnit && <span style={udmTagStyle}>{physUnit}</span>}
+        </p>
+        <p style={questionStyle}>
+          Inserisci la dimensione fisica dell'intervento{physUnit ? ` in ${physUnit}` : ''}.
+        </p>
+        <input
+          id={`ip-qty-${alternativaId}`}
+          type="text"
+          inputMode="numeric"
+          value={displayInt(qty, focusedField === `qty-${alternativaId}`)}
+          onChange={(e) => handleQtyChange(stripDots(e.target.value))}
+          onFocus={() => setFocusedField(`qty-${alternativaId}`)}
+          onBlur={() => setFocusedField(null)}
+          style={inputStyle}
+          aria-label={`Quantità totale${physUnit ? ` in ${physUnit}` : ''}`}
+        />
+      </div>
+
+      {/* Costo parametrico (CP) */}
       {costoData && (
-        <section style={cardStyle}>
-          <div style={cardHeaderStyle}>Costo parametrico (CP)</div>
-          <div style={cardBodyStyle}>
+        <div style={dividerBlockStyle}>
+          <p style={fieldHeadingStyle}>Costo parametrico (CP)</p>
           <style>{`
             .cp-slider-${alternativaId}:focus-visible {
               outline: none;
@@ -322,8 +518,6 @@ export function InputParamsStep({ alternativaId }: Props) {
               cursor: pointer;
             }
           `}</style>
-
-          {/* Current CP value + unit */}
           <div style={cpValueRowStyle}>
             <div style={inputWithSuffixStyle}>
               <input
@@ -340,8 +534,6 @@ export function InputParamsStep({ alternativaId }: Props) {
               <span style={udmBadgeStyle}>{costoData.udm}</span>
             </div>
           </div>
-
-          {/* Slider */}
           <div style={sliderWrapStyle}>
             <input
               type="range"
@@ -359,165 +551,282 @@ export function InputParamsStep({ alternativaId }: Props) {
             />
             <div style={sliderLabelsStyle}>
               <span>min {costoData.val_min.toLocaleString('it-IT')}</span>
+              <span>medio {costoData.val_med.toLocaleString('it-IT')}</span>
               <span>max {costoData.val_max.toLocaleString('it-IT')}</span>
             </div>
           </div>
-          </div>
-        </section>
+        </div>
       )}
 
-      {/* ── Quantity input ── */}
-      <section style={cardStyle}>
-        <div style={cardHeaderStyle}>Quantità fisica dell'intervento</div>
-        <div style={cardBodyStyle}>
-        <div style={fieldRowStyle}>
-          <label htmlFor={`ip-qty-${alternativaId}`} style={labelStyle}>
-            Quantità totale
-            {physUnit && <span style={udmTagStyle}>{physUnit}</span>}
-          </label>
-          <p style={questionStyle}>
-            Inserisci la dimensione fisica dell'intervento{physUnit ? ` in ${physUnit}` : ''}.
-          </p>
+      {/* CAPEX stimato (editabile) */}
+      <div style={dividerBlockStyle}>
+        <div style={resultFieldHeaderStyle}>
+          <span style={fieldHeadingStyle}>CAPEX stimato</span>
+          {capexIsCustom && (
+            <span style={customBadgeStyle} aria-label="Valore inserito manualmente">
+              personalizzato
+            </span>
+          )}
+        </div>
+        {computed && (
+          <div style={minMaxRowStyle}>
+            <span style={minMaxItemStyle}>Min <strong>{formatEur(computed.capexRefMin)}</strong></span>
+            <span style={minMaxSepStyle}>·</span>
+            <span style={minMaxItemStyle}>Max <strong>{formatEur(computed.capexRefMax)}</strong></span>
+          </div>
+        )}
+        <div style={panelInputRowStyle}>
           <input
-            id={`ip-qty-${alternativaId}`}
+            id={`capex-${alternativaId}`}
             type="text"
             inputMode="numeric"
-            value={displayInt(qty, focusedField === `qty-${alternativaId}`)}
-            onChange={(e) => handleQtyChange(stripDots(e.target.value))}
-            onFocus={() => setFocusedField(`qty-${alternativaId}`)}
+            value={displayInt(capexStr, focusedField === `capex-${alternativaId}`)}
+            onChange={(e) => handleCapexChange(stripDots(e.target.value))}
+            onFocus={() => setFocusedField(`capex-${alternativaId}`)}
             onBlur={() => setFocusedField(null)}
-            style={inputStyle}
-            aria-label={`Quantità totale${physUnit ? ` in ${physUnit}` : ''}`}
+            placeholder="Inserisci importo"
+            style={panelInputStyle}
+            aria-label="CAPEX in euro"
           />
+          <span style={udmBadgeStyle}>€</span>
         </div>
-        </div>
-      </section>
+        {costoData && (
+          <p style={questionStyle}>
+            Collegato al costo parametrico: CAPEX = CP × quantità. Se lo modifichi, il valore resta
+            personalizzato.
+          </p>
+        )}
+      </div>
+    </div>
+  )
 
-      {/* ── Editable results ── */}
-      {showResults ? (
-        <section style={cardStyle} role="region" aria-label="Valori stimati — conferma o modifica">
-          <div style={cardHeaderStyle}>Valori stimati — conferma o modifica</div>
-
-          <div style={resultsRowStyle}>
-            {/* Durata — prima */}
-            <div style={resultPanelStyle}>
-              <span style={resultFieldLabelStyle}>Durata stimata</span>
-              <div style={panelInputRowStyle}>
-                <input
-                  id={`dur-${alternativaId}`}
-                  type="text"
-                  inputMode="numeric"
-                  value={displayInt(durationStr, focusedField === `dur-${alternativaId}`)}
-                  onChange={(e) => setDurationStr(stripDots(e.target.value))}
-                  onFocus={() => setFocusedField(`dur-${alternativaId}`)}
-                  onBlur={() => setFocusedField(null)}
-                  style={panelInputStyle}
-                  aria-label="Durata cantiere in mesi"
-                />
-                <span style={udmBadgeStyle}>mesi</span>
-              </div>
-            </div>
-
-            {/* CAPEX */}
-            <div style={resultPanelStyle}>
-              <div style={resultFieldHeaderStyle}>
-                <span style={resultFieldLabelStyle}>CAPEX stimato</span>
-                {capexIsCustom && (
-                  <span style={customBadgeStyle} aria-label="Valore inserito manualmente">
-                    personalizzato
-                  </span>
-                )}
-              </div>
-              {computed && (
-                <div style={minMaxRowStyle}>
-                  <span style={minMaxItemStyle}>Min <strong>{formatEur(computed.capexRefMin)}</strong></span>
-                  <span style={minMaxSepStyle}>·</span>
-                  <span style={minMaxItemStyle}>Max <strong>{formatEur(computed.capexRefMax)}</strong></span>
-                </div>
-              )}
-              <div style={panelInputRowStyle}>
-                <input
-                  id={`capex-${alternativaId}`}
-                  type="text"
-                  inputMode="numeric"
-                  value={displayInt(capexStr, focusedField === `capex-${alternativaId}`)}
-                  onChange={(e) => handleCapexChange(stripDots(e.target.value))}
-                  onFocus={() => setFocusedField(`capex-${alternativaId}`)}
-                  onBlur={() => setFocusedField(null)}
-                  style={panelInputStyle}
-                  aria-label="CAPEX in euro"
-                />
-                <span style={udmBadgeStyle}>€</span>
-              </div>
-            </div>
-
-            {/* OPEX — stesso campo valore di CAPEX + stepper % secondario sotto */}
-            <div style={{ ...resultPanelStyle, borderBottom: 'none' }}>
-              <span style={resultFieldLabelStyle}>OPEX annuo stimato</span>
-              {computed && (
-                <div style={minMaxRowStyle}>
-                  <span style={minMaxItemStyle}>Min <strong>{computed.opexPctMin}%</strong></span>
-                  <span style={minMaxSepStyle}>·</span>
-                  <span style={minMaxItemStyle}>Max <strong>{computed.opexPctMax}%</strong></span>
-                </div>
-              )}
-              <div style={panelInputRowStyle}>
-                <input
-                  id={`opex-val-${alternativaId}`}
-                  type="text"
-                  inputMode="numeric"
-                  value={displayInt(opexValStr, focusedField === `opex-val-${alternativaId}`)}
-                  onChange={(e) => handleOpexValChange(stripDots(e.target.value))}
-                  onFocus={() => setFocusedField(`opex-val-${alternativaId}`)}
-                  onBlur={() => setFocusedField(null)}
-                  style={panelInputStyle}
-                  aria-label="OPEX annuo in euro"
-                />
-                <span style={udmBadgeStyle}>€/anno</span>
-              </div>
-
-              {/* Stepper percentuale (secondario): quota sul CAPEX, ricalcola il valore */}
-              <div className="mt-1 flex flex-wrap items-center gap-2">
-                <span className="text-[12px] text-ink-500">Quota sul CAPEX</span>
-                <button
-                  type="button"
-                  onClick={() => stepOpexPct(-0.1)}
-                  aria-label="Diminuisci quota OPEX"
-                  className="flex h-8 w-8 shrink-0 items-center justify-center border border-ink-200 bg-white text-[18px] font-bold text-ink-600 hover:border-ink-400 hover:bg-[#fafafa]"
-                >
-                  −
-                </button>
-                <div className="relative w-[84px]">
-                  <input
-                    id={`opex-pct-${alternativaId}`}
-                    value={opexPctStr}
-                    inputMode="decimal"
-                    onChange={(e) => handleOpexPctChange(e.target.value)}
-                    className="h-8 w-full border border-ink-200 px-2 pr-6 text-center text-[14px] font-semibold text-ink-900 focus:border-brand-violet focus:outline-none"
-                    aria-label="OPEX come percentuale del CAPEX"
-                  />
-                  <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[12px] text-ink-400">%</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => stepOpexPct(0.1)}
-                  aria-label="Aumenta quota OPEX"
-                  className="flex h-8 w-8 shrink-0 items-center justify-center border border-ink-200 bg-white text-[18px] font-bold text-brand-violet hover:border-brand-violet hover:bg-brand-violet-soft"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-      ) : (
+  // Block 4: OPEX
+  const opexBlock: ReactNode = (
+    <div style={blockBodyStyle}>
+      {!hasCapex ? (
         <p style={hintStyle} aria-live="polite">
-          Inserisci la quantità per calcolare e confermare CAPEX, OPEX e durata.
+          Conferma prima il CAPEX per stimare l'OPEX annuo.
         </p>
+      ) : (
+        <>
+          <p style={questionStyle}>
+            Costo operativo annuale del progetto. Lo esprimiamo prima in valore (€/anno) e poi come
+            quota percentuale sul CAPEX, in linea con le prassi di settore.
+          </p>
+          <div className="grid items-start gap-6 md:grid-cols-[minmax(0,1fr)_280px]">
+            <div style={blockBodyStyle}>
+              {/* OPEX annuale stimato — box primario (derivato dalla quota %) */}
+              <div className="border-l-[3px] border-brand-violet bg-brand-violet-soft px-5 py-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-500">OPEX annuale stimato</p>
+                <p className="mt-1 text-[28px] font-bold leading-none text-ink-900">
+                  {hasOpex ? `${Math.round(opexNum).toLocaleString('it-IT')} €` : '—'}
+                </p>
+                <p className="mt-1.5 text-[12px] text-ink-500">
+                  Costo operativo medio sostenuto ogni anno della vita utile del progetto.
+                </p>
+              </div>
+
+              {/* Quota annua sul CAPEX — controllo secondario */}
+              <div>
+                <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-500">Quota annua sul CAPEX</p>
+                <p className="mb-2 text-[12px] leading-[1.5] text-ink-500">
+                  Esprime l'OPEX annuale come percentuale del CAPEX. Usa i pulsanti per regolarla; il valore in € si aggiorna automaticamente.
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => stepOpexPct(-0.1)}
+                    aria-label="Diminuisci quota OPEX"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center border border-ink-200 bg-white text-[20px] font-bold text-ink-600 hover:border-ink-400 hover:bg-[#fafafa]"
+                  >
+                    −
+                  </button>
+                  <div className="relative w-[120px]">
+                    <input
+                      id={`opex-pct-${alternativaId}`}
+                      value={opexPctStr}
+                      inputMode="decimal"
+                      onChange={(e) => handleOpexPctChange(e.target.value)}
+                      className="h-10 w-full border border-brand-violet px-3 pr-8 text-center text-[16px] font-bold text-ink-900 focus:outline-none"
+                      aria-label="OPEX come percentuale del CAPEX"
+                    />
+                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[13px] text-ink-500">%</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => stepOpexPct(0.1)}
+                    aria-label="Aumenta quota OPEX"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center border border-brand-violet bg-white text-[20px] font-bold text-brand-violet hover:bg-brand-violet-soft"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {computed && (
+              <aside className="h-fit border border-[#e8e8ed] bg-white p-5">
+                <p className="text-[14px] font-semibold text-ink-900">Tasso OPEX di riferimento</p>
+                <p className="mt-1 text-[12px] leading-[1.5] text-ink-600">
+                  Valori tipici per <strong>{categoryLabel || 'questa tipologia'}</strong>, come % annua del CAPEX.
+                </p>
+                <div className="mt-5 space-y-3 border-t border-[#ececf1] pt-4">
+                  {[
+                    { label: 'Minimo', val: computed.opexPctMin },
+                    { label: 'Media di settore', val: computed.opexPctMed },
+                    { label: 'Massimo', val: computed.opexPctMax },
+                  ].map(({ label, val }) => (
+                    <div key={label} className="flex items-center justify-between">
+                      <span className="text-[13px] text-ink-600">{label}</span>
+                      <span className="text-[15px] font-bold text-ink-900">{val}%</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4">
+                  <div className="relative h-[6px] w-full overflow-hidden bg-[#e7e7ea]">
+                    <div
+                      className="absolute h-full bg-brand-violet/30"
+                      style={{
+                        left: `${(computed.opexPctMin / computed.opexPctMax) * 100}%`,
+                        width: `${((computed.opexPctMax - computed.opexPctMin) / computed.opexPctMax) * 100}%`,
+                      }}
+                    />
+                  </div>
+                  <div className="mt-1 flex justify-between text-[10px] text-ink-400">
+                    <span>{computed.opexPctMin}%</span>
+                    <span>{computed.opexPctMax}%</span>
+                  </div>
+                </div>
+                <div className="mt-5 space-y-3 border-t border-[#ececf1] pt-4">
+                  {vitaUtile > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] text-ink-500">Vita utile</span>
+                      <span className="text-[13px] font-semibold text-ink-900">{vitaUtile} anni</span>
+                    </div>
+                  )}
+                  {opexEndYear && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] text-ink-500">Periodo OPEX</span>
+                      <span className="text-[13px] font-semibold text-ink-900">{opexStartYear}–{opexEndYear}</span>
+                    </div>
+                  )}
+                  {opexPctStr && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] text-ink-500">Tasso selezionato</span>
+                      <span className="text-[15px] font-bold text-brand-violet">{opexPctStr}%</span>
+                    </div>
+                  )}
+                </div>
+                {vitaUtile > 0 && hasOpex && (
+                  <div className="mt-4 border-t border-[#ececf1] pt-4 text-center">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-400">OPEX totale stimato</p>
+                    <p className="mt-1 text-[20px] font-bold text-ink-900">
+                      {Math.round(opexNum * vitaUtile).toLocaleString('it-IT')} €
+                    </p>
+                    <p className="text-[12px] text-ink-500">su {vitaUtile} anni</p>
+                  </div>
+                )}
+              </aside>
+            )}
+          </div>
+        </>
       )}
     </div>
   )
+
+  const blocks: ProgressiveBlockDef[] = [
+    {
+      id: 'durata-cantiere',
+      title: 'Durata cantiere',
+      complete: hasDuration,
+      summary: hasDuration ? `${displayInt(durationStr, false)} mesi` : undefined,
+      children: durationBlock,
+    },
+    {
+      id: 'vita-utile',
+      title: 'Vita utile del progetto',
+      complete: vitaUtile > 0,
+      summary: vitaUtile > 0 ? `${vitaUtile} anni` : undefined,
+      children: vitaUtileBlock,
+    },
+    {
+      id: 'capex',
+      title: 'CAPEX',
+      complete: hasCapex,
+      summary: hasCapex ? formatEur(Math.round(capexNum)) : undefined,
+      children: capexBlock,
+    },
+    {
+      id: 'opex',
+      title: 'OPEX annuo',
+      complete: hasOpex,
+      summary: hasOpex
+        ? `${formatEur(Math.round(opexNum))}/anno${opexPctStr ? ` - ${opexPctStr}% del CAPEX` : ''}`
+        : undefined,
+      children: opexBlock,
+    },
+  ]
+  return (
+    <div style={rootStyle}>
+      <ProgressiveBlocks blocks={blocks} sequential />
+    </div>
+  )
 }
+
+// ── UI atoms ────────────────────────────────────────────────────────────────
+
+// Stepper numerico con pulsanti −/+ (vita utile, durata cantiere). Gli input
+// accettano solo cifre; lo step è applicato dal chiamante via onStep(delta).
+function Stepper({
+  value,
+  onInput,
+  onStep,
+  step,
+  suffix,
+  ariaLabel,
+  placeholder,
+}: {
+  value: string
+  onInput: (v: string) => void
+  onStep: (delta: number) => void
+  step: number
+  suffix: string
+  ariaLabel: string
+  placeholder?: string
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => onStep(-step)}
+        aria-label={`Diminuisci ${ariaLabel}`}
+        className="flex h-10 w-10 shrink-0 items-center justify-center border border-ink-200 bg-white text-[20px] font-bold text-ink-600 hover:border-ink-400 hover:bg-[#fafafa]"
+      >
+        −
+      </button>
+      <div className="relative w-[130px]">
+        <input
+          value={value}
+          onChange={(e) => onInput(e.target.value.replace(/\D/g, ''))}
+          placeholder={placeholder}
+          inputMode="numeric"
+          className="h-10 w-full border border-brand-violet px-3 pr-14 text-center text-[16px] font-bold text-ink-900 focus:outline-none"
+          aria-label={ariaLabel}
+        />
+        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[13px] text-ink-500">{suffix}</span>
+      </div>
+      <button
+        type="button"
+        onClick={() => onStep(step)}
+        aria-label={`Aumenta ${ariaLabel}`}
+        className="flex h-10 w-10 shrink-0 items-center justify-center border border-brand-violet bg-white text-[20px] font-bold text-brand-violet hover:bg-brand-violet-soft"
+      >
+        +
+      </button>
+    </div>
+  )
+}
+
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
@@ -527,24 +836,17 @@ const rootStyle: CSSProperties = {
   width: '100%',
 }
 
-// Card-sezione in stile Valutazione (box bianco squadrato con header).
-const cardStyle: CSSProperties = {
-  border: '1px solid var(--color-border-secondary-light)',
-  background: 'var(--color-background-inverse)',
-  overflow: 'hidden',
-}
-const cardHeaderStyle: CSSProperties = {
-  borderBottom: '1px solid var(--color-border-secondary-light)',
-  padding: 'var(--spacing-inset-s) var(--spacing-inset-m)',
-  fontSize: '14px',
-  fontWeight: 700,
-  color: 'var(--color-text-primary)',
-  fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)',
-}
-const cardBodyStyle: CSSProperties = {
+const blockBodyStyle: CSSProperties = {
   display: 'grid',
   gap: 'var(--spacing-stack-s)',
-  padding: 'var(--spacing-inset-m)',
+}
+
+// Sezione interna separata da una linea superiore (stile Valutazione).
+const dividerBlockStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--spacing-stack-xs)',
+  borderTop: '1px solid #ececf1',
+  paddingTop: 'var(--spacing-stack-s)',
 }
 
 const emptyStyle: CSSProperties = {
@@ -552,22 +854,6 @@ const emptyStyle: CSSProperties = {
   border: '1px solid var(--color-border-secondary-light)',
   borderRadius: 'var(--radius-smooth)',
   color: 'var(--color-text-primary-light)',
-}
-
-const fieldsetStyle: CSSProperties = {
-  border: '1px solid var(--color-border-secondary-light)',
-  borderRadius: 'var(--radius-smooth)',
-  padding: 'var(--spacing-inset-m)',
-  margin: 0,
-  display: 'grid',
-  gap: 'var(--spacing-stack-s)',
-}
-
-const legendStyle: CSSProperties = {
-  padding: '0 var(--spacing-inline-xs)',
-  fontSize: 'var(--type-body-s-size, 14px)',
-  fontWeight: 600,
-  color: 'var(--color-text-primary)',
 }
 
 // CP selector
@@ -604,18 +890,13 @@ const sliderLabelsStyle: CSSProperties = {
   fontFamily: 'var(--font-family-0)',
 }
 
-// Quantity input
-const fieldRowStyle: CSSProperties = {
-  display: 'grid',
-  gap: 'var(--spacing-stack-xs)',
-}
-
-const labelStyle: CSSProperties = {
+const fieldHeadingStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: 'var(--spacing-inline-xs)',
+  margin: 0,
   fontSize: 'var(--type-body-s-size, 14px)',
-  fontWeight: 600,
+  fontWeight: 700,
   color: 'var(--color-text-primary)',
 }
 
@@ -650,50 +931,10 @@ const inputStyle: CSSProperties = {
   boxSizing: 'border-box',
 }
 
-// Results
-const resultsStyle: CSSProperties = {
-  border: '1px solid var(--color-border-secondary-light)',
-  borderRadius: 'var(--radius-smooth)',
-  overflow: 'hidden',
-  display: 'grid',
-  gap: 'var(--spacing-stack-s)',
-}
-
-const resultsTitleStyle: CSSProperties = {
-  margin: '0',
-  padding: 'var(--spacing-inset-s) var(--spacing-inset-m) 0',
-  fontSize: 'var(--type-body-s-size, 14px)',
-  fontWeight: 700,
-  color: 'var(--color-text-primary)',
-}
-
-const resultsRowStyle: CSSProperties = {
-  // Impilati in verticale: nessuna adiacenza orizzontale tra le colonne → niente
-  // sovrapposizioni (la "€" di CAPEX non può toccare l'input OPEX). Ogni metrica
-  // ha tutta la larghezza della card, quindi gli input OPEX stanno comodi.
-  display: 'grid',
-  gridTemplateColumns: '1fr',
-}
-
-const resultPanelStyle: CSSProperties = {
-  display: 'grid',
-  gap: 'var(--spacing-stack-xs)',
-  minWidth: 0,
-  padding: 'var(--spacing-inset-s) var(--spacing-inset-m)',
-  borderBottom: '1px solid var(--color-border-secondary-light)',
-}
-
 const resultFieldHeaderStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: 'var(--spacing-inline-s)',
-}
-
-const resultFieldLabelStyle: CSSProperties = {
-  fontSize: 'var(--type-body-s-size, 14px)',
-  fontWeight: 700,
-  color: 'var(--color-text-primary)',
-  letterSpacing: '0.01em',
 }
 
 const minMaxRowStyle: CSSProperties = {
@@ -728,42 +969,12 @@ const panelInputRowStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
-}
-
-const opexInputsRowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  flexWrap: 'wrap',
-  gap: '8px',
-  rowGap: '8px',
-}
-
-const opexPctBlockStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '4px',
-  borderLeft: '1px solid var(--color-border-secondary-light)',
-  paddingLeft: '8px',
-  marginLeft: '2px',
+  maxWidth: '18rem',
 }
 
 const panelInputStyle: CSSProperties = {
   flex: 1,
   minWidth: 0,
-  padding: 'var(--spacing-inset-xs) var(--spacing-inset-s)',
-  border: '1px solid var(--color-border-secondary)',
-  borderRadius: 'var(--radius-smooth)',
-  fontSize: 'var(--type-body-m-size, 16px)',
-  fontFamily: 'var(--font-family-0)',
-  fontWeight: 600,
-  color: 'var(--color-text-primary)',
-  background: 'var(--color-background-default)',
-  outline: 'none',
-  boxSizing: 'border-box',
-}
-
-const pctInputStyle: CSSProperties = {
-  width: '4.5rem',
   padding: 'var(--spacing-inset-xs) var(--spacing-inset-s)',
   border: '1px solid var(--color-border-secondary)',
   borderRadius: 'var(--radius-smooth)',

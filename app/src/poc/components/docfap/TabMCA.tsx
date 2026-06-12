@@ -7,6 +7,7 @@ import {
   getAlternativeDisplayLabel,
   getRecommendedAlternativeId,
   getDefinedScores,
+  getDetailFinalRecommendedCellStyle,
   labelColumnStyle,
   alternativeColumnStyle,
   detailHeaderCellBaseStyle,
@@ -22,13 +23,12 @@ import {
   detailRecommendedColumnStyle,
   detailBestCellStyle,
   detailFinalRowHeaderStyle,
-  detailFinalCellStyle,
   detailEmptyStyle,
   detailTableWrapStyle,
   formatScore,
-  safeNumber,
 } from './tableHelpers'
-import { BarsChart, ChartCard, altColor, tabStackStyle } from './chartHelpers'
+import { tabStackStyle } from './chartHelpers'
+import { McaProfileRadar } from './charts/McaProfileRadar'
 
 const SCALE_LABELS: Record<string, string> = {
   A: 'Alto',
@@ -63,17 +63,14 @@ export function TabMCA() {
   if (!loaded) return <p style={emptyStyle}>Caricamento criteri MCA…</p>
   if (questions.length === 0) return <p style={emptyStyle}>Nessun criterio qualitativo disponibile per il cluster selezionato.</p>
 
-  const groups = scores.map((score) => ({
-    id: score.alternativaId,
-    label: getAlternativeDisplayLabel(score.alternativaId, state.alternative[score.alternativaId]),
-    bars: [{ value: Number(safeNumber(score.mcaScore).toFixed(1)), color: altColor(score.alternativaId, score.alternativaId === recommendedId) }],
-  }))
-
   return (
     <div style={tabStackStyle}>
-      <ChartCard title="Punteggio MCA per alternativa" subtitle="Analisi multicriterio qualitativa, punteggio 0–100 — in verde l'alternativa raccomandata">
-        <BarsChart groups={groups} formatValue={(v) => v.toFixed(1)} />
-      </ChartCard>
+      <McaProfileRadar
+        scores={scores}
+        alternative={state.alternative}
+        questions={questions}
+        mcaScores={state.mcaScores}
+      />
 
       <div style={detailTableWrapStyle}>
         <table style={tableStyle}>
@@ -93,7 +90,6 @@ export function TabMCA() {
                         <span style={isRecommended ? detailRecommendedAltBadgeStyle : detailAltBadgeStyle}>{score.alternativaId}</span>
                         <span style={headerLabelStyle}>{getAlternativeDisplayLabel(score.alternativaId, state.alternative[score.alternativaId])}</span>
                       </div>
-                      {isRecommended ? <span style={recommendedBadgeStyle}>Raccomandata</span> : null}
                     </div>
                   </th>
                 )
@@ -122,14 +118,11 @@ export function TabMCA() {
             })}
             <tr>
               <th scope="row" style={finalRowHeaderStyle}>SCORE MCA</th>
-              {scores.map((score) => {
-                const isRecommended = score.alternativaId === recommendedId
-                return (
-                  <td key={`mca-${score.alternativaId}`} style={{ ...finalCellStyle, ...(isRecommended ? recommendedHeaderStyle : null), ...(score.mcaScore === Math.max(...scores.map(s => s.mcaScore)) ? detailBestCellStyle : null) }}>
-                    {formatScore(score.mcaScore)}
-                  </td>
-                )
-              })}
+              {scores.map((score) => (
+                <td key={`mca-${score.alternativaId}`} style={getDetailFinalRecommendedCellStyle(score.alternativaId === recommendedId)}>
+                  {formatScore(score.mcaScore)}
+                </td>
+              ))}
             </tr>
           </tbody>
         </table>
@@ -148,5 +141,4 @@ const rowHeaderStyle: CSSProperties = detailRowHeaderStyle
 const bodyCellStyle: CSSProperties = { ...detailBodyCellStyle, textAlign: 'center', fontFamily: 'var(--font-family-1, "Atkinson Hyperlegible Next", sans-serif)' }
 const recommendedColumnStyle: CSSProperties = detailRecommendedColumnStyle
 const finalRowHeaderStyle: CSSProperties = detailFinalRowHeaderStyle
-const finalCellStyle: CSSProperties = detailFinalCellStyle
 const emptyStyle: CSSProperties = detailEmptyStyle

@@ -74,7 +74,6 @@ export function TabImpatto() {
                       <span style={isRec ? detailRecommendedAltBadgeStyle : detailAltBadgeStyle}>{s.alternativaId}</span>
                       <span style={headerLabelStyle}>{getAlternativeDisplayLabel(s.alternativaId, state.alternative[s.alternativaId])}</span>
                     </div>
-                    {isRec && <span style={recommendedBadgeStyle}>Raccomandata</span>}
                   </div>
                 </th>
               )
@@ -102,7 +101,7 @@ export function TabImpatto() {
           <tr>
             <th scope="row" style={finalRowHeaderStyle}>Punteggio d'Impatto</th>
             {scores.map(s => (
-              <td key={`imp-${s.alternativaId}`} style={{ ...getDetailFinalRecommendedCellStyle(s.alternativaId === recommendedId), ...(s.impattoScore === Math.max(...scores.map(x => x.impattoScore)) ? detailBestCellStyle : null) }}>
+              <td key={`imp-${s.alternativaId}`} style={getDetailFinalRecommendedCellStyle(s.alternativaId === recommendedId)}>
                 {s.impattoScore.toFixed(1)}
               </td>
             ))}
