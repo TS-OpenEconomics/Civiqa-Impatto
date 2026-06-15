@@ -95,10 +95,21 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
         const costo = calcolaCostoTipologia(recs[0], costiCode)
         return costo ? Math.round(costo.val_med * qty) : 0
       }
+      // Parametri pre-elaborati (vita utile, durata cantiere, quota OPEX) ricavati
+      // dalla categoria, così l'autoriempi compila l'intera pagina dei parametri
+      // dell'alternativa (la validazione richiede tutti i campi, non solo il CAPEX).
+      const paramsFor = (categoria: string, tipologia: string, capex: number) => {
+        const cat = INTERVENTION_CATEGORIES.find((c) => c.code === categoria)
+        const vitaUtileProgram = cat?.useful_life?.find((u) => u.tipologia_code === tipologia)?.years ?? 20
+        const durataStimata = cat?.construction_durations?.find((d) => d.tipologia_code === tipologia)?.duration_months ?? 12
+        const opexPct = cat?.opex?.pct_med ?? 0.05
+        return { vitaUtileProgram, durataStimata, opex: Math.round(capex * opexPct) }
+      }
       const fillAlternativaSetup = (altId: SupportedAlternativaId) => {
         const { categoria, clusterId } = resolveCategoria()
         const p = ALT_PRESET[altId]
         const capex = capexFor(categoria, p.costiCode, p.quantita)
+        const { vitaUtileProgram, durataStimata, opex } = paramsFor(categoria, p.tipologia, capex)
         const cur = state.alternative[altId] ?? {}
         addAlternativa(altId, {
           ...cur,
@@ -107,7 +118,9 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
           quantita: p.quantita,
           obiettivoCer: p.obiettivoCer,
           capex,
-          opex: Math.round(capex * 0.05),
+          opex,
+          vitaUtileProgram,
+          durataStimata,
           nome: (cur as { nome?: string }).nome || p.nome,
           clusterId,
           unitaMisura: 'posti',

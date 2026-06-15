@@ -319,7 +319,15 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
         )
       }
       if (altMatch[2] === 'params') {
-        return (alt.capex ?? 0) > 0
+        // Tutti i parametri devono essere compilati prima di proseguire: durata
+        // cantiere, vita utile, CAPEX e OPEX. Così non si avanza con una pagina
+        // vuota anche dopo l'autoriempi.
+        return (
+          (alt.capex ?? 0) > 0 &&
+          (alt.opex ?? 0) > 0 &&
+          (alt.vitaUtileProgram ?? 0) > 0 &&
+          (alt.durataStimata ?? 0) > 0
+        )
       }
       // nome
       return (alt.nome ?? '').trim().length > 0

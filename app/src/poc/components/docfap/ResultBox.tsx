@@ -96,11 +96,11 @@ export function ResultBox({
         <table className="w-full border-collapse">
           <thead>
             <tr>
-              <th className="w-[200px] min-w-[160px] pb-3 pr-4 text-left align-bottom text-[10px] font-semibold uppercase tracking-wide text-ink-400">
+              <th className="w-[200px] min-w-[160px] pb-3 pr-5 text-left align-bottom text-[10px] font-semibold uppercase tracking-wide text-ink-400">
                 Indicatore
               </th>
               {options.map((opt) => (
-                <th key={opt.id} className={`${OPTION_COL} px-3 pb-3 align-bottom`}>
+                <th key={opt.id} className={`${OPTION_COL} border-l border-ink-100 px-5 pb-3 align-bottom`}>
                   <div className="flex items-center gap-2.5 text-left">
                     <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center font-mono text-[13px] font-extrabold leading-none ${opt.isRecommended ? 'bg-brand-violet text-white' : 'bg-ink-100 text-ink-600'}`}>
                       {opt.id}
@@ -141,7 +141,7 @@ export function ResultBox({
           <tbody>
             {metrics.map((metric) => (
               <tr key={metric.label} className="border-t border-ink-100">
-                <td className={`py-2.5 pr-4 text-[12px] ${metric.emphasize ? 'font-bold text-ink-900' : 'text-ink-600'}`}>
+                <td className={`py-3 pr-5 text-[12px] ${metric.emphasize ? 'font-bold text-ink-900' : 'text-ink-600'}`}>
                   {metric.label}
                   {metric.hint && (
                     <span
@@ -159,7 +159,7 @@ export function ResultBox({
                   return (
                     <td
                       key={opt.id}
-                      className={`${OPTION_COL} px-3 py-2.5 align-middle ${opt.isRecommended ? 'bg-brand-violet/5' : ''}`}
+                      className={`${OPTION_COL} border-l border-ink-100 px-5 py-3 align-middle ${opt.isRecommended ? 'bg-brand-violet/5' : ''}`}
                     >
                       {bar != null ? (
                         <div className="flex flex-col items-end gap-1">
