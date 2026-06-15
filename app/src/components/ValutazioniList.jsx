@@ -510,7 +510,7 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation, onOpenAnalysis
       <section className="px-6 pb-6 pt-7 xl:px-8">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="max-w-4xl">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 text-ink-900">
               <IconValutazione size={28} />
               <h1 className="text-[22px] font-bold leading-none text-ink-900">Valutazione</h1>
             </div>

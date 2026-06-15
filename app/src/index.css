@@ -246,3 +246,41 @@
 [data-theme="dark"] .text-yellow-700 { color: #fcd34d; }
 [data-theme="dark"] .text-blue-700,
 [data-theme="dark"] .text-blue-800 { color: #93c5fd; }
+
+/* --- Arbitrary-hex BORDERS used across Wizard / liste / running screens.
+       Solo le utility `border-ink-*`/`border-gray-*` erano remappate: questi
+       bordi chiari (hex) restavano chiari sulle card scure. Tutti neutri. --- */
+[data-theme="dark"] .border-\[\#efefef\],
+[data-theme="dark"] .border-\[\#ececec\],
+[data-theme="dark"] .border-\[\#ececf1\],
+[data-theme="dark"] .border-\[\#e8e8ed\],
+[data-theme="dark"] .border-\[\#e8e8ec\],
+[data-theme="dark"] .border-\[\#e2e2e8\],
+[data-theme="dark"] .border-\[\#f0f0f3\],
+[data-theme="dark"] .border-\[\#d8d8d8\],
+[data-theme="dark"] .border-\[\#dfdfdf\],
+[data-theme="dark"] .border-\[\#e4e4e4\],
+[data-theme="dark"] .border-\[\#e6e6e6\],
+[data-theme="dark"] .border-\[\#e0e0e6\],
+[data-theme="dark"] .border-\[\#dcdce1\] { border-color: #2e2e34; }
+[data-theme="dark"] .divide-\[\#ececf1\] > * + *,
+[data-theme="dark"] .divide-\[\#ececec\] > * + * { border-color: #2e2e34; }
+
+/* Sfondo "binario" delle barre (usato come inline style nei grafici Impatto/ECBA
+   via var()). In chiaro grigio tenue, in dark una superficie soprelevata. */
+:root { --bar-track: #F5F5F4; }
+[data-theme="dark"] { --bar-track: #26262c; }
+
+/* Palette guide "In parole semplici" (HoldingHands / HoldingHandsCba): inline
+   styles che non si possono remappare per classe → passano da queste variabili
+   (fallback chiaro = invariato). I colori brand violet/lime restano fissi. */
+:root {
+  --hh-surface: #FFFFFF; --hh-tint: #F3EEFE; --hh-border: #E8DEFC;
+  --hh-text: #0E0E10; --hh-text-700: #2B2B2E; --hh-text-500: #5A5A60; --hh-text-400: #7B7B82;
+  --hh-border-200: #D1D1D6; --hh-border-100: #E5E5E8;
+}
+[data-theme="dark"] {
+  --hh-surface: #1f1f24; --hh-tint: #241a44; --hh-border: #2a1f52;
+  --hh-text: #f3f3f5; --hh-text-700: #cfcfd5; --hh-text-500: #9a9aa2; --hh-text-400: #82828a;
+  --hh-border-200: #34343b; --hh-border-100: #2a2a30;
+}

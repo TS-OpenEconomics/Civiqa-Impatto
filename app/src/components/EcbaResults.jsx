@@ -217,6 +217,33 @@ const CSS = `
   .ecba-root .modal-body{grid-template-columns:1fr}.ecba-root .m-nav{display:none}
   .ecba-root .card-row{flex-direction:column;gap:0}
 }
+
+/* ===== DARK MODE =====================================================
+   La sezione ECBA usa variabili CSS scoped (.ecba-root): qui rimappo solo
+   i token NEUTRI (superfici/testi/linee) e i pochi colori hardcoded a
+   #fff / testo scuro. I colori di brand (blu/lime) e semantici (verde/
+   rosso/badge) restano invariati, così il look resta coerente. */
+[data-theme="dark"] .ecba-root{
+  --grey-000:#232327; --grey-light:#161618; --grey-mid:#3a3a42; --grey-line:#2e2e34;
+  --text-main:#f3f3f5; --text-muted:#b3b3bb; --text-soft:#9a9aa2;
+  --white:#1f1f24; --blu-050:#1d1736; --blu-100:#241a44;
+  --green-100:#122019; --red-100:#2a1416;
+}
+/* colori hardcoded (non da variabile) → superfici/testi scuri */
+[data-theme="dark"] .ecba-pop{background:#1f1f24;border-left-color:#9E7BFA}
+[data-theme="dark"] .ecba-pop p{color:#cfcfd5}
+[data-theme="dark"] .ecba-pop b{color:#f3f3f5}
+[data-theme="dark"] .ecba-root .chart-tip{background:#1f1f24}
+[data-theme="dark"] .ecba-root .lg-chip{background:#1f1f24}
+[data-theme="dark"] .ecba-root .read p,
+[data-theme="dark"] .ecba-root .m-content p,
+[data-theme="dark"] .ecba-root .m-content ul,
+[data-theme="dark"] .ecba-root .m-content li{color:#cfcfd5}
+[data-theme="dark"] .ecba-root .ax-zero{stroke:#4a4a52}
+[data-theme="dark"] .ecba-root .connector{stroke:#4a4a52}
+[data-theme="dark"] .ecba-root .modal{background:#1f1f24}
+[data-theme="dark"] .ecba-root .simple-banner{background:linear-gradient(95deg,#241a44,#1d1736 70%,#1f1f24)}
+[data-theme="dark"] .ecba-root .verdict{border-color:#1e3a2a}
 `;
 
 // Stessa icona usata nella dashboard del progetto (ProjectDetail → analysis-ecba.png)

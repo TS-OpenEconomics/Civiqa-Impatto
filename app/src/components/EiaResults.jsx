@@ -1,4 +1,5 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useSearchParams } from "react-router-dom";
 import staticResults from "../mocks/eiaResults.json";
 import { getEiaDataset } from "../mocks/eiaDatasets";
@@ -12,6 +13,7 @@ import {
   IconDownload,
 } from "./ui/Icons";
 import { useToast } from "../hooks/useToast";
+import { useTheme } from "../hooks/useTheme";
 import { computeProvinceDistribution } from "../lib/eiaEngine";
 import { HoldingHands, HoldingHandsEntry } from "./HoldingHands";
 
@@ -58,6 +60,50 @@ function cleanText(value) {
     .replaceAll("â†", "?")
     .replaceAll("â†‘", "?")
     .replaceAll("â†“", "?");
+}
+
+// Segmento di barra con tooltip personalizzato (il `title` nativo è lento e poco
+// visibile). Mostra `tip` in un riquadro flottante che segue il cursore; il
+// portale su <body> evita il clipping dei contenitori con overflow-hidden.
+function BarSeg({ tip, className, style, ariaLabel }) {
+  const [pos, setPos] = useState(null);
+  return (
+    <>
+      <div
+        className={className}
+        style={style}
+        role={ariaLabel ? "img" : undefined}
+        aria-label={ariaLabel}
+        onMouseMove={tip ? (e) => setPos({ x: e.clientX, y: e.clientY }) : undefined}
+        onMouseLeave={tip ? () => setPos(null) : undefined}
+      />
+      {pos && tip
+        ? createPortal(
+            <div
+              style={{
+                position: "fixed",
+                left: pos.x + 14,
+                top: pos.y + 14,
+                zIndex: 1200,
+                pointerEvents: "none",
+                background: "#0E0E10",
+                color: "#FFFFFF",
+                fontSize: 12,
+                lineHeight: 1.35,
+                fontWeight: 500,
+                padding: "6px 9px",
+                borderRadius: 6,
+                whiteSpace: "nowrap",
+                boxShadow: "0 6px 18px rgba(0,0,0,0.20)",
+              }}
+            >
+              {tip}
+            </div>,
+            document.body,
+          )
+        : null}
+    </>
+  );
 }
 
 // ── Dataset attivo (selezionato per progetto dal registro EIA_DATASETS) ───────
@@ -628,9 +674,12 @@ function SintesiTerritoryCard({ provPct, provGdp, provEmp, restRegPct, restRegGd
   return (
     <div className="overflow-hidden border border-ink-100 bg-white">
       <div className="flex h-3.5" role="img" aria-label={`PIL: ${provPct}% provincia, ${restRegPct}% regione, ${extraPct}% resto Italia`}>
-        <div className="bg-impact-direct transition-all" style={{ width: `${provPct}%` }} />
-        <div className="bg-impact-indirect transition-all" style={{ width: `${restRegPct}%` }} />
-        <div className="bg-impact-induced transition-all" style={{ width: `${extraPct}%` }} />
+        <BarSeg className="bg-impact-direct transition-all" style={{ width: `${provPct}%` }}
+          tip={`${originProvince}: ${fmtM(provGdp)} di PIL (${provPct}%)`} />
+        <BarSeg className="bg-impact-indirect transition-all" style={{ width: `${restRegPct}%` }}
+          tip={`Resto della ${regionName}: ${fmtM(restRegGdp)} di PIL (${restRegPct}%)`} />
+        <BarSeg className="bg-impact-induced transition-all" style={{ width: `${extraPct}%` }}
+          tip={`Resto d'Italia: ${fmtM(extraGdp)} di PIL (${extraPct}%)`} />
       </div>
       <div className="grid grid-cols-1 divide-y divide-ink-100 p-5 md:grid-cols-3 md:divide-x md:divide-y-0 md:gap-0 md:p-0">
         <SintesiTerritoryCol color="bg-impact-direct" name={originProvince} pct={provPct} gdp={provGdp} emp={provEmp} />
@@ -918,8 +967,8 @@ function TabComponenti() {
         <div className="px-5 pt-5">
           <div className="flex h-5 w-full overflow-hidden bg-ink-100">
             {effectItems.map(item => (
-              <div key={item.id} className={item.cls} style={{ width: `${item.pct}%` }}
-                title={`${item.label}: ${fmt(item.value)} (${item.pct}%)`} />
+              <BarSeg key={item.id} className={item.cls} style={{ width: `${item.pct}%` }}
+                tip={`${item.label}: ${fmt(item.value)} (${item.pct}%)`} />
             ))}
           </div>
           <div className={`mt-5 grid gap-5 pb-5 ${effects.length === 3 ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2"}`}>
@@ -1304,10 +1353,11 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
                 <span className="text-[15px] font-medium text-ink-900">{rankFmt(getGeoValue(rankLeader, dim, mode))}</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <div className="h-2 flex-1 overflow-hidden rounded" style={{ background: "#F5F5F4" }}>
-                  <div
+                <div className="h-2 flex-1 overflow-hidden rounded" style={{ background: "var(--bar-track)" }}>
+                  <BarSeg
                     className="h-full rounded transition-all"
                     style={{ width: `${rankTotal > 0 ? (getGeoValue(rankLeader, dim, mode) / rankTotal) * 100 : 0}%`, background: "#534AB7" }}
+                    tip={`${rankLeader.nome}: ${rankFmt(getGeoValue(rankLeader, dim, mode))} (${rankTotal > 0 ? Math.round((getGeoValue(rankLeader, dim, mode) / rankTotal) * 100) : 0}%)`}
                   />
                 </div>
                 <span className="min-w-[36px] text-right text-[12px] text-ink-500">
@@ -1331,8 +1381,9 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
                     <span className="text-[13px] text-ink-900">{idx + 2} · {r.nome}</span>
                     <span className="text-[12px] text-ink-500">{rankFmt(val)} · {Math.round(pct)}%</span>
                   </div>
-                  <div className="h-1 overflow-hidden rounded-sm" style={{ background: "#F5F5F4" }}>
-                    <div className="h-full rounded-sm transition-all" style={{ width: `${Math.max(pct, 0.5)}%`, background: "#AFA9EC" }} />
+                  <div className="h-1 overflow-hidden rounded-sm" style={{ background: "var(--bar-track)" }}>
+                    <BarSeg className="h-full rounded-sm transition-all" style={{ width: `${Math.max(pct, 0.5)}%`, background: "#AFA9EC" }}
+                      tip={`${r.nome}: ${rankFmt(val)} (${Math.round(pct)}%)`} />
                   </div>
                 </div>
               );
@@ -1342,7 +1393,7 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
           {rankOthers.length > 0 && (
             <button
               className="mt-3.5 flex w-full cursor-pointer items-center justify-between rounded-lg border-0 px-3 py-2.5 text-[12px] text-ink-500 transition-colors hover:bg-ink-100 font-inherit"
-              style={{ background: "#F5F5F4" }}
+              style={{ background: "var(--bar-track)" }}
               onClick={() => onOpenExplore?.({ asse: "geografica", livello: "regionale", dim })}
             >
               <span>Altre {rankOthers.length} {rankOthersLabel}</span>
@@ -1384,7 +1435,7 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
 
 function GeoTabPills({ options, value, onChange }) {
   return (
-    <div className="inline-flex gap-0.5 rounded-[8px] p-[3px]" style={{ background: "#F5F5F4" }}>
+    <div className="inline-flex gap-0.5 rounded-[8px] p-[3px]" style={{ background: "var(--bar-track)" }}>
       {options.map((opt) => (
         <button
           key={opt.id}
@@ -1640,7 +1691,7 @@ function SectorRankingCard({ sectors, dim, isMoney, rankView = "territorio" }) {
               <span className="truncate text-[13px] text-ink-900" title={cleanText(s.ateco_name)}>
                 {cleanText(s.ateco_name)}
               </span>
-              <div className="relative overflow-hidden rounded-sm" style={{ height: compact ? 8 : 18, background: "#F5F5F4" }}>
+              <div className="relative overflow-hidden rounded-sm" style={{ height: compact ? 8 : 18, background: "var(--bar-track)" }}>
                 {[25, 50, 75, 100].map((g) => (
                   <div
                     key={g}
@@ -1649,9 +1700,9 @@ function SectorRankingCard({ sectors, dim, isMoney, rankView = "territorio" }) {
                   />
                 ))}
                 <div className="absolute left-0 top-0 flex h-full" style={{ width: `${widthPct}%` }}>
-                  <div style={{ width: `${seg1Pct}%`, background: seg1Color }} title={segTitle(seg1Label, seg1Val, seg1Pct)} />
-                  <div style={{ width: `${seg2Pct}%`, background: seg2Color }} title={segTitle(seg2Label, seg2Val, seg2Pct)} />
-                  <div style={{ width: `${seg3Pct}%`, background: seg3Color }} title={segTitle(seg3Label, seg3Val, seg3Pct)} />
+                  <BarSeg style={{ width: `${seg1Pct}%`, background: seg1Color }} tip={segTitle(seg1Label, seg1Val, seg1Pct)} />
+                  <BarSeg style={{ width: `${seg2Pct}%`, background: seg2Color }} tip={segTitle(seg2Label, seg2Val, seg2Pct)} />
+                  <BarSeg style={{ width: `${seg3Pct}%`, background: seg3Color }} tip={segTitle(seg3Label, seg3Val, seg3Pct)} />
                 </div>
               </div>
               <div className="text-right text-[13px] font-medium text-ink-900">
@@ -1762,12 +1813,20 @@ const SANKEY_LEFT_COLORS = ["#2E0B86", "#4318C2", "#534AB7", "#5B21F7", "#7C3AED
 const SANKEY_RIGHT_COLOR = "#A3A3AA";
 
 function SectorSankeyChart({ dim }) {
+  const isDark = useTheme() === "dark";
   const totalSpend = inp.total_spend || 1;
   const spendSectors = useMemo(() => inp.spend_breakdown ?? [], []);
   const [selected, setSelected] = useState(() => new Set());
+  // Flusso (link) evidenziato cliccando sul grafico: indice del link o null.
+  const [selectedLink, setSelectedLink] = useState(null);
+  // Nodo (macrosettore) evidenziato cliccando sul grafico: indice del nodo o null.
+  const [selectedNode, setSelectedNode] = useState(null);
   const filterActive = selected.size > 0;
+  const nLeft = spendSectors.length;
 
   function toggle(i) {
+    setSelectedLink(null);
+    setSelectedNode(null);
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(i)) next.delete(i);
@@ -1776,103 +1835,213 @@ function SectorSankeyChart({ dim }) {
     });
   }
 
-  const sankeyData = useMemo(() => {
+  // Click sul Sankey: sia i flussi sia i nodi (macrosettori) sono cliccabili e
+  // restano evidenziati finché non li si riclicca (o si cambia filtro).
+  //  - nodo di impiego diretto (colonna sinistra) → stesso effetto del filtro a
+  //    pulsante: isola i suoi flussi;
+  //  - nodo attivato (colonna destra) → evidenzia i flussi che vi confluiscono;
+  //  - flusso → evidenzia il singolo flusso.
+  const handlePlotClick = useCallback((event) => {
+    const pt = event?.points?.[0];
+    if (!pt) return;
+    const idx = pt.index ?? pt.pointNumber;
+    if (idx == null) return;
+    const isNode = pt.sourceLinks !== undefined || pt.targetLinks !== undefined;
+    if (isNode) {
+      if (idx < nLeft) {
+        // macrosettore di sinistra → riusa il filtro per settore
+        setSelectedLink(null);
+        setSelectedNode(null);
+        setSelected((prev) => {
+          const next = new Set(prev);
+          if (next.has(idx)) next.delete(idx);
+          else next.add(idx);
+          return next;
+        });
+      } else {
+        // settore attivato di destra → evidenzia i flussi entranti
+        setSelectedLink(null);
+        setSelectedNode((prev) => (prev === idx ? null : idx));
+      }
+      return;
+    }
+    // flusso
+    setSelectedNode(null);
+    setSelectedLink((prev) => (prev === idx ? null : idx));
+  }, [nLeft]);
+
+  const sankey = useMemo(() => {
     const impactSectors = [...sectItems]
       .sort((a, b) => sectorTotal(b, dim) - sectorTotal(a, dim))
       .slice(0, 8);
 
-    const nLeft = spendSectors.length;
-    const trunc = (s, n = 28) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
+    const nLeftLocal = spendSectors.length;
     const isOn = (i) => !filterActive || selected.has(i);
 
-    const nodeLabels = [
-      ...spendSectors.map((s) => trunc(cleanText(s.ateco_name))),
-      ...impactSectors.map((s) => trunc(cleanText(s.ateco_name))),
+    // Nomi completi: i label disegnati da Plotly sono nascosti (textfont
+    // trasparente) e le etichette vengono rese come annotazioni nei margini
+    // (vedi nodeAnnotations), così i settori stanno FUORI dalle barre.
+    const nodeNames = [
+      ...spendSectors.map((s) => cleanText(s.ateco_name)),
+      ...impactSectors.map((s) => cleanText(s.ateco_name)),
     ];
     const nodeColors = [
       ...spendSectors.map((_, i) => (isOn(i) ? SANKEY_LEFT_COLORS[i % SANKEY_LEFT_COLORS.length] : "#E5E5E8")),
       ...impactSectors.map(() => SANKEY_RIGHT_COLOR),
     ];
 
-    const sources = [], targets = [], values = [], linkColors = [];
+    const sources = [], targets = [], values = [], linkSpendIdx = [];
 
     spendSectors.forEach((spend, i) => {
-      const active = isOn(i);
-      const hex = SANKEY_LEFT_COLORS[i % SANKEY_LEFT_COLORS.length];
-      const r = parseInt(hex.slice(1, 3), 16);
-      const g = parseInt(hex.slice(3, 5), 16);
-      const b = parseInt(hex.slice(5, 7), 16);
-      const alpha = filterActive ? (active ? 0.6 : 0.05) : 0.4;
       const spendShare = spend.amount / totalSpend;
       impactSectors.forEach((impact, j) => {
         const v = sectorTotal(impact, dim) * spendShare;
         if (v > 0) {
           sources.push(i);
-          targets.push(nLeft + j);
+          targets.push(nLeftLocal + j);
           values.push(v);
-          linkColors.push(`rgba(${r},${g},${b},${alpha})`);
+          linkSpendIdx.push(i);
         }
       });
     });
 
+    // Colore/opacità dei link. Priorità: flusso singolo selezionato → nodo
+    // (macrosettore) selezionato → filtro per settore → stato neutro. La
+    // selezione resta visibile finché non la si deseleziona.
+    const linkSelected = selectedLink != null && selectedLink < values.length;
+    const nodeSelected = selectedNode != null;
+    const linkColors = values.map((_, k) => {
+      const i = linkSpendIdx[k];
+      const hex = SANKEY_LEFT_COLORS[i % SANKEY_LEFT_COLORS.length];
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      let alpha;
+      if (linkSelected) alpha = k === selectedLink ? 0.85 : 0.05;
+      else if (nodeSelected) alpha = sources[k] === selectedNode || targets[k] === selectedNode ? 0.7 : 0.05;
+      else if (filterActive) alpha = isOn(i) ? 0.6 : 0.05;
+      else alpha = 0.4;
+      return `rgba(${r},${g},${b},${alpha})`;
+    });
+
     // Totale dei flussi per il calcolo delle percentuali e dei totali per nodo
     const flowsTotal = values.reduce((a, b) => a + b, 0) || 1;
-    // Valore link in M€ + % sul totale dei flussi (customdata per hover)
-    const linkCustom = values.map((v) => [v / 1_000_000, (v / flowsTotal) * 100]);
+    // customdata link: [valore M€, % flussi, nome origine, nome destinazione].
+    // I nomi viaggiano nel customdata perché i label dei nodi sono vuoti (le
+    // etichette sono rese come annotazioni nei margini, fuori dalle barre).
+    const linkCustom = values.map((v, k) => [
+      v / 1_000_000,
+      (v / flowsTotal) * 100,
+      nodeNames[sources[k]],
+      nodeNames[targets[k]],
+    ]);
     // Totale per nodo (somma dei flussi entranti/uscenti) in M€
-    const nodeTotals = nodeLabels.map(() => 0);
+    const nodeTotals = nodeNames.map(() => 0);
     sources.forEach((s, k) => { nodeTotals[s] += values[k]; });
     targets.forEach((t, k) => { nodeTotals[t] += values[k]; });
-    const nodeCustom = nodeTotals.map((v) => [v / 1_000_000, (v / flowsTotal) * 100]);
+    // customdata nodo: [nome, valore M€, % flussi]
+    const nodeCustom = nodeTotals.map((v, idx) => [nodeNames[idx], v / 1_000_000, (v / flowsTotal) * 100]);
 
-    return [
-      {
-        type: "sankey",
-        orientation: "h",
-        arrangement: "snap",
-        node: {
-          pad: 18,
-          thickness: 18,
-          line: { color: "transparent", width: 0 },
-          label: nodeLabels,
-          color: nodeColors,
-          customdata: nodeCustom,
-          hovertemplate: "<b>%{label}</b><br>%{customdata[0]:,.1f} M€ · %{customdata[1]:.0f}% dei flussi<extra></extra>",
+    // ── Posizionamento manuale dei nodi (arrangement "fixed") ──────────────
+    // Serve per ancorare le etichette nei margini: impilo i nodi di ogni
+    // colonna in verticale, con altezza proporzionale al transito del nodo.
+    const GAP = 0.04; // spazio tra nodi (frazione dell'altezza)
+    const layoutColumn = (idxs) => {
+      const sum = idxs.reduce((a, idx) => a + nodeTotals[idx], 0) || 1;
+      const usable = Math.max(0.1, 1 - GAP * Math.max(0, idxs.length - 1));
+      let cursor = 0;
+      const out = {};
+      idxs.forEach((idx) => {
+        const h = (nodeTotals[idx] / sum) * usable;
+        out[idx] = cursor + h / 2; // centro del nodo, frazione dall'alto
+        cursor += h + GAP;
+      });
+      return out;
+    };
+    const leftIdx = spendSectors.map((_, i) => i);
+    const rightIdx = impactSectors.map((_, j) => nLeftLocal + j);
+    const centerTop = { ...layoutColumn(leftIdx), ...layoutColumn(rightIdx) };
+    const nodeX = nodeNames.map((_, idx) => (idx < nLeftLocal ? 0.02 : 0.98));
+    const nodeY = nodeNames.map((_, idx) => centerTop[idx] ?? 0.5);
+
+    // Etichette dei settori fuori dalle barre: a sinistra nel margine sinistro,
+    // a destra nel margine destro, allineate al centro verticale di ogni nodo.
+    const truncA = (s, n = 30) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
+    const nodeAnnotations = nodeNames.map((name, idx) => {
+      const left = idx < nLeftLocal;
+      return {
+        x: left ? -0.015 : 1.015,
+        y: 1 - nodeY[idx], // paper: 0 in basso → converto dal "dall'alto"
+        xref: "paper",
+        yref: "paper",
+        text: truncA(name),
+        showarrow: false,
+        xanchor: left ? "right" : "left",
+        yanchor: "middle",
+        align: left ? "right" : "left",
+        font: { size: 11, color: isDark ? "#cfcfd5" : "#2B2B2E", family: "Inter, ui-sans-serif, sans-serif" },
+      };
+    });
+
+    return {
+      data: [
+        {
+          type: "sankey",
+          orientation: "h",
+          arrangement: "fixed",
+          node: {
+            pad: 18,
+            thickness: 18,
+            line: { color: "transparent", width: 0 },
+            // Label vuoti: Plotly non disegna testo sui nodi. I nomi sono resi
+            // come annotazioni nei margini (nodeAnnotations) → niente doppioni.
+            label: nodeNames.map(() => ""),
+            color: nodeColors,
+            x: nodeX,
+            y: nodeY,
+            customdata: nodeCustom,
+            hovertemplate: "<b>%{customdata[0]}</b><br>%{customdata[1]:,.1f} M€ · %{customdata[2]:.0f}% dei flussi<extra></extra>",
+          },
+          link: {
+            source: sources,
+            target: targets,
+            value: values,
+            color: linkColors,
+            customdata: linkCustom,
+            hovertemplate: "%{customdata[2]} → %{customdata[3]}<br><b>%{customdata[0]:,.1f} M€</b> · %{customdata[1]:.0f}% dei flussi<extra></extra>",
+          },
         },
-        link: {
-          source: sources,
-          target: targets,
-          value: values,
-          color: linkColors,
-          customdata: linkCustom,
-          hovertemplate: "%{source.label} → %{target.label}<br><b>%{customdata[0]:,.1f} M€</b> · %{customdata[1]:.0f}% dei flussi<extra></extra>",
-        },
-      },
-    ];
-  }, [dim, totalSpend, spendSectors, selected, filterActive]);
+      ],
+      nodeAnnotations,
+    };
+  }, [dim, totalSpend, spendSectors, selected, filterActive, selectedLink, selectedNode, isDark]);
+
+  const sankeyData = sankey.data;
 
   const layout = useMemo(
     () => ({
-      paper_bgcolor: "white",
-      plot_bgcolor: "white",
-      font: { family: "Inter, ui-sans-serif, sans-serif", size: 12, color: "#0E0E10" },
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      font: { family: "Inter, ui-sans-serif, sans-serif", size: 12, color: isDark ? "#f3f3f5" : "#0E0E10" },
       margin: { t: 40, r: 200, b: 16, l: 200 },
+      hoverlabel: { bgcolor: "#0E0E10", bordercolor: "#0E0E10", font: { color: "#FFFFFF", family: "Inter, ui-sans-serif, sans-serif", size: 12 } },
       annotations: [
         {
           x: 0, y: 1.07, xref: "paper", yref: "paper",
           text: "IMPIEGO DIRETTO",
           showarrow: false, xanchor: "left",
-          font: { size: 10, color: "#5A5A60", family: "Inter, ui-sans-serif, sans-serif" },
+          font: { size: 10, color: isDark ? "#9a9aa2" : "#5A5A60", family: "Inter, ui-sans-serif, sans-serif" },
         },
         {
           x: 1, y: 1.07, xref: "paper", yref: "paper",
           text: "SETTORI ATTIVATI (INDIRETTO + INDOTTO)",
           showarrow: false, xanchor: "right",
-          font: { size: 10, color: "#5A5A60", family: "Inter, ui-sans-serif, sans-serif" },
+          font: { size: 10, color: isDark ? "#9a9aa2" : "#5A5A60", family: "Inter, ui-sans-serif, sans-serif" },
         },
+        ...sankey.nodeAnnotations,
       ],
     }),
-    [],
+    [sankey.nodeAnnotations, isDark],
   );
 
   return (
@@ -1884,7 +2053,7 @@ function SectorSankeyChart({ dim }) {
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => setSelected(new Set())}
+            onClick={() => { setSelected(new Set()); setSelectedLink(null); }}
             className={`rounded-[6px] border px-3 py-1.5 text-[12px] transition-colors ${
               !filterActive
                 ? "border-brand-violet bg-brand-violet text-white"
@@ -1919,9 +2088,21 @@ function SectorSankeyChart({ dim }) {
           <div className="mt-2 text-[11px] text-ink-500">
             {selected.size} di {spendSectors.length} settori selezionati · clicca <em>Tutti</em> per ripristinare
           </div>
-        ) : null}
+        ) : selectedLink != null ? (
+          <div className="mt-2 text-[11px] text-ink-500">
+            1 flusso evidenziato · clicca di nuovo sul flusso (o <em>Tutti</em>) per deselezionare
+          </div>
+        ) : selectedNode != null ? (
+          <div className="mt-2 text-[11px] text-ink-500">
+            Settore evidenziato · clicca di nuovo sul nodo (o <em>Tutti</em>) per deselezionare
+          </div>
+        ) : (
+          <div className="mt-2 text-[11px] text-ink-400">
+            Suggerimento: clicca un settore (nodo) o un flusso nel grafico per evidenziarlo.
+          </div>
+        )}
       </div>
-      <PlotlyChart data={sankeyData} layout={layout} style={{ minHeight: 480 }} />
+      <PlotlyChart data={sankeyData} layout={layout} style={{ minHeight: 480 }} onClick={handlePlotClick} />
     </div>
   );
 }
@@ -2344,7 +2525,9 @@ function ExploreResultTable({ rows, meta, dimKey, effect, maxValue, total, sortK
   }
 
   const SortIcon = ({ col }) => (
-    <span className="ml-1 opacity-40 text-[10px]">{sortKey === col ? (sortDir === "asc" ? "?" : "?") : "?"}</span>
+    <span className="ml-1 text-[10px] text-ink-400">
+      {sortKey === col ? (sortDir === "asc" ? "▲" : "▼") : "↕"}
+    </span>
   );
 
   return (
@@ -2386,16 +2569,20 @@ function ExploreResultTable({ rows, meta, dimKey, effect, maxValue, total, sortK
                 <tr key={row.code ?? idx} className="border-b border-ink-100 last:border-b-0 hover:bg-bg-page">
                   <td className="px-4 py-3 text-[13px] font-medium text-ink-900">{cleanText(row.label ?? "")}</td>
                   <td className="px-4 py-3" style={{ minWidth: 160 }}>
-                    <div className="overflow-hidden rounded-sm" style={{ height: 14, background: "#F5F5F4" }}>
+                    <div className="overflow-hidden rounded-sm" style={{ height: 14, background: "var(--bar-track)" }}>
                       <div className="flex h-full" style={{ width: `${barWidth}%` }}>
                         {showEffectCols && row.value > 0 ? (
                           <>
-                            <div style={{ width: `${(row.directValue ?? 0) / row.value * 100}%`, background: "#534AB7" }} />
-                            <div style={{ width: `${(row.indirectValue ?? 0) / row.value * 100}%`, background: "#AFA9EC" }} />
-                            <div style={{ width: `${(row.inducedValue ?? 0) / row.value * 100}%`, background: "#CECBF6" }} />
+                            <BarSeg style={{ width: `${(row.directValue ?? 0) / row.value * 100}%`, background: "#534AB7" }}
+                              tip={`Diretto: ${fmt(row.directValue ?? 0)} (${Math.round((row.directValue ?? 0) / row.value * 100)}%)`} />
+                            <BarSeg style={{ width: `${(row.indirectValue ?? 0) / row.value * 100}%`, background: "#AFA9EC" }}
+                              tip={`Indiretto: ${fmt(row.indirectValue ?? 0)} (${Math.round((row.indirectValue ?? 0) / row.value * 100)}%)`} />
+                            <BarSeg style={{ width: `${(row.inducedValue ?? 0) / row.value * 100}%`, background: "#CECBF6" }}
+                              tip={`Indotto: ${fmt(row.inducedValue ?? 0)} (${Math.round((row.inducedValue ?? 0) / row.value * 100)}%)`} />
                           </>
                         ) : (
-                          <div className="h-full w-full" style={{ background: "#534AB7" }} />
+                          <BarSeg className="h-full w-full" style={{ background: "#534AB7" }}
+                            tip={`${cleanText(row.label ?? "")}: ${fmt(row.value)} (${sharePct.toFixed(1)}% del totale)`} />
                         )}
                       </div>
                     </div>

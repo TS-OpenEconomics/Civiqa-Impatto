@@ -19,21 +19,21 @@ import { ECBA_DATA } from "./ecbaData";
 const C = {
   violet: "#5B21F7",
   violetDark: "#2E0B86",
-  violetLight: "#E8DEFC",
-  violetSoft: "#F3EEFE",
+  violetLight: "var(--hh-border, #E8DEFC)",
+  violetSoft: "var(--hh-tint, #F3EEFE)",
   green: "#1F8C4A",
   greenSoft: "#E4F7EC",
   red: "#CC0000",
   redSoft: "#FCEBEB",
   lime: "#C7F03A",
   limeText: "#3A4D00",
-  ink900: "#0E0E10",
-  ink700: "#2B2B2E",
-  ink500: "#5A5A60",
-  ink400: "#7B7B82",
-  ink200: "#D1D1D6",
-  ink100: "#E5E5E8",
-  white: "#FFFFFF",
+  ink900: "var(--hh-text, #0E0E10)",
+  ink700: "var(--hh-text-700, #2B2B2E)",
+  ink500: "var(--hh-text-500, #5A5A60)",
+  ink400: "var(--hh-text-400, #7B7B82)",
+  ink200: "var(--hh-border-200, #D1D1D6)",
+  ink100: "var(--hh-border-100, #E5E5E8)",
+  white: "var(--hh-surface, #FFFFFF)",
 };
 
 /* ─── Numeri (sempre arrotondati, unità in chiaro) ─────────────────────────── */
@@ -625,7 +625,7 @@ const FONT = "Inter, system-ui, sans-serif";
 const S = {
   overlay: {
     position: "fixed", inset: 0, zIndex: 2000,
-    background: `radial-gradient(circle at 50% 0%, ${C.violetSoft} 0%, #FFFFFF 55%)`,
+    background: `radial-gradient(circle at 50% 0%, ${C.violetSoft} 0%, ${C.white} 55%)`,
     display: "flex", flexDirection: "column", fontFamily: FONT, color: C.ink900, outline: "none",
   },
   topbar: {
@@ -697,7 +697,7 @@ const S = {
   navBtn: { border: `1px solid ${C.ink200}`, background: C.white, color: C.ink700, fontWeight: 600, fontSize: 15, padding: "10px 18px", borderRadius: 10, cursor: "pointer" },
   navBtnPrimary: { border: "none", background: C.violet, color: C.white, fontWeight: 700, fontSize: 15, padding: "10px 22px", borderRadius: 10, cursor: "pointer" },
   stepCounter: { fontSize: 13, fontWeight: 600, color: C.ink400 },
-  entry: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, width: "100%", textAlign: "left", border: `1px solid ${C.violetLight}`, background: `linear-gradient(90deg, ${C.violetSoft} 0%, #FFFFFF 100%)`, padding: "16px 22px", marginBottom: 16, borderRadius: 2 },
+  entry: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, width: "100%", textAlign: "left", border: `1px solid ${C.violetLight}`, background: `linear-gradient(90deg, ${C.violetSoft} 0%, ${C.white} 100%)`, padding: "16px 22px", marginBottom: 16, borderRadius: 2 },
   entryLeft: { display: "flex", alignItems: "center", gap: 16 },
   entrySpark: { display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, borderRadius: "50%", background: C.violet, color: C.white, flexShrink: 0 },
   entryTitle: { display: "block", fontSize: 15, fontWeight: 800, color: C.ink900 },

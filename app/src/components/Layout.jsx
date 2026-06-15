@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme, toggleTheme } from "../hooks/useTheme";
 import { useProjects } from "../contexts/ProjectContext";
 import { useToast } from "../hooks/useToast.jsx";
 import { Modal } from "./ui/Modal";
@@ -22,6 +23,31 @@ import {
 } from "./ui/Icons";
 
 const SIDEBAR_STORAGE_KEY = "civiqa.sidebar.collapsed";
+
+// Toggle tema chiaro/scuro nell'header dell'app (oltre a quello del Login).
+function ThemeToggleButton() {
+  const dark = useTheme() === "dark";
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      className="text-ink-700 hover:text-ink-900"
+      aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"}
+      title={dark ? "Tema chiaro" : "Tema scuro"}
+    >
+      {dark ? (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.6" />
+          <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+      ) : (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M20 14.5A8 8 0 0 1 9.5 4 7 7 0 1 0 20 14.5z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        </svg>
+      )}
+    </button>
+  );
+}
 
 export function Layout({ children }) {
   const { uiState, setSearchTerm, setDebouncedSearchTerm } = useProjects();
@@ -196,6 +222,7 @@ function Header({
         </div>
 
         <div className="ml-auto flex items-center gap-5">
+          <ThemeToggleButton />
           <button type="button" onClick={onHelp} className="text-ink-700 hover:text-ink-900" aria-label="Aiuto">
             <IconHelp className="w-5 h-5" />
           </button>

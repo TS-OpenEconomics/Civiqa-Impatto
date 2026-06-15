@@ -4,6 +4,22 @@ body.hl-home-locked {
   overflow: hidden;
 }
 
+/* ── DARK MODE ──────────────────────────────────────────────
+   home-launcher.css usa colori oklch hardcoded (non token): qui
+   sovrascrivo solo le superfici/testi neutri per il tema scuro.
+   Le tile (gradienti viola scuri + testo bianco) restano com'erano. */
+[data-theme="dark"] .hl-root { background-color: #161618; }
+[data-theme="dark"] .hl-header {
+  background-color: #1f1f24;
+  border-bottom-color: #2e2e34;
+}
+[data-theme="dark"] .hl-scenari { border-color: #2e2e34; }
+[data-theme="dark"] .hl-scenari:hover { background-color: #232327; }
+[data-theme="dark"] .hl-scenari-eyebrow { color: #9a9aa2; }
+[data-theme="dark"] .hl-scenari-name { color: #f3f3f5; }
+[data-theme="dark"] .hl-scenari-desc { color: #b3b3bb; }
+[data-theme="dark"] .hl-scenari-arrow { color: #9a9aa2; }
+
 /* ── Entrance animation ─────────────────────────────────── */
 @keyframes hl-enter {
   from { opacity: 0; transform: translateY(10px); }

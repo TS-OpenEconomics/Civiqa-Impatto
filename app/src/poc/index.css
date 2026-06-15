@@ -15,8 +15,8 @@
    per avere la precedenza. ─────────────────────────────────────────────────── */
 .civiqa-avatar { border-radius: 50% !important; }
 
-/* Logo wordmark: il PNG è nero → in tema scuro va invertito per restare leggibile */
-[data-theme="dark"] .civiqa-wordmark { filter: invert(1) brightness(1.85) contrast(1.05); }
+/* Logo wordmark: toggle nera/bianca per tema → definito in poc-theme.css
+   (questo file non è importato nel bundle). */
 
 /* ─── OE Design System: global border-radius reset ───────────────────────────
    Border-radius = 0 is a core brand identity rule. No exceptions.
