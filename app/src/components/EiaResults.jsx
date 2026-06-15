@@ -2492,7 +2492,7 @@ const CHART_INFO = {
   },
   "sintesi.fiscal": {
     title: "Cosa significa il ritorno fiscale",
-    body: "Stima la quota della spesa iniziale che entra nelle casse dello Stato come imposte e contributi attivati lungo l'intera filiera (IVA, IRPEF, IRES, contributi sociali). Misura il livello di 'autofinanziamento' che il progetto produce sulle entrate pubbliche.",
+    body: "Stima la quota della spesa iniziale che entra nelle casse dello Stato come imposte e contributi attivati lungo l'intera filiera (IVA, IRPEF, IRES, contributi sociali). Misura quanta parte della spesa torna alle casse pubbliche sotto forma di entrate fiscali.",
     extra: "Il dato è riportato solo a livello nazionale: le entrate erariali confluiscono al bilancio dello Stato e non sono correttamente regionalizzabili.",
   },
   "sintesi.percapita": {
@@ -2603,7 +2603,7 @@ const METODOLOGIA_SECTIONS = [
     body: [
       "Il gettito è stimato applicando le aliquote medie effettive ai redditi e ai consumi attivati: comprende IVA, IRPEF, IRES e contributi sociali.",
       "Viene riportato come gettito complessivo nazionale e non viene disaggregato per area geografica: la componente erariale confluisce al bilancio dello Stato e una sua regionalizzazione non sarebbe metodologicamente rigorosa.",
-      "Il rapporto gettito / spesa indica la quota della spesa iniziale che si 'autofinanzia' attraverso le entrate fiscali generate dall'attività economica attivata.",
+      "Il rapporto gettito / spesa indica la quota della spesa iniziale che torna nelle casse dello Stato attraverso le entrate fiscali generate dall'attività economica attivata.",
     ],
   },
   {
