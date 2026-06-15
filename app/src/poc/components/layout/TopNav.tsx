@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import colleferroStemma from '../../assets/Logo_Comune_Colleferro.png.png'
 import civiqaLogo from '../../assets/civiqa-logo.png'
+import civiqaLogoWhite from '../../assets/civiqa-logo-white.png'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useTheme, toggleTheme } from '../../../hooks/useTheme'
 import { IconValutazione } from './SideNav'
@@ -229,8 +230,15 @@ export function TopNav() {
         <img
           src={civiqaLogo}
           alt="Civiqa"
-          className="civiqa-wordmark"
-          style={{ height: 30, width: 'auto', display: 'block' }}
+          className="civiqa-wordmark civiqa-wordmark--light"
+          style={{ height: 30, width: 'auto' }}
+        />
+        <img
+          src={civiqaLogoWhite}
+          alt="Civiqa"
+          aria-hidden="true"
+          className="civiqa-wordmark civiqa-wordmark--dark"
+          style={{ height: 30, width: 'auto' }}
         />
       </Link>
 

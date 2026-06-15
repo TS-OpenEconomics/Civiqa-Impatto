@@ -217,6 +217,33 @@ const CSS = `
   .ecba-root .modal-body{grid-template-columns:1fr}.ecba-root .m-nav{display:none}
   .ecba-root .card-row{flex-direction:column;gap:0}
 }
+
+/* ===== DARK MODE =====================================================
+   La sezione ECBA usa variabili CSS scoped (.ecba-root): qui rimappo solo
+   i token NEUTRI (superfici/testi/linee) e i pochi colori hardcoded a
+   #fff / testo scuro. I colori di brand (blu/lime) e semantici (verde/
+   rosso/badge) restano invariati, così il look resta coerente. */
+[data-theme="dark"] .ecba-root{
+  --grey-000:#232327; --grey-light:#161618; --grey-mid:#3a3a42; --grey-line:#2e2e34;
+  --text-main:#f3f3f5; --text-muted:#b3b3bb; --text-soft:#9a9aa2;
+  --white:#1f1f24; --blu-050:#1d1736; --blu-100:#241a44;
+  --green-100:#122019; --red-100:#2a1416;
+}
+/* colori hardcoded (non da variabile) → superfici/testi scuri */
+[data-theme="dark"] .ecba-pop{background:#1f1f24;border-left-color:#9E7BFA}
+[data-theme="dark"] .ecba-pop p{color:#cfcfd5}
+[data-theme="dark"] .ecba-pop b{color:#f3f3f5}
+[data-theme="dark"] .ecba-root .chart-tip{background:#1f1f24}
+[data-theme="dark"] .ecba-root .lg-chip{background:#1f1f24}
+[data-theme="dark"] .ecba-root .read p,
+[data-theme="dark"] .ecba-root .m-content p,
+[data-theme="dark"] .ecba-root .m-content ul,
+[data-theme="dark"] .ecba-root .m-content li{color:#cfcfd5}
+[data-theme="dark"] .ecba-root .ax-zero{stroke:#4a4a52}
+[data-theme="dark"] .ecba-root .connector{stroke:#4a4a52}
+[data-theme="dark"] .ecba-root .modal{background:#1f1f24}
+[data-theme="dark"] .ecba-root .simple-banner{background:linear-gradient(95deg,#241a44,#1d1736 70%,#1f1f24)}
+[data-theme="dark"] .ecba-root .verdict{border-color:#1e3a2a}
 `;
 
 // Stessa icona usata nella dashboard del progetto (ProjectDetail → analysis-ecba.png)
@@ -1016,45 +1043,6 @@ export function EcbaResults({ project, onBack }) {
         { label: "Esternalità negative", color: "#7a0010", pct: Math.round((est / total) * 100) },
       ];
       drawDonutInto("#svg-dn-cost", "#dn-cost-legend", slices, total, "Costi", "dei costi totali");
-    }
-
-    // ===== TORNADO =====
-    function drawTornado() {
-      const svg = q("#svg-tor");
-      const d = [...DATA.sensitivity].sort((a, b) => b.high - b.low - (a.high - a.low));
-      const base = DATA.montecarlo.base;
-      const W = 760,
-        padL = 230,
-        padR = 30,
-        padT = 16,
-        rowH = 46,
-        H = padT + d.length * rowH + 30;
-      svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-      let mn = Math.min(...d.map((v) => v.low)),
-        mx = Math.max(...d.map((v) => v.high));
-      mn = Math.floor(mn - 1);
-      mx = Math.ceil(mx + 1);
-      const plotW = W - padL - padR,
-        x = (v) => padL + ((v - mn) / (mx - mn)) * plotW;
-      let o = "";
-      for (let g = Math.ceil(mn / 2) * 2; g <= mx; g += 2) {
-        o += `<line class="ax-line" x1="${x(g)}" y1="${padT}" x2="${x(g)}" y2="${padT + d.length * rowH}"/><text class="ax-txt" x="${x(g)}" y="${H - 12}" text-anchor="middle">${g}</text>`;
-      }
-      d.forEach((v, i) => {
-        const cy = padT + i * rowH + rowH / 2,
-          bh = 22;
-        o += `<rect x="${x(v.low)}" y="${cy - bh / 2}" width="0" height="${bh}" fill="#c0392b" opacity=".88"><animate attributeName="width" from="0" to="${x(base) - x(v.low)}" dur=".5s" begin="${i * 0.1}s" fill="freeze"/></rect>`;
-        o += `<rect x="${x(base)}" y="${cy - bh / 2}" width="0" height="${bh}" fill="#1e7a45" opacity=".88"><animate attributeName="width" from="0" to="${x(v.high) - x(base)}" dur=".5s" begin="${i * 0.1}s" fill="freeze"/></rect>`;
-        o += `<rect class="chart-hit" x="${x(v.low)}" y="${cy - rowH / 2 + 3}" width="${x(v.high) - x(v.low)}" height="${rowH - 6}" fill="transparent" data-tip-label="${v.name}" data-tip-value="${fmt1(v.low)} / ${fmt1(v.high)} M€" data-tip-sub="Scenario sfavorevole / favorevole rispetto al valore base"></rect>`;
-        o += `<text x="${padL - 12}" y="${cy + 4}" text-anchor="end" style="font-size:12.5px;font-weight:700;fill:var(--text-main)">${v.name}</text>`;
-        o += `<text x="${padL - 12}" y="${cy + 18}" text-anchor="end" style="font-size:10.5px;fill:var(--text-soft)">${v.sub}</text>`;
-        o += `<text x="${x(v.low) - 5}" y="${cy + 4}" text-anchor="end" style="font-size:11px;fill:#c0392b;font-weight:700" opacity="0">${v.low.toFixed(1).replace(".", ",")}<animate attributeName="opacity" from="0" to="1" dur=".3s" begin="${i * 0.1 + 0.5}s" fill="freeze"/></text>`;
-        o += `<text x="${x(v.high) + 5}" y="${cy + 4}" style="font-size:11px;fill:#1e7a45;font-weight:700" opacity="0">${v.high.toFixed(1).replace(".", ",")}<animate attributeName="opacity" from="0" to="1" dur=".3s" begin="${i * 0.1 + 0.5}s" fill="freeze"/></text>`;
-      });
-      o += `<line x1="${x(base)}" y1="${padT - 2}" x2="${x(base)}" y2="${padT + d.length * rowH + 4}" stroke="var(--blu-700)" stroke-width="1.6"/>`;
-      o += `<text class="ax-txt" x="${x(base)}" y="${padT - 4}" text-anchor="middle" style="fill:var(--blu-700);font-weight:700">Valore base ${base.toFixed(1).replace(".", ",")}</text>`;
-      svg.innerHTML = o;
-      bindChartTips(svg);
     }
 
     // ===== MONTECARLO =====

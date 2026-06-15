@@ -11,27 +11,28 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import staticResults from "../mocks/eiaResults.json";
+import { getEiaDataset } from "../mocks/eiaDatasets";
 import { ImpactIcon } from "./ui/ImpactIcon";
 
 /* ─── Palette (allineata a tailwind.config.js) ─────────────────────────────── */
 const C = {
   violet: "#5B21F7",
   violetDark: "#2E0B86",
-  violetLight: "#E8DEFC",
-  violetSoft: "#F3EEFE",
+  // superfici/testi/bordi passano da variabili CSS → adattano al tema (dark)
+  violetLight: "var(--hh-border, #E8DEFC)",
+  violetSoft: "var(--hh-tint, #F3EEFE)",
   lime: "#C7F03A",
   limeText: "#3A4D00",
-  ink900: "#0E0E10",
-  ink700: "#2B2B2E",
-  ink500: "#5A5A60",
-  ink400: "#7B7B82",
-  ink200: "#D1D1D6",
-  ink100: "#E5E5E8",
+  ink900: "var(--hh-text, #0E0E10)",
+  ink700: "var(--hh-text-700, #2B2B2E)",
+  ink500: "var(--hh-text-500, #5A5A60)",
+  ink400: "var(--hh-text-400, #7B7B82)",
+  ink200: "var(--hh-border-200, #D1D1D6)",
+  ink100: "var(--hh-border-100, #E5E5E8)",
   direct: "#5B21F7",
   indirect: "#9E7BFA",
   induced: "#D4C5FB",
-  white: "#FFFFFF",
+  white: "var(--hh-surface, #FFFFFF)",
 };
 
 /* ─── Formattazione numeri (sempre arrotondati, unità in chiaro) ───────────── */
@@ -85,9 +86,13 @@ function useCountUp(target, { duration = 900 } = {}) {
   return value;
 }
 
-/* ─── Adattatore dati: eiaResults.json → payload narrativo ─────────────────── */
+/* ─── Adattatore dati: dataset EIA del progetto → payload narrativo ────────────
+ * Legge lo STESSO dataset che la vista tecnica mostra (`getEiaDataset(project)`):
+ * il mock storico (Palermo) per i progetti demo, il dataset dedicato per quelli
+ * registrati in `EIA_DATASETS` (es. MUBA Bologna). Aggiungere un progetto al
+ * registro lo fa narrare automaticamente con i suoi numeri reali. */
 function buildPayload(project) {
-  const d = staticResults;
+  const d = getEiaDataset(project);
   const input = d.input ?? {};
   const nat = d.synthesis?.by_perimeter?.national ?? {};
   const kpi = d.synthesis?.synthetic_kpis ?? {};
@@ -168,12 +173,12 @@ function buildCards(g) {
     },
     {
       icon: "redditi",
-      titolo: "Soldi in tasca a famiglie e imprese",
+      titolo: "Redditi per famiglie e imprese",
       tecnico: "Redditi distribuiti",
       recap: "Redditi",
       euro: g.redditi,
-      frase: "Quanto arriva a lavoratori e imprese come stipendi, profitti e affitti grazie al progetto.",
-      extra: "Sono i redditi che poi vengono spesi e rimettono in moto altra economia.",
+      frase: "I redditi distribuiti grazie al progetto: stipendi per chi lavora, profitti per le imprese e rendite da capitale.",
+      extra: "Sono redditi che poi vengono spesi, e così rimettono in moto altra attività economica.",
     },
     {
       icon: "gettito",
@@ -181,8 +186,8 @@ function buildCards(g) {
       tecnico: "Gettito fiscale",
       recap: "Gettito",
       euro: g.gettito,
-      frase: "Le imposte e i contributi che lo Stato incassa grazie a tutta l'attività generata: IVA, IRPEF, IRES e contributi.",
-      extra: "Significa che una parte della spesa pubblica, di fatto, si ripaga da sola.",
+      frase: "Le imposte e i contributi attivati lungo tutta la filiera: IVA, IRPEF, IRES e contributi sociali. È riferito all'intera Italia.",
+      extra: "Vuol dire che una quota della spesa iniziale torna nelle casse dello Stato sotto forma di imposte e contributi.",
     },
   ];
 }
@@ -739,7 +744,7 @@ const S = {
     position: "fixed",
     inset: 0,
     zIndex: 1000,
-    background: `radial-gradient(circle at 50% 0%, ${C.violetSoft} 0%, #FFFFFF 55%)`,
+    background: `radial-gradient(circle at 50% 0%, ${C.violetSoft} 0%, ${C.white} 55%)`,
     display: "flex",
     flexDirection: "column",
     fontFamily: FONT,
@@ -993,7 +998,7 @@ const S = {
     width: "100%",
     textAlign: "left",
     border: `1px solid ${C.violetLight}`,
-    background: `linear-gradient(90deg, ${C.violetSoft} 0%, #FFFFFF 100%)`,
+    background: `linear-gradient(90deg, ${C.violetSoft} 0%, ${C.white} 100%)`,
     padding: "16px 22px",
     marginBottom: 16,
     borderRadius: 2,

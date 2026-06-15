@@ -17,6 +17,12 @@ const baseLayout = (theme) => ({
   margin: { t: 20, r: 10, b: 50, l: 60 },
   legend: { orientation: "h", x: 0, y: -0.2 },
   colorway: ["#7C3AED", "#A78BFA", "#DDD6FE", "#84CC16", "#4ADE80"],
+  // Tooltip scuro uniforme con i grafici a barre / le cartine
+  hoverlabel: {
+    bgcolor: "#0E0E10",
+    bordercolor: "#0E0E10",
+    font: { color: "#FFFFFF", family: "Inter, ui-sans-serif, sans-serif", size: 12 },
+  },
 });
 
 const BASE_CONFIG = {
@@ -25,7 +31,7 @@ const BASE_CONFIG = {
   locale: "it",
 };
 
-export function PlotlyChart({ data, layout = {}, config = {}, style }) {
+export function PlotlyChart({ data, layout = {}, config = {}, style, onClick }) {
   const ref = useRef(null);
   const theme = useTheme();
 
@@ -38,7 +44,13 @@ export function PlotlyChart({ data, layout = {}, config = {}, style }) {
       { ...baseLayout(theme), ...layout },
       { ...BASE_CONFIG, ...config },
     );
-  }, [data, layout, config, theme]);
+    if (!onClick) return;
+    const handler = (event) => onClick(event);
+    element.on("plotly_click", handler);
+    return () => {
+      element.removeListener?.("plotly_click", handler);
+    };
+  }, [data, layout, config, theme, onClick]);
 
   useEffect(() => {
     const element = ref.current;

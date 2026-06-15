@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Plotly from "plotly.js-dist-min";
 import { useTheme } from "../../hooks/useTheme";
+import { DARK_HOVERLABEL } from "./hoverlabel";
 
 const REGION_TO_NUTS = {
   "Piemonte":["ITC1"],"Valle d'Aosta":["ITC2"],"Liguria":["ITC3"],"Lombardia":["ITC4"],
@@ -66,6 +67,7 @@ export function ItalyMap({ data, tone = "violet", onRegionClick, selectedRegion,
       geo:{ fitbounds:"geojson", visible:false, projection:{type:"mercator"}, bgcolor:"rgba(0,0,0,0)" },
       paper_bgcolor:"rgba(0,0,0,0)", plot_bgcolor:"rgba(0,0,0,0)",
       margin:{ t:0, b:0, l:0, r:0 },
+      hoverlabel: DARK_HOVERLABEL,
     }, { responsive:true, displayModeBar:false });
 
     if (onRegionClick) {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Plotly from "plotly.js-dist-min";
 import { useTheme } from "../../hooks/useTheme";
+import { DARK_HOVERLABEL } from "./hoverlabel";
 
 let cachedNuts3 = null;
 
@@ -50,6 +51,7 @@ export function ProvinceMap({ nuts2Code, data, minHeight = 220, className = "" }
       geo:{ fitbounds:"geojson", visible:false, projection:{type:"mercator"}, bgcolor:"rgba(0,0,0,0)" },
       paper_bgcolor:"rgba(0,0,0,0)", plot_bgcolor:"rgba(0,0,0,0)",
       margin:{ t:0, b:0, l:0, r:0 },
+      hoverlabel: DARK_HOVERLABEL,
     }, { responsive:true, displayModeBar:false });
 
     return () => { if (element) Plotly.purge(element); };

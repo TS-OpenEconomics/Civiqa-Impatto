@@ -247,6 +247,13 @@
   color: #f3f3f5;
 }
 
+/* Logo Civiqa: due varianti (nera/bianca) che si alternano col tema.
+   In chiaro la nera, in scuro la bianca (asset dedicato civiqa-logo-white). */
+.civiqa-wordmark--light { display: block; }
+.civiqa-wordmark--dark { display: none; }
+[data-theme="dark"] .civiqa-wordmark--light { display: none; }
+[data-theme="dark"] .civiqa-wordmark--dark { display: block; }
+
 /* DS table in dark */
 [data-theme="dark"] .poc-scope .ds-table tbody tr {
   border-bottom: 1px solid #2e2e34;
