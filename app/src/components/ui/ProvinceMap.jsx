@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Plotly from "plotly.js-dist-min";
 import { useTheme } from "../../hooks/useTheme";
-import { DARK_HOVERLABEL } from "./ItalyMap";
+import { DARK_HOVERLABEL } from "./hoverlabel";
 
 let cachedNuts3 = null;
 

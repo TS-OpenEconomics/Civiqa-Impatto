@@ -1,13 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Plotly from "plotly.js-dist-min";
 import { useTheme } from "../../hooks/useTheme";
-
-// Stile tooltip uniforme con i grafici a barre (riquadro scuro, testo bianco).
-export const DARK_HOVERLABEL = {
-  bgcolor: "#0E0E10",
-  bordercolor: "#0E0E10",
-  font: { color: "#FFFFFF", family: "Inter, ui-sans-serif, sans-serif", size: 12 },
-};
+import { DARK_HOVERLABEL } from "./hoverlabel";
 
 const REGION_TO_NUTS = {
   "Piemonte":["ITC1"],"Valle d'Aosta":["ITC2"],"Liguria":["ITC3"],"Lombardia":["ITC4"],
