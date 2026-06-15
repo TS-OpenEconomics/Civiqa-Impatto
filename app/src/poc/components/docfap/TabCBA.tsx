@@ -13,8 +13,6 @@ import {
   detailHeaderLabelWrapStyle,
   detailHeaderLabelStyle,
   detailAltHeaderContentStyle,
-  detailAltBadgeStyle,
-  detailRecommendedAltBadgeStyle,
   detailRecommendedBadgeStyle,
   detailRowHeaderStyle,
   detailBodyCellStyle,
@@ -23,7 +21,9 @@ import {
   detailFinalRowHeaderStyle,
   detailEmptyStyle,
   detailTableWrapStyle,
+  getAltBadgeStyle,
 } from './tableHelpers'
+import { buildRankIndexMap } from './rankColors'
 import { CbaWaterfallChart } from './charts/CbaWaterfallChart'
 import { CbaTrendlineChart } from './charts/CbaTrendlineChart'
 
@@ -39,6 +39,7 @@ export function TabCBA() {
   const state = useSyncExternalStore(wizardStore.subscribe, wizardStore.getState, wizardStore.getState)
   const scores = getDefinedScores(state.scoreFinale, state.alternativeDefinite)
   const recommendedId = getRecommendedAlternativeId(scores)
+  const rankMap = buildRankIndexMap(scores)
 
   if (scores.length === 0) return <p style={emptyStyle}>Nessun dettaglio CBA disponibile.</p>
 
@@ -68,7 +69,7 @@ export function TabCBA() {
                   <th key={s.alternativaId} style={{ ...headerCellStyle, ...(isRec ? recommendedHeaderStyle : null) }}>
                     <div style={headerLabelWrapStyle}>
                       <div style={detailAltHeaderContentStyle}>
-                        <span style={isRec ? detailRecommendedAltBadgeStyle : detailAltBadgeStyle}>{s.alternativaId}</span>
+                        <span style={getAltBadgeStyle(rankMap[s.alternativaId] ?? 0, scores.length)}>{s.alternativaId}</span>
                         <span style={headerLabelStyle}>{getAlternativeDisplayLabel(s.alternativaId, state.alternative[s.alternativaId])}</span>
                       </div>
                     </div>

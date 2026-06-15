@@ -112,7 +112,12 @@ const CSS = `
 
 /* KPI CARDS */
 .ecba-root .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.ecba-root .kpi{background:var(--white);border:1px solid var(--grey-line);padding:22px 24px}
+.ecba-root .kpi{position:relative;background:var(--white);border:1px solid var(--grey-line);padding:22px 24px}
+/* marker "i" circolato in alto a destra della card KPI, con tooltip nativo (title) */
+.ecba-root .kpi-info{position:absolute;top:12px;right:12px;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--blu-400);border-radius:50%;color:var(--blu-500);font-size:11px;font-weight:800;font-style:normal;line-height:1;cursor:help;background:var(--blu-050);z-index:2}
+.ecba-root .kpi-info:hover{background:var(--blu-100);border-color:var(--blu-500)}
+/* dove c'è il marker top-right, nascondi la vecchia "i" inline nel kpi-top (stessa info, niente sovrapposizione) */
+.ecba-root .kpi-info ~ .kpi-top .info-i{display:none}
 .ecba-root .kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .ecba-root .kpi-id{display:flex;align-items:center;gap:10px}
 .ecba-root .kpi-ic{width:22px;height:22px;flex:0 0 22px}
@@ -140,7 +145,7 @@ const CSS = `
 .ecba-root #svg-cf{width:100%;max-width:1400px;max-height:440px}
 .ecba-root #svg-mc{max-width:760px}
 .ecba-root #svg-heat{max-width:720px}
-.ecba-root #svg-dn{width:320px !important;max-width:320px !important;flex:0 0 320px !important}
+.ecba-root #svg-dn,.ecba-root #svg-dn-cost{width:100% !important;max-width:300px !important}
 /* due grafici spider affiancati */
 .ecba-root .card-row{display:flex;gap:16px;align-items:stretch}
 .ecba-root .card-row > .card{flex:1 1 0;min-width:0;margin-top:16px}
@@ -204,7 +209,8 @@ const CSS = `
   .ecba-root .wrap{min-height:calc(100vh - 32px);padding:0 0 70px}
   .ecba-root .simple-banner{margin-top:24px}
   .ecba-root .panel.show{padding:18px 16px}
-  .ecba-root #svg-dn{width:280px !important;max-width:100% !important;flex:0 1 280px !important}
+  .ecba-root #svg-dn,.ecba-root #svg-dn-cost{width:100% !important;max-width:100% !important}
+  .ecba-root .dn-grid{grid-template-columns:1fr !important}
   .ecba-root .head-cols,.ecba-root .kpi-grid,.ecba-root .tabs{grid-template-columns:1fr}
   .ecba-root .hcol+.hcol{border-left:none;border-top:1px solid var(--grey-line)}
   .ecba-root .tab{border-right:none;border-bottom:1px solid var(--grey-line)}
@@ -284,18 +290,21 @@ function buildMarkup(DATA, project) {
 
     <div class="kpi-grid">
       <div class="kpi">
+        <span class="kpi-info" title="VANE = Valore Attuale Netto Economico: somma, anno per anno, della differenza tra benefici e costi economici, riportata a valore di oggi. È l'indicatore primario: l'opera conviene se è maggiore di zero.">i</span>
         <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9.3a3.5 3.5 0 1 0 0 5.4M8 11h5M8 13h4"/></svg></span><span class="kpi-label" style="text-transform:none;letter-spacing:0">Valore Attuale Netto Economico</span></div>
           <span class="info-i" data-tip="Valore Attuale Netto Economico — somma, anno per anno, della differenza tra benefici e costi economici, riportata a valore di oggi. È l'indicatore primario: l'opera conviene se è maggiore di zero.">i</span></div>
         <div class="kpi-num">${sg(k.vane)}${n1(k.vane)}<span class="kpi-unit"> M€</span></div>
         <div class="kpi-desc">Beneficio netto per la collettività · <span class="ok">&gt; 0, conveniente</span></div>
       </div>
       <div class="kpi">
+        <span class="kpi-info" title="TIR economico = Tasso Interno di Rendimento Economico: il rendimento sociale dell'opera, cioè il tasso a cui benefici e costi attualizzati si pareggiano. Conviene se supera il tasso di sconto sociale (3%).">i</span>
         <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="7.5" cy="7.5" r="2"/><circle cx="16.5" cy="16.5" r="2"/></svg></span><span class="kpi-label">TIR economico</span></div>
           <span class="info-i" data-tip="Tasso Interno di Rendimento Economico — il rendimento sociale dell'opera, cioè il tasso a cui benefici e costi attualizzati si pareggiano. Conviene se supera il tasso di sconto sociale (3%).">i</span></div>
         <div class="kpi-num">${n1(k.tire)}<span class="kpi-unit"> %</span></div>
         <div class="kpi-desc">Rendimento sociale dell'opera · <span class="ok">&gt; ${n1(k.tasso)}%, conveniente</span></div>
       </div>
       <div class="kpi">
+        <span class="kpi-info" title="Rapporto B/C = Rapporto Benefici/Costi: quanti euro di beneficio economico genera ogni euro di costo. Utile per confrontare alternative progettuali. Conviene se B/C > 1.">i</span>
         <div class="kpi-top"><div class="kpi-id"><span class="kpi-ic"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 21h14M6 7h12"/><path d="M6 7 3.5 12h5L6 7zM18 7l-2.5 5h5L18 7z"/></svg></span><span class="kpi-label">Rapporto B/C</span></div>
           <span class="info-i" data-tip="Rapporto Benefici/Costi — quanti euro di beneficio economico genera ogni euro di costo. Utile per confrontare alternative progettuali. Conviene se B/C > 1.">i</span></div>
         <div class="kpi-num">${n2(k.bcr)}</div>
@@ -316,7 +325,7 @@ function buildMarkup(DATA, project) {
       <div class="card-sub">Valori attuali in M€ · orizzonte ${k.orizzonte} anni · tasso ${n1(k.tasso)}%.</div>
       <div class="chart-box"><svg id="svg-wf" class="chart" viewBox="0 0 760 340"></svg></div>
       <div class="read"><h5>Come si legge</h5>
-        <p>La prima barra <span style="color:var(--lime-700);font-weight:800">lime</span> è il totale dei <b>benefici economici</b> attualizzati. La barra <span style="font-weight:800;color:#7a7a72">grigia</span> sono i <b>costi economici</b> (CAPEX e OPEX): è "sospesa", parte dall'alto dei benefici e scende. La barra <span style="color:var(--red-600);font-weight:800">rossa</span> sono le <b>esternalità negative</b> monetizzate, che scendono ancora.</p>
+        <p>La prima barra <span style="color:var(--lime-700);font-weight:800">lime</span> è il totale dei <b>benefici economici</b> attualizzati. La barra <span style="font-weight:800;color:#d62828">rossa chiara</span> sono i <b>costi economici</b> (CAPEX e OPEX): è "sospesa", parte dall'alto dei benefici e scende. La barra <span style="color:#7a0010;font-weight:800">rossa scura</span> sono le <b>esternalità negative</b> monetizzate, che scendono ancora.</p>
         <p>Ciò che resta sotto è la barra <span style="color:var(--blu-700);font-weight:800">viola</span>, il <b>Valore Attuale Netto Economico</b>. Sopra lo zero significa guadagno netto di benessere per la collettività.</p></div>
       <div class="takeaway"><b>${n1(w.benefici)} M€</b> di benefici contro <b>${n1(w.costi)} M€</b> di costi${w.esternalitaNeg > 0 ? ` e <b>${n1(w.esternalitaNeg)} M€</b> di esternalità negative` : ""}: saldo a favore della collettività <b>${sg(w.vane)}${n1(w.vane)} M€</b>.</div>
     </div>
@@ -340,11 +349,19 @@ function buildMarkup(DATA, project) {
     </div>
 
     <div class="card">
-      <div class="card-h">Composizione dei benefici <span class="info-i" data-tip="Quota di ciascuna esternalità sul totale dei benefici economici attualizzati.">i</span></div>
-      <div class="card-sub">Da cosa sono fatti i ${n1(w.benefici)} M€ di benefici (valori attuali).</div>
-      <div class="chart-box" style="display:flex;gap:48px;align-items:center;justify-content:center;flex-wrap:wrap">
-        <svg id="svg-dn" class="chart" viewBox="0 0 300 300" style="max-width:320px;flex:0 0 320px;margin:0"></svg>
-        <div class="legend" id="dn-legend" style="flex:0 1 380px;max-width:380px;flex-direction:column;align-items:stretch;gap:12px;margin-top:0"></div>
+      <div class="card-h">Composizione di benefici e costi <span class="info-i" data-tip="Quota di ciascuna voce sul totale dei benefici economici attualizzati (sinistra) e sul totale dei costi e delle esternalità negative (destra).">i</span></div>
+      <div class="card-sub">Da cosa sono fatti i ${n1(w.benefici)} M€ di benefici e i ${n1((w.costi || 0) + (w.esternalitaNeg || 0))} M€ di costi (valori attuali).</div>
+      <div class="chart-box dn-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:14px;min-width:0">
+          <div style="font-size:13px;font-weight:800;color:var(--text-main)">Benefici</div>
+          <svg id="svg-dn" class="chart" viewBox="0 0 300 300" style="max-width:300px;margin:0"></svg>
+          <div class="legend" id="dn-legend" style="width:100%;flex-direction:column;align-items:stretch;gap:12px;margin-top:0"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:14px;min-width:0">
+          <div style="font-size:13px;font-weight:800;color:var(--text-main)">Costi</div>
+          <svg id="svg-dn-cost" class="chart" viewBox="0 0 300 300" style="max-width:300px;margin:0"></svg>
+          <div class="legend" id="dn-cost-legend" style="width:100%;flex-direction:column;align-items:stretch;gap:12px;margin-top:0"></div>
+        </div>
       </div>
       <div class="read"><h5>Come si legge</h5>
         <p>Ogni spicchio è una <b>fonte di beneficio</b> e la sua ampiezza è la quota sul totale. La voce maggiore è <b>${esc(DATA.donut?.[0]?.label ?? "")}</b> (${DATA.donut?.[0]?.pct ?? 0}%); le altre categorie completano il quadro (dettaglio nella legenda).</p>
@@ -381,26 +398,6 @@ function buildMarkup(DATA, project) {
       </div>
     </div>
 
-    <div class="card-row">
-      <div class="card">
-        <div class="card-h">Elasticità del Valore Attuale Netto Economico ai parametri <span class="info-i" data-tip="Per ogni parametro, di quanto cambia (in percentuale) il Valore Attuale Netto Economico al variare dell'1% del parametro. Più il profilo è esteso, più il risultato è sensibile.">i</span></div>
-        <div class="card-sub">Variazione % del Valore Attuale Netto Economico per +1% del parametro.</div>
-        <div class="chart-box" style="display:flex;justify-content:center"><svg id="svg-elastic" class="chart" viewBox="0 0 460 380" style="max-width:420px"></svg></div>
-        <div class="read"><h5>Come si legge</h5>
-          <p>Ogni raggio è un parametro e la distanza dal centro è l'<b>elasticità</b> |ε| del Valore Attuale Netto Economico. Un profilo "appuntito" verso un asse segnala che quel parametro <b>domina</b> il risultato.</p>
-          <p>Qui i <b>costi di investimento</b> e i <b>parametri delle esternalità</b> sono i raggi più estesi.</p></div>
-      </div>
-
-      <div class="card">
-        <div class="card-h">Incertezza dei parametri — contributo alla varianza <span class="info-i" data-tip="Quota normalizzata (0–100%) con cui ciascun parametro contribuisce alla varianza del Valore Attuale Netto Economico nelle simulazioni Montecarlo.">i</span></div>
-        <div class="card-sub">Contributo normalizzato [0–100%] di ciascun parametro alla varianza complessiva.</div>
-        <div class="chart-box" style="display:flex;justify-content:center"><svg id="svg-variance" class="chart" viewBox="0 0 460 380" style="max-width:420px"></svg></div>
-        <div class="read"><h5>Come si legge</h5>
-          <p>Mentre l'elasticità misura la sensitività <b>marginale</b>, questo radar mostra <b>quanto</b> ciascun parametro pesa sull'incertezza complessiva, tenendo conto di quanto può realmente variare.</p>
-          <p>I parametri ad alta elasticità e ampia variabilità — qui i <b>costi di investimento</b> — sono da presidiare con stime più accurate.</p></div>
-      </div>
-    </div>
-
     <div class="card">
       <div class="card-h">Distribuzione probabilistica del Valore Attuale Netto Economico <span class="info-i" data-tip="Simulazione Montecarlo: distribuzione di frequenza del Valore Attuale Netto Economico assegnando distribuzioni di probabilità alle variabili critiche.">i</span></div>
       <div class="card-sub">${SIMULATION_COUNT_LABEL} simulazioni · frequenza degli esiti del Valore Attuale Netto Economico (M€).</div>
@@ -425,6 +422,26 @@ function buildMarkup(DATA, project) {
       <div class="read"><h5>Come si legge</h5>
         <p>Ogni cella incrocia un <b>moltiplicatore di costo</b> (riga) con un <b>moltiplicatore di beneficio</b> (colonna): mostra quanto vale il Valore Attuale Netto Economico in quello scenario. Le celle <span style="color:#1b5e20;font-weight:800">verdi</span> restano convenienti, quelle <span style="color:var(--red-600);font-weight:800">rosse</span> no.</p>
         <p>La diagonale di celle chiare individua la <b>soglia di pareggio</b>: finché costi e benefici non si discostano troppo dalla stima base, l'opera resta conveniente.</p></div>
+    </div>
+
+    <div class="card-row">
+      <div class="card">
+        <div class="card-h">Elasticità del Valore Attuale Netto Economico ai parametri <span class="info-i" data-tip="Per ogni parametro, di quanto cambia (in percentuale) il Valore Attuale Netto Economico al variare dell'1% del parametro. Più il profilo è esteso, più il risultato è sensibile.">i</span></div>
+        <div class="card-sub">Variazione % del Valore Attuale Netto Economico per +1% del parametro.</div>
+        <div class="chart-box" style="display:flex;justify-content:center"><svg id="svg-elastic" class="chart" viewBox="0 0 460 380" style="max-width:420px"></svg></div>
+        <div class="read"><h5>Come si legge</h5>
+          <p>Ogni raggio è un parametro e la distanza dal centro è l'<b>elasticità</b> |ε| del Valore Attuale Netto Economico. Un profilo "appuntito" verso un asse segnala che quel parametro <b>domina</b> il risultato.</p>
+          <p>Qui i <b>costi di investimento</b> e i <b>parametri delle esternalità</b> sono i raggi più estesi.</p></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">Incertezza dei parametri — contributo alla varianza <span class="info-i" data-tip="Quota normalizzata (0–100%) con cui ciascun parametro contribuisce alla varianza del Valore Attuale Netto Economico nelle simulazioni Montecarlo.">i</span></div>
+        <div class="card-sub">Contributo normalizzato [0–100%] di ciascun parametro alla varianza complessiva.</div>
+        <div class="chart-box" style="display:flex;justify-content:center"><svg id="svg-variance" class="chart" viewBox="0 0 460 380" style="max-width:420px"></svg></div>
+        <div class="read"><h5>Come si legge</h5>
+          <p>Mentre l'elasticità misura la sensitività <b>marginale</b>, questo radar mostra <b>quanto</b> ciascun parametro pesa sull'incertezza complessiva, tenendo conto di quanto può realmente variare.</p>
+          <p>I parametri ad alta elasticità e ampia variabilità — qui i <b>costi di investimento</b> — sono da presidiare con stime più accurate.</p></div>
+      </div>
     </div>
   </div>
 
@@ -715,15 +732,25 @@ export function EcbaResults({ project, onBack }) {
       const y = (v) => padT + plotH - (v / maxV) * plotH;
       const bars = [
         { label: "Benefici", axis: ["Benefici"], base: 0, top: benefici, fill: "var(--lime)", lab: benefici.toFixed(1).replace(".", ","), pos: "top", tip: benefici },
-        { label: "Costi economici", axis: ["Costi", "economici"], base: lvlAfterCosti, top: benefici, fill: "var(--grey-mid)", lab: "−" + costi.toFixed(1).replace(".", ","), pos: "mid", tip: -costi },
-        { label: "Esternalità negative", axis: ["Esternalità", "negative"], base: vane, top: lvlAfterCosti, fill: "var(--red-600)", lab: "−" + esternalitaNeg.toFixed(1).replace(".", ","), pos: "mid", tip: -esternalitaNeg },
+        { label: "Costi economici", axis: ["Costi", "economici"], base: lvlAfterCosti, top: benefici, fill: "url(#wf-grad-costi)", lab: "−" + costi.toFixed(1).replace(".", ","), pos: "mid", tip: -costi },
+        { label: "Esternalità negative", axis: ["Esternalità", "negative"], base: vane, top: lvlAfterCosti, fill: "url(#wf-grad-est)", lab: "−" + esternalitaNeg.toFixed(1).replace(".", ","), pos: "mid", tip: -esternalitaNeg },
         { label: "Valore Attuale Netto Economico", axis: ["Valore Attuale", "Netto Economico"], base: 0, top: vane, fill: "var(--blu-700)", lab: fmt(vane), pos: "top", tip: vane },
       ];
       const n = bars.length,
         gap = 52,
         bw = (plotW - gap * (n - 1)) / n,
         xOf = (i) => padL + i * (bw + gap);
-      let o = "";
+      // Gradienti rossi distinti: costi economici (rosso più brillante) vs
+      // esternalità negative (rosso più profondo/scuro), per distinguerle pur
+      // essendo entrambe "rosse".
+      let o = `<defs>
+        <linearGradient id="wf-grad-costi" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#f15a5a"/><stop offset="100%" stop-color="#d62828"/>
+        </linearGradient>
+        <linearGradient id="wf-grad-est" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#9e0b1e" /><stop offset="100%" stop-color="#6f0010"/>
+        </linearGradient>
+      </defs>`;
       for (let g = 10; g <= maxV; g += 10) {
         o += `<line class="ax-line" x1="${padL}" y1="${y(g)}" x2="${W - padR}" y2="${y(g)}"/><text class="ax-txt" x="${padL - 6}" y="${y(g) + 3}" text-anchor="end">${g}</text>`;
       }
@@ -738,8 +765,13 @@ export function EcbaResults({ project, onBack }) {
           h = Math.max(2, yB - yT);
         o += `<rect x="${x}" y="${yB}" width="${bw}" height="0" fill="${b.fill}"><animate attributeName="height" from="0" to="${h}" dur=".65s" begin="${i * 0.18}s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1"/><animate attributeName="y" from="${yB}" to="${yT}" dur=".65s" begin="${i * 0.18}s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1"/></rect>`;
         o += `<rect class="chart-hit" x="${x}" y="${yT}" width="${bw}" height="${h}" fill="transparent" data-tip-label="${b.label}" data-tip-value="${fmt1(b.tip)} M€" data-tip-sub="Valore attuale sull'orizzonte di analisi"></rect>`;
-        const ly = b.pos === "top" ? yT - 9 : (yT + yB) / 2 + 5;
-        o += `<text class="bar-lbl" x="${x + bw / 2}" y="${ly}" text-anchor="middle" style="font-size:14px" opacity="0">${b.lab} M€<animate attributeName="opacity" from="0" to="1" dur=".3s" begin="${i * 0.18 + 0.55}s" fill="freeze"/></text>`;
+        // Etichetta valore SEMPRE visibile (nessuna animazione di comparsa).
+        // Barre positive / VANE: numero sopra la barra. Barre costi/esternalità
+        // ("mid"): numero appena sopra il bordo superiore della barra, su sfondo
+        // chiaro, così resta leggibile pur essendo la barra colorata.
+        const ly = b.pos === "top" ? yT - 9 : yT - 8;
+        const labFill = b.pos === "top" ? "var(--text-main)" : "var(--red-600)";
+        o += `<text class="bar-lbl" x="${x + bw / 2}" y="${ly}" text-anchor="middle" style="font-size:14px;fill:${labFill}" opacity="1">${b.lab} M€</text>`;
         const ax = b.axis;
         const baseY = H - padB + 22;
         if (ax.length === 1) {
@@ -919,18 +951,21 @@ export function EcbaResults({ project, onBack }) {
       );
     }
 
-    // ===== DONUT =====
-    function drawDonut() {
-      const svg = q("#svg-dn"),
-        cx = 150,
+    // ===== DONUT (generalizzato: benefici + costi) =====
+    // Disegna un donut a partire da una lista di spicchi `{label,pct,color}`,
+    // un totale in M€ (mostrato al centro) e un titolo. Riusa lo stesso stile
+    // visivo (raggi, animazione, tooltip) del donut originale dei benefici.
+    function drawDonutInto(svgSel, legendSel, slices, total, centerTitle, tipNoun) {
+      const svg = q(svgSel);
+      if (!svg) return;
+      const cx = 150,
         cy = 150,
         rO = 120,
         rI = 72;
-      const d = DATA.donut;
       let ang = -Math.PI / 2,
         o = "";
       const pt = (r, a) => [cx + r * Math.cos(a), cy + r * Math.sin(a)];
-      d.forEach((s, i) => {
+      slices.forEach((s, i) => {
         const a0 = ang,
           a1 = ang + (s.pct / 100) * Math.PI * 2;
         ang = a1;
@@ -939,19 +974,48 @@ export function EcbaResults({ project, onBack }) {
           [x1, y1] = pt(rO, a1),
           [x2, y2] = pt(rI, a1),
           [x3, y3] = pt(rI, a0);
-        const value = (53.1 * s.pct) / 100;
-        o += `<path class="chart-hit" d="M${x0} ${y0} A${rO} ${rO} 0 ${lg} 1 ${x1} ${y1} L${x2} ${y2} A${rI} ${rI} 0 ${lg} 0 ${x3} ${y3} Z" fill="${s.color}" opacity="0" data-tip-label="${s.label}" data-tip-value="${fmt1(value)} M€" data-tip-sub="${s.pct}% dei benefici totali"><animate attributeName="opacity" from="0" to="1" dur=".4s" begin="${i * 0.12}s" fill="freeze"/></path>`;
+        const value = (total * s.pct) / 100;
+        o += `<path class="chart-hit" d="M${x0} ${y0} A${rO} ${rO} 0 ${lg} 1 ${x1} ${y1} L${x2} ${y2} A${rI} ${rI} 0 ${lg} 0 ${x3} ${y3} Z" fill="${s.color}" opacity="0" data-tip-label="${s.label}" data-tip-value="${fmt1(value)} M€" data-tip-sub="${s.pct}% ${tipNoun}"><animate attributeName="opacity" from="0" to="1" dur=".4s" begin="${i * 0.12}s" fill="freeze"/></path>`;
       });
-      o += `<text x="${cx}" y="${cy - 6}" text-anchor="middle" style="font-size:13px;fill:var(--text-muted);font-weight:600">Benefici</text>`;
-      o += `<text x="${cx}" y="${cy + 18}" text-anchor="middle" style="font-size:24px;font-weight:800;fill:var(--text-main)">53,1 M€</text>`;
+      o += `<text x="${cx}" y="${cy - 6}" text-anchor="middle" style="font-size:13px;fill:var(--text-muted);font-weight:600">${centerTitle}</text>`;
+      o += `<text x="${cx}" y="${cy + 18}" text-anchor="middle" style="font-size:24px;font-weight:800;fill:var(--text-main)">${fmt1(total)} M€</text>`;
       svg.innerHTML = o;
       bindChartTips(svg);
-      q("#dn-legend").innerHTML = d
-        .map(
-          (s) =>
-            `<div class="lg" style="justify-content:space-between"><span style="display:flex;align-items:center;gap:9px"><span class="sw" style="background:${s.color}"></span>${s.label}</span><b>${s.pct}%</b></div>`,
-        )
-        .join("");
+      const lg = q(legendSel);
+      if (lg)
+        lg.innerHTML = slices
+          .map(
+            (s) =>
+              `<div class="lg" style="justify-content:space-between"><span style="display:flex;align-items:center;gap:9px"><span class="sw" style="background:${s.color}"></span>${s.label}</span><b>${s.pct}%</b></div>`,
+          )
+          .join("");
+    }
+
+    function drawDonut() {
+      // Donut dei benefici (totale = somma dei valori attuali dei benefici).
+      const total = DATA.waterfall?.benefici ?? 53.1;
+      drawDonutInto("#svg-dn", "#dn-legend", DATA.donut, total, "Benefici", "dei benefici totali");
+      drawCostDonut();
+    }
+
+    // Donut dei costi: composto da "Costi economici" ed "Esternalità negative",
+    // ricavati dai totali del waterfall (non esiste un array di categorie di
+    // costo pronto in DATA). Toni rossi coerenti con il waterfall.
+    function drawCostDonut() {
+      const w = DATA.waterfall ?? {};
+      const costi = Number(w.costi ?? 0);
+      const est = Number(w.esternalitaNeg ?? 0);
+      const total = costi + est;
+      if (total <= 0) {
+        const svg = q("#svg-dn-cost");
+        if (svg) svg.innerHTML = "";
+        return;
+      }
+      const slices = [
+        { label: "Costi economici", color: "#d62828", pct: Math.round((costi / total) * 100) },
+        { label: "Esternalità negative", color: "#7a0010", pct: Math.round((est / total) * 100) },
+      ];
+      drawDonutInto("#svg-dn-cost", "#dn-cost-legend", slices, total, "Costi", "dei costi totali");
     }
 
     // ===== TORNADO =====

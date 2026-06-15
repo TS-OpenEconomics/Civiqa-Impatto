@@ -524,10 +524,10 @@ function TabSintesi() {
       <section className="space-y-4">
         <SintesiSectionHead title="Benefici Macroeconomici generati" subtitle="I principali impatti attivati sull'economia italiana" info="sintesi.kpis" />
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <SintesiKPI icon="pil"        label="PIL"                    value={fmtM(natGdp)}         caption="valore aggiunto generato in Italia" info="kpi.pil" />
-          <SintesiKPI icon="produzione" label="Valore della Produzione" value={fmtM(natProd)}        caption="di volume d'affari in Italia" info="kpi.produzione" />
-          <SintesiKPI icon="occupazione" label="Occupazione"            value={fmtIT(natEmp, 0)} valueUnit="occupati" caption="posti di lavoro attivati" info="kpi.occupazione" />
-          <SintesiKPI icon="gettito"    label="Gettito fiscale"         value={fmtM(natFiscal)}      caption="che entra nelle casse dello Stato" info="kpi.gettito" />
+          <SintesiKPI icon="pil"        label="PIL"               value={fmtM(natGdp)}    caption="valore aggiunto generato in Italia" info="kpi.pil" />
+          <SintesiKPI icon="produzione" label="Valore produzione" value={fmtM(natProd)}   caption="di volume d'affari in Italia" info="kpi.produzione" />
+          <SintesiKPI icon="occupazione" label="Occupazione"      value={fmtIT(natEmp, 0)} valueUnit="ETP" caption="occupati equivalenti a tempo pieno (ETP)" info="kpi.occupazione" />
+          <SintesiKPI icon="gettito"    label="Gettito fiscale"   value={fmtM(natFiscal)} caption="che entra nelle casse dello Stato" info="kpi.gettito" />
         </div>
       </section>
 
@@ -600,9 +600,12 @@ function SintesiSectionHead({ title, subtitle, info }) {
 }
 
 function SintesiKPI({ icon, label, value, valueUnit, caption, info }) {
+  // flex column + h-full: con la griglia che pareggia le altezze, il valore parte
+  // sempre alla stessa quota (header con min-height) e la caption è ancorata in
+  // basso (mt-auto) — così tutte le card "finiscono sullo stesso piano".
   return (
-    <div className="border border-ink-100 bg-white p-5">
-      <div className="mb-3 flex items-start gap-3">
+    <div className="flex h-full flex-col border border-ink-100 bg-white p-5">
+      <div className="mb-3 flex min-h-[40px] items-start gap-3">
         <ImpactIcon
           type={icon}
           label={label}
@@ -616,7 +619,7 @@ function SintesiKPI({ icon, label, value, valueUnit, caption, info }) {
         {value}
         {valueUnit && <span className="ml-1 text-[16px] font-semibold text-ink-400">{valueUnit}</span>}
       </p>
-      <p className="mt-2 text-[12px] leading-snug text-ink-500">{caption}</p>
+      <p className="mt-auto pt-2 text-[12px] leading-snug text-ink-500">{caption}</p>
     </div>
   );
 }
@@ -656,9 +659,9 @@ function SintesiTerritoryCol({ color, name, pct, gdp, emp }) {
 function SintesiMultiplierGrid({ regGdpMult, natGdpMult, regProdMult, natProdMult, regEmpInt, natEmpInt }) {
   // Placeholder "xx" — la media di settore viene popolata quando i dati di benchmark saranno disponibili.
   const rows = [
-    { icon: "pil",         label: "PIL",                      regVal: `${fmtIT(regGdpMult, 2)}×`,        natVal: `${fmtIT(natGdpMult, 2)}×`,        avgVal: "xx" },
-    { icon: "produzione",  label: "Valore della Produzione",   regVal: `${fmtIT(regProdMult, 2)}×`,       natVal: `${fmtIT(natProdMult, 2)}×`,       avgVal: "xx" },
-    { icon: "occupazione", label: "Occupazione per M€ speso", regVal: `${fmtIT(regEmpInt, 1)} occupati`, natVal: `${fmtIT(natEmpInt, 1)} occupati`, avgVal: "xx" },
+    { icon: "pil",         label: "PIL",               formula: "PIL / spesa",            regVal: `${fmtIT(regGdpMult, 2)}×`,        natVal: `${fmtIT(natGdpMult, 2)}×`,        avgVal: "xx" },
+    { icon: "produzione",  label: "Valore produzione", formula: "Prod / spesa",           regVal: `${fmtIT(regProdMult, 2)}×`,       natVal: `${fmtIT(natProdMult, 2)}×`,       avgVal: "xx" },
+    { icon: "occupazione", label: "Occupazione",       formula: "occupati / mln € speso", regVal: `${fmtIT(regEmpInt, 1)} occupati`, natVal: `${fmtIT(natEmpInt, 1)} occupati`, avgVal: "xx" },
   ];
 
   return (
@@ -676,7 +679,10 @@ function SintesiMultiplierGrid({ regGdpMult, natGdpMult, regProdMult, natProdMul
         >
           <div className="flex items-center gap-3">
             <ImpactIcon type={row.icon} label={row.label} className="h-6 w-6" wrapperClassName="shrink-0 text-brand-violet" />
-            <p className="text-[13px] font-semibold text-ink-700">{row.label}</p>
+            <div className="min-w-0">
+              <p className="text-[13px] font-semibold text-ink-700">{row.label}</p>
+              <p className="font-mono text-[11px] text-ink-400 underline decoration-ink-300 underline-offset-2">({row.formula})</p>
+            </div>
           </div>
           <p className="text-center text-[20px] font-bold text-brand-violet">{row.regVal}</p>
           <p className="text-center text-[20px] font-bold text-ink-700">{row.natVal}</p>
@@ -1450,7 +1456,7 @@ function TabSettori({ updateSearch, searchParams, onOpenExplore }) {
           <GeoTabPills
             options={[
               { id: "territorio", label: "Per territorio" },
-              { id: "componenti", label: "Per componente" },
+              { id: "componenti", label: "Per propagazione" },
             ]}
             value={rankView}
             onChange={setRankView}
@@ -1576,6 +1582,9 @@ function SectorRankingCard({ sectors, dim, isMoney, rankView = "territorio" }) {
 
   return (
     <div className="rounded-xl border border-ink-100 bg-white p-6">
+      {rankView !== "territorio" && (
+        <div className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-400">Propagazione</div>
+      )}
       <div className="mb-5 flex flex-wrap gap-4">
         {legendItems.map((item) => (
           <div key={item.label} className="flex items-center gap-1.5 text-[12px] text-ink-500">
@@ -1596,18 +1605,31 @@ function SectorRankingCard({ sectors, dim, isMoney, rankView = "territorio" }) {
           const compact = idx === sectors.length - 1 && sectors.length > 7;
 
           let seg1Pct, seg2Pct, seg3Pct, seg1Color, seg2Color, seg3Color;
+          let seg1Label, seg2Label, seg3Label;
           if (rankView === "territorio") {
             seg1Pct = total > 0 ? (origin / total) * 100 : 0;
             seg2Pct = total > 0 ? (region / total) * 100 : 0;
             seg3Pct = total > 0 ? (extra / total) * 100 : 0;
             seg1Color = "#534AB7"; seg2Color = "#AFA9EC"; seg3Color = "#A8A29E";
+            seg1Label = `${originProvince} (provincia origine)`;
+            seg2Label = `Resto ${regionName}`;
+            seg3Label = "Resto d'Italia";
           } else {
             const mix = getSectorComponentMix(cleanText(s.ateco_name), dim);
             seg1Pct = mix.direct * 100;
             seg2Pct = mix.indirect * 100;
             seg3Pct = mix.induced * 100;
             seg1Color = "#534AB7"; seg2Color = "#AFA9EC"; seg3Color = "#CECBF6";
+            seg1Label = "Diretto";
+            seg2Label = "Indiretto";
+            seg3Label = "Indotto";
           }
+
+          const seg1Val = total * (seg1Pct / 100);
+          const seg2Val = total * (seg2Pct / 100);
+          const seg3Val = total * (seg3Pct / 100);
+          const segTitle = (label, val, pct) =>
+            `${label}: ${fmt(val)} (${Math.round(pct)}%)`;
 
           return (
             <div
@@ -1619,10 +1641,17 @@ function SectorRankingCard({ sectors, dim, isMoney, rankView = "territorio" }) {
                 {cleanText(s.ateco_name)}
               </span>
               <div className="relative overflow-hidden rounded-sm" style={{ height: compact ? 8 : 18, background: "#F5F5F4" }}>
+                {[25, 50, 75, 100].map((g) => (
+                  <div
+                    key={g}
+                    className="pointer-events-none absolute top-0 h-full"
+                    style={{ left: `${g}%`, width: 0, borderLeft: "1px solid #E7E7E7" }}
+                  />
+                ))}
                 <div className="absolute left-0 top-0 flex h-full" style={{ width: `${widthPct}%` }}>
-                  <div style={{ width: `${seg1Pct}%`, background: seg1Color }} />
-                  <div style={{ width: `${seg2Pct}%`, background: seg2Color }} />
-                  <div style={{ width: `${seg3Pct}%`, background: seg3Color }} />
+                  <div style={{ width: `${seg1Pct}%`, background: seg1Color }} title={segTitle(seg1Label, seg1Val, seg1Pct)} />
+                  <div style={{ width: `${seg2Pct}%`, background: seg2Color }} title={segTitle(seg2Label, seg2Val, seg2Pct)} />
+                  <div style={{ width: `${seg3Pct}%`, background: seg3Color }} title={segTitle(seg3Label, seg3Val, seg3Pct)} />
                 </div>
               </div>
               <div className="text-right text-[13px] font-medium text-ink-900">
@@ -1710,12 +1739,12 @@ function SectorHeatmap({ dim, isMoney, excludeOrigin = false, onCellClick }) {
                 <button
                   key={`${sector.ateco_code}-${territory.code}`}
                   onClick={() => onCellClick?.({ tab: "esplora", dim, asse: "geografica", livello: "regionale", filter: "tutti", focus: territory.code })}
-                  className={`group relative border-r border-ink-100 px-1 py-4 last:border-r-0 transition-opacity hover:opacity-80 ${cellTextColor(value)}`}
-                  style={cellStyle(value)}
+                  className={`group relative px-1 py-4 transition-opacity hover:opacity-80 ${cellTextColor(value)}`}
+                  style={{ ...cellStyle(value), border: "1px solid #D4D4D8" }}
                   title={`${cleanText(sector.ateco_name)} × ${cleanText(territory.nome)}: ${fmt(value)}`}
                 >
                   {value > 0 && (
-                    <span className="block text-center text-[10px] font-mono font-semibold opacity-0 transition-opacity group-hover:opacity-100">
+                    <span className="block text-center text-[10px] font-mono font-semibold">
                       {isMoney ? fmtIT(value / 1_000_000, 1) + "M" : fmtIT(value, 0)}
                     </span>
                   )}
@@ -1786,6 +1815,16 @@ function SectorSankeyChart({ dim }) {
       });
     });
 
+    // Totale dei flussi per il calcolo delle percentuali e dei totali per nodo
+    const flowsTotal = values.reduce((a, b) => a + b, 0) || 1;
+    // Valore link in M€ + % sul totale dei flussi (customdata per hover)
+    const linkCustom = values.map((v) => [v / 1_000_000, (v / flowsTotal) * 100]);
+    // Totale per nodo (somma dei flussi entranti/uscenti) in M€
+    const nodeTotals = nodeLabels.map(() => 0);
+    sources.forEach((s, k) => { nodeTotals[s] += values[k]; });
+    targets.forEach((t, k) => { nodeTotals[t] += values[k]; });
+    const nodeCustom = nodeTotals.map((v) => [v / 1_000_000, (v / flowsTotal) * 100]);
+
     return [
       {
         type: "sankey",
@@ -1797,14 +1836,16 @@ function SectorSankeyChart({ dim }) {
           line: { color: "transparent", width: 0 },
           label: nodeLabels,
           color: nodeColors,
-          hovertemplate: "%{label}<extra></extra>",
+          customdata: nodeCustom,
+          hovertemplate: "<b>%{label}</b><br>%{customdata[0]:,.1f} M€ · %{customdata[1]:.0f}% dei flussi<extra></extra>",
         },
         link: {
           source: sources,
           target: targets,
           value: values,
           color: linkColors,
-          hovertemplate: "%{source.label} → %{target.label}<extra></extra>",
+          customdata: linkCustom,
+          hovertemplate: "%{source.label} → %{target.label}<br><b>%{customdata[0]:,.1f} M€</b> · %{customdata[1]:.0f}% dei flussi<extra></extra>",
         },
       },
     ];

@@ -7,7 +7,8 @@ import {
   PolarRadiusAxis,
 } from 'recharts'
 import type { AlternativaId, ScoreComposito } from '../../../../types/docfap'
-import { getAltFill } from '../resultUtils'
+import { getRankFill } from '../resultUtils'
+import { buildRankIndexMap } from '../../../docfap/rankColors'
 
 interface Props {
   ranking: ScoreComposito[]
@@ -22,7 +23,7 @@ const DIMENSIONS = [
   { key: 'sensitivityScore' as keyof ScoreComposito, label: 'Rischio' },
 ]
 
-export function DimensionChart({ ranking, getLabel, recommendedId }: Props) {
+export function DimensionChart({ ranking, getLabel, recommendedId: _recommendedId }: Props) {
   const [mode, setMode] = useState<'barre' | 'radar'>('barre')
 
   const data = DIMENSIONS.map(dim => {
@@ -33,11 +34,9 @@ export function DimensionChart({ ranking, getLabel, recommendedId }: Props) {
     return point
   })
 
-  function fillIndex(item: ScoreComposito, i: number): number {
-    if (item.alternativaId === recommendedId) return 0
-    const recIdx = ranking.findIndex(r => r.alternativaId === recommendedId)
-    return recIdx === -1 ? i + 1 : i < recIdx ? i + 1 : i
-  }
+  // Colore per piazzamento: 1ª verde, 2ª arancione (con 3+ opzioni), resto grigio.
+  const rankMap = buildRankIndexMap(ranking)
+  const fill = (item: ScoreComposito) => getRankFill(rankMap[item.alternativaId] ?? 0, ranking.length)
 
   return (
     <div>
@@ -66,12 +65,12 @@ export function DimensionChart({ ranking, getLabel, recommendedId }: Props) {
             <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#6e6e6e' }} axisLine={false} tickLine={false} />
             <Tooltip contentStyle={{ fontSize: 12, border: '1px solid #e7e7e7', borderRadius: 2 }} />
             <Legend formatter={(value: string) => getLabel(value as AlternativaId)} wrapperStyle={{ fontSize: 11 }} />
-            {ranking.map((item, i) => (
+            {ranking.map((item) => (
               <Bar
                 key={item.alternativaId}
                 dataKey={item.alternativaId}
                 name={item.alternativaId}
-                fill={getAltFill(fillIndex(item, i))}
+                fill={fill(item)}
                 radius={[2, 2, 0, 0]}
                 maxBarSize={52}
               />
@@ -82,13 +81,13 @@ export function DimensionChart({ ranking, getLabel, recommendedId }: Props) {
             <PolarGrid stroke="#e7e7e7" />
             <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 11, fill: '#6e6e6e' }} />
             <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9, fill: '#bbb' }} />
-            {ranking.map((item, i) => (
+            {ranking.map((item) => (
               <Radar
                 key={item.alternativaId}
                 name={item.alternativaId}
                 dataKey={item.alternativaId}
-                stroke={getAltFill(fillIndex(item, i))}
-                fill={getAltFill(fillIndex(item, i))}
+                stroke={fill(item)}
+                fill={fill(item)}
                 fillOpacity={0.15}
               />
             ))}

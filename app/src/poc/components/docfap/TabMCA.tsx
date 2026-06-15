@@ -15,8 +15,6 @@ import {
   detailHeaderLabelWrapStyle,
   detailHeaderLabelStyle,
   detailAltHeaderContentStyle,
-  detailAltBadgeStyle,
-  detailRecommendedAltBadgeStyle,
   detailRecommendedBadgeStyle,
   detailRowHeaderStyle,
   detailBodyCellStyle,
@@ -26,7 +24,9 @@ import {
   detailEmptyStyle,
   detailTableWrapStyle,
   formatScore,
+  getAltBadgeStyle,
 } from './tableHelpers'
+import { buildRankIndexMap } from './rankColors'
 import { tabStackStyle } from './chartHelpers'
 import { McaProfileRadar } from './charts/McaProfileRadar'
 
@@ -42,6 +42,7 @@ export function TabMCA() {
   const state = useSyncExternalStore(wizardStore.subscribe, wizardStore.getState, wizardStore.getState)
   const scores = getDefinedScores(state.scoreFinale, state.alternativeDefinite)
   const recommendedId = getRecommendedAlternativeId(scores)
+  const rankMap = buildRankIndexMap(scores)
 
   const [questions, setQuestions] = useState<McaQuestion[]>([])
   const [loaded, setLoaded] = useState(false)
@@ -87,7 +88,7 @@ export function TabMCA() {
                   <th key={score.alternativaId} style={{ ...headerCellStyle, ...(isRecommended ? recommendedHeaderStyle : null) }}>
                     <div style={headerLabelWrapStyle}>
                       <div style={detailAltHeaderContentStyle}>
-                        <span style={isRecommended ? detailRecommendedAltBadgeStyle : detailAltBadgeStyle}>{score.alternativaId}</span>
+                        <span style={getAltBadgeStyle(rankMap[score.alternativaId] ?? 0, scores.length)}>{score.alternativaId}</span>
                         <span style={headerLabelStyle}>{getAlternativeDisplayLabel(score.alternativaId, state.alternative[score.alternativaId])}</span>
                       </div>
                     </div>

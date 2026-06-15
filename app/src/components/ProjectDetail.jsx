@@ -130,15 +130,68 @@ const ANALYSIS_META = {
 
 // ── EIA KPI cards with icons ──────────────────────────────────────────────────
 
+// Stessa icona "i" usata nei box di Impatto (EiaResults · IconInfoCircle).
+function IconInfoCircle({ className = "h-3.5 w-3.5" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+  );
+}
+
+// Pulsante "i" interattivo coerente con InfoButton di Impatto: icona info-circle
+// (senza bordo), colore ink-300 → brand-violet, popover con bordo sinistro viola.
+function EiaInfoDot({ title, text }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDown = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+  if (!text) return null;
+  return (
+    <span ref={ref} className="relative ml-auto inline-flex shrink-0 align-middle" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Spiegazione"
+        aria-expanded={open}
+        className={`inline-flex items-center justify-center transition-colors ${
+          open ? "text-brand-violet" : "text-ink-300 hover:text-brand-violet"
+        }`}
+      >
+        <IconInfoCircle className="h-3.5 w-3.5" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-[calc(100%+6px)] z-40 w-[300px] border-l-2 border-brand-violet bg-white p-4 text-left shadow-xl normal-case tracking-normal">
+          {title && <p className="text-[13px] font-semibold leading-tight text-ink-900">{title}</p>}
+          <p className="mt-1 text-[13px] font-normal leading-relaxed text-ink-700">{text}</p>
+        </div>
+      )}
+    </span>
+  );
+}
+
 function EiaKpiCards({ eia, settoreSpesa }) {
   const r = eia ?? {};
   const kpis = [
-    { label: "Spese effettuate",        icon: "spese",       value: fmtM(r.shock_totale),       sub: "valore attuale" },
-    { label: "Valore della produzione", icon: "produzione",  value: fmtM(r.produzione?.totale), sub: "valore attuale" },
-    { label: "PIL",                     icon: "pil",         value: fmtM(r.gva?.totale),        sub: "valore attuale" },
-    { label: "Occupazione",             icon: "occupazione", value: r.fte?.totale ? `${fmtIT(r.fte.totale, 0)} occ.` : "—", sub: "equivalenti tempo pieno (ETP)" },
-    { label: "Redditi",                 icon: "redditi",     value: fmtM(r.redditi?.totale),    sub: "valore attuale" },
-    { label: "Gettito fiscale",         icon: "gettito",     value: fmtM(r.gettito?.totale),    sub: "valore attuale" },
+    { label: "Spese effettuate",  icon: "spese",       value: fmtM(r.shock_totale),       sub: "valore attuale", info: "Spesa complessiva del progetto a valore attuale: è lo shock iniziale da cui parte l'analisi di impatto." },
+    { label: "Valore produzione", icon: "produzione",  value: fmtM(r.produzione?.totale), sub: "valore attuale", info: "Volume d'affari complessivo attivato lungo la filiera (beni intermedi + finali)." },
+    { label: "PIL",               icon: "pil",         value: fmtM(r.gva?.totale),        sub: "valore attuale", info: "Valore aggiunto generato: redditi da lavoro e capitale più imposte indirette nette." },
+    { label: "Occupazione",       icon: "occupazione", value: r.fte?.totale ? fmtIT(r.fte.totale, 0) : "—", unit: "ETP", sub: "occupati equivalenti a tempo pieno (ETP)", info: "Occupati equivalenti a tempo pieno (ETP) attivati dal progetto." },
+    { label: "Redditi",           icon: "redditi",     value: fmtM(r.redditi?.totale),    sub: "valore attuale", info: "Redditi da lavoro e capitale distribuiti a famiglie e imprese." },
+    { label: "Gettito fiscale",   icon: "gettito",     value: fmtM(r.gettito?.totale),    sub: "valore attuale", info: "Entrate fiscali generate per la finanza pubblica dal progetto." },
   ];
 
   const shock = r.shock_totale ?? 0;
@@ -153,15 +206,15 @@ function EiaKpiCards({ eia, settoreSpesa }) {
   const topRegione = r.per_territorio?.[0]?.regione ?? null;
 
   const moltChips = [
-    moltProd != null && { label: "Moltiplicatore di produzione", value: `${fmtIT(moltProd, 2)}×` },
-    moltPil != null && { label: "Moltiplicatore PIL", value: `${fmtIT(moltPil, 2)}×` },
-    occPerM != null && { label: "Occupati per milione di €", value: fmtIT(occPerM, 1) },
+    moltProd != null && { label: "Moltiplicatore di produzione", formula: "Prod / spesa", value: `${fmtIT(moltProd, 2)}×` },
+    moltPil != null && { label: "Moltiplicatore PIL", formula: "PIL / spesa", value: `${fmtIT(moltPil, 2)}×` },
+    occPerM != null && { label: "Occupati per milione di euro speso", formula: "occ / mln € speso", value: fmtIT(occPerM, 1) },
   ].filter(Boolean);
 
   const territorialChips = [
     settoreSpesa && { label: "Settore principale di spesa", value: settoreSpesa },
-    settoreImpatto && { label: "Settore principalmente impattato", value: settoreImpatto },
-    topRegione && { label: "Regione principalmente impattata", value: topRegione },
+    settoreImpatto && { label: "Settore principalmente attivato", value: settoreImpatto },
+    topRegione && { label: "Regione principalmente attivata", value: topRegione },
   ].filter(Boolean);
 
   return (
@@ -172,8 +225,12 @@ function EiaKpiCards({ eia, settoreSpesa }) {
             <div className="mb-3 flex min-h-[2.25rem] items-start gap-2">
               <ImpactIcon type={k.icon} label={k.label} className="h-6 w-6" wrapperClassName="flex h-6 w-6 shrink-0 items-center justify-center text-brand-violet" />
               <p className="min-w-0 text-[11px] font-bold uppercase leading-tight tracking-wide text-ink-700">{k.label}</p>
+              <EiaInfoDot title={k.label} text={k.info} />
             </div>
-            <p className="text-[22px] font-bold leading-tight text-ink-900">{k.value}</p>
+            <p className="text-[22px] font-bold leading-tight text-ink-900">
+              {k.value}
+              {k.unit && <span className="ml-1 text-[14px] font-semibold text-ink-400">{k.unit}</span>}
+            </p>
             <p className="mt-auto pt-1 text-[11px] text-ink-400">{k.sub}</p>
           </div>
         ))}
@@ -193,9 +250,14 @@ function EiaChipColumn({ chips }) {
   return (
     <div className="flex flex-col gap-2">
       {chips.map((chip) => (
-        <span key={chip.label} className="flex items-center justify-between gap-2 rounded-full border border-ink-100 bg-white px-3 py-1.5 text-[12px]">
-          <span className="text-ink-400">{chip.label}</span>
-          <span className="text-right font-semibold text-ink-800">{chip.value}</span>
+        <span key={chip.label} className="flex items-center justify-between gap-3 rounded-full border border-ink-100 bg-white px-3 py-1.5 text-[12px]">
+          <span className="flex min-w-0 flex-1 items-baseline gap-2">
+            <span className="text-ink-400">{chip.label}</span>
+            {chip.formula && (
+              <span className="whitespace-nowrap font-mono text-[10px] text-ink-400 underline decoration-ink-300 underline-offset-2">({chip.formula})</span>
+            )}
+          </span>
+          <span className="shrink-0 text-right font-semibold text-ink-800">{chip.value}</span>
         </span>
       ))}
     </div>
@@ -208,25 +270,29 @@ function EcbaRows({ ecba }) {
   const r = ecba ?? {};
   const bcr = r.bcr ?? (r.benefici_totali && r.costi_totali ? r.benefici_totali / r.costi_totali : null);
   const cards = [
-    { label: "Benefici economici", value: r.benefici_totali ? `€ ${fmtIT(r.benefici_totali)}` : "—", sub: "valore attuale",          tone: "green" },
-    { label: "Costi economici",    value: r.costi_totali    ? `€ ${fmtIT(r.costi_totali)}`    : "—", sub: "valore attuale",          tone: "red" },
-    { label: "VANE",               value: r.van != null     ? `€ ${fmtIT(r.van)}`             : "—", sub: "valore attuale netto",    tone: r.van != null ? (r.van >= 0 ? "green" : "red") : null },
-    { label: "Payback period",     value: r.payback_period  ? `${r.payback_period}`           : "—", sub: "anni al rientro",         tone: null },
-    { label: "Rapporto B/C",       value: bcr               ? fmtIT(bcr, 2)                   : "—", sub: "benefici su costi",       tone: bcr != null ? (bcr >= 1 ? "green" : "red") : null },
-    { label: "TIRE",               value: r.irr != null     ? `${fmtIT(r.irr, 2)}%`           : "—", sub: "tasso interno di rendimento", tone: null },
+    { label: "Benefici economici", icon: "benefici",   value: r.benefici_totali ? `€ ${fmtIT(r.benefici_totali)}` : "—", sub: "valore attuale",              tone: "green", info: "Somma attualizzata dei benefici economici e sociali monetizzati del progetto." },
+    { label: "Costi economici",    icon: "costi",      value: r.costi_totali    ? `€ ${fmtIT(r.costi_totali)}`    : "—", sub: "valore attuale",              tone: "red",   info: "Somma attualizzata dei costi del progetto (CAPEX + OPEX)." },
+    { label: "VANE",               icon: "vane",       value: r.van != null     ? `€ ${fmtIT(r.van)}`             : "—", sub: "valore attuale netto",        tone: r.van != null ? (r.van >= 0 ? "green" : "red") : null, info: "Valore Attuale Netto Economico: benefici meno costi attualizzati. Maggiore di zero = conveniente per la collettività." },
+    { label: "Payback period",     icon: "payback",    value: r.payback_period  ? `${r.payback_period}`           : "—", sub: "anni al rientro",             tone: null,    info: "Anni necessari perché i benefici cumulati superino i costi (payback sociale)." },
+    { label: "Rapporto B/C",       icon: "bcr",        value: bcr               ? fmtIT(bcr, 2)                   : "—", sub: "benefici su costi",           tone: bcr != null ? (bcr >= 1 ? "green" : "red") : null, info: "Rapporto benefici/costi: maggiore di 1 significa benefici superiori ai costi." },
+    { label: "TIRE",               icon: "tire",       value: r.irr != null     ? `${fmtIT(r.irr, 2)}%`           : "—", sub: "tasso interno di rendimento", tone: null,    info: "Tasso Interno di Rendimento Economico: il tasso di sconto che azzera il VANE." },
   ];
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
       {cards.map((c) => (
-        <div key={c.label} className="rounded border border-ink-100 bg-white p-4 shadow-sm">
-          <p className="text-[11px] font-bold uppercase leading-tight tracking-wide text-ink-700">{c.label}</p>
-          <p className={`mt-3 text-[22px] font-bold leading-tight ${
+        <div key={c.label} className="flex h-full flex-col rounded border border-ink-100 bg-white p-4 shadow-sm">
+          <div className="mb-3 flex min-h-[2.25rem] items-start gap-2">
+            <ImpactIcon type={c.icon} label={c.label} className="h-6 w-6" wrapperClassName="flex h-6 w-6 shrink-0 items-center justify-center text-brand-violet" />
+            <p className="min-w-0 text-[11px] font-bold uppercase leading-tight tracking-wide text-ink-700">{c.label}</p>
+            <EiaInfoDot title={c.label} text={c.info} />
+          </div>
+          <p className={`text-[22px] font-bold leading-tight ${
             c.tone === "green" ? "text-green-700" :
             c.tone === "red"   ? "text-red-600" :
                                  "text-ink-900"
           }`}>{c.value}</p>
-          <p className="mt-1 text-[11px] text-ink-400">{c.sub}</p>
+          <p className="mt-auto pt-1 text-[11px] text-ink-400">{c.sub}</p>
         </div>
       ))}
     </div>

@@ -801,7 +801,7 @@ export function InputParamsStep({ alternativaId }: Props) {
   ]
   return (
     <div style={rootStyle}>
-      <ProgressiveBlocks blocks={blocks} sequential />
+      <ProgressiveBlocks blocks={blocks} sequential lockAllSignal={state.autofillTick} />
     </div>
   )
 }

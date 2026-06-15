@@ -10,7 +10,7 @@ import {
 } from 'recharts'
 import type { ScoreComposito, AlternativaId } from '../../../types/docfap'
 import { getAlternativeDisplayLabel, getRecommendedAlternativeId } from '../tableHelpers'
-import { altColor } from '../chartHelpers'
+import { makeAltColorByRank } from '../chartHelpers'
 import type { AlternativaData } from '../../../types/docfap'
 
 const LEVEL_TO_VALUE: Record<string, number> = {
@@ -51,6 +51,7 @@ export function MCARadarChart({ scores, alternative, criteri, mcaScores }: Props
   if (scores.length === 0 || criteri.length === 0) return null
 
   const recommendedId = getRecommendedAlternativeId(scores)
+  const colorFor = makeAltColorByRank(scores)
 
   const chartData: RadarRow[] = criteri.map(c => {
     const peso = parsePercent(c.pesoDefault)
@@ -82,7 +83,7 @@ export function MCARadarChart({ scores, alternative, criteri, mcaScores }: Props
           const label = getAlternativeDisplayLabel(p.dataKey as AlternativaId, altData)
           const livello = p.value === 100 ? 'Alto' : p.value === 60 ? 'Medio' : p.value === 20 ? 'Basso' : 'Nullo'
           return (
-            <p key={p.dataKey} style={{ ...tooltipRowStyle, color: altColor(p.dataKey, p.dataKey === recommendedId) }}>
+            <p key={p.dataKey} style={{ ...tooltipRowStyle, color: colorFor(p.dataKey) }}>
               {label}: <strong>{livello}</strong> ({p.value}/100)
             </p>
           )
@@ -148,11 +149,11 @@ export function MCARadarChart({ scores, alternative, criteri, mcaScores }: Props
               key={s.alternativaId}
               name={s.alternativaId}
               dataKey={s.alternativaId}
-              stroke={altColor(s.alternativaId, s.alternativaId === recommendedId)}
-              fill={altColor(s.alternativaId, s.alternativaId === recommendedId)}
+              stroke={colorFor(s.alternativaId)}
+              fill={colorFor(s.alternativaId)}
               fillOpacity={0.12}
               strokeWidth={2}
-              dot={{ r: 3, fill: altColor(s.alternativaId, s.alternativaId === recommendedId) }}
+              dot={{ r: 3, fill: colorFor(s.alternativaId) }}
             />
           ))}
         </RadarChart>

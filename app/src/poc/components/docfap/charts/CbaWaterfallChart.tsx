@@ -7,7 +7,7 @@ import {
 } from 'recharts'
 import type { ScoreComposito, AlternativaData, AlternativaId } from '../../../types/docfap'
 import { getAlternativeDisplayLabel, getRecommendedAlternativeId } from '../tableHelpers'
-import { altColor } from '../chartHelpers'
+import { makeAltColorByRank } from '../chartHelpers'
 
 function annuityFactor(r: number, n: number): number {
   if (r === 0) return n
@@ -25,6 +25,7 @@ export function CbaWaterfallChart({ scores, alternative }: Props) {
   if (scores.length === 0) return null
 
   const recommendedId = getRecommendedAlternativeId(scores)
+  const colorFor = makeAltColorByRank(scores)
   const altLabels: Record<string, string> = {}
   for (const s of scores) {
     altLabels[s.alternativaId] = getAlternativeDisplayLabel(s.alternativaId, alternative[s.alternativaId])
@@ -102,7 +103,7 @@ export function CbaWaterfallChart({ scores, alternative }: Props) {
               key={s.alternativaId}
               dataKey={s.alternativaId}
               name={s.alternativaId}
-              fill={altColor(s.alternativaId, s.alternativaId === recommendedId)}
+              fill={colorFor(s.alternativaId)}
               radius={[2, 2, 0, 0]}
             />
           ))}

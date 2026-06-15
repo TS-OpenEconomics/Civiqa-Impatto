@@ -165,10 +165,11 @@ const summaryGridStyle: CSSProperties = {
 function summaryItemStyle(isRec: boolean): CSSProperties {
   return {
     flex: '1 1 200px',
-    border: `1px solid ${isRec ? '#5B21F7' : '#d0d0d0'}`,
+    // Opzione raccomandata evidenziata in verde (schema ranking DOCFAP).
+    border: `1px solid ${isRec ? '#108a43' : '#d0d0d0'}`,
     borderRadius: 'var(--radius-smooth)',
     padding: '12px 16px',
-    background: isRec ? 'rgba(91,33,247,0.08)' : 'var(--color-background-inverse)',
+    background: isRec ? 'rgba(16,138,67,0.08)' : 'var(--color-background-inverse)',
   }
 }
 

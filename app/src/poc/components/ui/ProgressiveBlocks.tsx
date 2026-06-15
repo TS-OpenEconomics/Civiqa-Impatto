@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 
 export interface ProgressiveBlockDef {
@@ -26,6 +26,12 @@ interface ProgressiveBlocksProps {
    * campo mancante diventa valido.
    */
   sequential?: boolean
+  /**
+   * Quando questo valore cambia (es. contatore "Autoriempi"), e tutti i blocchi
+   * sono completi, vengono bloccati tutti come confermati (recap), scavalcando la
+   * modalità `sequential`. Serve all'autoriempi: deve compilare E bloccare i box.
+   */
+  lockAllSignal?: number
 }
 
 /**
@@ -38,7 +44,7 @@ interface ProgressiveBlocksProps {
  *   condizionali e avvisi restano visibili e il blocco non si chiude da solo);
  * - i blocchi successivi alla frontiera sono visibili ma sbiaditi con lucchetto.
  */
-export function ProgressiveBlocks({ blocks, sequential = false }: ProgressiveBlocksProps) {
+export function ProgressiveBlocks({ blocks, sequential = false, lockAllSignal }: ProgressiveBlocksProps) {
   // `step` = indice del blocco frontiera (attivo). I blocchi < step sono
   // confermati (recap), quelli > step sono bloccati. Inizializzato al primo
   // blocco incompleto (o a "tutti confermati" se già tutti completi: autofill).
@@ -47,6 +53,25 @@ export function ProgressiveBlocks({ blocks, sequential = false }: ProgressiveBlo
     return firstIncomplete === -1 ? blocks.length : firstIncomplete
   })
   const [editingId, setEditingId] = useState<string | null>(null)
+
+  // Autoriempi: quando `lockAllSignal` cambia, programma il blocco di tutti i box
+  // come confermati (recap), anche in modalità `sequential`. Il blocco effettivo
+  // avviene appena tutti i blocchi risultano completi: i dati autofillati possono
+  // arrivare nei render successivi (sync da store), quindi teniamo il lock "in
+  // sospeso" finché non sono pronti. Lo skip iniziale evita di reagire al montaggio.
+  const lockSignalRef = useRef(lockAllSignal)
+  const pendingLockRef = useRef(false)
+  useEffect(() => {
+    if (lockAllSignal !== lockSignalRef.current) {
+      lockSignalRef.current = lockAllSignal
+      pendingLockRef.current = true
+    }
+    if (pendingLockRef.current && blocks.length > 0 && blocks.every((b) => b.complete)) {
+      pendingLockRef.current = false
+      setEditingId(null)
+      setStep(blocks.length)
+    }
+  })
 
   // Se tutti i blocchi sono già completi (es. dopo Autoriempi che imposta i dati
   // dall'esterno), mostrali tutti come recap invece di lasciarli "bloccati".

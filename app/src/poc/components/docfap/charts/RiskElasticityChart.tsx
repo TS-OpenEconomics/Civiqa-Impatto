@@ -9,7 +9,7 @@ import {
 } from 'recharts'
 import type { ScoreComposito, AlternativaId, AlternativaData } from '../../../types/docfap'
 import { getAlternativeDisplayLabel, getRecommendedAlternativeId } from '../tableHelpers'
-import { altColor } from '../chartHelpers'
+import { makeAltColorByRank } from '../chartHelpers'
 import { MC_MOCK_DATA } from '../../../engine/riskMonteCarlo'
 
 interface Props {
@@ -26,8 +26,9 @@ export function RiskElasticityChart({ scores, alternative }: Props) {
   if (!mc) return null
 
   const recommendedId = getRecommendedAlternativeId(scores)
+  const colorFor = makeAltColorByRank(scores)
   const chartData = mc.elasticities.map(e => ({ param: e.param, value: e.value }))
-  const color = altColor(score.alternativaId, score.alternativaId === recommendedId)
+  const color = colorFor(score.alternativaId)
 
   const CustomTooltip = ({
     active, payload,

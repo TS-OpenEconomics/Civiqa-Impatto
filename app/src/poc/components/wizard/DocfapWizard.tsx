@@ -50,6 +50,7 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
     setAlternativeAggiuntaCompletata,
     setMcaScores,
     prefillPOCAnswers,
+    bumpAutofill,
   } = useWizard()
   const supportedAlternativeIds = useMemo(
     () => state.alternativeDefinite.filter(isSupportedAlternativaId),
@@ -202,12 +203,15 @@ export function DocfapWizard({ onClose }: DocfapWizardProps) {
             // addAlternativa: NON chiamare anche fillAlternativaNome, che leggendo
             // lo stato vecchio dalla closure sovrascriverebbe (azzerando) categoria/tipologia.
             fillAlternativaSetup(altId)
+            // Nella pagina dei parametri: segnala l'autoriempi così i 4 box
+            // (durata, vita utile, CAPEX, OPEX) si bloccano tutti come confermati.
+            if (m[2] === 'params') bumpAutofill()
           }
           return
         }
       }
     },
-    [setRup, setFab, setCluster, setProblema, setUrgenza, setScenarioZeroAnswers, setScenarioZeroNarrative, setAlternativeDefinite, addAlternativa, setAlternativeAggiuntaCompletata, setMcaScores, prefillPOCAnswers, state.clusterId, state.alternativeDefinite, state.fabId, state.temaId, state.alternative],
+    [setRup, setFab, setCluster, setProblema, setUrgenza, setScenarioZeroAnswers, setScenarioZeroNarrative, setAlternativeDefinite, addAlternativa, setAlternativeAggiuntaCompletata, setMcaScores, prefillPOCAnswers, bumpAutofill, state.clusterId, state.alternativeDefinite, state.fabId, state.temaId, state.alternative],
   )
 
   const phases = useMemo<WizardPhaseDefinition[]>(() => {

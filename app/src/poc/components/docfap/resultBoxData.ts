@@ -5,6 +5,7 @@ import type { AlternativaData, AlternativaId, ScoreComposito } from '../../types
 import { MC_MOCK_DATA } from '../../engine/riskMonteCarlo'
 import { formatEuro } from '../../utils/format'
 import { getAlternativeDisplayLabel, safeNumber, RISK_METRIC_LABELS, RISK_METRIC_HINTS } from './tableHelpers'
+import { rankColor, buildRankIndexMap } from './rankColors'
 import type { ResultBoxMetric, ResultBoxOption } from './ResultBox'
 
 export type DimensionKey = 'impatto' | 'cba' | 'mca' | 'rischio'
@@ -32,16 +33,22 @@ export function buildResultBoxOptions(
   recommendedId: AlternativaId | null,
   alternative: Partial<Record<AlternativaId, AlternativaData>>,
 ): ResultBoxOption[] {
+  // Colore del badge per piazzamento: 1ª verde, 2ª arancione (con 3+ opzioni), resto grigio.
+  const rankMap = buildRankIndexMap(orderedScores)
+  const total = orderedScores.length
   return orderedScores.map((score) => {
     const alt = alternative[score.alternativaId]
     const details: ResultBoxOption['details'] = []
     if (alt?.capex != null) details.push({ label: 'CAPEX', value: `EUR ${formatEuro(alt.capex)}` })
     if (alt?.opex != null) details.push({ label: 'OPEX', value: `EUR ${formatEuro(alt.opex)}` })
     if (alt?.durataStimata) details.push({ label: 'Durata', value: `${alt.durataStimata} mesi` })
+    const c = rankColor(rankMap[score.alternativaId] ?? total - 1, total)
     return {
       id: score.alternativaId,
       label: getAlternativeDisplayLabel(score.alternativaId, alt),
       isRecommended: score.alternativaId === recommendedId,
+      badgeBg: c.solid,
+      badgeText: c.text,
       details,
     }
   })

@@ -8,7 +8,7 @@ import {
 } from 'recharts'
 import type { ScoreComposito, AlternativaId, AlternativaData } from '../../../types/docfap'
 import { getAlternativeDisplayLabel, getRecommendedAlternativeId } from '../tableHelpers'
-import { altColor } from '../chartHelpers'
+import { makeAltColorByRank } from '../chartHelpers'
 import { MC_MOCK_DATA } from '../../../engine/riskMonteCarlo'
 
 interface Props {
@@ -20,6 +20,7 @@ export function RiskVarianceChart({ scores, alternative }: Props) {
   if (scores.length === 0) return null
 
   const recommendedId = getRecommendedAlternativeId(scores)
+  const colorFor = makeAltColorByRank(scores)
 
   // Build chart data: one row per param, one property per alternative
   const firstMc = MC_MOCK_DATA[scores[0].alternativaId]
@@ -80,10 +81,10 @@ export function RiskVarianceChart({ scores, alternative }: Props) {
           />
           {scores.map(s => (
             <Radar key={s.alternativaId} name={s.alternativaId} dataKey={s.alternativaId}
-              stroke={altColor(s.alternativaId, s.alternativaId === recommendedId)}
-              fill={altColor(s.alternativaId, s.alternativaId === recommendedId)}
+              stroke={colorFor(s.alternativaId)}
+              fill={colorFor(s.alternativaId)}
               fillOpacity={0.12} strokeWidth={2}
-              dot={{ r: 3, fill: altColor(s.alternativaId, s.alternativaId === recommendedId) }}
+              dot={{ r: 3, fill: colorFor(s.alternativaId) }}
             />
           ))}
         </RadarChart>

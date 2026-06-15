@@ -2,6 +2,7 @@
 import type { CSSProperties } from 'react'
 import type { AlternativaId, ScoreComposito } from '../../../types/docfap'
 import { INTERVENTION_CATEGORIES } from '../../../data/poc_docfap/intervention_categories_layer3'
+import { RANK_COLORS, rankColor } from '../../docfap/rankColors'
 
 // ── Formatters ──────────────────────────────────────────────────────────────
 
@@ -58,25 +59,12 @@ export function getAltLabel(
 }
 
 // ── Colori chart ────────────────────────────────────────────────────────────
-// Indice 0 = opzione scelta/raccomandata → viola scuro del brand.
-// Le altre opzioni → grigio neutro, così è immediato distinguere "cosa è cosa".
+// Colore per piazzamento (rank): 1ª = verde, 2ª = arancione (solo con 3+
+// opzioni), restanti = grigio. `rankIndex` 0 = migliore; `total` = numero di
+// opzioni confrontate (serve a decidere se la 2ª va arancione o grigia).
 
-const ALT_FILLS = [
-  '#5B21F7',
-  '#9e9e9e',
-  '#bdbdbd',
-  '#d0d0d0',
-  '#e0e0e0',
-] as const
-
-export function getAltFill(colorIndex: number): string {
-  return ALT_FILLS[colorIndex] ?? ALT_FILLS[ALT_FILLS.length - 1]
-}
-
-// Per ranking chart: raccomandata primary, altri grigi scalati
-const RANK_FILLS = ['#5B21F7', '#545454', '#999999', '#bbbbbb', '#d0d0d0'] as const
-export function getRankFill(rank: number): string {
-  return RANK_FILLS[rank] ?? RANK_FILLS[RANK_FILLS.length - 1]
+export function getRankFill(rankIndex: number, total: number): string {
+  return rankColor(rankIndex, total).solid
 }
 
 // ── Normalizzazione per grafici di dettaglio ────────────────────────────────
@@ -100,7 +88,7 @@ export function getInnerBodyCellStyle(
     borderLeft: '1px solid var(--color-border-secondary-light, #e7e7e7)',
     color: 'var(--color-text-primary)',
     background: item.alternativaId === recommendedId
-      ? 'var(--color-background-primary-lighter, #efe5ff)'
+      ? RANK_COLORS.green.tint
       : 'var(--color-background-inverse)',
     fontFamily: 'var(--font-family-0, "Atkinson Hyperlegible Mono", monospace)',
     textAlign: 'right',
@@ -115,9 +103,9 @@ export function getInnerTotalCellStyle(
     padding: 'var(--spacing-inset-s)',
     borderBottom: '1px solid var(--color-border-secondary-light, #e7e7e7)',
     borderLeft: '1px solid var(--color-border-secondary-light, #e7e7e7)',
-    background: item.alternativaId === recommendedId ? 'rgba(91,33,247,0.28)' : 'rgba(91,33,247,0.12)',
+    background: item.alternativaId === recommendedId ? RANK_COLORS.green.tintStrong : 'rgba(120,120,130,0.10)',
     color: item.alternativaId === recommendedId
-      ? 'var(--color-background-primary, #5B21F7)'
+      ? RANK_COLORS.green.solid
       : 'var(--color-text-primary)',
     textAlign: 'right',
     fontWeight: 700,
@@ -159,8 +147,8 @@ export const innerAltHeaderCellStyle: CSSProperties = {
 }
 
 export const innerAltHeaderRecommendedStyle: CSSProperties = {
-  background: 'var(--color-background-primary, #5B21F7)',
-  color: 'var(--color-text-inverse, #ffffff)',
+  background: RANK_COLORS.green.solid,
+  color: RANK_COLORS.green.text,
 }
 
 export const innerRowHeaderStyle: CSSProperties = {
@@ -175,8 +163,8 @@ export const innerTotalRowHeaderStyle: CSSProperties = {
   textAlign: 'left',
   padding: 'var(--spacing-inset-s)',
   borderBottom: '1px solid var(--color-border-secondary-light, #e7e7e7)',
-  background: 'rgba(91,33,247,0.12)',
-  color: 'var(--color-background-primary, #5B21F7)',
+  background: RANK_COLORS.green.tint,
+  color: RANK_COLORS.green.solid,
   fontWeight: 700,
 }
 

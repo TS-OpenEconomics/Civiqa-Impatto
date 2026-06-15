@@ -9,7 +9,7 @@ import {
 } from 'recharts'
 import type { ScoreComposito, AlternativaId, AlternativaData } from '../../../types/docfap'
 import { getAlternativeDisplayLabel, getRecommendedAlternativeId } from '../tableHelpers'
-import { altColor } from '../chartHelpers'
+import { makeAltColorByRank } from '../chartHelpers'
 
 // Mock Keynesian multipliers per alternative — derived from POC input-output tables.
 // A2 (new construction) has highest multiplier due to supply-chain activation.
@@ -60,6 +60,7 @@ export function ImpactMultiplierChart({ scores, alternative }: Props) {
   if (scores.length === 0) return null
 
   const recommendedId = getRecommendedAlternativeId(scores)
+  const colorFor = makeAltColorByRank(scores)
 
   const chartData: ChartRow[] = DIM_LABELS.map(({ key, label }) => {
     const row: ChartRow = { dim: label }
@@ -114,7 +115,7 @@ export function ImpactMultiplierChart({ scores, alternative }: Props) {
               key={s.alternativaId}
               dataKey={s.alternativaId}
               name={s.alternativaId}
-              fill={altColor(s.alternativaId, s.alternativaId === recommendedId)}
+              fill={colorFor(s.alternativaId)}
               maxBarSize={44}
               radius={[3, 3, 0, 0]}
             >
@@ -122,7 +123,7 @@ export function ImpactMultiplierChart({ scores, alternative }: Props) {
                 dataKey={s.alternativaId}
                 position="top"
                 formatter={(v: number) => `${v.toFixed(1)}×`}
-                style={{ fontSize: 11, fill: altColor(s.alternativaId, s.alternativaId === recommendedId), fontWeight: 700 }}
+                style={{ fontSize: 11, fill: colorFor(s.alternativaId), fontWeight: 700 }}
               />
             </Bar>
           ))}

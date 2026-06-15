@@ -11,7 +11,7 @@ import {
 import type { ScoreComposito, AlternativaId, AlternativaData } from '../../../types/docfap'
 import type { McaQuestion } from '../../../data/poc_docfap/evaluation_matrix'
 import { getAlternativeDisplayLabel, getRecommendedAlternativeId } from '../tableHelpers'
-import { altColor } from '../chartHelpers'
+import { makeAltColorByRank } from '../chartHelpers'
 
 // Codice livello (A/M/B/N) → valore 0–100 per il raggio.
 const LEVEL_TO_VALUE: Record<string, number> = { A: 100, M: 60, B: 20, N: 0 }
@@ -36,6 +36,7 @@ export function McaProfileRadar({ scores, alternative, questions, mcaScores }: P
   if (scores.length === 0 || questions.length === 0) return null
 
   const recommendedId = getRecommendedAlternativeId(scores)
+  const colorFor = makeAltColorByRank(scores)
 
   const chartData: RadarRow[] = questions.map(q => {
     const row: RadarRow = { qCode: q.qCode, criterio: truncate(q.label || q.text), fullText: q.text }
@@ -57,7 +58,7 @@ export function McaProfileRadar({ scores, alternative, questions, mcaScores }: P
         {payload.map(p => {
           const label = getAlternativeDisplayLabel(p.dataKey as AlternativaId, alternative[p.dataKey as AlternativaId])
           return (
-            <p key={p.dataKey} style={{ margin: '2px 0', fontSize: 13, color: altColor(p.dataKey, p.dataKey === recommendedId) }}>
+            <p key={p.dataKey} style={{ margin: '2px 0', fontSize: 13, color: colorFor(p.dataKey) }}>
               {label}: <strong>{VALUE_TO_LABEL[p.value] ?? '—'}</strong>
             </p>
           )
@@ -106,10 +107,10 @@ export function McaProfileRadar({ scores, alternative, questions, mcaScores }: P
           />
           {scores.map(s => (
             <Radar key={s.alternativaId} name={s.alternativaId} dataKey={s.alternativaId}
-              stroke={altColor(s.alternativaId, s.alternativaId === recommendedId)}
-              fill={altColor(s.alternativaId, s.alternativaId === recommendedId)}
+              stroke={colorFor(s.alternativaId)}
+              fill={colorFor(s.alternativaId)}
               fillOpacity={0.12} strokeWidth={2}
-              dot={{ r: 3, fill: altColor(s.alternativaId, s.alternativaId === recommendedId) }}
+              dot={{ r: 3, fill: colorFor(s.alternativaId) }}
             />
           ))}
         </RadarChart>
