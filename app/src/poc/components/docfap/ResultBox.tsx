@@ -1,12 +1,18 @@
 import { useState, type ReactNode } from 'react'
 import type { AlternativaId } from '../../types/docfap'
+import { RANK_COLORS } from './rankColors'
 
 export interface ResultBoxOption {
   id: AlternativaId
   label: string
   isRecommended: boolean
+  /** Colore del badge "A1/A2…" per piazzamento (1ª verde, 2ª arancione, resto grigio). */
+  badgeBg?: string
+  badgeText?: string
   details?: Array<{ label: string; value: string }>
 }
+
+const GREEN = RANK_COLORS.green
 
 export interface ResultBoxMetric {
   label: string
@@ -96,16 +102,30 @@ export function ResultBox({
         <table className="w-full border-collapse">
           <thead>
             <tr>
-              <th className="w-[200px] min-w-[160px] pb-3 pr-4 text-left align-bottom text-[10px] font-semibold uppercase tracking-wide text-ink-400">
+              <th className="w-[200px] min-w-[160px] pb-3 pr-5 text-left align-bottom text-[10px] font-semibold uppercase tracking-wide text-ink-400">
                 Indicatore
               </th>
               {options.map((opt) => (
-                <th key={opt.id} className={`${OPTION_COL} px-3 pb-3 align-bottom`}>
+                <th key={opt.id} className={`${OPTION_COL} border-l border-ink-100 px-5 pb-3 align-bottom`}>
                   <div className="flex items-center gap-2.5 text-left">
-                    <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center font-mono text-[13px] font-extrabold leading-none ${opt.isRecommended ? 'bg-brand-violet text-white' : 'bg-ink-100 text-ink-600'}`}>
+                    <span
+                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center font-mono text-[13px] font-extrabold leading-none"
+                      style={{
+                        background: opt.badgeBg ?? (opt.isRecommended ? GREEN.solid : '#e5e5e8'),
+                        color: opt.badgeText ?? (opt.isRecommended ? GREEN.text : '#5b5b62'),
+                      }}
+                    >
                       {opt.id}
                     </span>
-                    <div className="flex min-w-0 flex-1 flex-col items-start">
+                    <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
+                      {opt.isRecommended && (
+                        <span
+                          className="inline-flex items-center px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-white"
+                          style={{ background: GREEN.solid }}
+                        >
+                          Raccomandata
+                        </span>
+                      )}
                       <div className="relative w-full">
                         <button
                           type="button"
@@ -141,7 +161,7 @@ export function ResultBox({
           <tbody>
             {metrics.map((metric) => (
               <tr key={metric.label} className="border-t border-ink-100">
-                <td className={`py-2.5 pr-4 text-[12px] ${metric.emphasize ? 'font-bold text-ink-900' : 'text-ink-600'}`}>
+                <td className={`py-3 pr-5 text-[12px] ${metric.emphasize ? 'font-bold text-ink-900' : 'text-ink-600'}`}>
                   {metric.label}
                   {metric.hint && (
                     <span
@@ -159,22 +179,29 @@ export function ResultBox({
                   return (
                     <td
                       key={opt.id}
-                      className={`${OPTION_COL} px-3 py-2.5 align-middle ${opt.isRecommended ? 'bg-brand-violet/5' : ''}`}
+                      className={`${OPTION_COL} border-l border-ink-100 px-5 py-3 align-middle`}
+                      style={opt.isRecommended ? { background: GREEN.tint } : undefined}
                     >
                       {bar != null ? (
                         <div className="flex flex-col items-end gap-1">
-                          <span className={`font-mono text-[14px] font-bold ${opt.isRecommended ? 'text-brand-violet' : 'text-ink-800'}`}>
+                          <span
+                            className="font-mono text-[14px] font-bold"
+                            style={{ color: opt.isRecommended ? GREEN.solid : 'var(--color-text-primary, #2b2b2e)' }}
+                          >
                             {metric.values[i]}
                           </span>
                           <span className="h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
                             <span
-                              className={`block h-full rounded-full ${opt.isRecommended ? 'bg-brand-violet' : 'bg-ink-300'}`}
-                              style={{ width: `${Math.max(0, Math.min(100, bar))}%` }}
+                              className="block h-full rounded-full"
+                              style={{ width: `${Math.max(0, Math.min(100, bar))}%`, background: opt.isRecommended ? GREEN.solid : '#c9c9d0' }}
                             />
                           </span>
                         </div>
                       ) : (
-                        <span className={`block text-right font-mono text-[13px] ${opt.isRecommended ? 'text-brand-violet' : 'text-ink-800'}`}>
+                        <span
+                          className="block text-right font-mono text-[13px]"
+                          style={{ color: opt.isRecommended ? GREEN.solid : 'var(--color-text-primary, #2b2b2e)' }}
+                        >
                           {metric.values[i]}
                         </span>
                       )}
@@ -205,7 +232,13 @@ export function ResultBox({
                       title={opt.label}
                       className="group inline-flex min-h-9 items-center gap-2 rounded border border-ink-200 bg-white px-2.5 py-1.5 text-left text-[12px] font-semibold leading-snug text-ink-700 transition-colors hover:border-brand-violet hover:text-brand-violet"
                     >
-                      <span className={`inline-flex h-6 w-6 shrink-0 items-center justify-center font-mono text-[10px] font-bold leading-none ${opt.isRecommended ? 'bg-brand-violet text-white' : 'bg-ink-100 text-ink-500'}`}>
+                      <span
+                        className="inline-flex h-6 w-6 shrink-0 items-center justify-center font-mono text-[10px] font-bold leading-none"
+                        style={{
+                          background: opt.badgeBg ?? (opt.isRecommended ? GREEN.solid : '#e5e5e8'),
+                          color: opt.badgeText ?? (opt.isRecommended ? GREEN.text : '#5b5b62'),
+                        }}
+                      >
                         {opt.id}
                       </span>
                       <span className="whitespace-nowrap">{opt.label}</span>

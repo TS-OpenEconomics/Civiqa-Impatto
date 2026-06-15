@@ -19,9 +19,8 @@ interface Props {
 }
 
 export function RankingChart({ items }: Props) {
-  const data = [...items]
-    .sort((a, b) => b.score - a.score)
-    .map((item, i) => ({ ...item, fill: getRankFill(i) }))
+  const sorted = [...items].sort((a, b) => b.score - a.score)
+  const data = sorted.map((item, i) => ({ ...item, fill: getRankFill(i, sorted.length) }))
 
   const chartHeight = Math.max(items.length * 56 + 48, 120)
 

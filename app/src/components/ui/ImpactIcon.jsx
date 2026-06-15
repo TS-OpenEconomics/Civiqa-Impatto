@@ -61,6 +61,56 @@ export function ImpactIcon({ type, label, className = "h-12 w-12", wrapperClassN
         <path d="M33 24v14" />
       </svg>
     ),
+    // ── ECBA ──────────────────────────────────────────────────────────────
+    // Freccia su in cerchio (benefici) / giù in cerchio (costi): pulite e chiare.
+    benefici: (
+      <svg {...iconProps}>
+        <circle cx="24" cy="24" r="13" />
+        <path d="M24 30V18" />
+        <path d="M18.5 23.5 24 18l5.5 5.5" />
+      </svg>
+    ),
+    costi: (
+      <svg {...iconProps}>
+        <circle cx="24" cy="24" r="13" />
+        <path d="M24 18v12" />
+        <path d="M18.5 24.5 24 30l5.5-5.5" />
+      </svg>
+    ),
+    // Banconota (valore attuale netto), senza glifo €.
+    vane: (
+      <svg {...iconProps}>
+        <rect x="8" y="14" width="32" height="20" rx="2" />
+        <circle cx="24" cy="24" r="4.5" />
+        <path d="M14 19v10" />
+        <path d="M34 19v10" />
+      </svg>
+    ),
+    // Orologio (tempo di rientro).
+    payback: (
+      <svg {...iconProps}>
+        <circle cx="24" cy="24" r="13" />
+        <path d="M24 16.5v8l5.5 3.5" />
+      </svg>
+    ),
+    // Bilancia (rapporto benefici/costi).
+    bcr: (
+      <svg {...iconProps}>
+        <path d="M24 12v27" />
+        <path d="M14 18h20" />
+        <path d="M14 18l-5.5 10h11z" />
+        <path d="M34 18l-5.5 10h11z" />
+        <path d="M17 39h14" />
+      </svg>
+    ),
+    // Simbolo percentuale (tasso interno di rendimento).
+    tire: (
+      <svg {...iconProps}>
+        <path d="M15 33 33 15" />
+        <circle cx="18.5" cy="18.5" r="3.5" />
+        <circle cx="29.5" cy="29.5" r="3.5" />
+      </svg>
+    ),
   };
 
   return (

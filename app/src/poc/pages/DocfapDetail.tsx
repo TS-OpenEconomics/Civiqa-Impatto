@@ -14,6 +14,7 @@ import { ConfrontoOverlay } from '../components/docfap/ConfrontoOverlay'
 import { ResultBox } from '../components/docfap/ResultBox'
 import { buildDimensionMetrics, buildResultBoxOptions } from '../components/docfap/resultBoxData'
 import type { DimensionKey } from '../components/docfap/resultBoxData'
+import { rankColor, buildRankIndexMap } from '../components/docfap/rankColors'
 import {
   getDefinedScores,
   getRecommendedAlternativeId,
@@ -134,6 +135,7 @@ export function DocfapDetail() {
   // ── Opzioni (fino a 5) ──
   // Ordine naturale A1 → A2 → … (la demo restituisce la raccomandata in testa).
   const orderedScores = [...scores].sort((a, b) => a.alternativaId.localeCompare(b.alternativaId))
+  const rankMap = buildRankIndexMap(scores)
   const canRenderBoxes = orderedScores.length >= 2
   const boxOptions = buildResultBoxOptions(orderedScores, recommendedId, state.alternative)
 
@@ -265,17 +267,28 @@ export function DocfapDetail() {
             {orderedScores.map((s) => {
               const alt = state.alternative[s.alternativaId]
               const rec = s.alternativaId === recommendedId
+              // Colore per piazzamento: 1ª verde, 2ª arancione (3+), resto grigio.
+              const c = rankColor(rankMap[s.alternativaId] ?? 0, orderedScores.length)
               return (
                 <div
                   key={s.alternativaId}
-                  className={`flex flex-col border bg-white p-4 shadow-sm ${rec ? 'border-brand-violet ring-1 ring-brand-violet/30' : 'border-ink-100'}`}
+                  className="flex flex-col border bg-white p-4 shadow-sm"
+                  style={rec
+                    ? { borderColor: c.accent, boxShadow: `0 0 0 1px ${c.tint}` }
+                    : { borderColor: 'var(--color-border-secondary-light, #e7e7e7)' }}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className={`inline-flex h-6 items-center px-2 font-mono text-[11px] font-bold ${rec ? 'bg-brand-violet text-white' : 'bg-ink-100 text-ink-600'}`}>
+                    <span
+                      className="inline-flex h-6 items-center px-2 font-mono text-[11px] font-bold"
+                      style={{ background: c.solid, color: c.text }}
+                    >
                       {s.alternativaId}
                     </span>
                     {rec && (
-                      <span className="inline-flex items-center bg-green-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+                      <span
+                        className="inline-flex items-center px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white"
+                        style={{ background: c.solid }}
+                      >
                         Raccomandata
                       </span>
                     )}
@@ -298,12 +311,12 @@ export function DocfapDetail() {
                   <div className="mt-3 border-t border-ink-100 pt-3">
                     <div className="flex items-baseline justify-between">
                       <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-400">Punteggio finale</span>
-                      <span className={`font-mono text-[16px] font-bold ${rec ? 'text-brand-violet' : 'text-ink-800'}`}>{nf(s.scoreFinale, 1)}</span>
+                      <span className="font-mono text-[16px] font-bold" style={{ color: c.solid }}>{nf(s.scoreFinale, 1)}</span>
                     </div>
                     <span className="mt-1.5 block h-1.5 w-full overflow-hidden bg-ink-100">
                       <span
-                        className={`block h-full ${rec ? 'bg-brand-violet' : 'bg-ink-300'}`}
-                        style={{ width: `${Math.max(0, Math.min(100, safeNumber(s.scoreFinale)))}%` }}
+                        className="block h-full"
+                        style={{ width: `${Math.max(0, Math.min(100, safeNumber(s.scoreFinale)))}%`, background: c.solid }}
                       />
                     </span>
                   </div>

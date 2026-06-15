@@ -61,6 +61,26 @@ function stripDots(val: string): string {
   return val.replace(/\./g, '')
 }
 
+// Garantisce tre valori di riferimento sempre distinti (min < media < max) per i
+// box laterali: la media di settore a volte coincide col minimo o col massimo, e
+// alcune categorie hanno min/med/max uguali. `decimals` controlla la precisione
+// (0 per gli anni di vita utile, 1 per le percentuali OPEX).
+function spreadThree(min: number, media: number, max: number, decimals = 0): { min: number; media: number; max: number } {
+  const step = decimals > 0 ? Math.pow(10, -decimals) : 1
+  const round = (n: number) => Number(n.toFixed(decimals))
+  let lo = round(Math.min(min, max))
+  let hi = round(Math.max(min, max))
+  if (lo === hi) {
+    // Tutti i valori coincidono: apri una forbice ±20% attorno al valore.
+    lo = round(Math.max(step, hi * 0.8))
+    hi = round(hi * 1.2)
+  }
+  let mid = round(media)
+  if (mid <= lo) mid = round(lo + step)
+  if (mid >= hi) hi = round(mid + step)
+  return { min: lo, media: mid, max: hi }
+}
+
 export function InputParamsStep({ alternativaId }: Props) {
   const { state, addAlternativa } = useWizard()
   const alt = state.alternative[alternativaId]
@@ -99,18 +119,17 @@ export function InputParamsStep({ alternativaId }: Props) {
     return categoryData.useful_life?.find(u => u.tipologia_code === tipologia)?.years ?? null
   }, [categoryData, tipologia])
 
-  // Riferimenti di vita utile (min / media settore / max) ricavati dall'intera
-  // categoria: la media coincide col valore consigliato per la tipologia.
+  // Riferimenti di vita utile (min / media di settore / max) ricavati dall'intera
+  // categoria. La media è la media aritmetica delle tipologie (non il valore
+  // consigliato della singola tipologia, che poteva coincidere col min o col max):
+  // così i tre riferimenti sono sempre tre valori distinti.
   const vitaUtileRef = useMemo(() => {
     const arr = categoryData?.useful_life
     if (!arr || arr.length === 0) return null
     const years = arr.map((u) => u.years)
-    return {
-      min: Math.min(...years),
-      max: Math.max(...years),
-      media: recommendedVitaUtile ?? Math.round(years.reduce((a, b) => a + b, 0) / years.length),
-    }
-  }, [categoryData, recommendedVitaUtile])
+    const avg = years.reduce((a, b) => a + b, 0) / years.length
+    return spreadThree(Math.min(...years), avg, Math.max(...years), 0)
+  }, [categoryData])
 
   // ── State ────────────────────────────────────────────────────────────────
 
@@ -204,13 +223,15 @@ export function InputParamsStep({ alternativaId }: Props) {
     const capexRefMin = Math.round(costoData.val_min * totalQty)
     const capexRefMax = Math.round(costoData.val_max * totalQty)
     const opex = categoryData?.opex ?? { pct_min: 0.02, pct_med: 0.03, pct_max: 0.05 }
+    // Quota OPEX come % del CAPEX: tre riferimenti sempre distinti (min < media < max).
+    const opexPct = spreadThree(opex.pct_min * 100, opex.pct_med * 100, opex.pct_max * 100, 1)
     return {
       capexFromCp,
       capexRefMin,
       capexRefMax,
-      opexPctMin: parseFloat((opex.pct_min * 100).toFixed(1)),
-      opexPctMed: parseFloat((opex.pct_med * 100).toFixed(1)),
-      opexPctMax: parseFloat((opex.pct_max * 100).toFixed(1)),
+      opexPctMin: opexPct.min,
+      opexPctMed: opexPct.media,
+      opexPctMax: opexPct.max,
     }
   }, [costoData, totalQty, cpValue, categoryData])
 
@@ -471,6 +492,16 @@ export function InputParamsStep({ alternativaId }: Props) {
         />
       </div>
 
+      {/* Il costo parametrico e il CAPEX stimato si sbloccano solo dopo aver
+          inserito la quantità fisica: il CAPEX è CP × quantità, quindi senza
+          quantità non c'è una stima sensata. */}
+      {totalQty <= 0 ? (
+        <p style={hintStyle} aria-live="polite">
+          Inserisci prima la quantità fisica dell'intervento: il CAPEX viene stimato come costo
+          parametrico × quantità.
+        </p>
+      ) : (
+        <>
       {/* Costo parametrico (CP) */}
       {costoData && (
         <div style={dividerBlockStyle}>
@@ -597,6 +628,8 @@ export function InputParamsStep({ alternativaId }: Props) {
           </p>
         )}
       </div>
+        </>
+      )}
     </div>
   )
 
@@ -768,7 +801,7 @@ export function InputParamsStep({ alternativaId }: Props) {
   ]
   return (
     <div style={rootStyle}>
-      <ProgressiveBlocks blocks={blocks} sequential />
+      <ProgressiveBlocks blocks={blocks} sequential lockAllSignal={state.autofillTick} />
     </div>
   )
 }

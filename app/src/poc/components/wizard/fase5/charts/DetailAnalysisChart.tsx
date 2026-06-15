@@ -7,7 +7,8 @@ import {
 } from 'recharts'
 import type { AlternativaId, ScoreComposito } from '../../../../types/docfap'
 import type { McaQuestion } from '../../../../data/poc_docfap/evaluation_matrix'
-import { getAltFill, normalizeValues } from '../resultUtils'
+import { getRankFill, normalizeValues } from '../resultUtils'
+import { buildRankIndexMap } from '../../../docfap/rankColors'
 
 type AnalysisKey = 'cba' | 'impatto' | 'mca' | 'sensitivita'
 
@@ -69,14 +70,12 @@ function buildScenariData(ranking: ScoreComposito[]): Record<string, unknown>[] 
   })
 }
 
-export function DetailAnalysisChart({ ranking, getLabel, recommendedId, mcaQuestions }: Props) {
+export function DetailAnalysisChart({ ranking, getLabel, recommendedId: _recommendedId, mcaQuestions }: Props) {
   const [activeKey, setActiveKey] = useState<AnalysisKey>('cba')
 
-  function fillIndex(item: ScoreComposito, i: number): number {
-    if (item.alternativaId === recommendedId) return 0
-    const recIdx = ranking.findIndex(r => r.alternativaId === recommendedId)
-    return recIdx === -1 ? i + 1 : i < recIdx ? i + 1 : i
-  }
+  // Colore per piazzamento: 1ª verde, 2ª arancione (con 3+ opzioni), resto grigio.
+  const rankMap = buildRankIndexMap(ranking)
+  const fill = (item: ScoreComposito) => getRankFill(rankMap[item.alternativaId] ?? 0, ranking.length)
 
   let chartData: Record<string, unknown>[] = []
   let subLabel = ''
@@ -131,12 +130,12 @@ export function DetailAnalysisChart({ ranking, getLabel, recommendedId, mcaQuest
             <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#6e6e6e' }} axisLine={false} tickLine={false} />
             <Tooltip contentStyle={{ fontSize: 12, border: '1px solid #e7e7e7', borderRadius: 2 }} />
             <Legend formatter={(value: string) => getLabel(value as AlternativaId)} wrapperStyle={{ fontSize: 11 }} />
-            {ranking.map((item, i) => (
+            {ranking.map((item) => (
               <Bar
                 key={item.alternativaId}
                 dataKey={item.alternativaId}
                 name={item.alternativaId}
-                fill={getAltFill(fillIndex(item, i))}
+                fill={fill(item)}
                 radius={[2, 2, 0, 0]}
                 maxBarSize={52}
               />

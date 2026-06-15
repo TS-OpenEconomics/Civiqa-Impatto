@@ -1,5 +1,7 @@
 import { Component } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
+import { rankColor, RANK_COLORS, buildRankIndexMap } from './rankColors'
+import type { AlternativaId } from '../../types/docfap'
 
 /* ──────────────────────────────────────────────────────────────────────────
    Grafici inline (SVG/CSS) per i tab di dettaglio DOCFAP.
@@ -9,42 +11,53 @@ import type { CSSProperties, ReactNode } from 'react'
    le altre il viola del brand.
    ────────────────────────────────────────────────────────────────────────── */
 
-// Palette grafici: l'opzione scelta/raccomandata usa il viola scuro del brand
-// (lo stesso evidenziato nelle tabelle di riepilogo), le opzioni non scelte un
-// grigio neutro — così è immediato distinguere "cosa è cosa".
-export const CHART_CHOSEN_COLOR = '#5B21F7'
-export const CHART_UNCHOSEN_COLOR = '#9e9e9e'
+// Palette grafici allineata allo schema ranking del DOCFAP:
+//   1ª (raccomandata) → verde · 2ª → arancione (con 3+ opzioni) · resto → grigio.
+export const CHART_CHOSEN_COLOR = RANK_COLORS.green.solid
+export const CHART_UNCHOSEN_COLOR = RANK_COLORS.grey.solid
 export const CHART_BASELINE_COLOR = '#c4c4c8'
 
 export const CHART_RECOMMENDED_COLOR = CHART_CHOSEN_COLOR
 export const CHART_DEFAULT_COLOR = CHART_UNCHOSEN_COLOR
-export const CHART_SERIES_COLORS = [CHART_CHOSEN_COLOR, CHART_UNCHOSEN_COLOR, '#b0b0b0', '#cfcfcf']
-
-// Palette per le alternative NON raccomandate: colori distinti (il viola del brand
-// resta riservato alla raccomandata). Indicizzata sul numero dell'alternativa
-// (A1→0, A2→1, …) così con 3+ opzioni ogni serie resta distinguibile e nei grafici
-// raggruppati/radar non si fondono in un'unica barra.
-const ALT_DISTINCT_PALETTE = ['#0891b2', '#ca8a04', '#be185d', '#0d9488', '#7c3aed', '#b45309']
-
-/** Indice 0-based ricavato dall'id alternativa (A1→0, A2→1, …); -1 se non parsabile. */
-function altIndex(altId: string): number {
-  const n = parseInt(altId.replace(/\D/g, ''), 10)
-  return Number.isFinite(n) && n > 0 ? n - 1 : -1
-}
+export const CHART_SERIES_COLORS = [
+  RANK_COLORS.green.solid,
+  RANK_COLORS.orange.solid,
+  RANK_COLORS.grey.solid,
+  '#b0b0b0',
+]
 
 export function altBarColor(isRecommended: boolean): string {
   return isRecommended ? CHART_CHOSEN_COLOR : CHART_UNCHOSEN_COLOR
 }
 
-/** Colore di una serie/alternativa: scelta → viola del brand, baseline A0 → grigio
- *  chiaro, altre alternative → un colore distinto dalla palette (così 3+ alternative
- *  restano sempre distinguibili nei grafici). */
+/** Colore di una serie/alternativa in base al PIAZZAMENTO (rank): 1ª verde,
+ *  2ª arancione (solo con 3+ opzioni), restanti grigio. `rankIndex` 0 = migliore. */
+export function altColorByRank(rankIndex: number, totalOptions: number): string {
+  return rankColor(rankIndex, totalOptions).solid
+}
+
+/** Variante legacy a flag booleano (scelta/non scelta). Preferire `altColorByRank`
+ *  dove è disponibile l'ordinamento per punteggio. */
 export function altColor(altId: string, isRecommended: boolean): string {
   if (isRecommended) return CHART_CHOSEN_COLOR
   if (altId === 'A0') return CHART_BASELINE_COLOR
-  const i = altIndex(altId)
-  if (i < 0) return CHART_UNCHOSEN_COLOR
-  return ALT_DISTINCT_PALETTE[i % ALT_DISTINCT_PALETTE.length]
+  return CHART_UNCHOSEN_COLOR
+}
+
+/**
+ * Costruisce una funzione altId → colore per piazzamento, a partire dall'elenco
+ * delle alternative con il loro scoreFinale. La baseline A0 resta grigia.
+ * Usala una volta per grafico, poi chiama il risultato per ogni serie.
+ */
+export function makeAltColorByRank(
+  scores: { alternativaId: AlternativaId; scoreFinale: number }[],
+): (altId: string) => string {
+  const idx = buildRankIndexMap(scores)
+  const total = scores.length
+  return (altId: string) => {
+    if (altId === 'A0') return CHART_BASELINE_COLOR
+    return rankColor(idx[altId] ?? total - 1, total).solid
+  }
 }
 
 /* ── Wrapper per un tab: grafico in alto, tabella sotto ── */

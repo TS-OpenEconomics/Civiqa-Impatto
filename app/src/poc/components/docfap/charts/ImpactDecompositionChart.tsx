@@ -9,7 +9,7 @@ import {
 } from 'recharts'
 import type { ScoreComposito, AlternativaId, AlternativaData } from '../../../types/docfap'
 import { getAlternativeDisplayLabel, getRecommendedAlternativeId } from '../tableHelpers'
-import { altColor } from '../chartHelpers'
+import { makeAltColorByRank } from '../chartHelpers'
 
 const GREEN = '#1f8c4a'
 
@@ -60,6 +60,7 @@ export function ImpactDecompositionChart({ scores, alternative }: Props) {
   if (scores.length === 0) return null
 
   const recommendedId = getRecommendedAlternativeId(scores)
+  const colorFor = makeAltColorByRank(scores)
 
   const chartData: Row[] = DIMS.map(({ key, label }) => {
     const row: Row = { dim: label, leaderId: null, delta: 0 }
@@ -145,7 +146,7 @@ export function ImpactDecompositionChart({ scores, alternative }: Props) {
               key={s.alternativaId}
               dataKey={s.alternativaId}
               name={s.alternativaId}
-              fill={altColor(s.alternativaId, s.alternativaId === recommendedId)}
+              fill={colorFor(s.alternativaId)}
               maxBarSize={44}
               radius={[3, 3, 0, 0]}
             >

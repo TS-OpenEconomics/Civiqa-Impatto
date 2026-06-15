@@ -70,6 +70,9 @@ export interface WizardStoreState {
   alternativeAggiuntaCompletata: boolean
   scoreFinale: ScoreComposito[] | null
   decisioneRUP: DecisioneRUP | null
+  /** Contatore incrementato a ogni "Autoriempi questa pagina": consente ai blocchi
+   *  progressivi (es. parametri alternativa) di bloccarsi tutti come confermati. */
+  autofillTick: number
 }
 
 interface WizardStoreActions {
@@ -98,6 +101,7 @@ interface WizardStoreActions {
   setAlternativeAggiuntaCompletata: (value: boolean) => void
   setScore: (scoreFinale: ScoreComposito[] | null) => void
   setDecisione: (decisione: DecisioneRUP | null) => void
+  bumpAutofill: () => void
   reset: () => void
   prefillPOCAnswers: (clusterId: string, altIds: AlternativaId[]) => void
 }
@@ -180,6 +184,7 @@ const DEFAULT_WIZARD_STATE: WizardStoreState = {
   alternativeAggiuntaCompletata: false,
   scoreFinale: null,
   decisioneRUP: null,
+  autofillTick: 0,
 }
 
 function isBrowser(): boolean {
@@ -398,6 +403,9 @@ const actions: WizardStoreActions = {
   },
   setDecisione(decisione) {
     updateState((prev) => ({ ...prev, decisioneRUP: decisione }))
+  },
+  bumpAutofill() {
+    updateState((prev) => ({ ...prev, autofillTick: prev.autofillTick + 1 }))
   },
   reset() {
     updateState(() => freshState())

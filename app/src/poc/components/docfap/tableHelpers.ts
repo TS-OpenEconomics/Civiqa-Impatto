@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import { INTERVENTION_CATEGORIES } from '../../data/poc_docfap/intervention_categories_layer3'
 import type { AlternativaData, AlternativaId } from '../../types/docfap'
 import type { ScoreComposito } from '../../types/docfap'
+import { RANK_COLORS, rankColor } from './rankColors'
 
 // Etichette ufficiali degli indicatori dell'Analisi del Rischio, allineate in tutto
 // il DOCFAP (summary card, box di confronto, dettaglio). Ogni etichetta ha una
@@ -141,9 +142,9 @@ export const detailHeaderCellBaseStyle: CSSProperties = {
 }
 
 export const detailRecommendedHeaderStyle: CSSProperties = {
-  // rgba translucido così l'evidenziazione funziona su tema chiaro e scuro
-  background: 'rgba(91,33,247,0.08)',
-  boxShadow: 'inset 3px 0 0 #7c4dff',
+  // Colonna raccomandata: tinta + accento VERDE (schema ranking).
+  background: RANK_COLORS.green.tint,
+  boxShadow: `inset 3px 0 0 ${RANK_COLORS.green.accent}`,
   color: 'var(--color-text-primary)',
 }
 
@@ -184,8 +185,17 @@ export const detailAltBadgeStyle: CSSProperties = {
 
 export const detailRecommendedAltBadgeStyle: CSSProperties = {
   ...detailAltBadgeStyle,
-  background: '#5b21f7',
-  color: '#fff',
+  background: RANK_COLORS.green.solid,
+  color: RANK_COLORS.green.text,
+}
+
+/**
+ * Stile del badge "A1/A2/…" colorato per piazzamento:
+ * 1ª = verde, 2ª = arancione (solo con 3+ opzioni), restanti = grigio.
+ */
+export function getAltBadgeStyle(rankIndex: number, totalOptions: number): CSSProperties {
+  const c = rankColor(rankIndex, totalOptions)
+  return { ...detailAltBadgeStyle, background: c.solid, color: c.text }
 }
 
 export const detailRecommendedBadgeStyle: CSSProperties = {
@@ -221,7 +231,7 @@ export const detailBodyCellStyle: CSSProperties = {
 }
 
 export const detailRecommendedColumnStyle: CSSProperties = {
-  background: 'rgba(91,33,247,0.05)',
+  background: RANK_COLORS.green.tint,
 }
 
 // Evidenziazione "valore migliore per riga" disattivata: nelle tabelle di riepilogo
@@ -236,7 +246,7 @@ export const detailFinalRowHeaderStyle: CSSProperties = {
 
 export const detailFinalCellStyle: CSSProperties = {
   ...detailBodyCellStyle,
-  background: 'rgba(91,33,247,0.08)',
+  background: RANK_COLORS.green.tint,
   fontWeight: 700,
 }
 
@@ -270,8 +280,8 @@ export function getDetailFinalRecommendedCellStyle(isRecommended: boolean): CSSP
   if (!isRecommended) return base
   return {
     ...base,
-    background: 'rgba(91,33,247,0.12)',
-    boxShadow: 'inset 3px 0 0 #7c4dff',
+    background: RANK_COLORS.green.tintStrong,
+    boxShadow: `inset 3px 0 0 ${RANK_COLORS.green.accent}`,
   }
 }
 
