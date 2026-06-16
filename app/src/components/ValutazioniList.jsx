@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { POC_MODE } from "../config/pocMode";
 import { useProjects } from "../contexts/ProjectContext";
 import { useToast } from "../hooks/useToast";
 import { IconValutazione } from "../poc/components/layout/SideNav";
@@ -300,6 +301,7 @@ function ProjectListCard({ project, onOpen, onDelete, onDuplicate, onShare, onOp
           )}
         </div>
 
+        {!POC_MODE && (
         <div className="flex items-start px-4 py-4 lg:border-l lg:border-[#e6e6e6]">
           <ProjectAction
             onDelete={onDelete}
@@ -307,6 +309,7 @@ function ProjectListCard({ project, onOpen, onDelete, onDuplicate, onShare, onOp
             onShare={onShare}
           />
         </div>
+        )}
       </div>
 
       <div className="grid gap-x-8 gap-y-6 px-5 py-4 md:grid-cols-2 xl:grid-cols-3">
@@ -423,10 +426,11 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation, onOpenAnalysis
     // I preset demo sono posizionali: li assegniamo solo ai progetti non-reali,
     // così MUBA (in cima) conserva i propri campi senza essere sovrascritto.
     let presetCursor = 0;
-    return projects.map((workspace) => {
+    const all = projects.map((workspace) => {
       const preset = REAL_PROJECT_IDS.has(workspace.id) ? {} : (LIST_PRESETS[presetCursor++] || {});
       return buildDisplayProject(workspace, preset);
     });
+    return POC_MODE ? all.filter((p) => p.id === 'PROJ-MUBA-976') : all;
   }, [projects]);
 
   const filteredProjects = useMemo(() => {
@@ -526,6 +530,7 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation, onOpenAnalysis
             </p>
           </div>
 
+          {!POC_MODE && (
           <button
             type="button"
             onClick={onNewEvaluation}
@@ -534,8 +539,11 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation, onOpenAnalysis
             <span>Nuova valutazione</span>
             <span className="text-[28px] leading-none">+</span>
           </button>
+          )}
         </div>
 
+        {!POC_MODE && (
+        <>
         <h2 className="mt-9 text-[18px] font-bold text-ink-900">Progetti in evidenza</h2>
 
         {isLoading ? (
@@ -580,6 +588,8 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation, onOpenAnalysis
               <IconArrowRight className="h-4 w-4" />
             </button>
           </div>
+        )}
+        </>
         )}
       </section>
 
