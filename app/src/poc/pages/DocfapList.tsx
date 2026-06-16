@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { DocfapWizard } from '../components/wizard/DocfapWizard'
 import { loadDocfapDemo } from '../data/docfapDemo'
 import { wizardStore } from '../store/wizardStore'
+import { POC_MODE } from '../../config/pocMode'
 
 type DocfapStatus = 'Bozza' | 'Completato' | 'In corso'
 type AnalysisTag = 'EIA' | 'ECBA' | 'RISK' | 'MCA'
@@ -462,9 +463,11 @@ function DocfapProjectCard({
           )}
         </div>
 
+        {!POC_MODE && (
         <div style={listCardMenuColStyle}>
           <DocfapCardMenu onDuplicate={onDuplicate} onShare={onShare} onDelete={onDelete} />
         </div>
+        )}
       </div>
 
       <div style={listCardInfoGridStyle}>
@@ -514,6 +517,9 @@ export function DocfapList() {
   }, [notice])
 
   const dataset = useMemo(() => {
+    if (POC_MODE) {
+      return DOCFAP_ENTE.filter((row) => row.id === 'docfap-003')
+    }
     const base = activeTab === 'ente' ? DOCFAP_ENTE : DOCFAP_TERRITORIO
     return [...extras[activeTab], ...base].filter((row) => !removedIds.includes(row.id))
   }, [activeTab, extras, removedIds])
@@ -623,14 +629,17 @@ export function DocfapList() {
               Compila il Docfap per confrontare alternative progettuali secondo la normativa prevista dall'Allegato I.7 del D.Lgs. 36/2023, con analisi costi-benefici, impatto, rischio, sensitività e supporto alla decisione del RUP.
             </p>
           </div>
+          {!POC_MODE && (
           <div style={headerActionsStyle}>
             <button type="button" onClick={handleOpenWizard} style={ctaStyle}>
               <span>Nuovo Docfap</span>
               <span style={ctaPlusStyle} aria-hidden="true">+</span>
             </button>
           </div>
+          )}
         </header>
 
+        {!POC_MODE && (
         <section aria-labelledby="docfap-evidenza" style={featuredSectionStyle}>
           <div style={sectionHeaderStyle}>
             <h2 id="docfap-evidenza" style={h2Style}>Progetti in evidenza</h2>
@@ -660,6 +669,7 @@ export function DocfapList() {
             ))}
           </div>
         </section>
+        )}
 
         <h2 style={h2Style}>Esplora i progetti</h2>
 
@@ -677,6 +687,7 @@ export function DocfapList() {
             >
               Docfap del tuo ente
             </button>
+            {!POC_MODE && (
             <button
               type="button"
               role="tab"
@@ -689,6 +700,7 @@ export function DocfapList() {
             >
               Docfap delle province e comuni
             </button>
+            )}
           </div>
 
           <div style={filtersRowStyle}>
