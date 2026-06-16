@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
+import { POC_MODE } from "./config/pocMode";
 import { useAuth } from "./contexts/AuthContext";
 import { useProjects } from "./contexts/ProjectContext";
 import { Login } from "./components/Login";
@@ -58,10 +59,10 @@ export function AppRouter() {
         {/* Tutte le sezioni prodotto condividono l'AppShell (TopNav + SideNav) */}
         <Route element={<AppShell />}>
           <Route path="/valutazioni" element={<ValutazioniListRoute />} />
-          <Route path="/valutazioni/nuova/intro" element={<ValutazioneIntroRoute />} />
-          <Route path="/valutazioni/nuova" element={<WizardRoute />} />
-          <Route path="/valutazioni/nuova/riepilogo" element={<ConfigurationSummaryRoute />} />
-          <Route path="/valutazioni/nuova/completata" element={<ConfigurationCompleteRoute />} />
+          <Route path="/valutazioni/nuova/intro" element={POC_MODE ? <Navigate to="/valutazioni" replace /> : <ValutazioneIntroRoute />} />
+          <Route path="/valutazioni/nuova" element={POC_MODE ? <Navigate to="/valutazioni" replace /> : <WizardRoute />} />
+          <Route path="/valutazioni/nuova/riepilogo" element={POC_MODE ? <Navigate to="/valutazioni" replace /> : <ConfigurationSummaryRoute />} />
+          <Route path="/valutazioni/nuova/completata" element={POC_MODE ? <Navigate to="/valutazioni" replace /> : <ConfigurationCompleteRoute />} />
           <Route path="/valutazioni/:id/running-both" element={<RunningBothRoute />} />
           <Route path="/valutazioni/:id" element={<ProjectDetailRoute />} />
           <Route path="/valutazioni/:id/eia" element={<EiaInputRoute />} />
