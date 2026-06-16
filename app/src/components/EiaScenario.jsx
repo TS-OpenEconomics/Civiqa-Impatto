@@ -98,7 +98,7 @@ export function EiaScenario({ project, initialScenario, onClose, onRun }) {
           <SummaryBlock title="OPEX considerato">
             <div className="grid grid-cols-2 divide-x divide-[#ececec] md:grid-cols-4">
               <SummaryField label="Tasso OPEX" value={conf.opex_tasso != null ? `${conf.opex_tasso}%` : "—"} />
-              <SummaryField label="OPEX annuo" value={conf.opex ? `${fmt(conf.opex)} €` : "—"} />
+              <SummaryField label="OPEX" value={conf.opex ? `${fmt(conf.opex)} €` : "—"} />
               <SummaryField label="Vita utile" value={conf.vita_utile ? `${conf.vita_utile} anni` : "—"} />
               <SummaryField
                 label="OPEX totale stimato"

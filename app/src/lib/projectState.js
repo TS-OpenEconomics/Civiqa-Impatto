@@ -12,7 +12,7 @@ const DEFAULT_ECBA_INPUTS = {
 
 // v5: MUBA ora include il gettito fiscale (€8.456.460) e i dataset di dettaglio
 // EIA/ECBA reali. Il bump invalida lo stato v4 in cache (MUBA senza gettito).
-export const PROJECT_STORAGE_KEY = "civiqa.projects.v5";
+export const PROJECT_STORAGE_KEY = "civiqa.projects.v6";
 export const UI_STORAGE_KEY = "civiqa.ui.v1";
 
 function clone(value) {

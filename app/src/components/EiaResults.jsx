@@ -274,9 +274,9 @@ function buildTerritorialSegments(dimId) {
   const pct = roundedPctParts(values);
 
   return [
-    { id: "province", label: "Provincia di origine", name: originProvince, value: values[0], pct: pct[0], cls: "bg-impact-direct" },
+    { id: "rest_italy", label: "Fuori regione", name: "Resto d'Italia", value: values[2], pct: pct[2], cls: "bg-impact-induced" },
     { id: "rest_region", label: "Resto della regione", name: regionName, value: values[1], pct: pct[1], cls: "bg-impact-indirect" },
-    { id: "rest_italy", label: "Resto d'Italia", name: "Italia", value: values[2], pct: pct[2], cls: "bg-impact-induced" },
+    { id: "province", label: "Provincia di origine", name: originProvince, value: values[0], pct: pct[0], cls: "bg-impact-direct" },
   ];
 }
 
@@ -1068,12 +1068,12 @@ function PropagazioneFooter({ metricId, metricDef }) {
         <div className="flex flex-col gap-4">
           {[
             {
-              color: "#534AB7",
-              label: "Provincia di origine",
-              name: originProvince,
-              meaning: "Imprese, lavoratori e fornitori della provincia da cui parte la spesa.",
-              pct: originPct,
-              value: dimFmt(dimTotal * (macroSplit.origin?.pct ?? 0.46)),
+              color: "#CECBF6",
+              label: "Fuori regione",
+              name: "Resto d'Italia",
+              meaning: "Effetti sulle filiere nazionali: fornitori, materiali e servizi acquistati fuori dalla regione.",
+              pct: extraPct,
+              value: dimFmt(dimTotal * (macroSplit.extra_region?.pct ?? 0.16)),
             },
             {
               color: "#AFA9EC",
@@ -1084,12 +1084,12 @@ function PropagazioneFooter({ metricId, metricDef }) {
               value: dimFmt(dimTotal * (macroSplit.rest_of_region?.pct ?? 0.38)),
             },
             {
-              color: "#CECBF6",
-              label: "Fuori regione",
-              name: "Resto d'Italia",
-              meaning: "Effetti sulle filiere nazionali: fornitori, materiali e servizi acquistati fuori dalla regione.",
-              pct: extraPct,
-              value: dimFmt(dimTotal * (macroSplit.extra_region?.pct ?? 0.16)),
+              color: "#534AB7",
+              label: "Provincia di origine",
+              name: originProvince,
+              meaning: "Imprese, lavoratori e fornitori della provincia da cui parte la spesa.",
+              pct: originPct,
+              value: dimFmt(dimTotal * (macroSplit.origin?.pct ?? 0.46)),
             },
           ].map((item, idx, arr) => (
             <div
@@ -1269,7 +1269,7 @@ function TabGeografia({ updateSearch, searchParams, onOpenExplore }) {
         {/* Spesa map card */}
         <div className="flex flex-col rounded-xl border border-ink-100 bg-white p-5">
           <div className="mb-3">
-            <div className="mb-1 text-[11px] uppercase tracking-[0.08em] text-ink-400">Spesa investita</div>
+            <div className="mb-1 text-[11px] uppercase tracking-[0.08em] text-ink-400">Spesa effettuata</div>
             <div className="text-[22px] font-medium text-ink-900">{fmtM(inp.total_spend ?? 0)}</div>
             <div className="mt-1 text-[12px] text-ink-500">Concentrata nella provincia di {originProvince}</div>
           </div>

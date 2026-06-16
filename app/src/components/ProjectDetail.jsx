@@ -271,7 +271,7 @@ function EcbaRows({ ecba }) {
   const bcr = r.bcr ?? (r.benefici_totali && r.costi_totali ? r.benefici_totali / r.costi_totali : null);
   const cards = [
     { label: "Benefici economici", icon: "benefici",   value: r.benefici_totali ? `€ ${fmtIT(r.benefici_totali)}` : "—", sub: "valore attuale",              tone: "green", info: "Somma attualizzata dei benefici economici e sociali monetizzati del progetto." },
-    { label: "Costi economici",    icon: "costi",      value: r.costi_totali    ? `€ ${fmtIT(r.costi_totali)}`    : "—", sub: "valore attuale",              tone: "red",   info: "Somma attualizzata dei costi del progetto (CAPEX + OPEX)." },
+    { label: "Costi economici",    icon: "costi",      value: r.costi_totali    ? `€ ${fmtIT(r.costi_totali)}`    : "—", sub: "valore attuale",              tone: "red",   info: "Somma attualizzata dei costi del progetto (CAPEX + OPEX), corretti con i prezzi ombra." },
     { label: "VANE",               icon: "vane",       value: r.van != null     ? `€ ${fmtIT(r.van)}`             : "—", sub: "valore attuale netto",        tone: r.van != null ? (r.van >= 0 ? "green" : "red") : null, info: "Valore Attuale Netto Economico: benefici meno costi attualizzati. Maggiore di zero = conveniente per la collettività." },
     { label: "Payback period",     icon: "payback",    value: r.payback_period  ? `${r.payback_period}`           : "—", sub: "anni al rientro",             tone: null,    info: "Anni necessari perché i benefici cumulati superino i costi (payback sociale)." },
     { label: "Rapporto B/C",       icon: "bcr",        value: bcr               ? fmtIT(bcr, 2)                   : "—", sub: "benefici su costi",           tone: bcr != null ? (bcr >= 1 ? "green" : "red") : null, info: "Rapporto benefici/costi: maggiore di 1 significa benefici superiori ai costi." },
@@ -943,7 +943,7 @@ export function ProjectDetail({
             ["Settore", cfg.settore, false],
             ["Categoria di intervento", cfg.categoria_intervento, false],
             ["CAPEX", fmtCurrency(cfg.capex), true],
-            ["OPEX annuo", fmtCurrency(cfg.opex), true],
+            ["OPEX", fmtCurrency(cfg.opex), true],
           ].map(([label, value, highlight]) => (
             <div key={label} className="px-6 py-4">
               <p className="text-[11px] font-medium text-ink-400">{label}</p>
@@ -982,7 +982,7 @@ export function ProjectDetail({
             [
               ["Anno di attualizzazione", cfg.anno_attualizzazione],
               ["CAPEX",                   fmtCurrency(cfg.capex)],
-              ["OPEX annuo",              fmtCurrency(cfg.opex)],
+              ["OPEX",                    fmtCurrency(cfg.opex)],
             ],
           ].map((col, ci) => (
             <div key={ci} className="divide-y divide-ink-100">

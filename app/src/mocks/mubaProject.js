@@ -28,14 +28,14 @@ export const MUBA_PROJECT = {
     "nuts_label": "Bologna",
     "anno_attualizzazione": 2025,
     "tasso_attualizzazione": 3.5,
-    "capex": 19804223,
-    "opex": 0,
+    "capex": 7143393,
+    "opex": 12660827,
     "vita_utile": 25
   }
 };
 
 export const MUBA_EIA_RESULTS = {
-  "shock_totale": 19804223,
+  "shock_totale": 19804220,
   "moltiplicatore": 3.28,
   "produzione": {
     "diretto": 19311468,
@@ -491,8 +491,8 @@ export const MUBA_EIA_RESULTS = {
     "settore": "Infrastrutture sociali",
     "nuts_code": "ITH55",
     "nuts_label": "Bologna",
-    "capex": 19804223,
-    "opex_annuo": 0,
+    "capex": 7143393,
+    "opex_annuo": 12660827,
     "vita_utile": 25,
     "anno_inizio": 2025,
     "anno_fine": 2050,
@@ -588,19 +588,24 @@ export const MUBA_ECBA_RESULTS = {
   "costi_categorie": [
     {
       "id": "capex",
-      "label": "Investimento e costi (valore attuale)",
-      "valore_pv": 16036392
+      "label": "CAPEX (valore attuale)",
+      "valore_pv": 5786516
+    },
+    {
+      "id": "opex",
+      "label": "OPEX (valore attuale)",
+      "valore_pv": 10249876
     }
   ],
-  "pv_capex": 16036392,
-  "pv_opex": 0,
+  "pv_capex": 5786516,
+  "pv_opex": 10249876,
   "flussi": [],
   "meta": {
     "orizzonte": 25,
     "tasso": 3.5,
     "residual": 0,
-    "capex": 19804223,
-    "annual_opex": 0
+    "capex": 7143393,
+    "annual_opex": 12660827
   }
 };
 
@@ -624,7 +629,7 @@ export const MUBA_EIA_DATASET = {
     "esplora": "Approfondimento dati"
   },
   "input": {
-    "total_spend": 19804223,
+    "total_spend": 19804220,
     "currency": "EUR",
     "origin_provinces": [
       {
@@ -16846,6 +16851,8 @@ export const MUBA_ECBA_DATASET = {
     "esternalitaNeg": 0.44,
     "vane": 23.71
   },
+  "pv_capex": 5786516,
+  "pv_opex": 10249876,
   "cashflow": {
     "cost": [
       3.29,
@@ -16994,30 +17001,20 @@ export const MUBA_ECBA_DATASET = {
     }
   ],
   "montecarlo": {
-    "start": 6,
-    "w": 4,
+    "start": -12,
+    "w": 2,
     "freq": [
-      1,
-      2,
-      5,
-      11,
-      18,
-      22,
-      18,
-      12,
-      7,
-      3,
-      1
+      1, 1, 1, 2, 2, 1, 1, 2, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 9, 6, 4, 3, 2, 1
     ],
-    "base": 23.71
+    "base": 19.0
   },
   "riskSummary": {
-    "probPositive": 0.95,
-    "median": 23.71,
-    "mean": 23.2,
-    "std": 8.3,
-    "p5": 10.7,
-    "p95": 36.8,
+    "probPositive": 0.92,
+    "median": 19.0,
+    "mean": 18.0,
+    "std": 9.0,
+    "p5": -5.0,
+    "p95": 31.0,
     "criticalVar": "Costi di investimento"
   },
   "elasticities": [
@@ -17068,21 +17065,7 @@ export const MUBA_ECBA_DATASET = {
   "heatmap": {
     "benefici": 39.74,
     "costiTotali": 16.04,
-    "costMults": [
-      0.8,
-      0.9,
-      1,
-      1.1,
-      1.2,
-      1.3
-    ],
-    "benefitMults": [
-      0.8,
-      0.9,
-      1,
-      1.1,
-      1.2,
-      1.3
-    ]
+    "costMults":    [0.9, 1.0, 1.2, 1.4, 1.6, 1.8],
+    "benefitMults": [0.5, 0.6, 0.7, 0.8, 1.0, 1.2]
   }
 };

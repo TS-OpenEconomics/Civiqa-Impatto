@@ -82,7 +82,7 @@ export function ConfigurationSummary({ project, onBack, onConfirm, onClose }) {
               </div>
               <ConfigField label="Anno di attualizzazione" value={String(project.configurazione.anno_attualizzazione)} />
               <ConfigField label="CAPEX" value={formatCurrency(project.configurazione.capex)} />
-              <ConfigField label="OPEX annuo" value={formatCurrency(project.configurazione.opex)} />
+              <ConfigField label="OPEX" value={formatCurrency(project.configurazione.opex)} />
               {project.configurazione.vita_utile && (
                 <ConfigField label="Vita utile" value={`${project.configurazione.vita_utile} anni`} />
               )}

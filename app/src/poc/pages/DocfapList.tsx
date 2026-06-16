@@ -62,7 +62,7 @@ const MOCK_PROJECTS = [
   },
   {
     id: 'ALT_C',
-    name: 'Nuova costruzione su area adiacente',
+    name: "Ristrutturazione e ampliamento dell'asilo nido comunale",
     cup: 'I63C22000050007',
     capex: 2100000,
     opex_annuo: 80000,
