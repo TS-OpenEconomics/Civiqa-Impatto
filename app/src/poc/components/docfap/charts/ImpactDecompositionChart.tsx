@@ -112,9 +112,7 @@ export function ImpactDecompositionChart({ scores, alternative }: Props) {
     <div style={cardStyle}>
       <h3 style={titleStyle}>Confronto d'impatto economico tra gli interventi</h3>
       <p style={subtitleStyle}>
-        Principali dimensioni macroeconomiche attivate. In{' '}
-        <span style={{ color: GREEN, fontWeight: 700 }}>verde</span> il vantaggio dell'intervento con impatto
-        maggiore su ciascuna dimensione.
+        Per ogni dimensione macroeconomica le barre mostrano il valore assoluto di ciascuna alternativa. Il delta in cima indica la differenza tra la soluzione con impatto maggiore e la seconda classificata su quella dimensione.
       </p>
 
       <ResponsiveContainer width="100%" height={340}>

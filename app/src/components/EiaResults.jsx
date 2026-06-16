@@ -709,8 +709,8 @@ function SintesiMultiplierGrid({ regGdpMult, natGdpMult, regProdMult, natProdMul
   // Placeholder "xx" — la media di settore viene popolata quando i dati di benchmark saranno disponibili.
   const rows = [
     { icon: "pil",         label: "PIL",               formula: "PIL / spesa",            regVal: `${fmtIT(regGdpMult, 2)}×`,        natVal: `${fmtIT(natGdpMult, 2)}×`,        avgVal: "xx" },
-    { icon: "produzione",  label: "Valore produzione", formula: "Prod / spesa",           regVal: `${fmtIT(regProdMult, 2)}×`,       natVal: `${fmtIT(natProdMult, 2)}×`,       avgVal: "xx" },
-    { icon: "occupazione", label: "Occupazione",       formula: "occupati / mln € speso", regVal: `${fmtIT(regEmpInt, 1)} occupati`, natVal: `${fmtIT(natEmpInt, 1)} occupati`, avgVal: "xx" },
+    { icon: "produzione",  label: "Valore produzione", formula: "Produzione/spesa",        regVal: `${fmtIT(regProdMult, 2)}×`,       natVal: `${fmtIT(natProdMult, 2)}×`,       avgVal: "xx" },
+    { icon: "occupazione", label: "Occupazione",       formula: "Occupati/mln € speso",   regVal: `${fmtIT(regEmpInt, 1)} occupati`, natVal: `${fmtIT(natEmpInt, 1)} occupati`, avgVal: "xx" },
   ];
 
   return (
@@ -2285,18 +2285,16 @@ function TabEsplora({ showToast, searchParams, updateSearch }) {
             </>
           )}
         </div>
-      </div>
-
-      {/* Presets */}
-      <div className="mb-6">
-        <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-400">Domande frequenti</div>
-        <div className="flex flex-wrap gap-2">
-          {PRESETS.map((p) => (
-            <button key={p.label} onClick={p.fn} className="flex items-center gap-1.5 border border-ink-200 bg-white px-3.5 py-1.5 text-[13px] text-ink-500 transition-colors hover:border-[#AFA9EC] hover:bg-[#EEEDFE] hover:text-[#3C3489]">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.6"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              {p.label}
-            </button>
-          ))}
+        <div className="mt-4 border-t border-ink-100 pt-4">
+          <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-400">Domande frequenti</div>
+          <div className="flex flex-wrap gap-2">
+            {PRESETS.map((p) => (
+              <button key={p.label} onClick={p.fn} className="flex items-center gap-1.5 border border-ink-200 bg-white px-3.5 py-1.5 text-[13px] text-ink-500 transition-colors hover:border-[#AFA9EC] hover:bg-[#EEEDFE] hover:text-[#3C3489]">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.6"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

@@ -42,11 +42,13 @@ export function buildResultBoxOptions(
     if (alt?.capex != null) details.push({ label: 'CAPEX', value: `EUR ${formatEuro(alt.capex)}` })
     if (alt?.opex != null) details.push({ label: 'OPEX', value: `EUR ${formatEuro(alt.opex)}` })
     if (alt?.durataStimata) details.push({ label: 'Durata', value: `${alt.durataStimata} mesi` })
-    const c = rankColor(rankMap[score.alternativaId] ?? total - 1, total)
+    const rankIdx = rankMap[score.alternativaId] ?? total - 1
+    const c = rankColor(rankIdx, total)
     return {
       id: score.alternativaId,
       label: getAlternativeDisplayLabel(score.alternativaId, alt),
       isRecommended: score.alternativaId === recommendedId,
+      isSecondBest: rankIdx === 1 && total >= 3,
       badgeBg: c.solid,
       badgeText: c.text,
       details,

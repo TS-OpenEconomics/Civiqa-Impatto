@@ -233,7 +233,7 @@ export function DocfapDetail() {
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <button
               type="button"
-              className="flex h-9 items-center gap-2 border border-ink-200 bg-white px-4 font-semibold text-ink-700 transition-colors hover:border-brand-violet hover:text-brand-violet"
+              className="flex h-9 items-center gap-2 bg-brand-violet px-4 font-semibold text-white transition-opacity hover:opacity-90"
             >
               Scarica report <IconDownload />
             </button>
@@ -290,6 +290,14 @@ export function DocfapDetail() {
                         style={{ background: c.solid }}
                       >
                         Raccomandata
+                      </span>
+                    )}
+                    {!rec && (rankMap[s.alternativaId] ?? 0) === 1 && orderedScores.length >= 3 && (
+                      <span
+                        className="inline-flex items-center px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white"
+                        style={{ background: c.solid }}
+                      >
+                        2a migliore
                       </span>
                     )}
                   </div>

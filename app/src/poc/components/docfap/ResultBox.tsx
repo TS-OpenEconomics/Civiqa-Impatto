@@ -6,6 +6,7 @@ export interface ResultBoxOption {
   id: AlternativaId
   label: string
   isRecommended: boolean
+  isSecondBest?: boolean
   /** Colore del badge "A1/A2…" per piazzamento (1ª verde, 2ª arancione, resto grigio). */
   badgeBg?: string
   badgeText?: string
@@ -124,6 +125,14 @@ export function ResultBox({
                           style={{ background: GREEN.solid }}
                         >
                           Raccomandata
+                        </span>
+                      )}
+                      {!opt.isRecommended && opt.isSecondBest && (
+                        <span
+                          className="inline-flex items-center px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-white"
+                          style={{ background: RANK_COLORS.orange.solid }}
+                        >
+                          2a migliore
                         </span>
                       )}
                       <div className="relative w-full">

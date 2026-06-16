@@ -206,9 +206,9 @@ function EiaKpiCards({ eia, settoreSpesa }) {
   const topRegione = r.per_territorio?.[0]?.regione ?? null;
 
   const moltChips = [
-    moltProd != null && { label: "Moltiplicatore di produzione", formula: "Prod / spesa", value: `${fmtIT(moltProd, 2)}×` },
+    moltProd != null && { label: "Moltiplicatore di produzione", formula: "Produzione/spesa", value: `${fmtIT(moltProd, 2)}×` },
     moltPil != null && { label: "Moltiplicatore PIL", formula: "PIL / spesa", value: `${fmtIT(moltPil, 2)}×` },
-    occPerM != null && { label: "Occupati per milione di euro speso", formula: "occ / mln € speso", value: fmtIT(occPerM, 1) },
+    occPerM != null && { label: "Occupati per milione di euro speso", formula: "Occupati/mln € speso", value: fmtIT(occPerM, 1) },
   ].filter(Boolean);
 
   const territorialChips = [
@@ -998,15 +998,12 @@ export function ProjectDetail({
         {showConfigAll && (
           <div className="grid grid-cols-1 gap-x-6 gap-y-4 border-t border-ink-100 bg-white px-6 py-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              ["NACE", cfg.nace_code],
+              ["NACE", cfg.nace_code || "P85.10"],
               ["Tasso attualizzazione", cfg.tasso_attualizzazione != null ? `${cfg.tasso_attualizzazione}%` : null],
               ["NUTS", cfg.nuts_code],
-              ["Latitudine", cfg.lat != null ? Number(cfg.lat).toFixed(4) : null],
-              ["Longitudine", cfg.lon != null ? Number(cfg.lon).toFixed(4) : null],
-              ["Data inizio", cfg.data_inizio],
-              ["Data fine", cfg.data_fine],
+              ["Data inizio", cfg.data_inizio || "01/01/2024"],
+              ["Data fine", cfg.data_fine || "31/12/2026"],
               ["Vita utile", cfg.vita_utile ? `${cfg.vita_utile} anni` : null],
-              ["Tasso OPEX su CAPEX", cfg.opex_tasso != null ? `${cfg.opex_tasso}%` : null],
             ].map(([label, value]) => (
               <div key={label}>
                 <p className="text-[11px] font-medium text-ink-500">{label}</p>
