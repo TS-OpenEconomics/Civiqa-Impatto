@@ -865,7 +865,7 @@ function TabComponenti() {
   if (terrId === "national") {
     compValues = { direct: data.direct ?? 0, indirect: data.indirect ?? 0, induced: data.induced ?? 0 };
   } else {
-    const segIdx = { province: 0, rest_region: 1, rest_italy: 2 };
+    const segIdx = { rest_italy: 0, rest_region: 1, province: 2 };
     const segs = buildTerritorialSegments(metricId);
     const seg = segs[segIdx[terrId] ?? 0];
     compValues = buildSegmentComponentValues(data, seg);
