@@ -512,7 +512,7 @@ export function ValutazioniList({ onOpenProject, onNewEvaluation, onOpenAnalysis
           <div className="max-w-4xl">
             <div className="flex items-center gap-3 text-ink-900">
               <IconValutazione size={28} />
-              <h1 className="text-[22px] font-bold leading-none text-ink-900">Valutazione</h1>
+              <h1 className="text-[22px] font-bold leading-none text-ink-900">Analisi Ricadute</h1>
             </div>
             <p className="mt-4 max-w-[900px] text-[14px] leading-[1.5] text-ink-900">
               All&apos;interno di questa sezione puoi configurare i tuoi progetti e consultare le valutazioni già elaborate. Creando una nuova valutazione ti verrà chiesto di definire un progetto, sul quale potrai eseguire analisi di impatto, analisi costi-benefici e analisi ESG.{" "}

@@ -12,7 +12,9 @@ export function AppShell() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const { pathname } = useLocation()
 
-  const showSidebar = pathname.startsWith('/impatti') || pathname.startsWith('/valutazioni')
+  // Sidebar temporaneamente disabilitata: rimettere la condizione qui sotto per riattivarla.
+  // const showSidebar = pathname.startsWith('/impatti') || pathname.startsWith('/valutazioni')
+  const showSidebar = false
   const sidebarWidth = sidebarCollapsed ? 100 : 250
 
   return (

@@ -39,6 +39,16 @@ function IconComposing({ size }: { size: number }) {
   )
 }
 
+function IconGantt({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3" y="4" width="10" height="3.5" rx="0.8" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="8" y="10.25" width="11" height="3.5" rx="0.8" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="5" y="16.5" width="8" height="3.5" rx="0.8" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  )
+}
+
 function IconDocfap({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -74,13 +84,17 @@ interface NavItem {
   icon: (props: { size: number }) => ReactElement
   section?: string  // section label shown ABOVE this item in expanded mode
   disabled?: boolean
+  href?: string     // se presente, apre un link esterno in una nuova scheda
 }
+
+const PROJECT_MANAGER_URL = '#' // TODO: sostituire con il link definitivo
 
 const NAV_ITEMS: NavItem[] = [
   /* Dashboard visibile ma non ancora cliccabile (come Composing) */
   { to: '/impatti/dashboard',      label: 'Dashboard',     icon: IconDashboard, disabled: true },
-  { to: '/impatti/docfap',         label: 'Docfap',        icon: IconDocfap },
-  { to: '/valutazioni',            label: 'Valutazione',   icon: IconValutazione },
+  { to: '/impatti/docfap',         label: 'Analisi Alternativa', icon: IconDocfap },
+  { to: '/valutazioni',            label: 'Analisi Ricadute',    icon: IconValutazione },
+  { to: PROJECT_MANAGER_URL,       label: 'Project Manager',     icon: IconGantt, href: PROJECT_MANAGER_URL },
   { to: '/impatti/composing',      label: 'Composing',     icon: IconComposing, disabled: true },
 ]
 
@@ -194,6 +208,37 @@ export function SideNav({ collapsed, onToggle }: SideNavProps) {
                     <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>
                   )}
                 </div>
+              ) : item.href ? (
+                <a
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={collapsed ? item.label : undefined}
+                  aria-label={`${item.label} — si apre in una nuova finestra`}
+                  style={{
+                    display: 'flex',
+                    flexDirection: collapsed ? 'column' : 'row',
+                    alignItems: 'center',
+                    justifyContent: collapsed ? 'center' : 'flex-start',
+                    height: collapsed ? 64 : 56,
+                    padding: collapsed ? '0 4px' : '0 var(--spacing-inset-s)',
+                    gap: collapsed ? 0 : 4,
+                    width: '100%',
+                    textDecoration: 'none',
+                    borderLeft: '4px solid transparent',
+                    transition: 'background-color 0.15s ease',
+                    fontFamily: 'var(--font-family-1)',
+                    fontSize: 'var(--type-body-s-size, 16px)',
+                    fontWeight: 'var(--type-weight-regular, 400)',
+                    ...defaultStyle,
+                  }}
+                  className={`hover:bg-[var(--color-background-secondary-lighter)] ${FOCUS_RING}`}
+                >
+                  <Icon size={iconSize} />
+                  {!collapsed && (
+                    <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>
+                  )}
+                </a>
               ) : (
                 <NavLink
                   to={item.to}

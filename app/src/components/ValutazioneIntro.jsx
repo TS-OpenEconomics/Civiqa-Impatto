@@ -59,7 +59,7 @@ export function ValutazioneIntro({ onContinua, onClose }) {
       {/* Content */}
       <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center px-6 py-6">
         <div className="w-full max-w-5xl">
-          <h1 className="text-3xl font-bold text-center text-ink-900 mb-4">Valutazione</h1>
+          <h1 className="text-3xl font-bold text-center text-ink-900 mb-4">Analisi Ricadute</h1>
           <p className="text-center text-sm text-ink-700 max-w-3xl mx-auto leading-relaxed">
             La valutazione rappresenta il punto di partenza di un intervento e funge da contenitore dinamico delle analisi che sceglierai di eseguire tra Analisi di Impatto, Analisi Costi-Benefici e Analisi ESG.
           </p>

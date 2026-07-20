@@ -47,8 +47,9 @@ function ThemeToggle() {
 
 /* ── Constants ──────────────────────────────────────────── */
 
-const DATA_ROOM_URL = 'https://dataroom-ten-jet.vercel.app/'
+const DATA_ROOM_URL = 'https://app.civiqa.it/programmazione/data-room'
 const RISORSE_URL   = 'https://demo.openrep.eu/projects'
+const PROJECT_MANAGER_URL = '#' // TODO: sostituire con il link definitivo
 
 /* ── SVG icons per i moduli nel dropdown (16×16) ────────── */
 
@@ -109,6 +110,16 @@ function IconChecked() {
   )
 }
 
+function IconGantt() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="1.5" y="2.25" width="7" height="2.6" rx="0.6" stroke="currentColor" strokeWidth="1.4" />
+      <rect x="5" y="6.7" width="8" height="2.6" rx="0.6" stroke="currentColor" strokeWidth="1.4" />
+      <rect x="3" y="11.15" width="6" height="2.6" rx="0.6" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  )
+}
+
 function IconArrowRight() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -152,8 +163,9 @@ const PHASES: PhaseEntry[] = [
     label: 'Progettazione',
     to:    '/impatti',
     modules: [
-      { label: 'Docfap',      icon: <IconDocument />,  active: true, to: '/impatti/docfap' },
-      { label: 'Valutazione', icon: <IconValutazione size={16} />, active: true, to: '/valutazioni' },
+      { label: 'Analisi Alternativa', icon: <IconDocument />,  active: true, to: '/impatti/docfap' },
+      { label: 'Analisi Ricadute',    icon: <IconValutazione size={16} />, active: true, to: '/valutazioni' },
+      { label: 'Project Manager',     icon: <IconGantt />, active: true, href: PROJECT_MANAGER_URL },
     ],
   },
   {

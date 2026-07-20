@@ -8,10 +8,11 @@ import { IconValutazione } from '../components/layout/SideNav'
 import '../styles/home-launcher.css'
 
 const SCENARI_URL   = 'https://www.openeconomics.eu/insights-wall'
-const DATA_ROOM_URL = 'https://dataroom-ten-jet.vercel.app/'
+const DATA_ROOM_URL = 'https://app.civiqa.it/programmazione/data-room'
 const RISORSE_URL   = 'https://demo.openrep.eu/projects'
 const DOCFAP_PATH = '/impatti/docfap'
 const VALUTAZIONE_PATH = '/valutazioni'
+const PROJECT_MANAGER_URL = '#' // TODO: sostituire con il link definitivo
 
 const HOME_LOCK_CLASS = 'hl-home-locked'
 
@@ -70,6 +71,16 @@ function IconChecked() {
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <rect x="1.5" y="1.5" width="13" height="13" rx="1" stroke="currentColor" strokeWidth="1.4" />
       <path d="M4 8.5l3 3 5-5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconGantt() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="1.5" y="2.25" width="7" height="2.6" rx="0.6" stroke="currentColor" strokeWidth="1.4" />
+      <rect x="5" y="6.7" width="8" height="2.6" rx="0.6" stroke="currentColor" strokeWidth="1.4" />
+      <rect x="3" y="11.15" width="6" height="2.6" rx="0.6" stroke="currentColor" strokeWidth="1.4" />
     </svg>
   )
 }
@@ -310,8 +321,9 @@ export function HomeLauncher() {
                 </p>
               </div>
               <div className="hl-tile-modules">
-                <ModuleLink to={DOCFAP_PATH} icon={<IconDocument />} label="Docfap" />
-                <ModuleLink to={VALUTAZIONE_PATH} icon={<IconValutazione size={16} />} label="Valutazione" />
+                <ModuleLink to={DOCFAP_PATH} icon={<IconDocument />} label="Analisi Alternativa" />
+                <ModuleLink to={VALUTAZIONE_PATH} icon={<IconValutazione size={16} />} label="Analisi Ricadute" />
+                <ModuleExternalLink href={PROJECT_MANAGER_URL} icon={<IconGantt />} label="Project Manager" />
                 <ModuleSoon icon={<IconEdit />} label="Composing" />
               </div>
             </div>

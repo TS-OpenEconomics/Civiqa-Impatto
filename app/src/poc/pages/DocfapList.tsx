@@ -617,7 +617,7 @@ export function DocfapList() {
           <div>
             <div style={titleRowStyle}>
               <span style={titleIconStyle} aria-hidden="true"><IconDoc /></span>
-              <h1 style={h1Style}>Docfap</h1>
+              <h1 style={h1Style}>Analisi Alternativa</h1>
             </div>
             <p style={subtitleStyle}>
               Compila il Docfap per confrontare alternative progettuali secondo la normativa prevista dall'Allegato I.7 del D.Lgs. 36/2023, con analisi costi-benefici, impatto, rischio, sensitività e supporto alla decisione del RUP.
