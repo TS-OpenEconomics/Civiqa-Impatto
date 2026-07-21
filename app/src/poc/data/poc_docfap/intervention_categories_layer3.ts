@@ -6754,6 +6754,7 @@ export const INTERVENTION_CATEGORIES: InterventionCategory[] = [
       { kpi_id: "OSP-03", is_negative_externality: false, benefit_pct_override: null, activation_question_ids: [] },
       { kpi_id: "OSP-04", is_negative_externality: false, benefit_pct_override: null, activation_question_ids: [] },
       { kpi_id: "OSP-05", is_negative_externality: false, benefit_pct_override: null, activation_question_ids: [] },
+      { kpi_id: "OSP-06", is_negative_externality: false, benefit_pct_override: null, activation_question_ids: [] },
     ],
     cp_links: [
       { cp_id: "CP-200", cf_code: "CF-200" },
@@ -6815,6 +6816,7 @@ export const INTERVENTION_CATEGORIES: InterventionCategory[] = [
     sector_code: "S06",
     cluster_id: "C03",
     kpi_links: [
+      { kpi_id: "NID-00", is_negative_externality: false, benefit_pct_override: null, activation_question_ids: [] },
       { kpi_id: "NID-01", is_negative_externality: false, benefit_pct_override: null, activation_question_ids: [] },
       { kpi_id: "NID-02", is_negative_externality: false, benefit_pct_override: null, activation_question_ids: [] },
       { kpi_id: "NID-03", is_negative_externality: false, benefit_pct_override: null, activation_question_ids: [] },

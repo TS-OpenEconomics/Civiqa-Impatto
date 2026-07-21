@@ -344,7 +344,13 @@ function InfoBlock({ label, value }) {
 
 // Progetti reali (con export dedicato) che NON devono ricevere i preset demo
 // posizionali: mostrano i propri campi così come sono.
-const REAL_PROJECT_IDS = new Set(["PROJ-MUBA-976"]);
+const REAL_PROJECT_IDS = new Set([
+  "PROJ-MUBA-976",
+  "PROJ-OSP-841",
+  "PROJ-NIDO-A1",
+  "PROJ-NIDO-A2",
+  "PROJ-NIDO-A3",
+]);
 
 function buildDisplayProject(workspace, preset = {}) {
 

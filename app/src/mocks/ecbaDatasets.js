@@ -6,9 +6,11 @@
 // un export ACB dedicato continuano a mostrarlo come prima.
 import { ECBA_DATA } from "../components/ecbaData";
 import { MUBA_ECBA_DATASET } from "./mubaProject";
+import { OSPEDALE_ECBA_DATASET } from "./ospedaleProject";
 
 export const ECBA_DATASETS = {
   "PROJ-MUBA-976": MUBA_ECBA_DATASET,
+  "PROJ-OSP-841": OSPEDALE_ECBA_DATASET,
 };
 
 export function getEcbaDataset(project) {

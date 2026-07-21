@@ -790,8 +790,15 @@ export function EcbaResults({ project, onBack }) {
           <stop offset="0%" stop-color="#9e0b1e"/><stop offset="100%" stop-color="#6f0010"/>
         </linearGradient>
       </defs>`;
-      for (let g = 10; g <= maxV; g += 10) {
-        o += `<line class="ax-line" x1="${padL}" y1="${y(g)}" x2="${W - padR}" y2="${y(g)}"/><text class="ax-txt" x="${padL - 6}" y="${y(g) + 3}" text-anchor="end">${g}</text>`;
+      // Passo di griglia "nice" (~6-8 intervalli) invece di un passo fisso di 10:
+      // evita decine di righe ravvicinate quando i valori sono nell'ordine dei 100 M€.
+      const rawStep = Math.max(1, maxV / 8);
+      const stepMag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+      const stepNorm = rawStep / stepMag;
+      const wfStep = (stepNorm <= 1 ? 1 : stepNorm <= 2 ? 2 : stepNorm <= 5 ? 5 : 10) * stepMag;
+      for (let g = wfStep; g <= maxV; g += wfStep) {
+        const gl = Number.isInteger(wfStep) ? String(g) : g.toFixed(1);
+        o += `<line class="ax-line" x1="${padL}" y1="${y(g)}" x2="${W - padR}" y2="${y(g)}"/><text class="ax-txt" x="${padL - 6}" y="${y(g) + 3}" text-anchor="end">${gl}</text>`;
       }
       o += `<line class="ax-zero" x1="${padL}" y1="${y(0)}" x2="${W - padR}" y2="${y(0)}"/>`;
       o += `<line class="connector" x1="${xOf(0) + bw}" y1="${y(benefici)}" x2="${xOf(1)}" y2="${y(benefici)}"/>`;

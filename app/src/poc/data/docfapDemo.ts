@@ -24,12 +24,12 @@ const MCA_PATTERN: Record<string, Array<'A' | 'M' | 'B' | 'N'>> = {
 const DEMO_ALTERNATIVES: Record<'A1' | 'A2' | 'A3', AlternativaData> = {
   A1: {
     categoria: '', tipologia: '', nome: 'Nuova costruzione asilo nido',
-    quantita: 1500, capex: 2_640_000, opex: 420_000, durataStimata: 24,
+    quantita: 90, capex: 2_640_000, opex: 420_000, durataStimata: 24,
     robustezza: 2, clusterId: 'C03', unitaMisura: 'posti',
   } as AlternativaData,
   A2: {
     categoria: '', tipologia: '', nome: 'Ristrutturazione asilo nido esistente',
-    quantita: 1100, capex: 1_440_000, opex: 310_000, durataStimata: 18,
+    quantita: 84, capex: 1_440_000, opex: 300_000, durataStimata: 18,
     robustezza: 1, clusterId: 'C03', unitaMisura: 'posti',
   } as AlternativaData,
   A3: {

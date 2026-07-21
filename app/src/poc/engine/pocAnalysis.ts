@@ -3,30 +3,31 @@ import { SENSITIVITY_SCENARIO_LABELS } from './sensitivita'
 
 const ORIZZONTE = 20
 const TASSO_SCONTO = 0.03
-const BENEFIT_PER_POSTO = 5_500
-const N_POSTI = 120
-const ANNUAL_BENEFITS = N_POSTI * BENEFIT_PER_POSTO
 
 function annuityFactor(r: number, n: number): number {
   return (1 - Math.pow(1 + r, -n)) / r
 }
 
 const AF = annuityFactor(TASSO_SCONTO, ORIZZONTE)
+// Fattore di attualizzazione del valore residuo (one-off a fine orizzonte).
+const RF = Math.pow(1 + TASSO_SCONTO, -ORIZZONTE)
 
-function calcVAN(capex: number, opex: number): number {
-  return Math.round(ANNUAL_BENEFITS * AF - capex - opex * AF)
+// VAN/BCR/TIR per alternativa, coerenti con il modulo Ricadute (/valutazioni):
+// benefici annui e valore residuo specifici dell'alternativa.
+function calcVAN(capex: number, opex: number, ben: number, residual = 0): number {
+  return Math.round(ben * AF + residual * RF - capex - opex * AF)
 }
 
-function calcBCR(capex: number, opex: number): number {
-  const pvB = ANNUAL_BENEFITS * AF
+function calcBCR(capex: number, opex: number, ben: number, residual = 0): number {
+  const pvB = ben * AF + residual * RF
   const pvC = capex + opex * AF
   if (pvC <= 0) return 0
   return Math.round((pvB / pvC) * 100) / 100
 }
 
-function calcTIR(capex: number, opex: number): number {
+function calcTIR(capex: number, opex: number, ben: number): number {
   if (capex <= 0) return 0
-  const netAnnual = ANNUAL_BENEFITS - opex
+  const netAnnual = ben - opex
   if (netAnnual <= 0) return 0
   let lo = 0
   let hi = 2.0
@@ -40,16 +41,19 @@ function calcTIR(capex: number, opex: number): number {
   return Math.round(((lo + hi) / 2) * 1000) / 10
 }
 
-function calcEconPOC(capex: number, opex = 0): {
+// Impatto economico coerente con l'EIA del settore "Infrastrutture sociali"
+// (moltiplicatori SAM: produzione 1.85, PIL/GVA 0.62, 12.4 ETP/M€, redditi 0.55·GVA).
+// Base = CAPEX (l'investimento): il voucher (CAPEX 0) ha impatto da costruzione nullo.
+function calcEconPOC(capex: number): {
   pil: number; produzione: number; occupati: number; redditi: number
 } {
-  const activationBase = capex > 0 ? capex : opex
-  const m = activationBase / 1_000_000
+  const m = capex / 1_000_000
+  const pil = m * 0.62
   return {
-    pil: Math.round(m * 1.42 * 10) / 10,
-    produzione: Math.round(m * 3.44 * 10) / 10,
-    occupati: Math.round((activationBase / 100_000) * 0.78),
-    redditi: Math.round(m * 1.38 * 10) / 10,
+    pil: Math.round(pil * 10) / 10,
+    produzione: Math.round(m * 1.85 * 10) / 10,
+    occupati: Math.round(m * 12.4),
+    redditi: Math.round(pil * 0.55 * 10) / 10,
   }
 }
 
@@ -61,13 +65,16 @@ function meanArr(arr: readonly number[]): number {
   return round1(arr.reduce((s, v) => s + v, 0) / arr.length)
 }
 
+// Allineato al modulo Ricadute: benefici annui (ben) e valore residuo per alternativa.
+//  A1 Nuova costruzione 90 posti · A2 Ristrutturazione 84 posti · A3 Voucher (72 add.)
 const ALT = {
-  A1: { capex: 2_640_000, opex: 420_000 },
-  A2: { capex: 1_440_000, opex: 310_000 },
-  A3: { capex: 0, opex: 600_000 },
+  A1: { capex: 2_640_000, opex: 420_000, ben: 920_000, residual: 660_000 },
+  A2: { capex: 1_440_000, opex: 300_000, ben: 858_000, residual: 400_000 },
+  A3: { capex: 0, opex: 600_000, ben: 232_000, residual: 0 },
 } as const
 
-const CBA_SCORE = { A1: 42, A2: 100, A3: 40 } as const
+// A2 miglior rapporto benefici/costi; A3 (voucher) VAN negativo → punteggio basso.
+const CBA_SCORE = { A1: 60, A2: 100, A3: 12 } as const
 const IMP_SCORE = { A1: 84, A2: 71, A3: 28 } as const
 const IMP_SUB = {
   A1: { amb: 83, soc: 87, terr: 83 },
@@ -94,13 +101,13 @@ function buildSensDetail(scores: readonly number[]) {
 }
 
 export function runPOCAnalysis(): ScoreComposito[] {
-  const van = { A1: calcVAN(ALT.A1.capex, ALT.A1.opex), A2: calcVAN(ALT.A2.capex, ALT.A2.opex), A3: calcVAN(ALT.A3.capex, ALT.A3.opex) }
-  const bcr = { A1: calcBCR(ALT.A1.capex, ALT.A1.opex), A2: calcBCR(ALT.A2.capex, ALT.A2.opex), A3: calcBCR(ALT.A3.capex, ALT.A3.opex) }
-  const tir = { A1: calcTIR(ALT.A1.capex, ALT.A1.opex), A2: calcTIR(ALT.A2.capex, ALT.A2.opex), A3: calcTIR(ALT.A3.capex, ALT.A3.opex) }
+  const van = { A1: calcVAN(ALT.A1.capex, ALT.A1.opex, ALT.A1.ben, ALT.A1.residual), A2: calcVAN(ALT.A2.capex, ALT.A2.opex, ALT.A2.ben, ALT.A2.residual), A3: calcVAN(ALT.A3.capex, ALT.A3.opex, ALT.A3.ben, ALT.A3.residual) }
+  const bcr = { A1: calcBCR(ALT.A1.capex, ALT.A1.opex, ALT.A1.ben, ALT.A1.residual), A2: calcBCR(ALT.A2.capex, ALT.A2.opex, ALT.A2.ben, ALT.A2.residual), A3: calcBCR(ALT.A3.capex, ALT.A3.opex, ALT.A3.ben, ALT.A3.residual) }
+  const tir = { A1: calcTIR(ALT.A1.capex, ALT.A1.opex, ALT.A1.ben), A2: calcTIR(ALT.A2.capex, ALT.A2.opex, ALT.A2.ben), A3: calcTIR(ALT.A3.capex, ALT.A3.opex, ALT.A3.ben) }
   const eco = {
-    A1: calcEconPOC(ALT.A1.capex, ALT.A1.opex),
-    A2: calcEconPOC(ALT.A2.capex, ALT.A2.opex),
-    A3: calcEconPOC(ALT.A3.capex, ALT.A3.opex),
+    A1: calcEconPOC(ALT.A1.capex),
+    A2: calcEconPOC(ALT.A2.capex),
+    A3: calcEconPOC(ALT.A3.capex),
   }
   const sens = {
     A1: meanArr(SENS.A1),

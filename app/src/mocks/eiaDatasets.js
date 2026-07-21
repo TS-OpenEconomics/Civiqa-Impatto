@@ -6,9 +6,11 @@
 // seed/demo senza un export dedicato continuano a mostrarlo come prima.
 import staticResults from "./eiaResults.json";
 import { MUBA_EIA_DATASET } from "./mubaProject";
+import { OSPEDALE_EIA_DATASET } from "./ospedaleProject";
 
 export const EIA_DATASETS = {
   "PROJ-MUBA-976": MUBA_EIA_DATASET,
+  "PROJ-OSP-841": OSPEDALE_EIA_DATASET,
 };
 
 // Restituisce il dataset EIA da mostrare per un progetto, con fallback al mock.

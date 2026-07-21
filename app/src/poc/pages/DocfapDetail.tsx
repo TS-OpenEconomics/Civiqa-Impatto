@@ -24,9 +24,10 @@ import {
 } from '../components/docfap/tableHelpers'
 
 // ── Mappatura demo opzione → progetto /valutazioni (EIA+ECBA completi) ──────────
-// Non lega numeri reali: serve solo a far funzionare la logica di navigazione (POC).
-// Fino a 5 alternative: A1→PROJ-001, A2→PROJ-002, A3→PROJ-003, poi cicla.
-const OPTION_PROJECTS = ['PROJ-001', 'PROJ-002', 'PROJ-003'] as const
+// Ogni alternativa del DOCFAP asilo nido punta al corrispondente progetto
+// Ricadute (EIA/ECBA calcolate, benefici scalati sui posti):
+//   A1 → Nuova costruzione · A2 → Ristrutturazione · A3 → Voucher.
+const OPTION_PROJECTS = ['PROJ-NIDO-A1', 'PROJ-NIDO-A2', 'PROJ-NIDO-A3'] as const
 function projectForOption(optionId: AlternativaId): string {
   const idx = Math.max(0, (parseInt(optionId.slice(1), 10) || 1) - 1)
   return OPTION_PROJECTS[idx % OPTION_PROJECTS.length]
