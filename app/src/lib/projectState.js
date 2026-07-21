@@ -254,6 +254,26 @@ const NIDO_PROJECTS = [
   },
 ];
 
+// Cache dei workspace nido calcolati (EIA/ECBA), esposta ai builder dei dataset
+// di dettaglio (ecbaDatasets/eiaDatasets). Stessi parametri dei seed → stessi numeri.
+let _nidoComputedById = null;
+export function getNidoComputedWorkspace(id) {
+  if (!_nidoComputedById) {
+    _nidoComputedById = new Map();
+    for (const n of NIDO_PROJECTS) {
+      const ws = buildComputedWorkspace(n.project, {
+        posti: n.posti,
+        horizon: n.horizon,
+        discountRate: n.discountRate,
+        residualValue: n.residualValue,
+        extraOverrides: n.extraOverrides,
+      });
+      _nidoComputedById.set(ws.id, ws);
+    }
+  }
+  return _nidoComputedById.get(id) ?? null;
+}
+
 function nowDate() {
   return new Intl.DateTimeFormat("it-IT").format(new Date());
 }
