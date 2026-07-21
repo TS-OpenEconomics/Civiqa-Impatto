@@ -309,8 +309,8 @@ export function DocfapDetail() {
                       <dd className="font-mono text-ink-700">{alt?.capex != null ? `€ ${formatEuro(alt.capex)}` : '—'}</dd>
                     </div>
                     <div className="flex justify-between gap-2">
-                      <dt className="text-ink-400">OPEX</dt>
-                      <dd className="font-mono text-ink-700">{alt?.opex != null ? `€ ${formatEuro(alt.opex)}` : '—'}</dd>
+                      <dt className="text-ink-400" title="Costo pubblico netto annuo, al netto di rette famiglie e contributi regionali">OPEX netto</dt>
+                      <dd className="font-mono text-ink-700">{alt?.opex != null ? `€ ${formatEuro(alt.opex)}/anno` : '—'}</dd>
                     </div>
                     <div className="flex justify-between gap-2">
                       <dt className="text-ink-400">Durata</dt>
