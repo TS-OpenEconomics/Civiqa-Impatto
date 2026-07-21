@@ -29,6 +29,20 @@ const SH_REGION = 0.85; // origine + resto regione (cumulato)
 function pc(value, pop) { return r1((value / pop)); }
 function pc10k(emp, pop) { return r1((emp / pop) * 10000); }
 
+// Mapping settori → codici ATECO per React keys (distinti, come negli static datasets)
+const SECTOR_ATECO = {
+  "Costruzioni": "F",
+  "Servizi professionali": "M",
+  "Materiali da costruzione": "C",
+  "Trasporti e logistica": "H",
+  "Energia e utilities": "D",
+  "Commercio": "G",
+  "ICT e digitale": "J",
+  "Finanza e assicurazioni": "K",
+  "Sanità e assistenza": "Q",
+  "Altri servizi": "S",
+};
+
 // Mappa i risultati di computeEia (workspace.eiaResults) sulla forma eiaResults.json.
 export function buildNidoEiaDataset(ws) {
   const e = ws?.eiaResults;
@@ -79,7 +93,7 @@ export function buildNidoEiaDataset(ws) {
     const g = round(gdp * s.share);
     const f = r1(emp * s.share);
     return {
-      ateco_code: "", ateco_name: s.settore,
+      ateco_code: SECTOR_ATECO[s.settore] ?? "", ateco_name: s.settore,
       values: { gdp: { intra: g, extra: 0 }, production: { intra: p, extra: 0 }, employment: { intra: f, extra: 0 } },
       by_territory: { regions: [{ code: "12", name: "Lazio", values: { gdp: g, production: p, employment: f } }] },
     };
@@ -109,7 +123,7 @@ export function buildNidoEiaDataset(ws) {
       origin_provinces: [{ code: "RM", name: "Roma", region_code: "12", region_name: "Lazio", spend_share: 1.0 }],
       origin_region: { code: "12", name: "Lazio", nuts2_code: "ITI4" },
       years_of_realization: 2,
-      spend_breakdown: (e.per_settore ?? []).slice(0, 6).map((s) => ({ ateco_code: "", ateco_name: s.settore, amount: round(shock * s.share), share: r2(s.share) })),
+      spend_breakdown: (e.per_settore ?? []).slice(0, 6).map((s) => ({ ateco_code: SECTOR_ATECO[s.settore] ?? "", ateco_name: s.settore, amount: round(shock * s.share), share: r2(s.share) })),
     },
     synthesis: {
       by_perimeter: { origin_province: origin, region, national },
