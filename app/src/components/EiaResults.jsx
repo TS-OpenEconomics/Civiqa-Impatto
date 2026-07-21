@@ -16,6 +16,7 @@ import { useToast } from "../hooks/useToast";
 import { useTheme } from "../hooks/useTheme";
 import { computeProvinceDistribution } from "../lib/eiaEngine";
 import { HoldingHands, HoldingHandsEntry } from "./HoldingHands";
+import { NidoBridgeBanner } from "./NidoBridgeBanner";
 
 function assetUrl(path) {
   const base = import.meta.env.BASE_URL ?? "/";
@@ -364,6 +365,7 @@ export function EiaResults({ project, analysis, onBack }) {
           <span>›</span>
           <span className="font-semibold text-ink-700">Analisi di Impatto</span>
         </nav>
+        <NidoBridgeBanner projectId={project?.id} />
         <p className="mb-5 text-[11px] text-ink-400">
           Creato il <span className="font-medium">{meta.creato_il}</span> da{" "}
           <span className="font-medium">{meta.creato_da}</span> — Ultima modifica{" "}

@@ -2,6 +2,7 @@ import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { ECBA_DATA } from "./ecbaData";
 import { getEcbaDataset } from "../mocks/ecbaDatasets";
 import { HoldingHandsCba } from "./HoldingHandsCba";
+import { NidoBridgeBanner } from "./NidoBridgeBanner";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Pagina ECBA — porting fedele del mockup `cba knowledge/civiqa_ecba_layout.html`.
@@ -1430,6 +1431,7 @@ export function EcbaResults({ project, onBack }) {
   return (
     <div className="ecba-root" ref={rootRef}>
       <style>{CSS}</style>
+      <NidoBridgeBanner projectId={project?.id} />
       <EcbaStaticMarkup html={markupHtml} />
       <HoldingHandsCba
         open={guideOpen}
