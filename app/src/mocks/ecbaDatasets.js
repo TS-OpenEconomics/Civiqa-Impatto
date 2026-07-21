@@ -70,6 +70,8 @@ export function buildNidoEcbaDataset(ws) {
       esternalitaNeg: 0,
       vane: vaneM,
     },
+    pv_capex: e.pv_capex ?? 0,
+    pv_opex: e.pv_opex ?? 0,
     cashflow: { cost, ben },
     donut,
     _riskIllustrative: true,
