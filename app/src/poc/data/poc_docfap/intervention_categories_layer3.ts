@@ -6870,7 +6870,7 @@ export const INTERVENTION_CATEGORIES: InterventionCategory[] = [
       { tipologia_code: "lavori_socialmente_utili",                years: 10 },
       { tipologia_code: "altro",                                   years: 20 },
     ],
-    opex: { pct_min: 0.03, pct_med: 0.05, pct_max: 0.07 },
+    opex: { pct_min: 0.12, pct_med: 0.18, pct_max: 0.25 },
   },
 
   // ── C107 · Edifici Sociali, Culturali E Assistenziali ──
@@ -7741,7 +7741,7 @@ export const INTERVENTION_CATEGORIES: InterventionCategory[] = [
       { tipologia_code: "lavori_socialmente_utili",                years: 5 },
       { tipologia_code: "altro",                                   years: 10 },
     ],
-    opex: { pct_min: 0.02, pct_med: 0.035, pct_max: 0.05 },
+    opex: { pct_min: 0.12, pct_med: 0.18, pct_max: 0.25 },
   },
 
   // ── C120 · Altre Attrezzature Per La Pesca ──
