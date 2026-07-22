@@ -87,6 +87,141 @@ const TABS = [
 
 const PILLAR_LETTERS = { environmental: "E", social: "S", governance: "G" };
 
+// Nomi brevi dei 17 Obiettivi di Sviluppo Sostenibile (Agenda 2030).
+const SDG_LABELS = {
+  1: "Sconfiggere la povertà",
+  2: "Sconfiggere la fame",
+  3: "Salute e benessere",
+  4: "Istruzione di qualità",
+  5: "Parità di genere",
+  6: "Acqua pulita e servizi igienico-sanitari",
+  7: "Energia pulita e accessibile",
+  8: "Lavoro dignitoso e crescita economica",
+  9: "Imprese, innovazione e infrastrutture",
+  10: "Ridurre le disuguaglianze",
+  11: "Città e comunità sostenibili",
+  12: "Consumo e produzione responsabili",
+  13: "Lotta contro il cambiamento climatico",
+  14: "Vita sott'acqua",
+  15: "Vita sulla terra",
+  16: "Pace, giustizia e istituzioni solide",
+  17: "Partnership per gli obiettivi",
+};
+
+// Barra percentuale a 5 fasce (0-10 / 10-30 / 30-50 / 50-60 / 60-100), coerente con
+// la legenda di materialità dei mockup.
+function PctBar({ pct }) {
+  const v = Math.min(100, Math.max(0, pct));
+  const color = v >= 60 ? "bg-green-500" : v >= 50 ? "bg-lime-400" : v >= 30 ? "bg-amber-400" : v >= 10 ? "bg-orange-400" : "bg-red-400";
+  return (
+    <div className="h-2 bg-ink-100 rounded-full overflow-hidden">
+      <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${v}%` }} />
+    </div>
+  );
+}
+
+// ESG_2 — Compliance ESG: barra complessiva + selettore dimensione E/S/G.
+function ComplianceSection({ compliance }) {
+  const [dim, setDim] = useState("overall");
+  const dims = [
+    { id: "overall", label: "Complessiva" },
+    { id: "E", label: "Environmental" },
+    { id: "S", label: "Social" },
+    { id: "G", label: "Governance" },
+  ];
+  const c = compliance[dim] ?? compliance.overall;
+  return (
+    <div>
+      <h3 className="text-sm font-bold text-ink-900 mb-3">Compliance ESG</h3>
+      <div className="flex flex-wrap gap-1 mb-4">
+        {dims.map((d) => (
+          <button
+            key={d.id}
+            type="button"
+            onClick={() => setDim(d.id)}
+            className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+              dim === d.id ? "bg-brand-violet text-white" : "text-ink-500 hover:bg-ink-100"
+            }`}
+          >
+            {d.label}
+          </button>
+        ))}
+      </div>
+      <ComplianceBar aligned={c.aligned} partial={c.partial} nonAligned={c.non} />
+      <p className="mt-4 text-xs text-ink-600 leading-relaxed max-w-3xl">
+        Il grafico mostra il livello di conformità del progetto agli standard ESG, come distribuzione
+        percentuale tra aspetti <strong>allineati</strong>, <strong>parzialmente allineati</strong> e{" "}
+        <strong>non allineati</strong>. La fascia colorata indica quanto ciascuna categoria incide sul totale.
+      </p>
+    </div>
+  );
+}
+
+// ESG_3 — Contributo alla materialità: 3 colonne E/S/G con % per sotto-tema.
+function MaterialitySection({ materiality }) {
+  const cols = [
+    { key: "E", label: "Environmental" },
+    { key: "S", label: "Social" },
+    { key: "G", label: "Governance" },
+  ];
+  return (
+    <div>
+      <h3 className="text-sm font-bold text-ink-900 mb-1">Contributo alla materialità</h3>
+      <p className="text-xs text-ink-600 leading-relaxed max-w-3xl mb-4">
+        Quanto il progetto incide sui temi ESG più rilevanti (&laquo;materiali&raquo;). I punteggi sono in
+        % e indicano la rilevanza rispetto a ciascun sotto-tema: da impatto nullo (0-10%) a impatto molto
+        elevato (60-100%).
+      </p>
+      <div className="grid gap-6 md:grid-cols-3">
+        {cols.map((col) => (
+          <div key={col.key}>
+            <p className="text-xs font-bold text-ink-900 mb-3">{col.label}</p>
+            <div className="space-y-3">
+              {(materiality[col.key] ?? []).map((it) => (
+                <div key={it.label}>
+                  <div className="flex justify-between items-baseline gap-2 mb-1">
+                    <span className="text-[11px] text-ink-700 leading-tight">{it.label}</span>
+                    <span className="text-xs font-bold text-ink-900">{it.pct}%</span>
+                  </div>
+                  <PctBar pct={it.pct} />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ESG_4 (versione semplice) — SDG: lista/barre con punteggio per obiettivo.
+function SdgSection({ sdg }) {
+  const sorted = [...(sdg ?? [])].sort((a, b) => b.score - a.score);
+  return (
+    <div>
+      <h3 className="text-sm font-bold text-ink-900 mb-1">Obiettivi di sviluppo sostenibile (SDG)</h3>
+      <p className="text-xs text-ink-600 leading-relaxed max-w-3xl mb-4">
+        Contributo del progetto agli Obiettivi di Sviluppo Sostenibile dell'Agenda 2030 (punteggio 0-100
+        per obiettivo, ordinati per rilevanza).
+      </p>
+      <div className="grid gap-x-8 gap-y-3 md:grid-cols-2">
+        {sorted.map((s) => (
+          <div key={s.goal} className="flex items-center gap-3">
+            <span className="w-7 h-7 shrink-0 rounded bg-brand-violet/10 text-brand-violet text-xs font-bold flex items-center justify-center">
+              {s.goal}
+            </span>
+            <span className="flex-1 text-[11px] text-ink-700 leading-tight">{SDG_LABELS[s.goal] ?? `SDG ${s.goal}`}</span>
+            <div className="w-24 shrink-0">
+              <PctBar pct={s.score} />
+            </div>
+            <span className="w-8 text-right text-xs font-bold text-ink-900">{s.score}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function EsgResults({ project, esgResults, onBack }) {
   const [tab, setTab] = useState("riepilogo");
   const [ratingView, setRatingView] = useState("grafico");
@@ -302,6 +437,10 @@ export function EsgResults({ project, esgResults, onBack }) {
               </div>
             )}
           </div>
+
+          {r.esgDetail && <ComplianceSection compliance={r.esgDetail.compliance} />}
+          {r.esgDetail && <MaterialitySection materiality={r.esgDetail.materiality} />}
+          {r.esgDetail && <SdgSection sdg={r.esgDetail.sdg} />}
         </div>
       )}
 

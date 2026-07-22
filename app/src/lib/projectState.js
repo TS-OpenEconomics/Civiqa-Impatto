@@ -20,7 +20,9 @@ const DEFAULT_ECBA_INPUTS = {
 // ospedaliere / Sanitarie) e i 3 progetti asilo nido. Invalida il seed v7 vecchio.
 // v9: ospedale ora ha anche l'ESG (questionario curato → rating dal motore).
 // Il bump invalida lo stato v8 in cache (ospedale senza ESG).
-export const PROJECT_STORAGE_KEY = "civiqa.projects.v9";
+// v10: esgResults ospedale arricchito con esgDetail (compliance/materialità/SDG
+// curati) per le sezioni ricche del dettaglio ESG. Invalida lo stato v9.
+export const PROJECT_STORAGE_KEY = "civiqa.projects.v10";
 export const UI_STORAGE_KEY = "civiqa.ui.v1";
 
 function clone(value) {
@@ -133,19 +135,66 @@ const OSPEDALE_ESG_ANSWERS = {
   transparency: "Si",
 };
 
+// Dettaglio ESG curato per l'Ospedale Pediatrico, agganciato all'esgResults e
+// COERENTE coi punteggi calcolati (E76 / S94 / G100). Alimenta le sezioni ricche
+// della pagina di dettaglio (compliance per dimensione, contributo alla materialità,
+// punteggi SDG). I sotto-temi E/S/G (con raccomandazioni) verranno aggiunti in un
+// incremento successivo.
+const OSPEDALE_ESG_DETAIL = {
+  // % (0-100) allineato / parziale / non allineato. Overall ~ media pesata sociale.
+  compliance: {
+    overall: { aligned: 80, partial: 14, non: 6 },
+    E: { aligned: 55, partial: 30, non: 15 },
+    S: { aligned: 85, partial: 12, non: 3 },
+    G: { aligned: 95, partial: 5, non: 0 },
+  },
+  // Contributo alla materialità: % (0-100) per sotto-tema. Per un pediatrico pubblico
+  // la dimensione S (salute, comunità) è la più materiale; E moderata; G alta.
+  materiality: {
+    E: [
+      { label: "Uso delle risorse del territorio e del capitale naturale", pct: 45 },
+      { label: "Emissioni e innovazione", pct: 50 },
+      { label: "Economia circolare e rifiuti", pct: 58 },
+      { label: "Mitigazione dei rischi ambientali", pct: 42 },
+    ],
+    S: [
+      { label: "Qualità del lavoro e occupazione", pct: 78 },
+      { label: "Inclusione e parità di genere", pct: 72 },
+      { label: "Relazioni con la comunità e beneficiari", pct: 95 },
+      { label: "Salute e sicurezza", pct: 98 },
+    ],
+    G: [
+      { label: "Trasparenza e rendicontazione", pct: 85 },
+      { label: "Integrità e gestione responsabile", pct: 80 },
+      { label: "Coinvolgimento stakeholder", pct: 70 },
+      { label: "Monitoraggio e controllo", pct: 82 },
+    ],
+  },
+  // Punteggio 0-100 per obiettivo SDG (1..17). Alti per gli SDG allineati dal motore
+  // (1,3,4,5,7,8,10,11,13,15,16,17); bassi per gli altri.
+  sdg: [
+    { goal: 1, score: 60 }, { goal: 2, score: 12 }, { goal: 3, score: 95 },
+    { goal: 4, score: 70 }, { goal: 5, score: 78 }, { goal: 6, score: 20 },
+    { goal: 7, score: 58 }, { goal: 8, score: 80 }, { goal: 9, score: 22 },
+    { goal: 10, score: 82 }, { goal: 11, score: 65 }, { goal: 12, score: 18 },
+    { goal: 13, score: 55 }, { goal: 14, score: 8 }, { goal: 15, score: 45 },
+    { goal: 16, score: 85 }, { goal: 17, score: 72 },
+  ],
+};
+
 // Workspace per il progetto reale Ospedale Infantile (scenario 841, Genova):
 // stessa logica di buildMubaWorkspace, con i risultati REALI importati.
-// L'ESG è calcolato dal questionario curato OSPEDALE_ESG_ANSWERS.
+// L'ESG è calcolato dal questionario curato OSPEDALE_ESG_ANSWERS, arricchito col
+// dettaglio curato OSPEDALE_ESG_DETAIL per le sezioni ricche della pagina.
 function buildOspedaleWorkspace() {
   const project = clone(OSPEDALE_PROJECT);
   const updatedAt = project.ultima_modifica;
   const base = createWorkspace(project);
   const esgAnswers = clone(OSPEDALE_ESG_ANSWERS);
-  const esgResults = computeEsg(
-    esgAnswers,
-    project.configurazione?.settore ?? "",
-    OSPEDALE_EIA_RESULTS,
-  );
+  const esgResults = {
+    ...computeEsg(esgAnswers, project.configurazione?.settore ?? "", OSPEDALE_EIA_RESULTS),
+    esgDetail: clone(OSPEDALE_ESG_DETAIL),
+  };
   return {
     ...base,
     eiaInputs: clone(OSPEDALE_EIA_RESULTS.scenario),
