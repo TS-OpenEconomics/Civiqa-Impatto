@@ -87,7 +87,7 @@ interface NavItem {
   href?: string     // se presente, apre un link esterno in una nuova scheda
 }
 
-const PROJECT_MANAGER_URL = '#' // TODO: sostituire con il link definitivo
+const PROJECT_MANAGER_URL = 'http://localhost:3000/progettazione/project-manager'
 
 const NAV_ITEMS: NavItem[] = [
   /* Dashboard visibile ma non ancora cliccabile (come Composing) */

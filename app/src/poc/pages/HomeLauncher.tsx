@@ -12,7 +12,7 @@ const DATA_ROOM_URL = 'https://app.civiqa.it/programmazione/data-room'
 const RISORSE_URL   = 'https://prod.openrep.eu/it/projects'
 const DOCFAP_PATH = '/impatti/docfap'
 const VALUTAZIONE_PATH = '/valutazioni'
-const PROJECT_MANAGER_URL = '#' // TODO: sostituire con il link definitivo
+const PROJECT_MANAGER_URL = 'http://localhost:3000/progettazione/project-manager'
 
 const HOME_LOCK_CLASS = 'hl-home-locked'
 

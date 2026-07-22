@@ -49,7 +49,7 @@ function ThemeToggle() {
 
 const DATA_ROOM_URL = 'https://app.civiqa.it/programmazione/data-room'
 const RISORSE_URL   = 'https://prod.openrep.eu/it/projects'
-const PROJECT_MANAGER_URL = '#' // TODO: sostituire con il link definitivo
+const PROJECT_MANAGER_URL = 'http://localhost:3000/progettazione/project-manager'
 
 /* ── SVG icons per i moduli nel dropdown (16×16) ────────── */
 
