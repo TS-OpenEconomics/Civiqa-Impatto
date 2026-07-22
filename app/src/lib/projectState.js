@@ -3,6 +3,7 @@ import { MUBA_PROJECT, MUBA_EIA_RESULTS, MUBA_ECBA_RESULTS } from "../mocks/muba
 import { OSPEDALE_PROJECT, OSPEDALE_EIA_RESULTS, OSPEDALE_ECBA_RESULTS } from "../mocks/ospedaleProject";
 import { computeEia } from "./eiaEngine";
 import { computeEcba } from "./ecbaEngine";
+import { computeEsg } from "./esgEngine";
 
 const DEFAULT_ECBA_INPUTS = {
   horizon: 25,
@@ -17,7 +18,9 @@ const DEFAULT_ECBA_INPUTS = {
 // EIA/ECBA reali. Il bump invalida lo stato v6 in cache.
 // v8: ospedale con OPEX in scheda, categoria/sotto-settore corretti (Strutture
 // ospedaliere / Sanitarie) e i 3 progetti asilo nido. Invalida il seed v7 vecchio.
-export const PROJECT_STORAGE_KEY = "civiqa.projects.v8";
+// v9: ospedale ora ha anche l'ESG (questionario curato → rating dal motore).
+// Il bump invalida lo stato v8 in cache (ospedale senza ESG).
+export const PROJECT_STORAGE_KEY = "civiqa.projects.v9";
 export const UI_STORAGE_KEY = "civiqa.ui.v1";
 
 function clone(value) {
@@ -101,26 +104,66 @@ function buildMubaWorkspace() {
   };
 }
 
+// Questionario ESG curato per l'Ospedale Pediatrico (presidio sanitario pubblico
+// per l'infanzia). L'ESG non è negli export Excel → si compone qui; il rating è
+// calcolato dal motore (settore "Infrastrutture sociali" → tipo "sociale").
+// fte_generated è volutamente omesso: il motore usa gli FTE reali dell'EIA.
+const OSPEDALE_ESG_ANSWERS = {
+  // Ambiente (E)
+  soil_pct: 15,
+  impact: [
+    "Riduzione dei consumi energetici",
+    "Gestione sostenibile dei rifiuti sanitari",
+    "Mobilità sostenibile per utenti e personale",
+  ],
+  energy_efficiency: "Si",
+  carbon_reduction: "Si",
+  lifecycle_assessment: "No",
+  // Sociale (S)
+  users: 50000,
+  services: "Si",
+  employment: "Si",
+  gender_equity: "Si",
+  vulnerable_groups: "Si",
+  // Governance (G)
+  sensitive_area: "No",
+  monitoring: "Si",
+  documents: "Si",
+  stakeholder_consult: "Si",
+  transparency: "Si",
+};
+
 // Workspace per il progetto reale Ospedale Infantile (scenario 841, Genova):
 // stessa logica di buildMubaWorkspace, con i risultati REALI importati.
+// L'ESG è calcolato dal questionario curato OSPEDALE_ESG_ANSWERS.
 function buildOspedaleWorkspace() {
   const project = clone(OSPEDALE_PROJECT);
   const updatedAt = project.ultima_modifica;
   const base = createWorkspace(project);
+  const esgAnswers = clone(OSPEDALE_ESG_ANSWERS);
+  const esgResults = computeEsg(
+    esgAnswers,
+    project.configurazione?.settore ?? "",
+    OSPEDALE_EIA_RESULTS,
+  );
   return {
     ...base,
     eiaInputs: clone(OSPEDALE_EIA_RESULTS.scenario),
     eiaResults: clone(OSPEDALE_EIA_RESULTS),
     ecbaResults: clone(OSPEDALE_ECBA_RESULTS),
+    esgAnswers,
+    esgResults,
     results: {
       ...base.results,
       eia: clone(OSPEDALE_EIA_RESULTS),
       ecba: clone(OSPEDALE_ECBA_RESULTS),
+      esg: esgResults,
     },
     analyses: {
       ...base.analyses,
       eia: { status: "completed", updatedAt },
       ecba: { status: "completed", updatedAt },
+      esg: { status: "completed", updatedAt },
     },
   };
 }
