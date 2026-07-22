@@ -969,16 +969,24 @@ export function EcbaResults({ project, onBack }) {
           if (v > mx) mx = v;
         }),
       );
-      mn = Math.floor(mn / 10) * 10 - 2;
-      mx = Math.ceil(mx / 10) * 10 + 2;
-      if (mx === mn) mx = mn + 10;
+      // Passo "nice" (~6-8 intervalli) invece di un passo fisso di 10: con la serie
+      // VANE cumulato attiva il range è ampio (es. -70..510) e un passo di 10 dà
+      // decine di righe. Calcoliamo un passo adatto e allineiamo min/max ai suoi multipli.
+      const cfRawStep = Math.max(1, (mx - mn) / 7);
+      const cfStepMag = Math.pow(10, Math.floor(Math.log10(cfRawStep)));
+      const cfStepNorm = cfRawStep / cfStepMag;
+      const cfStep = (cfStepNorm <= 1 ? 1 : cfStepNorm <= 2 ? 2 : cfStepNorm <= 5 ? 5 : 10) * cfStepMag;
+      mn = Math.floor(mn / cfStep) * cfStep;
+      mx = Math.ceil(mx / cfStep) * cfStep;
+      if (mx === mn) mx = mn + cfStep;
       const N = 31,
         x = (t) => padL + (t / (N - 1)) * plotW,
         y = (v) => padT + plotH - ((v - mn) / (mx - mn)) * plotH;
       let o = "";
-      // griglia orizzontale + asse Y
-      for (let g = Math.ceil(mn / 10) * 10; g <= mx; g += 10) {
-        o += `<line class="ax-line" x1="${padL}" y1="${y(g)}" x2="${W - padR}" y2="${y(g)}"/><text class="ax-txt" x="${padL - 6}" y="${y(g) + 3}" text-anchor="end">${g}</text>`;
+      // griglia orizzontale + asse Y (passo nice; etichette intere quando il passo lo è)
+      for (let g = mn; g <= mx + 1e-6; g += cfStep) {
+        const gl = Number.isInteger(cfStep) ? String(g) : String(Math.round(g * 10) / 10);
+        o += `<line class="ax-line" x1="${padL}" y1="${y(g)}" x2="${W - padR}" y2="${y(g)}"/><text class="ax-txt" x="${padL - 6}" y="${y(g) + 3}" text-anchor="end">${gl}</text>`;
       }
       o += `<line class="ax-zero" x1="${padL}" y1="${y(0)}" x2="${W - padR}" y2="${y(0)}"/>`;
       // griglia verticale leggera + etichette anno
@@ -1160,7 +1168,7 @@ export function EcbaResults({ project, onBack }) {
         o += `<rect class="chart-hit" x="${x}" y="${yT}" width="${bw}" height="${Math.max(6, h)}" fill="transparent" data-tip-label="Intervallo VANE" data-tip-value="${xEdges(i).toFixed(1)} – ${(xEdges(i) + m.w).toFixed(1)} M€" data-tip-sub="Frequenza simulazioni: ${v}%"></rect>`;
         // x-axis label every 4th bar on clean integers
         if (i % 4 === 0) {
-          o += `<text class="ax-txt" x="${x + bw / 2}" y="${H - padB + 16}" text-anchor="middle">${xEdges(i)}</text>`;
+          o += `<text class="ax-txt" x="${x + bw / 2}" y="${H - padB + 16}" text-anchor="middle">${Math.round(xEdges(i))}</text>`;
         }
       });
       // zero line — only if 0 falls within the data range
