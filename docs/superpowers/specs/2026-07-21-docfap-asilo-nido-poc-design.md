@@ -274,7 +274,12 @@ calcola beneficio da posti+categoria) potrebbe sostituire il cablato `runPOCAnal
   shape in fase di plan.
 - **Punto di accesso al workspace** dai registri dataset (import statici): da risolvere con
   getter/memoization.
-- **Rendering VANE negativo (A3)** in `EcbaResults`: da verificare a schermo.
+- **Rendering VANE negativo (A3)** in `EcbaResults`: **confermato limite** — il waterfall ECBA non è
+  disegnato per VANE negativi (scala `y` solo su `[0, benefici·1.12]`), quindi per A3 (VANE ≈ −5,5 M€)
+  la barra sfora sotto l'asse. I numeri di A3 (VANE/BCR in testata, donut, cashflow) restano corretti.
+  **Decisione POC:** la demo si scripta su A1/A2 (VANE positivo, waterfall corretto); A3 si usa come
+  termine di paragone citando i numeri, senza aprirne il waterfall. Fix negativo-aware rinviato
+  (richiede modifica alla pagina condivisa + verifica a schermo).
 - **Bump cache `localStorage`** dei progetti se cambia la forma dei seed nido.
 
 ## 9. Verifica (prima della POC)
