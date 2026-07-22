@@ -832,7 +832,7 @@ export function InputParamsStep({ alternativaId }: Props) {
       title: 'OPEX annuo',
       complete: hasOpex,
       summary: hasOpex
-        ? `${formatEur(Math.round(opexNum))}/anno${opexPctStr ? ` - ${opexPctStr}% del CAPEX` : ''}`
+        ? `${formatEur(Math.round(opexNum))}/anno${hasCapex && opexPctStr ? ` - ${opexPctStr}% del CAPEX` : ''}`
         : undefined,
       children: opexBlock,
     },

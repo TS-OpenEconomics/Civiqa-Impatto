@@ -319,11 +319,12 @@ export function WizardShell({ phases, onClose, onAutofill, autofillPhaseIndexes 
         )
       }
       if (altMatch[2] === 'params') {
-        // Tutti i parametri devono essere compilati prima di proseguire: durata
-        // cantiere, vita utile, CAPEX e OPEX. Così non si avanza con una pagina
-        // vuota anche dopo l'autoriempi.
+        // CAPEX obbligatorio per interventi con investimento; per il voucher
+        // (CAPEX 0) basta l'OPEX. OPEX, vita utile e durata restano obbligatori.
+        const capexOk = (alt.capex ?? 0) > 0
+        const opexOnly = (alt.capex ?? 0) === 0 && (alt.opex ?? 0) > 0
         return (
-          (alt.capex ?? 0) > 0 &&
+          (capexOk || opexOnly) &&
           (alt.opex ?? 0) > 0 &&
           (alt.vitaUtileProgram ?? 0) > 0 &&
           (alt.durataStimata ?? 0) > 0

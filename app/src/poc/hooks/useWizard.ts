@@ -41,7 +41,7 @@ export function useWizard() {
               isFilled(alt.categoria) &&
               isFilled(alt.tipologia) &&
               (alt.obiettivoCer ?? alt.quantita ?? 0) > 0 &&
-              (alt.capex ?? 0) > 0
+              ((alt.capex ?? 0) > 0 || (alt.opex ?? 0) > 0)
             )
           })
           return hasMinimum && allAlternativesValid && state.alternativeAggiuntaCompletata
