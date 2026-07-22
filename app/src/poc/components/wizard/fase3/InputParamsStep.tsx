@@ -320,11 +320,14 @@ export function InputParamsStep({ alternativaId }: Props) {
     const capex = parseFloat(capexStr)
     const opex = parseFloat(opexValStr)
     const duration = parseInt(durationStr)
-    if (isNaN(capex) || capex <= 0) return
+    const capexOk = !isNaN(capex) && capex > 0
+    // Modalità "solo OPEX" (voucher): CAPEX 0 ma OPEX valido → si salva comunque.
+    const opexOnly = (isNaN(capex) || capex === 0) && !isNaN(opex) && opex > 0
+    if (!capexOk && !opexOnly) return
     addAlternativa(alternativaId as AlternativaId, {
       ...altRef.current,
       quantita: totalQty,
-      capex,
+      capex: capexOk ? capex : 0,
       opex: isNaN(opex) ? 0 : opex,
       durataStimata: isNaN(duration) ? undefined : duration,
       vitaUtileProgram: vitaUtile > 0 ? vitaUtile : undefined,
@@ -348,6 +351,10 @@ export function InputParamsStep({ alternativaId }: Props) {
     : 1
   const capexNum = parseFloat(capexStr)
   const hasCapex = !isNaN(capexNum) && capexNum > 0
+  // CAPEX confermato esplicitamente a 0 (es. voucher: nessun investimento fisico).
+  // Distinto dal campo vuoto (non ancora compilato): abilita la modalità "solo OPEX".
+  const capexIsZeroConfirmed = capexStr.trim() !== '' && !isNaN(capexNum) && capexNum === 0
+  const capexBlockComplete = hasCapex || capexIsZeroConfirmed
   const opexNum = parseFloat(opexValStr)
   const hasOpex = !isNaN(opexNum) && opexNum > 0
   const categoryLabel = categoryData?.label ?? ''
@@ -637,9 +644,36 @@ export function InputParamsStep({ alternativaId }: Props) {
   const opexBlock: ReactNode = (
     <div style={blockBodyStyle}>
       {!hasCapex ? (
-        <p style={hintStyle} aria-live="polite">
-          Conferma prima il CAPEX per stimare l'OPEX annuo.
-        </p>
+        capexIsZeroConfirmed ? (
+          <div style={blockBodyStyle}>
+            <p style={questionStyle}>
+              Questa alternativa non prevede un investimento (CAPEX 0): inserisci direttamente il
+              costo operativo annuo (es. trasferimenti/voucher alle famiglie).
+            </p>
+            <div>
+              <p style={fieldHeadingStyle}>OPEX annuo</p>
+              <div style={panelInputRowStyle}>
+                <input
+                  id={`opex-abs-${alternativaId}`}
+                  type="text"
+                  inputMode="numeric"
+                  value={displayInt(opexValStr, focusedField === `opex-abs-${alternativaId}`)}
+                  onChange={(e) => handleOpexValChange(stripDots(e.target.value))}
+                  onFocus={() => setFocusedField(`opex-abs-${alternativaId}`)}
+                  onBlur={() => setFocusedField(null)}
+                  placeholder="Inserisci importo"
+                  style={panelInputStyle}
+                  aria-label="OPEX annuo in euro"
+                />
+                <span style={udmBadgeStyle}>€/anno</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p style={hintStyle} aria-live="polite">
+            Conferma prima il CAPEX per stimare l'OPEX annuo.
+          </p>
+        )
       ) : (
         <>
           <p style={questionStyle}>
@@ -785,8 +819,12 @@ export function InputParamsStep({ alternativaId }: Props) {
     {
       id: 'capex',
       title: 'CAPEX',
-      complete: hasCapex,
-      summary: hasCapex ? formatEur(Math.round(capexNum)) : undefined,
+      complete: capexBlockComplete,
+      summary: hasCapex
+        ? formatEur(Math.round(capexNum))
+        : capexIsZeroConfirmed
+          ? 'Nessun investimento (CAPEX 0)'
+          : undefined,
       children: capexBlock,
     },
     {
