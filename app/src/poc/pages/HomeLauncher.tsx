@@ -9,7 +9,7 @@ import '../styles/home-launcher.css'
 
 const SCENARI_URL   = 'https://www.openeconomics.eu/insights-wall'
 const DATA_ROOM_URL = 'https://app.civiqa.it/programmazione/data-room'
-const RISORSE_URL   = 'https://demo.openrep.eu/projects'
+const RISORSE_URL   = 'https://prod.openrep.eu/it/projects'
 const DOCFAP_PATH = '/impatti/docfap'
 const VALUTAZIONE_PATH = '/valutazioni'
 const PROJECT_MANAGER_URL = '#' // TODO: sostituire con il link definitivo

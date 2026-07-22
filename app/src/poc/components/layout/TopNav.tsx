@@ -48,7 +48,7 @@ function ThemeToggle() {
 /* ── Constants ──────────────────────────────────────────── */
 
 const DATA_ROOM_URL = 'https://app.civiqa.it/programmazione/data-room'
-const RISORSE_URL   = 'https://demo.openrep.eu/projects'
+const RISORSE_URL   = 'https://prod.openrep.eu/it/projects'
 const PROJECT_MANAGER_URL = '#' // TODO: sostituire con il link definitivo
 
 /* ── SVG icons per i moduli nel dropdown (16×16) ────────── */
