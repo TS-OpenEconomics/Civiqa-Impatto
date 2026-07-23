@@ -184,29 +184,135 @@ function MaterialitySection({ materiality }) {
   );
 }
 
-// ESG_4 (versione semplice) — SDG: lista/barre con punteggio per obiettivo.
+// Colori ufficiali dei 17 SDG.
+const SDG_COLORS = {
+  1: "#E5243B", 2: "#DDA63A", 3: "#4C9F38", 4: "#C5192D", 5: "#FF3A21", 6: "#26BDE2",
+  7: "#FCC30B", 8: "#A21942", 9: "#FD6925", 10: "#DD1367", 11: "#FD9D24", 12: "#BF8B2E",
+  13: "#3F7E44", 14: "#0A97D9", 15: "#56C02B", 16: "#00689D", 17: "#19486A",
+};
+const two = (g) => String(g).padStart(2, "0");
+
+function sdgPolar(cx, cy, r, a) {
+  return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+}
+// Path di un settore anulare (r0..r1, a0..a1).
+function sdgSector(cx, cy, r0, r1, a0, a1) {
+  const [x0, y0] = sdgPolar(cx, cy, r1, a0);
+  const [x1, y1] = sdgPolar(cx, cy, r1, a1);
+  const [x2, y2] = sdgPolar(cx, cy, r0, a1);
+  const [x3, y3] = sdgPolar(cx, cy, r0, a0);
+  const large = a1 - a0 > Math.PI ? 1 : 0;
+  return `M${x0.toFixed(2)},${y0.toFixed(2)} A${r1},${r1} 0 ${large} 1 ${x1.toFixed(2)},${y1.toFixed(2)} L${x2.toFixed(2)},${y2.toFixed(2)} A${r0},${r0} 0 ${large} 0 ${x3.toFixed(2)},${y3.toFixed(2)} Z`;
+}
+
+// Ruota SDG: 17 spicchi colorati (raggio ∝ punteggio), selezione con centro attivo.
+function SdgWheel({ sdg, selected, onSelect }) {
+  const items = [...(sdg ?? [])].sort((a, b) => a.goal - b.goal);
+  const n = 17;
+  const S = 460, cx = S / 2, cy = S / 2, r0 = 72, rMax = 196;
+  const step = (Math.PI * 2) / n;
+  const gap = 0.014;
+  const sel = items.find((x) => x.goal === selected);
+  const [nm1, nm2] = twoLines(SDG_LABELS[selected] || "");
+  return (
+    <svg viewBox={`0 0 ${S} ${S}`} className="w-full max-w-[460px]" role="img" aria-label="Ruota degli Obiettivi di Sviluppo Sostenibile">
+      <text x={cx} y={16} textAnchor="middle" style={{ fontSize: "12px", fontWeight: 700, fill: "#5A5A60" }}>Società</text>
+      <text x={S - 4} y={cy} textAnchor="end" style={{ fontSize: "12px", fontWeight: 700, fill: "#5A5A60" }}>Persone</text>
+      <text x={cx} y={S - 6} textAnchor="middle" style={{ fontSize: "12px", fontWeight: 700, fill: "#5A5A60" }}>Economia</text>
+      <text x={4} y={cy} textAnchor="start" style={{ fontSize: "12px", fontWeight: 700, fill: "#5A5A60" }}>Ambiente</text>
+      {items.map((it, i) => {
+        const a0 = -Math.PI / 2 + i * step + gap;
+        const a1 = -Math.PI / 2 + (i + 1) * step - gap;
+        const r1 = r0 + Math.max(6, ((it.score ?? 0) / 100) * (rMax - r0));
+        const dim = selected != null && selected !== it.goal;
+        const isSel = selected === it.goal;
+        const [lx, ly] = sdgPolar(cx, cy, rMax + 12, (a0 + a1) / 2);
+        return (
+          <g key={it.goal} onClick={() => onSelect(isSel ? null : it.goal)} style={{ cursor: "pointer" }}>
+            <path
+              d={sdgSector(cx, cy, r0, r1, a0, a1)}
+              fill={SDG_COLORS[it.goal] ?? "#999"}
+              opacity={dim ? 0.22 : 1}
+              stroke={isSel ? "#2E0B86" : "#fff"}
+              strokeWidth={isSel ? 3 : 1}
+            />
+            <text x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" style={{ fontSize: "10px", fontWeight: 700, fill: dim ? "#c8c8cc" : "#5A5A60" }}>{two(it.goal)}</text>
+          </g>
+        );
+      })}
+      <circle cx={cx} cy={cy} r={r0 - 8} fill="#fff" stroke="#e5e5e8" />
+      {sel ? (
+        <text x={cx} y={cy} textAnchor="middle" style={{ fontSize: "10px", fill: "#0E0E10" }}>
+          <tspan x={cx} dy="-16" style={{ fontWeight: 700 }}>{nm1}</tspan>
+          {nm2 && <tspan x={cx} dy="12" style={{ fontWeight: 700 }}>{nm2}</tspan>}
+          <tspan x={cx} dy="16" style={{ fill: "#7B7B82", fontSize: "9px" }}>Punteggio</tspan>
+          <tspan x={cx} dy="15" style={{ fontWeight: 800, fontSize: "16px", fill: "#2E0B86" }}>{sel.score}</tspan>
+        </text>
+      ) : (
+        <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle" style={{ fontSize: "11px", fill: "#7B7B82" }}>Seleziona un obiettivo</text>
+      )}
+    </svg>
+  );
+}
+
+// Lista SDG a destra: card con punteggio, espandibile sui sotto-indicatori.
+function SdgList({ sdg, selected, onSelect }) {
+  const items = [...(sdg ?? [])].sort((a, b) => a.goal - b.goal);
+  return (
+    <div className="border border-ink-100 rounded max-h-[460px] overflow-y-auto divide-y divide-ink-100">
+      {items.map((it) => {
+        const isSel = selected === it.goal;
+        const dim = selected != null && !isSel;
+        return (
+          <div key={it.goal} className={dim ? "opacity-50" : ""}>
+            <button
+              type="button"
+              onClick={() => onSelect(isSel ? null : it.goal)}
+              className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-ink-50"
+              aria-expanded={isSel}
+            >
+              <span className="w-9 h-9 shrink-0 rounded text-white text-xs font-bold flex items-center justify-center" style={{ background: SDG_COLORS[it.goal] }}>
+                {two(it.goal)}
+              </span>
+              <span className="flex-1 min-w-0">
+                <span className="block text-[11px] text-ink-500 leading-tight">{two(it.goal)} {SDG_LABELS[it.goal]}</span>
+                <span className="block text-sm font-bold text-ink-900">Punteggio totale: {it.score}</span>
+              </span>
+              <span className="shrink-0 text-xs text-ink-400">{isSel ? "▲" : "▼"}</span>
+            </button>
+            {isSel && (it.indicators?.length ?? 0) > 0 && (
+              <div className="px-3 pb-3 border-t border-ink-100 divide-y divide-ink-100">
+                {it.indicators.map((ind) => (
+                  <div key={ind.label} className="flex items-center justify-between gap-3 py-2">
+                    <span className="text-[11px] text-ink-700 leading-tight">{ind.label}</span>
+                    <span className="shrink-0 text-xs font-bold text-ink-900">{two(ind.value)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ESG_4 — SDG: ruota radiale interattiva + lista sincronizzata.
 function SdgSection({ sdg }) {
-  const sorted = [...(sdg ?? [])].sort((a, b) => b.score - a.score);
+  const [selected, setSelected] = useState(null);
   return (
     <div>
       <h3 className="text-sm font-bold text-ink-900 mb-1">Obiettivi di sviluppo sostenibile (SDG)</h3>
       <p className="text-xs text-ink-600 leading-relaxed max-w-3xl mb-4">
-        Contributo del progetto agli Obiettivi di Sviluppo Sostenibile dell'Agenda 2030 (punteggio 0-100
-        per obiettivo, ordinati per rilevanza).
+        Contributo del progetto ai 17 Obiettivi di Sviluppo Sostenibile dell'Agenda 2030. Ogni spicchio
+        dell'anello mostra il punteggio dell'obiettivo (0-100); seleziona uno spicchio o una voce in elenco
+        per approfondire i sotto-indicatori.
       </p>
-      <div className="grid gap-x-8 gap-y-3 md:grid-cols-2">
-        {sorted.map((s) => (
-          <div key={s.goal} className="flex items-center gap-3">
-            <span className="w-7 h-7 shrink-0 rounded bg-brand-violet/10 text-brand-violet text-xs font-bold flex items-center justify-center">
-              {s.goal}
-            </span>
-            <span className="flex-1 text-[11px] text-ink-700 leading-tight">{SDG_LABELS[s.goal] ?? `SDG ${s.goal}`}</span>
-            <div className="w-24 shrink-0">
-              <PctBar pct={s.score} />
-            </div>
-            <span className="w-8 text-right text-xs font-bold text-ink-900">{s.score}</span>
-          </div>
-        ))}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] items-start">
+        <div className="flex justify-center">
+          <SdgWheel sdg={sdg} selected={selected} onSelect={setSelected} />
+        </div>
+        <SdgList sdg={sdg} selected={selected} onSelect={setSelected} />
       </div>
     </div>
   );

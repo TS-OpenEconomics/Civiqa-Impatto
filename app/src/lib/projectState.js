@@ -24,7 +24,9 @@ const DEFAULT_ECBA_INPUTS = {
 // curati) per le sezioni ricche del dettaglio ESG. Invalida lo stato v9.
 // v11: esgDetail.subThemes (sotto-temi E/S/G con criteri, criticità e
 // raccomandazioni) per le sotto-pagine ESG. Invalida lo stato v10.
-export const PROJECT_STORAGE_KEY = "civiqa.projects.v11";
+// v12: esgDetail.sdg con sotto-indicatori per obiettivo (ruota SDG interattiva).
+// Invalida lo stato v11.
+export const PROJECT_STORAGE_KEY = "civiqa.projects.v12";
 export const UI_STORAGE_KEY = "civiqa.ui.v1";
 
 function clone(value) {
@@ -175,12 +177,23 @@ const OSPEDALE_ESG_DETAIL = {
   // Punteggio 0-100 per obiettivo SDG (1..17). Alti per gli SDG allineati dal motore
   // (1,3,4,5,7,8,10,11,13,15,16,17); bassi per gli altri.
   sdg: [
-    { goal: 1, score: 60 }, { goal: 2, score: 12 }, { goal: 3, score: 95 },
-    { goal: 4, score: 70 }, { goal: 5, score: 78 }, { goal: 6, score: 20 },
-    { goal: 7, score: 58 }, { goal: 8, score: 80 }, { goal: 9, score: 22 },
-    { goal: 10, score: 82 }, { goal: 11, score: 65 }, { goal: 12, score: 18 },
-    { goal: 13, score: 55 }, { goal: 14, score: 8 }, { goal: 15, score: 45 },
-    { goal: 16, score: 85 }, { goal: 17, score: 72 },
+    { goal: 1, score: 60, indicators: [{ label: "Quota di popolazione a rischio di povertà", value: 58 }, { label: "Incidenza della povertà assoluta", value: 62 }, { label: "Divario territoriale nella povertà", value: 60 }] },
+    { goal: 2, score: 12, indicators: [{ label: "Accesso a una nutrizione adeguata", value: 10 }, { label: "Riduzione dello spreco alimentare", value: 15 }] },
+    { goal: 3, score: 95, indicators: [{ label: "Accesso ai servizi sanitari pediatrici", value: 97 }, { label: "Riduzione delle ospedalizzazioni 0-14", value: 92 }, { label: "Continuità e qualità assistenziale", value: 95 }] },
+    { goal: 4, score: 70, indicators: [{ label: "Accesso ai servizi educativi", value: 72 }, { label: "Qualità dell'offerta formativa", value: 68 }] },
+    { goal: 5, score: 78, indicators: [{ label: "Occupazione femminile attivata", value: 80 }, { label: "Conciliazione vita-lavoro", value: 76 }, { label: "Parità di accesso ai servizi", value: 78 }] },
+    { goal: 6, score: 20, indicators: [{ label: "Efficienza idrica", value: 22 }, { label: "Qualità dell'acqua", value: 18 }] },
+    { goal: 7, score: 58, indicators: [{ label: "Efficienza energetica dell'edificio", value: 62 }, { label: "Quota di energia rinnovabile", value: 54 }] },
+    { goal: 8, score: 80, indicators: [{ label: "Occupazione locale attivata", value: 84 }, { label: "FTE generati dall'intervento", value: 78 }, { label: "Qualità del lavoro", value: 78 }] },
+    { goal: 9, score: 22, indicators: [{ label: "Innovazione tecnologica", value: 24 }, { label: "Dotazione infrastrutturale", value: 20 }] },
+    { goal: 10, score: 82, indicators: [{ label: "Accesso equo ai servizi", value: 85 }, { label: "Inclusione dei gruppi vulnerabili", value: 84 }, { label: "Riduzione dei divari territoriali", value: 77 }] },
+    { goal: 11, score: 65, indicators: [{ label: "Servizi di prossimità", value: 68 }, { label: "Accessibilità urbana", value: 62 }] },
+    { goal: 12, score: 18, indicators: [{ label: "Gestione sostenibile dei rifiuti", value: 20 }, { label: "Uso di materiali riciclati", value: 16 }] },
+    { goal: 13, score: 55, indicators: [{ label: "Riduzione delle emissioni di CO₂", value: 58 }, { label: "Resilienza climatica dell'opera", value: 52 }] },
+    { goal: 14, score: 8, indicators: [{ label: "Tutela degli ecosistemi acquatici", value: 8 }] },
+    { goal: 15, score: 45, indicators: [{ label: "Contenimento del consumo di suolo", value: 42 }, { label: "Tutela della biodiversità", value: 48 }] },
+    { goal: 16, score: 85, indicators: [{ label: "Trasparenza e rendicontazione", value: 88 }, { label: "Integrità dei processi decisionali", value: 84 }, { label: "Partecipazione e ascolto", value: 83 }] },
+    { goal: 17, score: 72, indicators: [{ label: "Coinvolgimento degli stakeholder", value: 74 }, { label: "Collaborazioni istituzionali", value: 70 }] },
   ],
   // Sotto-temi per dimensione (img 5/6/7): compliance, criteri con % e livello,
   // criticità e raccomandazioni. Coerenti coi punteggi: E mista (una criticità),
