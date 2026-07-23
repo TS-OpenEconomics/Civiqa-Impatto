@@ -480,7 +480,7 @@ export function EsgResults({ project, esgResults, onBack }) {
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-0.5">
                 <h1 className="text-base font-bold text-ink-900">Analisi ESG</h1>
-                <Badge type="esg" />
+                <Badge type="ESG" />
               </div>
               <p className="text-xs text-ink-500">Del progetto {p.nome || "—"}</p>
             </div>
@@ -497,15 +497,15 @@ export function EsgResults({ project, esgResults, onBack }) {
         <div className="mt-4 pt-4 border-t border-ink-100 grid grid-cols-3 gap-4 text-xs">
           <div>
             <p className="text-ink-400 mb-0.5">Settore</p>
-            <p className="text-ink-900 font-medium">{p.configurazione?.settore || "Infrastrutture ambientali e risorse idriche"}</p>
+            <p className="text-ink-900 font-medium">{p.configurazione?.settore || "—"}</p>
           </div>
           <div>
-            <p className="text-ink-400 mb-0.5">Dataset</p>
-            <p className="text-ink-900 font-medium">Matrice contabilità sociale</p>
+            <p className="text-ink-400 mb-0.5">Categoria</p>
+            <p className="text-ink-900 font-medium">{p.configurazione?.categoria_intervento || "—"}</p>
           </div>
           <div>
-            <p className="text-ink-400 mb-0.5">Metodologia</p>
-            <p className="text-ink-900 font-medium">SAM EU-ITA 2019</p>
+            <p className="text-ink-400 mb-0.5">Localizzazione</p>
+            <p className="text-ink-900 font-medium">{p.configurazione?.nuts_label || p.configurazione?.localizzazione || "—"}</p>
           </div>
         </div>
       </div>
