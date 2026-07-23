@@ -24,16 +24,6 @@ function RatingBadge({ rating, size = "md" }) {
   );
 }
 
-function ScoreBar({ value, max = 100 }) {
-  const pct = Math.min(100, Math.max(0, (value / max) * 100));
-  const color = pct >= 75 ? "bg-green-500" : pct >= 50 ? "bg-lime-400" : pct >= 25 ? "bg-amber-400" : "bg-red-400";
-  return (
-    <div className="h-3 bg-ink-100 rounded-full overflow-hidden">
-      <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${pct}%` }} />
-    </div>
-  );
-}
-
 function ComplianceBar({ aligned, partial, nonAligned }) {
   const total = aligned + partial + nonAligned;
   if (!total) return null;
@@ -239,13 +229,13 @@ function truncLabel(s, n = 22) {
 function SubThemeRadar({ items }) {
   const n = items.length;
   if (!n) return null;
-  const size = 300, cx = size / 2, cy = size / 2, R = 80;
+  const W = 440, H = 320, cx = W / 2, cy = H / 2, R = 118;
   const ang = (i) => (Math.PI * 2 * i) / n - Math.PI / 2;
   const pt = (i, r) => [cx + Math.cos(ang(i)) * R * r, cy + Math.sin(ang(i)) * R * r];
   const rings = [0.25, 0.5, 0.75, 1];
   const shape = items.map((it, i) => pt(i, Math.min(1, Math.max(0, (it.score ?? 0) / 100))).join(",")).join(" ");
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[280px]" role="img" aria-label="Radar dei sotto-temi">
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full max-w-[420px]" role="img" aria-label="Radar dei sotto-temi">
       {rings.map((r) => (
         <polygon key={r} points={items.map((_, i) => pt(i, r).join(",")).join(" ")} fill="none" stroke="#e5e5e8" strokeWidth="1" />
       ))}
@@ -255,11 +245,12 @@ function SubThemeRadar({ items }) {
       })}
       <polygon points={shape} fill="rgba(91,33,247,0.15)" stroke="#5B21F7" strokeWidth="2" />
       {items.map((it, i) => {
-        const [x, y] = pt(i, 1.14);
+        const [x, y] = pt(i, 1.1);
         const anchor = x < cx - 5 ? "end" : x > cx + 5 ? "start" : "middle";
         return (
-          <text key={i} x={x} y={y} textAnchor={anchor} dominantBaseline="middle" style={{ fontSize: "8px", fill: "#5A5A60" }}>
-            {truncLabel(it.label, 20)} · {it.score}
+          <text key={i} x={x} y={y} textAnchor={anchor} dominantBaseline="middle" style={{ fontSize: "9px", fill: "#5A5A60" }}>
+            <tspan x={x} dy="-3" style={{ fontWeight: 700, fill: "#0E0E10" }}>{it.score}</tspan>
+            <tspan x={x} dy="11">{truncLabel(it.label, 18)}</tspan>
           </text>
         );
       })}
@@ -559,11 +550,6 @@ export function EsgResults({ project, esgResults, onBack }) {
             />
           </div>
 
-          <div>
-            <p className="text-xs font-semibold text-ink-700 mb-2">Progressione score</p>
-            <ScoreBar value={r.pillars?.[tab]?.score ?? 0} />
-          </div>
-
           <p className="mt-6 text-sm text-ink-700 leading-relaxed">
             {tab === "environmental" && "La valutazione ambientale analizza l'uso delle risorse naturali, le emissioni, l'economia circolare e la mitigazione dei rischi ambientali legati al progetto."}
             {tab === "social" && "La valutazione sociale esamina la qualità del lavoro, l'inclusione e la parità di genere, le relazioni con la comunità e con gli stakeholder coinvolti nel progetto."}
@@ -579,7 +565,7 @@ export function EsgResults({ project, esgResults, onBack }) {
                 {/* Performance sul tema e i sotto-temi */}
                 <div>
                   <h3 className="text-sm font-bold text-ink-900 mb-4">Performance sul tema e i sotto-temi</h3>
-                  <div className="grid gap-6 md:grid-cols-[1fr_280px] items-start">
+                  <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_420px] items-start">
                     <div className="space-y-4">
                       {sts.map((st) => (
                         <div key={st.label}>
