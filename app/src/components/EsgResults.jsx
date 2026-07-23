@@ -225,17 +225,41 @@ function truncLabel(s, n = 22) {
   return t.length > n ? `${t.slice(0, n - 1)}…` : t;
 }
 
+// Etichette brevi per gli assi del radar (i nomi estesi dei sotto-temi non ci stanno).
+const RADAR_SHORT = {
+  "Uso delle risorse del territorio e del capitale naturale": "Uso risorse territorio",
+  "Emissioni e innovazione": "Emissioni e innovazione",
+  "Economia circolare e rifiuti": "Economia circolare",
+  "Mitigazione dei rischi ambientali": "Mitigazione rischi",
+  "Qualità del lavoro e occupazione": "Lavoro e occupazione",
+  "Inclusione e parità di genere": "Inclusione e genere",
+  "Relazioni con la comunità e beneficiari": "Comunità e beneficiari",
+  "Salute e sicurezza": "Salute e sicurezza",
+  "Trasparenza e rendicontazione": "Trasparenza",
+  "Integrità e gestione responsabile": "Integrità",
+  "Coinvolgimento stakeholder": "Stakeholder",
+  "Monitoraggio e controllo": "Monitoraggio",
+};
+
+// Divide un'etichetta breve su max 2 righe bilanciate.
+function twoLines(s) {
+  const w = String(s || "").split(" ");
+  if (w.length <= 1) return [s, ""];
+  const mid = Math.ceil(w.length / 2);
+  return [w.slice(0, mid).join(" "), w.slice(mid).join(" ")];
+}
+
 // Radar SVG dei sotto-temi (N assi, punteggio 0-100). Autoconsistente.
 function SubThemeRadar({ items }) {
   const n = items.length;
   if (!n) return null;
-  const W = 440, H = 320, cx = W / 2, cy = H / 2, R = 118;
+  const W = 460, H = 380, cx = W / 2, cy = H / 2, R = 140;
   const ang = (i) => (Math.PI * 2 * i) / n - Math.PI / 2;
   const pt = (i, r) => [cx + Math.cos(ang(i)) * R * r, cy + Math.sin(ang(i)) * R * r];
   const rings = [0.25, 0.5, 0.75, 1];
   const shape = items.map((it, i) => pt(i, Math.min(1, Math.max(0, (it.score ?? 0) / 100))).join(",")).join(" ");
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full max-w-[420px]" role="img" aria-label="Radar dei sotto-temi">
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Radar dei sotto-temi">
       {rings.map((r) => (
         <polygon key={r} points={items.map((_, i) => pt(i, r).join(",")).join(" ")} fill="none" stroke="#e5e5e8" strokeWidth="1" />
       ))}
@@ -245,12 +269,14 @@ function SubThemeRadar({ items }) {
       })}
       <polygon points={shape} fill="rgba(91,33,247,0.15)" stroke="#5B21F7" strokeWidth="2" />
       {items.map((it, i) => {
-        const [x, y] = pt(i, 1.1);
+        const [x, y] = pt(i, 1.05);
         const anchor = x < cx - 5 ? "end" : x > cx + 5 ? "start" : "middle";
+        const [l1, l2] = twoLines(RADAR_SHORT[it.label] || truncLabel(it.label, 20));
         return (
-          <text key={i} x={x} y={y} textAnchor={anchor} dominantBaseline="middle" style={{ fontSize: "9px", fill: "#5A5A60" }}>
-            <tspan x={x} dy="-3" style={{ fontWeight: 700, fill: "#0E0E10" }}>{it.score}</tspan>
-            <tspan x={x} dy="11">{truncLabel(it.label, 18)}</tspan>
+          <text key={i} x={x} y={y} textAnchor={anchor} dominantBaseline="middle" style={{ fontSize: "11px", fill: "#5A5A60" }}>
+            <tspan x={x} dy="-9" style={{ fontWeight: 800, fill: "#0E0E10", fontSize: "13px" }}>{it.score}</tspan>
+            <tspan x={x} dy="14">{l1}</tspan>
+            {l2 && <tspan x={x} dy="12">{l2}</tspan>}
           </text>
         );
       })}
@@ -567,7 +593,7 @@ export function EsgResults({ project, esgResults, onBack }) {
                 {/* Performance sul tema e i sotto-temi */}
                 <div>
                   <h3 className="text-sm font-bold text-ink-900 mb-4">Performance sul tema e i sotto-temi</h3>
-                  <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_420px] items-start">
+                  <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_480px] items-center">
                     <div className="space-y-4">
                       {sts.map((st) => (
                         <div key={st.label}>
