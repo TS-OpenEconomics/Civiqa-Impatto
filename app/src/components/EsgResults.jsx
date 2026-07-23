@@ -222,6 +222,96 @@ function SdgSection({ sdg }) {
   );
 }
 
+// Colore badge per livello di allineamento di un criterio.
+function livColor(liv) {
+  const s = String(liv || "");
+  if (s.startsWith("Allineato")) return "bg-green-100 text-green-700";
+  if (s.startsWith("Parzial")) return "bg-amber-100 text-amber-700";
+  return "bg-red-100 text-red-700";
+}
+
+function truncLabel(s, n = 22) {
+  const t = String(s || "");
+  return t.length > n ? `${t.slice(0, n - 1)}…` : t;
+}
+
+// Radar SVG dei sotto-temi (N assi, punteggio 0-100). Autoconsistente.
+function SubThemeRadar({ items }) {
+  const n = items.length;
+  if (!n) return null;
+  const size = 300, cx = size / 2, cy = size / 2, R = 80;
+  const ang = (i) => (Math.PI * 2 * i) / n - Math.PI / 2;
+  const pt = (i, r) => [cx + Math.cos(ang(i)) * R * r, cy + Math.sin(ang(i)) * R * r];
+  const rings = [0.25, 0.5, 0.75, 1];
+  const shape = items.map((it, i) => pt(i, Math.min(1, Math.max(0, (it.score ?? 0) / 100))).join(",")).join(" ");
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[280px]" role="img" aria-label="Radar dei sotto-temi">
+      {rings.map((r) => (
+        <polygon key={r} points={items.map((_, i) => pt(i, r).join(",")).join(" ")} fill="none" stroke="#e5e5e8" strokeWidth="1" />
+      ))}
+      {items.map((_, i) => {
+        const [x, y] = pt(i, 1);
+        return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="#e5e5e8" strokeWidth="1" />;
+      })}
+      <polygon points={shape} fill="rgba(91,33,247,0.15)" stroke="#5B21F7" strokeWidth="2" />
+      {items.map((it, i) => {
+        const [x, y] = pt(i, 1.14);
+        const anchor = x < cx - 5 ? "end" : x > cx + 5 ? "start" : "middle";
+        return (
+          <text key={i} x={x} y={y} textAnchor={anchor} dominantBaseline="middle" style={{ fontSize: "8px", fill: "#5A5A60" }}>
+            {truncLabel(it.label, 20)} · {it.score}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
+// Pannello espandibile di un sotto-tema: criteri con % + livello + raccomandazione.
+function SubThemePanel({ st }) {
+  const [open, setOpen] = useState(false);
+  const critCount = (st.criteria || []).filter((c) => c.critical).length;
+  return (
+    <div className="border border-ink-100 rounded">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-ink-50"
+        aria-expanded={open}
+      >
+        <span className="text-sm font-semibold text-ink-900">{st.label}</span>
+        <span className="flex items-center gap-3 shrink-0">
+          <span className={`text-xs font-medium flex items-center gap-1 ${critCount > 0 ? "text-red-600" : "text-green-600"}`}>
+            {critCount > 0 ? "⚠" : "✓"} Sotto-temi critici: {critCount}/{(st.criteria || []).length}
+          </span>
+          <span className="text-ink-400 text-xs">{open ? "▲" : "▼"}</span>
+        </span>
+      </button>
+      {open && (
+        <div className="px-4 pb-4 pt-3 space-y-3 border-t border-ink-100">
+          {(st.criteria || []).map((c) => (
+            <div key={c.label} className="grid gap-2 md:grid-cols-[minmax(0,240px)_1fr] border border-ink-100 rounded p-3">
+              <div>
+                <p className="text-sm font-semibold text-ink-900 mb-1.5 leading-tight">{c.label}</p>
+                <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded ${livColor(c.livello)}`}>
+                  {c.valuePct}% · {c.livello}
+                </span>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-ink-500 mb-1 flex items-center gap-2">
+                  Raccomandazione
+                  {c.critical && <span className="text-red-700 bg-red-50 px-1.5 py-0.5 rounded text-[10px] font-bold">Critico ⚠</span>}
+                </p>
+                <p className="text-xs text-ink-700 leading-relaxed">{c.recommendation}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function EsgResults({ project, esgResults, onBack }) {
   const [tab, setTab] = useState("riepilogo");
   const [ratingView, setRatingView] = useState("grafico");
@@ -479,6 +569,46 @@ export function EsgResults({ project, esgResults, onBack }) {
             {tab === "social" && "La valutazione sociale esamina la qualità del lavoro, l'inclusione e la parità di genere, le relazioni con la comunità e con gli stakeholder coinvolti nel progetto."}
             {tab === "governance" && "La valutazione di governance analizza la trasparenza, la gestione responsabile delle risorse pubbliche e l'integrità dei processi decisionali del progetto."}
           </p>
+
+          {(() => {
+            const letter = PILLAR_LETTERS[tab];
+            const sts = r.esgDetail?.subThemes?.[letter];
+            if (!sts || sts.length === 0) return null;
+            return (
+              <div className="mt-8 space-y-8">
+                {/* Performance sul tema e i sotto-temi */}
+                <div>
+                  <h3 className="text-sm font-bold text-ink-900 mb-4">Performance sul tema e i sotto-temi</h3>
+                  <div className="grid gap-6 md:grid-cols-[1fr_280px] items-start">
+                    <div className="space-y-4">
+                      {sts.map((st) => (
+                        <div key={st.label}>
+                          <div className="flex justify-between items-baseline gap-2 mb-1">
+                            <span className="text-xs font-semibold text-ink-800">{st.label}</span>
+                            <span className="text-xs font-bold text-ink-900">{st.score}</span>
+                          </div>
+                          <ComplianceBar aligned={st.compliance.aligned} partial={st.compliance.partial} nonAligned={st.compliance.non} />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex justify-center">
+                      <SubThemeRadar items={sts.map((st) => ({ label: st.label, score: st.score }))} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Metodologia, risultati e raccomandazioni */}
+                <div>
+                  <h3 className="text-sm font-bold text-ink-900 mb-4">Metodologia di valutazione, risultati e raccomandazioni</h3>
+                  <div className="space-y-3">
+                    {sts.map((st) => (
+                      <SubThemePanel key={st.label} st={st} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>

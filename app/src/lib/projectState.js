@@ -22,7 +22,9 @@ const DEFAULT_ECBA_INPUTS = {
 // Il bump invalida lo stato v8 in cache (ospedale senza ESG).
 // v10: esgResults ospedale arricchito con esgDetail (compliance/materialità/SDG
 // curati) per le sezioni ricche del dettaglio ESG. Invalida lo stato v9.
-export const PROJECT_STORAGE_KEY = "civiqa.projects.v10";
+// v11: esgDetail.subThemes (sotto-temi E/S/G con criteri, criticità e
+// raccomandazioni) per le sotto-pagine ESG. Invalida lo stato v10.
+export const PROJECT_STORAGE_KEY = "civiqa.projects.v11";
 export const UI_STORAGE_KEY = "civiqa.ui.v1";
 
 function clone(value) {
@@ -180,6 +182,122 @@ const OSPEDALE_ESG_DETAIL = {
     { goal: 13, score: 55 }, { goal: 14, score: 8 }, { goal: 15, score: 45 },
     { goal: 16, score: 85 }, { goal: 17, score: 72 },
   ],
+  // Sotto-temi per dimensione (img 5/6/7): compliance, criteri con % e livello,
+  // criticità e raccomandazioni. Coerenti coi punteggi: E mista (una criticità),
+  // S/G alte (nessuna criticità).
+  subThemes: {
+    E: [
+      {
+        label: "Uso delle risorse del territorio e del capitale naturale",
+        score: 55,
+        compliance: { aligned: 50, partial: 35, non: 15 },
+        criteria: [
+          { label: "Cambiamento d'uso del suolo", valuePct: 55, livello: "Parzialmente allineato", critical: false, recommendation: "Prevedere verifiche preventive sull'impatto del consumo di suolo e pratiche di compensazione ecologica." },
+          { label: "Interventi in aree protette o ad alta biodiversità", valuePct: 72, livello: "Allineato", critical: false, recommendation: "Confermare l'assenza di interferenze con aree sensibili e adottare tutele minime in fase di cantiere." },
+        ],
+      },
+      {
+        label: "Emissioni e innovazione",
+        score: 87,
+        compliance: { aligned: 85, partial: 12, non: 3 },
+        criteria: [
+          { label: "Efficienza energetica dell'edificio", valuePct: 90, livello: "Allineato", critical: false, recommendation: "Proseguire con soluzioni ad alta efficienza (involucro, impianti) e monitorare i consumi." },
+          { label: "Riduzione delle emissioni di CO₂", valuePct: 85, livello: "Allineato", critical: false, recommendation: "Mantenere le misure di riduzione e valutare fonti rinnovabili in loco." },
+        ],
+      },
+      {
+        label: "Economia circolare e rifiuti",
+        score: 60,
+        compliance: { aligned: 55, partial: 35, non: 10 },
+        criteria: [
+          { label: "Gestione sostenibile dei rifiuti sanitari", valuePct: 72, livello: "Allineato", critical: false, recommendation: "Formalizzare il piano di gestione dei rifiuti sanitari e la loro tracciabilità." },
+          { label: "Riuso e riciclo dei materiali", valuePct: 45, livello: "Parzialmente allineato", critical: false, recommendation: "Introdurre criteri di economia circolare negli appalti (materiali riciclati/riciclabili)." },
+        ],
+      },
+      {
+        label: "Mitigazione dei rischi ambientali",
+        score: 42,
+        compliance: { aligned: 30, partial: 35, non: 35 },
+        criteria: [
+          { label: "Rischi climatici e resilienza dell'opera", valuePct: 45, livello: "Parzialmente allineato", critical: false, recommendation: "Integrare una valutazione dei rischi climatici e misure di adattamento." },
+          { label: "Inquinamento da cantiere (rumore, vibrazioni, emissioni)", valuePct: 28, livello: "Non allineato", critical: true, recommendation: "Definire misure tecniche per ridurre rumore, vibrazioni ed emissioni luminose e atmosferiche in fase di cantiere." },
+        ],
+      },
+    ],
+    S: [
+      {
+        label: "Qualità del lavoro e occupazione",
+        score: 90,
+        compliance: { aligned: 88, partial: 10, non: 2 },
+        criteria: [
+          { label: "Occupazione locale attivata", valuePct: 95, livello: "Allineato", critical: false, recommendation: "Valorizzare l'occupazione locale e le competenze del territorio." },
+          { label: "FTE generati dall'intervento", valuePct: 88, livello: "Allineato", critical: false, recommendation: "Consolidare l'impatto occupazionale nel tempo." },
+        ],
+      },
+      {
+        label: "Inclusione e parità di genere",
+        score: 88,
+        compliance: { aligned: 85, partial: 13, non: 2 },
+        criteria: [
+          { label: "Equità di genere", valuePct: 90, livello: "Allineato", critical: false, recommendation: "Adottare politiche di parità e di conciliazione vita-lavoro." },
+          { label: "Accessibilità e inclusione degli utenti fragili", valuePct: 85, livello: "Allineato", critical: false, recommendation: "Garantire piena accessibilità agli utenti fragili e alle famiglie." },
+        ],
+      },
+      {
+        label: "Relazioni con la comunità e beneficiari",
+        score: 96,
+        compliance: { aligned: 95, partial: 5, non: 0 },
+        criteria: [
+          { label: "Beneficiari attesi del servizio", valuePct: 98, livello: "Allineato", critical: false, recommendation: "Mantenere l'ampia copertura del servizio sul territorio." },
+          { label: "Miglioramento dei servizi alla comunità", valuePct: 95, livello: "Allineato", critical: false, recommendation: "Monitorare la soddisfazione degli utenti e degli stakeholder." },
+        ],
+      },
+      {
+        label: "Salute e sicurezza",
+        score: 98,
+        compliance: { aligned: 97, partial: 3, non: 0 },
+        criteria: [
+          { label: "Continuità e qualità assistenziale 0-14", valuePct: 98, livello: "Allineato", critical: false, recommendation: "Presidiare gli standard clinici e la sicurezza delle cure pediatriche." },
+          { label: "Sicurezza di utenti e personale", valuePct: 96, livello: "Allineato", critical: false, recommendation: "Mantenere protocolli di sicurezza e formazione continua del personale." },
+        ],
+      },
+    ],
+    G: [
+      {
+        label: "Trasparenza e rendicontazione",
+        score: 100,
+        compliance: { aligned: 100, partial: 0, non: 0 },
+        criteria: [
+          { label: "Report periodici pubblici", valuePct: 100, livello: "Allineato", critical: false, recommendation: "Pubblicare con regolarità gli esiti e gli indicatori del progetto." },
+          { label: "Documentazione ESG disponibile", valuePct: 100, livello: "Allineato", critical: false, recommendation: "Mantenere la documentazione aggiornata e accessibile agli stakeholder." },
+        ],
+      },
+      {
+        label: "Integrità e gestione responsabile",
+        score: 95,
+        compliance: { aligned: 92, partial: 8, non: 0 },
+        criteria: [
+          { label: "Gestione responsabile delle risorse pubbliche", valuePct: 95, livello: "Allineato", critical: false, recommendation: "Presidiare procedure di controllo e misure anti-corruzione." },
+        ],
+      },
+      {
+        label: "Coinvolgimento stakeholder",
+        score: 90,
+        compliance: { aligned: 88, partial: 12, non: 0 },
+        criteria: [
+          { label: "Consultazione degli stakeholder", valuePct: 90, livello: "Allineato", critical: false, recommendation: "Strutturare tavoli di ascolto periodici con la comunità e gli enti." },
+        ],
+      },
+      {
+        label: "Monitoraggio e controllo",
+        score: 98,
+        compliance: { aligned: 96, partial: 4, non: 0 },
+        criteria: [
+          { label: "Sistema di monitoraggio degli esiti", valuePct: 98, livello: "Allineato", critical: false, recommendation: "Consolidare gli indicatori di monitoraggio e la loro periodicità." },
+        ],
+      },
+    ],
+  },
 };
 
 // Workspace per il progetto reale Ospedale Infantile (scenario 841, Genova):
