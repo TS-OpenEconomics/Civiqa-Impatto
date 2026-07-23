@@ -469,15 +469,17 @@ export function EsgResults({ project, esgResults, onBack }) {
                   </div>
                 </div>
 
-                {/* Compliance bar */}
-                <div>
-                  <p className="text-xs font-semibold text-ink-700 mb-2">Compliance ESG</p>
-                  <ComplianceBar
-                    aligned={r.aligned_count}
-                    partial={r.partial_count}
-                    nonAligned={r.non_aligned_count}
-                  />
-                </div>
+                {/* Compliance bar — solo se sotto NON c'è la sezione Compliance ricca (esgDetail) */}
+                {!r.esgDetail && (
+                  <div>
+                    <p className="text-xs font-semibold text-ink-700 mb-2">Compliance ESG</p>
+                    <ComplianceBar
+                      aligned={r.aligned_count}
+                      partial={r.partial_count}
+                      nonAligned={r.non_aligned_count}
+                    />
+                  </div>
+                )}
 
                 <button
                   type="button"
