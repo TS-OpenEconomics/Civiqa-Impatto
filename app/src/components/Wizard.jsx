@@ -1410,7 +1410,9 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
   }
 
   function isBeneficiGroupReady(kpis) {
-    const editableKpis = kpis.filter((kpi) => kpi.tipo !== "monetizzazione");
+    // Editabili = input da inserire + statistiche (+ tecnico legacy). I "calcolato"
+    // e "monetizzazione" sono bloccati e non richiedono compilazione.
+    const editableKpis = kpis.filter((kpi) => kpi.tipo === "input" || kpi.tipo === "statistica" || kpi.tipo === "tecnico");
     return editableKpis.length > 0 && editableKpis.every((kpi) => isBeneficiKpiFilled(kpi.id));
   }
 
@@ -2766,7 +2768,8 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
 
                   {beneficiTemplates.map(({ group, esternalita, kpis, yearSource }, groupIndex) => {
                     const activeYears  = yearSource === "cantiere" ? projectYears : opexYears;
-                    const editableKpis = kpis.filter((k) => k.tipo !== "monetizzazione");
+                    const editableKpis = kpis.filter((k) => k.tipo === "input" || k.tipo === "statistica" || k.tipo === "tecnico");
+                    const calcKpis     = kpis.filter((k) => k.tipo === "calcolato");
                     const monetKpis    = kpis.filter((k) => k.tipo === "monetizzazione");
                     const capexNum     = Number(draft.capex) || 0;
                     const isPositiva   = esternalita !== "negativa";
@@ -2853,6 +2856,8 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                                         <p className="mt-1 text-[11px] leading-[1.4] text-ink-400">Suggerito: {refVal} {kpi.unit}</p>
                                   ) : kpi.tipo === "input" && profiloVal != null ? (
                                         <p className="mt-1 text-[11px] leading-[1.4] text-ink-400">Dal profilo progetto: {refVal} {kpi.unit}</p>
+                                  ) : kpi.tipo === "statistica" ? (
+                                        <p className="mt-1 text-[11px] leading-[1.4] text-ink-400">Statistica nazionale: {refVal} {kpi.unit}</p>
                                   ) : kpi.tipo === "tecnico" ? (
                                         <p className="mt-1 text-[11px] leading-[1.4] text-ink-400">Stima tecnica: {refVal} {kpi.unit}</p>
                                   ) : null}
@@ -2984,6 +2989,41 @@ export function Wizard({ initialProject, onClose, onComplete, onSaveDraft }) {
                             </div>
                           );
                         })}
+
+                        {/* ── Input calcolato (derivati, bloccati) ── */}
+                        {calcKpis.length > 0 ? (
+                          <div className="flex items-center gap-3 border-t border-[#ececf1] bg-[#f7f7fa] px-5 py-2">
+                            <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-400">Input calcolato</span>
+                            <span className="text-[10px] text-ink-400">— valori derivati da statistiche/parametri, non modificabili</span>
+                          </div>
+                        ) : null}
+                        {calcKpis.map((kpi) => (
+                          <div key={kpi.id} className="border-t border-[#f0f0f3] bg-[#fcfcfd]">
+                            <div className="grid gap-x-2 gap-y-3 px-5 py-4 md:grid-cols-[minmax(0,1fr)_132px_120px_96px] md:items-center">
+                              <div className="min-w-0">
+                                <div className="flex items-start gap-3">
+                                  <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center text-ink-400">
+                                    <LockIcon />
+                                  </span>
+                                  <div className="min-w-0">
+                                    <p className="text-[13px] font-semibold leading-[1.35] text-ink-900">{kpi.label}</p>
+                                    <p className="mt-1 text-[11px] leading-[1.4] text-ink-400">Valore calcolato/derivato — non modificabile</p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 md:contents">
+                                <div className="flex h-10 w-[132px] items-center justify-end gap-2 border border-ink-200 bg-[#f7f7fa] px-3 text-right text-[13px] font-semibold text-ink-900">
+                                  <LockIcon className="h-3.5 w-3.5 shrink-0 text-ink-400" />
+                                  <span className="font-mono">
+                                  {draft.benefici_kpi?.[kpi.id]?.stima ?? "—"}
+                                  </span>
+                                </div>
+                                <span className="w-[120px] shrink-0 whitespace-nowrap text-[12px] text-ink-400">{kpi.unit}</span>
+                                <span aria-hidden="true" />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
 
                         {/* ── Fattore di monetizzazione ── */}
                         {monetKpis.length > 0 ? (

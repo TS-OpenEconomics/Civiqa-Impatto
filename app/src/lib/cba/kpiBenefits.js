@@ -27,6 +27,17 @@ import { INPUT_PARAMS_REGISTRY } from "../../poc/data/poc_docfap/input_params_re
 // territoriali che l'utente conferma o corregge.
 const LOCKED_TABLES = new Set(["fixed_params", "monetization_factors"]);
 
+// Categoria del parametro (per la UI del wizard) in funzione della tabella:
+// input_params = Input da inserire · statistics = Statistica nazionale (entrambi
+// editabili) · fixed_params = Input calcolato · monetization_factors = Monetizzazione
+// (entrambi bloccati).
+const TIPO_BY_TABLE = {
+  input_params: "input",
+  statistics: "statistica",
+  fixed_params: "calcolato",
+  monetization_factors: "monetizzazione",
+};
+
 // Palette ciclica per le voci di beneficio (coerente con ecbaBenefits.js).
 const BENEFIT_PALETTE = [
   "#65A30D", "#7C3AED", "#0EA5E9", "#A78BFA", "#F59E0B",
@@ -306,7 +317,6 @@ export function buildKpiTemplate({ catCode, categoriaInterventoLabel } = {}) {
     if (!kpi || kpi.attivo === false) continue;
 
     const kpis = kpi.variables.map((v) => {
-      const locked = isLockedVariable(v);
       const value = resolveVarValue(v, null);
       return {
         id: `${kpi.id}__${v.var_name}`,
@@ -315,7 +325,11 @@ export function buildKpiTemplate({ catCode, categoriaInterventoLabel } = {}) {
         code: v.code,
         label: v.label_utente || v.description || v.var_name,
         unit: udmForVariable(v),
-        tipo: locked ? "monetizzazione" : "tecnico",
+        // 4 categorie fedeli al file (deriva dalla tabella del parametro):
+        //  input_params → Input da inserire (editabile) · statistics → Statistica
+        //  nazionale (editabile) · fixed_params → Input calcolato (bloccato) ·
+        //  monetization_factors → Monetizzazione (bloccato).
+        tipo: TIPO_BY_TABLE[v.table] ?? (isLockedVariable(v) ? "monetizzazione" : "tecnico"),
         estimateFn: () => value,
       };
     });
