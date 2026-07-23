@@ -1234,8 +1234,12 @@ export const KPI_BENEFITS: KpiBenefit[] = [
     metodo_valorizzazione: 'VSL',
     variables: [
       { var_name: 'A', description: 'mq riqualificati/nuovi (degenza acuta/TIN)', table: 'input_params', code: 'prj_mq_critici', val_check: null, label_utente: 'mq riqualificati o nuovi (degenza acuta/TIN)', valore_tipo: 456 },
-      { var_name: 'B', description: 'Morti evitate per mq/anno (adj. double-counting)', table: 'fixed_params', code: 'FP-SAN-MOR', val_check: 0.04, label_utente: 'Morti evitate per mq/anno' },
+      { var_name: 'B', description: 'Morti evitate per mq/anno (adj. double-counting)', table: 'fixed_params', code: 'FP-SAN-MOR', val_check: 0.04, label_utente: 'Morti evitate per mq/anno (calcolato)' },
       { var_name: 'C', description: 'Valore statistico della vita (VSL)', table: 'monetization_factors', code: 'MF-SAN-VSL', val_check: 20000000, label_utente: 'VSL (EUR per morte evitata)' },
+      { var_name: 'D', description: 'mq per 1 posto letto (normativa)', table: 'statistics', code: 'stat_mq_per_pl', val_check: null, label_utente: 'mq per 1 posto letto', valore_tipo: 12 },
+      { var_name: 'E', description: 'Durata media degenza', table: 'statistics', code: 'stat_degenza_media', val_check: null, label_utente: 'Durata media degenza (gg)', valore_tipo: 7 },
+      { var_name: 'F', description: '% pazienti che arrivano in condizioni critiche', table: 'statistics', code: 'stat_pct_critici', val_check: null, label_utente: '% pazienti in condizioni critiche', valore_tipo: 0.12 },
+      { var_name: 'G', description: 'Tasso di mortalità riducibile con intervento', table: 'statistics', code: 'stat_mort_riducibile', val_check: null, label_utente: 'Tasso di mortalità riducibile', valore_tipo: 0.19 },
     ],
     formula: 'A × B × C',
     fonti: [
@@ -1254,9 +1258,13 @@ export const KPI_BENEFITS: KpiBenefit[] = [
     metodo_valorizzazione: 'QALY/WTP',
     variables: [
       { var_name: 'A', description: 'mq riqualificati/nuovi (degenza acuta/TIN)', table: 'input_params', code: 'prj_mq_critici', val_check: null, label_utente: 'mq riqualificati o nuovi (degenza acuta/TIN)', valore_tipo: 456 },
-      { var_name: 'B', description: 'Pazienti PICS per mq/anno (adj)', table: 'fixed_params', code: 'FP-SAN-PICS', val_check: 0.05, label_utente: 'Pazienti PICS per mq/anno' },
-      { var_name: 'C', description: 'QALY guadagnati per paziente', table: 'fixed_params', code: 'FP-SAN-QALY', val_check: 0.20, label_utente: 'QALY guadagnati per paziente' },
-      { var_name: 'D', description: 'WTP per QALY (fascia medio-bassa)', table: 'monetization_factors', code: 'MF-SAN-WTP', val_check: 14996, label_utente: 'WTP per QALY (EUR)' },
+      { var_name: 'B', description: 'Pazienti PICS per mq/anno (calcolato)', table: 'fixed_params', code: 'FP-SAN-PICS', val_check: 0.05, label_utente: 'Pazienti PICS per mq/anno (calcolato)' },
+      { var_name: 'C', description: 'QALY guadagnati per paziente', table: 'statistics', code: 'stat_qaly_paziente', val_check: null, label_utente: 'QALY guadagnati per paziente', valore_tipo: 0.20 },
+      { var_name: 'D', description: 'WTP per QALY - fascia medio-bassa', table: 'monetization_factors', code: 'MF-SAN-WTP-MB', val_check: 14996, label_utente: 'WTP per QALY - medio-basso reddito (EUR)' },
+      { var_name: 'E', description: '% pazienti UTI sopravvissuti che sviluppano PICS', table: 'statistics', code: 'stat_pct_pics', val_check: null, label_utente: '% pazienti UTI con PICS', valore_tipo: 0.5435 },
+      { var_name: 'F', description: 'WTP per QALY - fascia bassa', table: 'monetization_factors', code: 'MF-SAN-WTP-B', val_check: 10808, label_utente: 'WTP per QALY - basso reddito (EUR)' },
+      { var_name: 'G', description: 'WTP per QALY - fascia medio-alta', table: 'monetization_factors', code: 'MF-SAN-WTP-MA', val_check: 23507, label_utente: 'WTP per QALY - medio-alto reddito (EUR)' },
+      { var_name: 'H', description: 'WTP per QALY - fascia alta', table: 'monetization_factors', code: 'MF-SAN-WTP-A', val_check: 86329, label_utente: 'WTP per QALY - alto reddito (EUR)' },
     ],
     formula: 'A × B × C × D',
     fonti: [
@@ -1274,7 +1282,12 @@ export const KPI_BENEFITS: KpiBenefit[] = [
     metodo_valorizzazione: 'Costo evitato',
     variables: [
       { var_name: 'A', description: 'mq riqualificati/nuovi', table: 'input_params', code: 'prj_mq_riqualificati', val_check: null, label_utente: 'mq riqualificati o nuovi', valore_tipo: 8000 },
-      { var_name: 'B', description: 'Costo annuo evitato per eventi avversi per mq', table: 'monetization_factors', code: 'MF-SAN-HAI', val_check: 3475.5, label_utente: 'Costo annuo evitato HAI (EUR per mq/anno)' },
+      { var_name: 'B', description: 'Costo annuo evitato eventi avversi per mq (calcolato)', table: 'fixed_params', code: 'FP-SAN-HAI', val_check: 3475.5, label_utente: 'Costo annuo evitato HAI per mq (calcolato)' },
+      { var_name: 'C', description: 'LOS aggiuntivo per paziente con HAI', table: 'statistics', code: 'stat_los_hai', val_check: null, label_utente: 'LOS aggiuntivo per HAI (gg)', valore_tipo: 18 },
+      { var_name: 'D', description: '% pazienti ospedalizzati con evento avverso', table: 'statistics', code: 'stat_pct_hai', val_check: null, label_utente: '% pazienti con evento avverso', valore_tipo: 0.10 },
+      { var_name: 'E', description: 'Tasso di occupazione lavorativa', table: 'statistics', code: 'stat_tasso_occ', val_check: null, label_utente: 'Tasso di occupazione lavorativa', valore_tipo: 0.625 },
+      { var_name: 'F', description: 'Salario medio annuo lordo', table: 'statistics', code: 'stat_salario', val_check: null, label_utente: 'Salario medio annuo lordo (EUR)', valore_tipo: 35000 },
+      { var_name: 'G', description: 'Costo totale evento avverso (calcolato)', table: 'fixed_params', code: 'FP-SAN-COSTO-HAI', val_check: 8275, label_utente: 'Costo totale evento avverso (calcolato, EUR)' },
     ],
     formula: 'A × B',
     fonti: [
@@ -1293,6 +1306,7 @@ export const KPI_BENEFITS: KpiBenefit[] = [
     variables: [
       { var_name: 'A', description: 'Giorni di degenza evitati/anno', table: 'input_params', code: 'prj_gg_degenza_evitati_y', val_check: null, label_utente: 'Giorni di degenza evitati/anno', valore_tipo: 3000 },
       { var_name: 'B', description: 'Costo medio giornata di degenza (Liguria, 2025)', table: 'monetization_factors', code: 'MF-SAN-DEG', val_check: 868.15, label_utente: 'Costo giornata di degenza (EUR, Liguria)' },
+      { var_name: 'C', description: 'Durata media degenza', table: 'statistics', code: 'stat_degenza_media', val_check: null, label_utente: 'Durata media degenza (gg)', valore_tipo: 7 },
     ],
     formula: 'A × B',
     fonti: [
@@ -1311,6 +1325,9 @@ export const KPI_BENEFITS: KpiBenefit[] = [
     variables: [
       { var_name: 'A', description: 'N. prestazioni sanitarie aggiuntive/anno', table: 'input_params', code: 'prj_prestazioni_agg_y', val_check: null, label_utente: 'Prestazioni aggiuntive/anno', valore_tipo: 20000 },
       { var_name: 'B', description: 'Costo medio ponderato per prestazione', table: 'monetization_factors', code: 'MF-SAN-PREST', val_check: 100, label_utente: 'Costo medio per prestazione (EUR)' },
+      { var_name: 'C', description: 'Costo medio visita specialistica', table: 'monetization_factors', code: 'MF-SAN-VIS', val_check: 128.26, label_utente: 'Costo visita specialistica (EUR)' },
+      { var_name: 'D', description: 'Costo medio ecografia/ECG/ECD', table: 'monetization_factors', code: 'MF-SAN-ECO', val_check: 85.77, label_utente: 'Costo ecografia/ECG/ECD (EUR)' },
+      { var_name: 'E', description: 'Costo medio RMN/TAC', table: 'monetization_factors', code: 'MF-SAN-RMN', val_check: 138.60, label_utente: 'Costo RMN/TAC (EUR)' },
     ],
     formula: 'A × B',
     fonti: [
@@ -1328,7 +1345,9 @@ export const KPI_BENEFITS: KpiBenefit[] = [
     metodo_valorizzazione: 'Costo posto letto',
     variables: [
       { var_name: 'A', description: 'mq riqualificati/nuovi', table: 'input_params', code: 'prj_mq_riqualificati', val_check: null, label_utente: 'mq riqualificati o nuovi', valore_tipo: 8000 },
-      { var_name: 'B', description: 'Valore per mq (costo posto letto Liguria 302.844 / 12 mq per PL)', table: 'monetization_factors', code: 'MF-SAN-PL', val_check: 25237, label_utente: 'Valore per mq (costo PL / 12, EUR, Liguria)' },
+      { var_name: 'B', description: 'Valore per mq (costo PL Liguria / 12 mq per PL) (calcolato)', table: 'fixed_params', code: 'FP-SAN-PL-MQ', val_check: 25237, label_utente: 'Valore per mq (costo PL / 12, calcolato, EUR)' },
+      { var_name: 'C', description: 'mq per 1 posto letto (normativa)', table: 'statistics', code: 'stat_mq_per_pl', val_check: null, label_utente: 'mq per 1 posto letto', valore_tipo: 12 },
+      { var_name: 'D', description: 'Costo per posto letto (Liguria, 2025)', table: 'monetization_factors', code: 'MF-SAN-PL', val_check: 302844, label_utente: 'Costo per posto letto (EUR/anno, Liguria)' },
     ],
     formula: 'A × B',
     fonti: [
@@ -1346,9 +1365,12 @@ export const KPI_BENEFITS: KpiBenefit[] = [
     metodo_valorizzazione: 'VoT',
     variables: [
       { var_name: 'A', description: 'Prestazioni a pazienti da fuori regione/anno', table: 'input_params', code: 'prj_prestazioni_extra_y', val_check: null, label_utente: 'Prestazioni a pazienti extraregionali/anno', valore_tipo: 6000 },
-      { var_name: 'B', description: 'Valore viaggio per prestazione (130 km × 0,369 €/vkm × 1,3 WTT × 7,19 VoT × 2)', table: 'monetization_factors', code: 'MF-SAN-VIA', val_check: 896.8, label_utente: 'Valore viaggio per prestazione (EUR)' },
+      { var_name: 'B', description: 'Km medi percorsi (solo andata) (calcolato)', table: 'fixed_params', code: 'FP-SAN-KM', val_check: 130, label_utente: 'Km medi percorsi - andata (calcolato)' },
+      { var_name: 'C', description: 'Costo percorrenza veicoli leggeri', table: 'monetization_factors', code: 'MF-SAN-VKM', val_check: 0.369, label_utente: 'Costo percorrenza (EUR/vkm)' },
+      { var_name: 'D', description: 'Willingness to Travel (tempo aggiuntivo)', table: 'statistics', code: 'stat_wtt', val_check: null, label_utente: 'Willingness to Travel (h/utente)', valore_tipo: 1.3 },
+      { var_name: 'E', description: 'Valore del Tempo (VoT) - personal', table: 'monetization_factors', code: 'MF-SAN-VOT', val_check: 7.19, label_utente: 'Valore del Tempo (EUR/h/utente)' },
     ],
-    formula: 'A × B',
+    formula: 'A × B × C × D × E × 2',
     fonti: [
       { tipo: 'bibliografia', label: 'LG opere pubbliche stradali (2019); EC Handbook (2016)', riferimento: 'LG stradali (2019); EC Handbook (2016)', codice_origine: null },
     ],
@@ -1364,9 +1386,12 @@ export const KPI_BENEFITS: KpiBenefit[] = [
     metodo_valorizzazione: 'VoT',
     variables: [
       { var_name: 'A', description: 'Prestazioni a pazienti locali che non emigrano/anno', table: 'input_params', code: 'prj_prestazioni_locali_y', val_check: null, label_utente: 'Prestazioni a pazienti locali non-emigrati/anno', valore_tipo: 6000 },
-      { var_name: 'B', description: 'Valore viaggio per prestazione (come ID 66)', table: 'monetization_factors', code: 'MF-SAN-VIA', val_check: 896.8, label_utente: 'Valore viaggio per prestazione (EUR)' },
+      { var_name: 'B', description: 'Km medi percorsi (solo andata) (calcolato)', table: 'fixed_params', code: 'FP-SAN-KM', val_check: 130, label_utente: 'Km medi percorsi - andata (calcolato)' },
+      { var_name: 'C', description: 'Costo percorrenza veicoli leggeri', table: 'monetization_factors', code: 'MF-SAN-VKM', val_check: 0.369, label_utente: 'Costo percorrenza (EUR/vkm)' },
+      { var_name: 'D', description: 'Willingness to Travel (tempo aggiuntivo)', table: 'statistics', code: 'stat_wtt', val_check: null, label_utente: 'Willingness to Travel (h/utente)', valore_tipo: 1.3 },
+      { var_name: 'E', description: 'Valore del Tempo (VoT) - personal', table: 'monetization_factors', code: 'MF-SAN-VOT', val_check: 7.19, label_utente: 'Valore del Tempo (EUR/h/utente)' },
     ],
-    formula: 'A × B',
+    formula: 'A × B × C × D × E × 2',
     fonti: [
       { tipo: 'bibliografia', label: 'LG opere pubbliche stradali (2019); EC Handbook (2016)', riferimento: 'LG stradali (2019); EC Handbook (2016)', codice_origine: null },
     ],
@@ -1382,7 +1407,7 @@ export const KPI_BENEFITS: KpiBenefit[] = [
     metodo_valorizzazione: 'Costo carbonio',
     variables: [
       { var_name: 'A', description: 'mq riqualificati/nuovi', table: 'input_params', code: 'prj_mq_riqualificati', val_check: null, label_utente: 'mq riqualificati o nuovi', valore_tipo: 8000 },
-      { var_name: 'B', description: 'Emissioni evitate per mq/anno', table: 'fixed_params', code: 'FP-SAN-CO2', val_check: 0.05, label_utente: 'Emissioni evitate (tCO2e per mq/anno)' },
+      { var_name: 'B', description: 'Emissioni evitate per mq/anno (calcolato)', table: 'fixed_params', code: 'FP-SAN-CO2', val_check: 0.05, label_utente: 'Emissioni evitate (tCO2e per mq/anno, calcolato)' },
       { var_name: 'C', description: 'Social Cost of Carbon (2025)', table: 'monetization_factors', code: 'MF-SAN-SCC', val_check: 135, label_utente: 'Social Cost of Carbon (EUR per tCO2e)' },
     ],
     formula: 'A × B × C',
