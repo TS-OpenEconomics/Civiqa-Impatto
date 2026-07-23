@@ -305,10 +305,13 @@ function EsgSummaryPanel({ esg }) {
   const r = esg ?? {};
   const rating = r.rating ?? "A";
   const score  = r.score  ?? 53.6;
-  const total  = (r.aligned_count ?? 35) + (r.partial_count ?? 39) + (r.non_aligned_count ?? 34);
-  const aligned    = r.aligned_count     ?? 35;
-  const partial    = r.partial_count     ?? 39;
-  const nonAligned = r.non_aligned_count ?? 34;
+  // Compliance coerente col dettaglio: usa esgDetail.compliance.overall se presente,
+  // altrimenti i conteggi del motore.
+  const comp = r.esgDetail?.compliance?.overall ?? null;
+  const aligned    = comp ? comp.aligned : (r.aligned_count     ?? 35);
+  const partial    = comp ? comp.partial : (r.partial_count     ?? 39);
+  const nonAligned = comp ? comp.non     : (r.non_aligned_count ?? 34);
+  const total  = aligned + partial + nonAligned;
 
   return (
     <div className="space-y-5">
@@ -321,16 +324,16 @@ function EsgSummaryPanel({ esg }) {
         </div>
       </div>
 
-      {/* Scala di valutazione — in risalto */}
+      {/* Scala di valutazione — colorata come nel dettaglio, in risalto */}
       <div>
         <p className="mb-2 text-xs font-semibold text-ink-700">Scala di valutazione</p>
-        <div className="flex items-end gap-1">
+        <div className="flex items-end gap-px">
           {RATING_SCALE.map((grade) => {
             const active = grade === rating;
             return (
               <div key={grade} className="flex flex-1 flex-col items-center gap-1">
-                <div className={`w-full rounded-sm ${active ? "h-12 bg-brand-violet ring-2 ring-brand-violet ring-offset-1" : "h-6 bg-ink-100"}`} />
-                <span className={`text-[11px] ${active ? "font-bold text-brand-violet" : "text-ink-400"}`}>{grade}</span>
+                <div className={`w-full rounded-sm transition-all ${getRatingColor(grade)} ${active ? "h-10 ring-2 ring-ink-900 ring-offset-1" : "h-6 opacity-60"}`} />
+                <span className={`text-[11px] ${active ? "font-bold text-ink-900" : "text-ink-400"}`}>{grade}</span>
               </div>
             );
           })}
