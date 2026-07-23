@@ -1233,7 +1233,7 @@ export const KPI_BENEFITS: KpiBenefit[] = [
     categoria_beneficio: 'Salute - mortalità evitata',
     metodo_valorizzazione: 'VSL',
     variables: [
-      { var_name: 'A', description: 'mq riqualificati/nuovi (degenza acuta/TIN)', table: 'input_params', code: 'prj_mq_critici', val_check: null, label_utente: 'mq riqualificati o nuovi (degenza acuta/TIN)', valore_tipo: 120 },
+      { var_name: 'A', description: 'mq riqualificati/nuovi (degenza acuta/TIN)', table: 'input_params', code: 'prj_mq_critici', val_check: null, label_utente: 'mq riqualificati o nuovi (degenza acuta/TIN)', valore_tipo: 456 },
       { var_name: 'B', description: 'Morti evitate per mq/anno (adj. double-counting)', table: 'fixed_params', code: 'FP-SAN-MOR', val_check: 0.04, label_utente: 'Morti evitate per mq/anno' },
       { var_name: 'C', description: 'Valore statistico della vita (VSL)', table: 'monetization_factors', code: 'MF-SAN-VSL', val_check: 20000000, label_utente: 'VSL (EUR per morte evitata)' },
     ],
@@ -1253,7 +1253,7 @@ export const KPI_BENEFITS: KpiBenefit[] = [
     categoria_beneficio: 'Salute - QALY',
     metodo_valorizzazione: 'QALY/WTP',
     variables: [
-      { var_name: 'A', description: 'mq riqualificati/nuovi (degenza acuta/TIN)', table: 'input_params', code: 'prj_mq_critici', val_check: null, label_utente: 'mq riqualificati o nuovi (degenza acuta/TIN)', valore_tipo: 120 },
+      { var_name: 'A', description: 'mq riqualificati/nuovi (degenza acuta/TIN)', table: 'input_params', code: 'prj_mq_critici', val_check: null, label_utente: 'mq riqualificati o nuovi (degenza acuta/TIN)', valore_tipo: 456 },
       { var_name: 'B', description: 'Pazienti PICS per mq/anno (adj)', table: 'fixed_params', code: 'FP-SAN-PICS', val_check: 0.05, label_utente: 'Pazienti PICS per mq/anno' },
       { var_name: 'C', description: 'QALY guadagnati per paziente', table: 'fixed_params', code: 'FP-SAN-QALY', val_check: 0.20, label_utente: 'QALY guadagnati per paziente' },
       { var_name: 'D', description: 'WTP per QALY (fascia medio-bassa)', table: 'monetization_factors', code: 'MF-SAN-WTP', val_check: 14996, label_utente: 'WTP per QALY (EUR)' },
@@ -1291,7 +1291,7 @@ export const KPI_BENEFITS: KpiBenefit[] = [
     categoria_beneficio: 'SSN - degenza',
     metodo_valorizzazione: 'DRG/SSN',
     variables: [
-      { var_name: 'A', description: 'Giorni di degenza evitati/anno', table: 'input_params', code: 'prj_gg_degenza_evitati_y', val_check: null, label_utente: 'Giorni di degenza evitati/anno', valore_tipo: 2000 },
+      { var_name: 'A', description: 'Giorni di degenza evitati/anno', table: 'input_params', code: 'prj_gg_degenza_evitati_y', val_check: null, label_utente: 'Giorni di degenza evitati/anno', valore_tipo: 3000 },
       { var_name: 'B', description: 'Costo medio giornata di degenza (Liguria, 2025)', table: 'monetization_factors', code: 'MF-SAN-DEG', val_check: 868.15, label_utente: 'Costo giornata di degenza (EUR, Liguria)' },
     ],
     formula: 'A × B',
@@ -1345,7 +1345,7 @@ export const KPI_BENEFITS: KpiBenefit[] = [
     categoria_beneficio: 'Mobilità - attiva',
     metodo_valorizzazione: 'VoT',
     variables: [
-      { var_name: 'A', description: 'Prestazioni a pazienti da fuori regione/anno', table: 'input_params', code: 'prj_prestazioni_extra_y', val_check: null, label_utente: 'Prestazioni a pazienti extraregionali/anno', valore_tipo: 5000 },
+      { var_name: 'A', description: 'Prestazioni a pazienti da fuori regione/anno', table: 'input_params', code: 'prj_prestazioni_extra_y', val_check: null, label_utente: 'Prestazioni a pazienti extraregionali/anno', valore_tipo: 6000 },
       { var_name: 'B', description: 'Valore viaggio per prestazione (130 km × 0,369 €/vkm × 1,3 WTT × 7,19 VoT × 2)', table: 'monetization_factors', code: 'MF-SAN-VIA', val_check: 896.8, label_utente: 'Valore viaggio per prestazione (EUR)' },
     ],
     formula: 'A × B',
@@ -1363,7 +1363,7 @@ export const KPI_BENEFITS: KpiBenefit[] = [
     categoria_beneficio: 'Mobilità - passiva',
     metodo_valorizzazione: 'VoT',
     variables: [
-      { var_name: 'A', description: 'Prestazioni a pazienti locali che non emigrano/anno', table: 'input_params', code: 'prj_prestazioni_locali_y', val_check: null, label_utente: 'Prestazioni a pazienti locali non-emigrati/anno', valore_tipo: 5000 },
+      { var_name: 'A', description: 'Prestazioni a pazienti locali che non emigrano/anno', table: 'input_params', code: 'prj_prestazioni_locali_y', val_check: null, label_utente: 'Prestazioni a pazienti locali non-emigrati/anno', valore_tipo: 6000 },
       { var_name: 'B', description: 'Valore viaggio per prestazione (come ID 66)', table: 'monetization_factors', code: 'MF-SAN-VIA', val_check: 896.8, label_utente: 'Valore viaggio per prestazione (EUR)' },
     ],
     formula: 'A × B',
