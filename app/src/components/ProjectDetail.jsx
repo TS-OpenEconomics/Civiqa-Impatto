@@ -321,33 +321,16 @@ function EsgSummaryPanel({ esg }) {
         </div>
       </div>
 
-      {/* E / S / G sub-scores */}
-      <div className="grid grid-cols-3 gap-2">
-        {[
-          { label: "Environmental", score: r.environmental_score ?? 51, rating: r.environmental_rating ?? "A+" },
-          { label: "Social",        score: r.social_score        ?? 62, rating: r.social_rating        ?? "A+" },
-          { label: "Governance",    score: r.governance_score    ?? 46, rating: r.governance_rating    ?? "BBB" },
-        ].map(({ label, score: s, rating: rat }) => (
-          <div key={label} className="rounded border border-ink-100 p-3">
-            <div className="flex items-center justify-between gap-1">
-              <span className="text-[10px] font-semibold text-ink-500">{label}</span>
-              <span className={`rounded px-1 py-0.5 text-[9px] font-bold text-white ${getRatingColor(rat)}`}>{rat}</span>
-            </div>
-            <p className="mt-1 font-mono text-[18px] font-bold text-ink-900">{fmtIT(s, 0)}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Grade bar */}
+      {/* Scala di valutazione — in risalto */}
       <div>
-        <p className="mb-2 text-[11px] text-ink-500">Scala di valutazione</p>
-        <div className="flex items-end gap-0.5">
+        <p className="mb-2 text-xs font-semibold text-ink-700">Scala di valutazione</p>
+        <div className="flex items-end gap-1">
           {RATING_SCALE.map((grade) => {
             const active = grade === rating;
             return (
-              <div key={grade} className="flex flex-col items-center gap-1">
-                <div className={`w-7 rounded-sm ${active ? "h-8 bg-brand-violet" : "h-4 bg-ink-100"}`} />
-                <span className={`text-[9px] ${active ? "font-bold text-brand-violet" : "text-ink-300"}`}>{grade}</span>
+              <div key={grade} className="flex flex-1 flex-col items-center gap-1">
+                <div className={`w-full rounded-sm ${active ? "h-12 bg-brand-violet ring-2 ring-brand-violet ring-offset-1" : "h-6 bg-ink-100"}`} />
+                <span className={`text-[11px] ${active ? "font-bold text-brand-violet" : "text-ink-400"}`}>{grade}</span>
               </div>
             );
           })}
@@ -379,6 +362,23 @@ function EsgSummaryPanel({ esg }) {
           </div>
         </div>
       )}
+
+      {/* E / S / G sub-scores — sotto, leggermente più compatti, a tutta larghezza */}
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { label: "Environmental", score: r.environmental_score ?? 51, rating: r.environmental_rating ?? "A+" },
+          { label: "Social",        score: r.social_score        ?? 62, rating: r.social_rating        ?? "A+" },
+          { label: "Governance",    score: r.governance_score    ?? 46, rating: r.governance_rating    ?? "BBB" },
+        ].map(({ label, score: s, rating: rat }) => (
+          <div key={label} className="rounded border border-ink-100 p-2.5">
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-[10px] font-semibold text-ink-500">{label}</span>
+              <span className={`rounded px-1 py-0.5 text-[9px] font-bold text-white ${getRatingColor(rat)}`}>{rat}</span>
+            </div>
+            <p className="mt-1 font-mono text-[16px] font-bold text-ink-900">{fmtIT(s, 0)}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
