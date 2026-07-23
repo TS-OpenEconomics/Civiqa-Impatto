@@ -513,42 +513,15 @@ export const OSPEDALE_ECBA_RESULTS = {
   "benefici_totali": 609870238,
   "costi_totali": 344569973,
   "benefici_categorie": [
-    {
-      "id": "Miglioramento dell'accessibilità",
-      "nome": "Miglioramento dell'accessibilità",
-      "valore_pv": 417836243,
-      "quota": 0.685
-    },
-    {
-      "id": "KPI264",
-      "nome": "Riduzione della mobilità passiva",
-      "valore_pv": 132954952,
-      "quota": 0.218
-    },
-    {
-      "id": "KPI263",
-      "nome": "Tempo di degenza evitato",
-      "valore_pv": 57769848,
-      "quota": 0.095
-    },
-    {
-      "id": "KPI340",
-      "nome": "Riduzione emissioni di CO2 per veicoli pesanti",
-      "valore_pv": 743955,
-      "quota": 0.001
-    },
-    {
-      "id": "KPI265",
-      "nome": "Riduzione della mortalità infantile",
-      "valore_pv": 491233,
-      "quota": 0.001
-    },
-    {
-      "id": "KPI266",
-      "nome": "Inabilità evitata",
-      "valore_pv": 74006,
-      "quota": 0
-    }
+    { "id": "OSP-59", "nome": "Riduzione della mortalità", "valore_pv": 364729660, "quota": 0.598 },
+    { "id": "OSP-65", "nome": "Disponibilità di posti letto aggiuntivi", "valore_pv": 201857067, "quota": 0.331 },
+    { "id": "OSP-62", "nome": "Riduzione degli eventi avversi (HAI)", "valore_pv": 27798640, "quota": 0.046 },
+    { "id": "OSP-66", "nome": "Incremento della mobilità attiva", "valore_pv": 5379476, "quota": 0.009 },
+    { "id": "OSP-67", "nome": "Riduzione della mobilità passiva", "valore_pv": 5379476, "quota": 0.009 },
+    { "id": "OSP-63", "nome": "Riduzione della durata dei ricoveri", "valore_pv": 2603948, "quota": 0.004 },
+    { "id": "OSP-64", "nome": "Accessibilità ai servizi (prestazioni aggiuntive)", "valore_pv": 1999614, "quota": 0.003 },
+    { "id": "OSP-60", "nome": "Riduzione della disabilità (QALY)", "valore_pv": 68369, "quota": 0.0001 },
+    { "id": "OSP-68", "nome": "Riduzione dei costi ambientali (CO₂)", "valore_pv": 53990, "quota": 0.0001 }
   ],
   "costi_categorie": [
     {
@@ -16829,42 +16802,15 @@ export const OSPEDALE_ECBA_DATASET = {
     ]
   },
   "donut": [
-    {
-      "label": "Miglioramento dell'accessibilità",
-      "pct": 68.51,
-      "color": "#4400B3",
-      "code": "Miglioramento dell'accessibilità"
-    },
-    {
-      "label": "Riduzione della mobilità passiva",
-      "pct": 21.8,
-      "color": "#6E1AFF",
-      "code": "KPI264"
-    },
-    {
-      "label": "Tempo di degenza evitato",
-      "pct": 9.47,
-      "color": "#ae81fd",
-      "code": "KPI263"
-    },
-    {
-      "label": "Riduzione emissioni di CO2 per veicoli pesanti",
-      "pct": 0.12,
-      "color": "#B9FF69",
-      "code": "KPI340"
-    },
-    {
-      "label": "Riduzione della mortalità infantile",
-      "pct": 0.08,
-      "color": "#270065",
-      "code": "KPI265"
-    },
-    {
-      "label": "Inabilità evitata",
-      "pct": 0.01,
-      "color": "#9E7BFA",
-      "code": "KPI266"
-    }
+    { "label": "Riduzione della mortalità", "pct": 59.8, "color": "#4400B3", "code": "OSP-59" },
+    { "label": "Disponibilità di posti letto aggiuntivi", "pct": 33.1, "color": "#6E1AFF", "code": "OSP-65" },
+    { "label": "Riduzione degli eventi avversi (HAI)", "pct": 4.56, "color": "#ae81fd", "code": "OSP-62" },
+    { "label": "Incremento della mobilità attiva", "pct": 0.88, "color": "#B9FF69", "code": "OSP-66" },
+    { "label": "Riduzione della mobilità passiva", "pct": 0.88, "color": "#270065", "code": "OSP-67" },
+    { "label": "Riduzione della durata dei ricoveri", "pct": 0.43, "color": "#9E7BFA", "code": "OSP-63" },
+    { "label": "Accessibilità ai servizi (prestazioni aggiuntive)", "pct": 0.33, "color": "#3A148F", "code": "OSP-64" },
+    { "label": "Riduzione della disabilità (QALY)", "pct": 0.01, "color": "#C7F03A", "code": "OSP-60" },
+    { "label": "Riduzione dei costi ambientali (CO₂)", "pct": 0.01, "color": "#5B21F7", "code": "OSP-68" }
   ],
   "_riskIllustrative": true,
   "sensitivity": [

@@ -26,7 +26,9 @@ const DEFAULT_ECBA_INPUTS = {
 // raccomandazioni) per le sotto-pagine ESG. Invalida lo stato v10.
 // v12: esgDetail.sdg con sotto-indicatori per obiettivo (ruota SDG interattiva).
 // Invalida lo stato v11.
-export const PROJECT_STORAGE_KEY = "civiqa.projects.v12";
+// v13: ECBA ospedale scomposta nei 9 KPI dell'analista (benefici_categorie + donut),
+// somma invariata ~609,87M. Invalida lo stato v12.
+export const PROJECT_STORAGE_KEY = "civiqa.projects.v13";
 export const UI_STORAGE_KEY = "civiqa.ui.v1";
 
 function clone(value) {
